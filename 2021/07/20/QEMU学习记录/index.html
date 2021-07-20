@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="QEMU学习记录什么是KVM？基于内核的虚拟机 Kernel-based Virtual Machine（KVM）是一种内建于 Linux 中的开源虚拟化技术。具体而言，KVM 可帮助用户将 Linux 转变为虚拟机监控程序，使主机计算机能够运行多个隔离的虚拟环境，即虚拟客户机或虚拟机（VM）。 什么是QEMU？Qemu是一个完整的可以单独运行的软件，它可以用来模拟不同架构的机器，非常灵活和可移植">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU学习记录">
+<meta property="og:url" content="http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="Dominic">
+<meta property="og:description" content="QEMU学习记录什么是KVM？基于内核的虚拟机 Kernel-based Virtual Machine（KVM）是一种内建于 Linux 中的开源虚拟化技术。具体而言，KVM 可帮助用户将 Linux 转变为虚拟机监控程序，使主机计算机能够运行多个隔离的虚拟环境，即虚拟客户机或虚拟机（VM）。 什么是QEMU？Qemu是一个完整的可以单独运行的软件，它可以用来模拟不同架构的机器，非常灵活和可移植">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-07-20T08:51:34.000Z">
+<meta property="article:modified_time" content="2021-07-20T08:53:04.749Z">
+<meta property="article:author" content="Dominic">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>QEMU学习记录</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2021/07/20/%E3%80%90%E8%AF%91%E3%80%91Unix%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81%EF%BC%9F/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&text=QEMU学习记录"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&is_video=false&description=QEMU学习记录"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=QEMU学习记录&body=Check out this article: http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&name=QEMU学习记录&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&t=QEMU学习记录"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">QEMU学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFKVM%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">什么是KVM？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFQEMU%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">什么是QEMU？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E4%B8%8EQEMU%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.3.</span> <span class="toc-text">KVM与QEMU的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QEMU%E7%94%A8%E6%88%B7%E6%A8%A1%E5%BC%8F%E4%B8%8E%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">QEMU用户模式与系统模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.1.</span> <span class="toc-text">用户模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.2.</span> <span class="toc-text">系统模式</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        QEMU学习记录
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Dominic</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-07-20T08:51:34.000Z" itemprop="datePublished">2021-07-20</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="QEMU学习记录"><a href="#QEMU学习记录" class="headerlink" title="QEMU学习记录"></a>QEMU学习记录</h1><h2 id="什么是KVM？"><a href="#什么是KVM？" class="headerlink" title="什么是KVM？"></a>什么是KVM？</h2><p>基于内核的虚拟机 <code>Kernel-based Virtual Machine（KVM）</code>是一种内建于 Linux 中的开源虚拟化技术。具体而言，<code>KVM</code> 可帮助用户将 Linux 转变为虚拟机监控程序，使主机计算机能够运行多个隔离的虚拟环境，即虚拟客户机或虚拟机（VM）。</p>
+<h2 id="什么是QEMU？"><a href="#什么是QEMU？" class="headerlink" title="什么是QEMU？"></a>什么是QEMU？</h2><p>Qemu是一个完整的可以单独运行的软件，它可以用来模拟不同架构的机器，非常灵活和可移植。它主要通过一个特殊的’重编译器’将为特定处理器编写二进制代码转换为另一种。</p>
+<h2 id="KVM与QEMU的关系"><a href="#KVM与QEMU的关系" class="headerlink" title="KVM与QEMU的关系"></a>KVM与QEMU的关系</h2><p>KVM是Linux的一个模块。可以用<code>modprobe</code>去加载KVM模块。加载了模块后，才能进一步通过其他工具创建虚拟机。但仅有KVM模块是 远远不够的，因为用户无法直接控制内核模块去作事情：还必须有一个用户空间的工具才行。这个用户空间的工具，开发者选择了已经成型的开源虚拟化软件 QEMU。KVM使用了QEMU的一部分，并稍加改造，就成了可控制KVM的用户空间工具了。所以你会看到，官方提供的KVM下载有两 大部分三个文件，分别是KVM模块、QEMU工具以及二者的合集。也就是说，你可以只升级KVM模块，也可以只升级QEMU工具。</p>
+<h2 id="QEMU用户模式与系统模式"><a href="#QEMU用户模式与系统模式" class="headerlink" title="QEMU用户模式与系统模式"></a>QEMU用户模式与系统模式</h2><p>QEMU属于应用层的仿真程序，它支持两种操作模式：<strong>用户模式</strong>模拟和<strong>系统模式</strong>模拟。</p>
+<ul>
+<li><strong>用户模式仿真</strong> 利用动态代码翻译机制，可以在当前CPU上执行被编译为支持其他CPU的程序，如可以在x86机器上执行一个ARM二进制可执行程序。（执行主机 CPU 指令的动态翻译并相应地转换 Linux 系统调用）。</li>
+<li><strong>系统模式仿真</strong> 利用其它VMM(Xen, KVM)来使用硬件提供的虚拟化支持，创建接近于主机性能的全功能虚拟机，包括处理器和配套的外围设备（磁盘，以太网等）。</li>
+</ul>
+<h3 id="用户模式"><a href="#用户模式" class="headerlink" title="用户模式"></a>用户模式</h3><p>支持的CPU：x86 (32 and 64 bit), PowerPC (32 and 64 bit), ARM, MIPS (32 bit only), Sparc (32 and 64 bit), Alpha, ColdFire(m68k), CRISv32 和 MicroBlaze<br>下列操作系统支持QEMU的用户模式模拟：</p>
+<ul>
+<li>Linux (referred as qemu-linux-user)</li>
+<li>BSD (referred as qemu-bsd-user)</li>
+</ul>
+<p>调用（<a target="_blank" rel="noopener" href="https://qemu.readthedocs.io/en/latest/user/main.html">具体参数含义</a>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-i386 [-h] [-d] [-L path] [-s size] [-cpu model] [-g port] [-B offset] [-R size] program [arguments...]</span><br></pre></td></tr></table></figure>
+<p>用户模式模拟环境下运行速度要比系统模式模拟环境下快，但并不是完美模拟，比如程序读取<code>/proc/cpuinfo</code>内容时，由主机内核返回，因此返回的信息是描述主机CPU的，而不是模拟的CPU。</p>
+<h3 id="系统模式"><a href="#系统模式" class="headerlink" title="系统模式"></a>系统模式</h3><p>首先创建虚拟镜像，模拟硬盘空间：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# qemu-img create -f qcow2 qmtest.img 10G</span><br><span class="line">Formatting &#x27;qmtest.img&#x27;, fmt=qcow2 size=10737418240 encryption=off cluster_size=65536 lazy_refcounts=off </span><br><span class="line">root@hanhan:/home/dominic/qemu/# ls</span><br><span class="line">qmtest.img</span><br></pre></td></tr></table></figure>
+<p><code>-f</code>选项用于指定镜像的格式，<code>qcow2</code>格式是QEMU最常用的镜像格式，采用写时复制技术来优化性能。<code>qmtest.img</code>是镜像文件的名字，<code>10G</code>是镜像文件大小。</p>
+<p>镜像文件创建完成后，可使用<code>qemu-system-x86</code>来启动<code>x86</code>架构的虚拟机：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 qmtest.img</span><br></pre></td></tr></table></figure>
+<p>qmtest.img中还未安装操作系统，所以会提示“No bootable device”的错误。</p>
+<p>其次，准备操作系统镜像<br>下载需要的Linux发行版镜像文件,<a target="_blank" rel="noopener" href="https://launchpad.net/ubuntu/+cdmirrors%EF%BC%8C">https://launchpad.net/ubuntu/+cdmirrors，</a> 找到想要下载的镜像，这里以交通大学的镜像为例<br>右击链接复制地址：<a target="_blank" rel="noopener" href="https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso">https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# wget https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso</span><br></pre></td></tr></table></figure>
+<p>最后，启动虚拟机安装操作系统</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# qemu-system-x86_64 -m 2048 -enable-kvm qmtest.img -cdrom ./Fedora-Live-Desktop-x86_64-20-1.iso</span><br></pre></td></tr></table></figure>
+<p><code>-m </code>指定虚拟机内存大小，默认单位是MB，<code>-enable-kvm</code>使用KVM进行加速，<code>-cdrom</code>添加fedora的安装镜像。</p>
+<p>该模式下，要比用户模式模拟慢得多，因为模拟了目标内核，以及设备输入/输出、中断等。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">QEMU学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFKVM%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">什么是KVM？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFQEMU%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">什么是QEMU？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KVM%E4%B8%8EQEMU%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.3.</span> <span class="toc-text">KVM与QEMU的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QEMU%E7%94%A8%E6%88%B7%E6%A8%A1%E5%BC%8F%E4%B8%8E%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">QEMU用户模式与系统模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.1.</span> <span class="toc-text">用户模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.2.</span> <span class="toc-text">系统模式</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&text=QEMU学习记录"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&is_video=false&description=QEMU学习记录"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=QEMU学习记录&body=Check out this article: http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=QEMU学习记录"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&name=QEMU学习记录&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/07/20/QEMU%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&t=QEMU学习记录"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Dominic
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
