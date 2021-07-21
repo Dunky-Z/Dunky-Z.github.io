@@ -119,6 +119,10 @@ int main()
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210721104550.png)
 
+> 汇编命令学习
+> mov,
+> call, jmp, int, ret, add, or, xor, shl, shr, push, pop, inc, dec, sub, cmp。
+
 
 
 
