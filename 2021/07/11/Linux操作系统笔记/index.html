@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
 
 
 
@@ -56,7 +56,7 @@
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
   </script>
   <script  src="/js/utils.js" ></script>
   <script  src="/js/color-schema.js" ></script>
@@ -227,12 +227,18 @@
             <!-- SEO header -->
             <h1 style="display: none">Linux操作系统笔记</h1>
             
+              <p class="note note-info">
+                
+                  本文最后更新于：8 分钟前
+                
+              </p>
+            
             <div class="markdown-body">
               <h1 id="Linux操作系统学习笔记"><a href="#Linux操作系统学习笔记" class="headerlink" title="Linux操作系统学习笔记"></a>Linux操作系统学习笔记</h1><h2 id="Linux操作系统综述"><a href="#Linux操作系统综述" class="headerlink" title="Linux操作系统综述"></a>Linux操作系统综述</h2><h3 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h3><h4 id="创建进程fork"><a href="#创建进程fork" class="headerlink" title="创建进程fork"></a>创建进程<code>fork</code></h4><p>在 Linux 里，要创建一个新的进程，需要一个老的进程调用 <code>fork</code> 来实现，其中老的进程叫作<code>父进程</code>（Parent Process），新的进程叫作<code>子进程</code>（Child Process）。为啥叫<code>fork</code>（分支），因为Linux 当父进程调用 fork 创建进程的时候，子进程将各个子系统为父进程创建的数据结构也全部拷贝了一份，甚至连程序代码也是拷贝过来的。如果当前进程是父进程，就接着做之前的事，如果是子进程就调用<code>execve</code>来执行另一个程序，这时候子进程就和父进程彻底分离，也就产生了一个分支(fork)。</p>
 <h4 id="waitpid查看子进程运行情况"><a href="#waitpid查看子进程运行情况" class="headerlink" title="waitpid查看子进程运行情况"></a><code>waitpid</code>查看子进程运行情况</h4><p>父进程可以调用<code>waitpid</code>查看子进程是否运行完成，成功与否</p>
 <h4 id="内存管理brk和mmap"><a href="#内存管理brk和mmap" class="headerlink" title="内存管理brk和mmap"></a>内存管理<code>brk</code>和<code>mmap</code></h4><p>每个进程都有自己的内存，互相之间不干扰，叫做<code>进程内存空间</code>，里面存放<code>代码段</code>(code segment)和<code>数据段</code>(data segment)。数据段中局部变量部分只有在函数执行时才起作用，当进入另一个函数时就会被释放，也有动态分配的，保存时间较长，这部分叫做<code>堆</code>（heap）。</p>
 <p>当分配的内存数量比较小的时候，使用 <code>brk</code>，会和原来的堆的数据连在一起，这就像多分配两三个工位，在原来的区域旁边搬两把椅子就行了。当分配的内存数量比较大的时候，使用 <code>mmap</code>，会重新划分一块区域，也就是说，当办公空间需要太多的时候，索性来个一整块。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">brk</span><span class="params">(boid *addr)</span>；</span></span><br><span class="line"><span class="function"><span class="comment">//addr:把内存末尾指针设置为addr.返回值：0表示成功，非0表示失败</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sbrk</span><span class="params">(<span class="keyword">intptr_t</span> increment)</span></span>;</span><br><span class="line"><span class="comment">//increment:把内存的末尾指针移动increment个字节。返回值：上次调用sbrk/brk的内存末尾指针。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span>   </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span>   </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">void</span>* p = sbrk(<span class="number">0</span>);  </span><br><span class="line">    <span class="keyword">int</span>* p1 = p;  </span><br><span class="line">    brk(p1+<span class="number">4</span>);<span class="comment">//分配了16个字节的空间   </span></span><br><span class="line">    p1[<span class="number">0</span>] = <span class="number">10</span>;  </span><br><span class="line">    p1[<span class="number">1</span>] = <span class="number">20</span>;  </span><br><span class="line">    p1[<span class="number">2</span>] = <span class="number">30</span>;  </span><br><span class="line">    p1[<span class="number">3</span>] = <span class="number">40</span>;  </span><br><span class="line">    p1[<span class="number">4</span>] = <span class="number">50</span>;  </span><br><span class="line">    <span class="keyword">int</span>* p2 = sbrk(<span class="number">4</span>);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;*p2=%d\n&quot;</span>, *p2);  </span><br><span class="line">    brk(p1+<span class="number">1024</span>);<span class="comment">//分配整个页面的空间   </span></span><br><span class="line">    brk(p1+<span class="number">512</span>);<span class="comment">//释放一半空间   </span></span><br><span class="line">    brk(p1);<span class="comment">//释放所有空间   </span></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">brk</span><span class="hljs-params">(boid *addr)</span>；</span><br><span class="hljs-function"><span class="hljs-comment">//addr:把内存末尾指针设置为addr.返回值：0表示成功，非0表示失败</span></span><br><span class="hljs-function"><span class="hljs-keyword">void</span> *<span class="hljs-title">sbrk</span><span class="hljs-params">(<span class="hljs-keyword">intptr_t</span> increment)</span></span>;<br><span class="hljs-comment">//increment:把内存的末尾指针移动increment个字节。返回值：上次调用sbrk/brk的内存末尾指针。</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span>   </span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span>   </span><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>  </span><br><span class="hljs-function"></span>&#123;  <br>    <span class="hljs-keyword">void</span>* p = sbrk(<span class="hljs-number">0</span>);  <br>    <span class="hljs-keyword">int</span>* p1 = p;  <br>    brk(p1+<span class="hljs-number">4</span>);<span class="hljs-comment">//分配了16个字节的空间   </span><br>    p1[<span class="hljs-number">0</span>] = <span class="hljs-number">10</span>;  <br>    p1[<span class="hljs-number">1</span>] = <span class="hljs-number">20</span>;  <br>    p1[<span class="hljs-number">2</span>] = <span class="hljs-number">30</span>;  <br>    p1[<span class="hljs-number">3</span>] = <span class="hljs-number">40</span>;  <br>    p1[<span class="hljs-number">4</span>] = <span class="hljs-number">50</span>;  <br>    <span class="hljs-keyword">int</span>* p2 = sbrk(<span class="hljs-number">4</span>);  <br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;*p2=%d\n&quot;</span>, *p2);  <br>    brk(p1+<span class="hljs-number">1024</span>);<span class="hljs-comment">//分配整个页面的空间   </span><br>    brk(p1+<span class="hljs-number">512</span>);<span class="hljs-comment">//释放一半空间   </span><br>    brk(p1);<span class="hljs-comment">//释放所有空间   </span><br>&#125;  <br></code></pre></td></tr></table></figure>
 
 <h4 id="创建、打开、读写、跳转文件"><a href="#创建、打开、读写、跳转文件" class="headerlink" title="创建、打开、读写、跳转文件"></a>创建、打开、读写、跳转文件</h4><p><code>open</code>打开文件<br><code>close</code>关闭文件<br><code>creat</code>创建文件<br><code>lseek</code>跳转到文件某位置<br><code>read</code>读取文件<br><code>write</code>写入文件</p>
 <h4 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h4><p>当进程之间交互的信息较小时，使用<code>消息队列</code>(message queue)<br><code>msgget</code>创建新的消息队列<br><code>msgsnd</code>将消息发送到消息队列<br><code>msgrcv</code>从消息队列中取消息<br>当进程之间交互的信息较大时，使用<code>共享内存</code><br><code>shmget</code>创建一个共享内存块<br><code>shmat</code>将共享内存映射到自己的内存空间<br>进程之间通信共享数据就会存在竞争的问题，如果同时修改同一块数据就会出问题，这就有了<code>信号量</code>机制(semaphore)<br>对于只允许一个进程访问的需求，我们可以将信号量设为 <code>1</code>。当一个进程要访问的时候，先调用<code>sem_wait</code>。如果这时候没有进程访问，则占用这个信号量，他就可以开始访问了。如果这个时候另一个进程要访问，也会调用 <code>sem_wait</code>。由于前一个进程已经在访问了，所以后面这个进程就必须等待上一个进程访问完之后才能访问。当上一个进程访问完毕后，会调用<code>sem_post</code>将信号量释放，于是下一个进程等待结束，可以访问这个资源了。</p>
@@ -264,6 +270,9 @@
 <p>段寄存器改动较大，新的段寄存器都改成了32位的，每个寄存器又分为<strong>段描述符缓存器（Segment Descriptor）</strong>，和<strong>段选择子寄存器（Selector）</strong> ,现在的段寄存器不在是段的起始地址，段的起始地址保存在表格一样的段描述符缓冲器中，段选择子寄存器保存地址在段描述符缓存器中的哪一项。这样，将一个从段寄存器直接拿到的段起始地址，就变成了<strong>先间接地从段寄存器找到表格中的一项，再从表格中的一项中拿到段起始地址。</strong></p>
 <p>虽然现在的这种模式和之前的模式不兼容，但是后面这种模式灵活的非常高，可以保持一直兼容下去。在32位的系统架构下，将前一种模式称为<strong>实模式（Real Pattern）</strong>，后一种模式称为<strong>保护模式（Protected Pattern）</strong> 。当系统刚刚启动的时候，CPU 是处于实模式的，这个时候和原来的模式是兼容的。也就是说，哪怕你买了 32 位的 CPU，也支持在原来的模式下运行。</p>
 <p><img src="https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210721104550.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>汇编命令学习<br>mov,<br>call, jmp, int, ret, add, or, xor, shl, shr, push, pop, inc, dec, sub, cmp。</p>
+</blockquote>
 <h2 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h2>
             </div>
             <hr>
@@ -436,11 +445,74 @@
 
 
 
+  
+
+  
+    <!-- MathJax -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        options: {
+          renderActions: {
+            findScript: [10, doc => {
+              document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                const display = !!node.type.match(/; *mode=display/);
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                const text = document.createTextNode('');
+                node.parentNode.replaceChild(text, node);
+                math.start = { node: text, delim: '', n: 0 };
+                math.end = { node: text, delim: '', n: 0 };
+                doc.math.push(math);
+              });
+            }, '', false],
+            insertedScript: [200, () => {
+              document.querySelectorAll('mjx-container').forEach(node => {
+                let target = node.parentNode;
+                if (target.nodeName.toLowerCase() === 'li') {
+                  target.parentNode.classList.add('has-jax');
+                }
+              });
+            }, '', false]
+          }
+        }
+      };
+    </script>
+
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.1.4/es5/tex-svg.js" ></script>
+
+  
 
 
 
 
 
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      var _hmt = _hmt || [];
+      (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
 
 

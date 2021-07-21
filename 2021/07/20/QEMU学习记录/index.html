@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
 
 
 
@@ -56,7 +56,7 @@
 
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
   </script>
   <script  src="/js/utils.js" ></script>
   <script  src="/js/color-schema.js" ></script>
@@ -227,6 +227,12 @@
             <!-- SEO header -->
             <h1 style="display: none">QEMU学习记录</h1>
             
+              <p class="note note-info">
+                
+                  本文最后更新于：19 小时前
+                
+              </p>
+            
             <div class="markdown-body">
               <h1 id="QEMU学习记录"><a href="#QEMU学习记录" class="headerlink" title="QEMU学习记录"></a>QEMU学习记录</h1><h2 id="什么是KVM？"><a href="#什么是KVM？" class="headerlink" title="什么是KVM？"></a>什么是KVM？</h2><p>基于内核的虚拟机 <code>Kernel-based Virtual Machine（KVM）</code>是一种内建于 Linux 中的开源虚拟化技术。具体而言，<code>KVM</code> 可帮助用户将 Linux 转变为虚拟机监控程序，使主机计算机能够运行多个隔离的虚拟环境，即虚拟客户机或虚拟机（VM）。</p>
 <h2 id="什么是QEMU？"><a href="#什么是QEMU？" class="headerlink" title="什么是QEMU？"></a>什么是QEMU？</h2><p>Qemu是一个完整的可以单独运行的软件，它可以用来模拟不同架构的机器，非常灵活和可移植。它主要通过一个特殊的’重编译器’将为特定处理器编写二进制代码转换为另一种。</p>
@@ -242,18 +248,18 @@
 <li>BSD (referred as qemu-bsd-user)</li>
 </ul>
 <p>调用（<a target="_blank" rel="noopener" href="https://qemu.readthedocs.io/en/latest/user/main.html">具体参数含义</a>）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-i386 [-h] [-d] [-L path] [-s size] [-cpu model] [-g port] [-B offset] [-R size] program [arguments...]</span><br></pre></td></tr></table></figure>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">qemu-i386 <span class="hljs-selector-attr">[-h]</span> <span class="hljs-selector-attr">[-d]</span> <span class="hljs-selector-attr">[-L path]</span> <span class="hljs-selector-attr">[-s size]</span> <span class="hljs-selector-attr">[-cpu model]</span> <span class="hljs-selector-attr">[-g port]</span> <span class="hljs-selector-attr">[-B offset]</span> <span class="hljs-selector-attr">[-R size]</span> program <span class="hljs-selector-attr">[arguments...]</span><br></code></pre></td></tr></table></figure>
 <p>用户模式模拟环境下运行速度要比系统模式模拟环境下快，但并不是完美模拟，比如程序读取<code>/proc/cpuinfo</code>内容时，由主机内核返回，因此返回的信息是描述主机CPU的，而不是模拟的CPU。</p>
 <h3 id="系统模式"><a href="#系统模式" class="headerlink" title="系统模式"></a>系统模式</h3><p>首先创建虚拟镜像，模拟硬盘空间：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# qemu-img create -f qcow2 qmtest.img 10G</span><br><span class="line">Formatting &#x27;qmtest.img&#x27;, fmt=qcow2 size=10737418240 encryption=off cluster_size=65536 lazy_refcounts=off </span><br><span class="line">root@hanhan:/home/dominic/qemu/# ls</span><br><span class="line">qmtest.img</span><br></pre></td></tr></table></figure>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs elixir">root<span class="hljs-variable">@hanhan</span><span class="hljs-symbol">:/home/dominic/qemu/</span><span class="hljs-comment"># qemu-img create -f qcow2 qmtest.img 10G</span><br>Formatting <span class="hljs-string">&#x27;qmtest.img&#x27;</span>, fmt=qcow2 size=<span class="hljs-number">10737418240</span> encryption=off cluster_size=<span class="hljs-number">65536</span> lazy_refcounts=off <br>root<span class="hljs-variable">@hanhan</span><span class="hljs-symbol">:/home/dominic/qemu/</span><span class="hljs-comment"># ls</span><br>qmtest.img<br></code></pre></td></tr></table></figure>
 <p><code>-f</code>选项用于指定镜像的格式，<code>qcow2</code>格式是QEMU最常用的镜像格式，采用写时复制技术来优化性能。<code>qmtest.img</code>是镜像文件的名字，<code>10G</code>是镜像文件大小。</p>
 <p>镜像文件创建完成后，可使用<code>qemu-system-x86</code>来启动<code>x86</code>架构的虚拟机：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 qmtest.img</span><br></pre></td></tr></table></figure>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">qemu</span>-system-x<span class="hljs-number">86</span>_<span class="hljs-number">64</span> qmtest.img<br></code></pre></td></tr></table></figure>
 <p>qmtest.img中还未安装操作系统，所以会提示“No bootable device”的错误。</p>
 <p>其次，准备操作系统镜像<br>下载需要的Linux发行版镜像文件,<a target="_blank" rel="noopener" href="https://launchpad.net/ubuntu/+cdmirrors%EF%BC%8C">https://launchpad.net/ubuntu/+cdmirrors，</a> 找到想要下载的镜像，这里以交通大学的镜像为例<br>右击链接复制地址：<a target="_blank" rel="noopener" href="https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso">https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso</a></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# wget https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso</span><br></pre></td></tr></table></figure>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elixir">root<span class="hljs-variable">@hanhan</span><span class="hljs-symbol">:/home/dominic/qemu/</span><span class="hljs-comment"># wget https://ftp.sjtu.edu.cn/ubuntu-cd/20.10/ubuntu-20.10-live-server-amd64.iso</span><br></code></pre></td></tr></table></figure>
 <p>最后，启动虚拟机安装操作系统</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@hanhan:/home/dominic/qemu/# qemu-system-x86_64 -m 2048 -enable-kvm qmtest.img -cdrom ./Fedora-Live-Desktop-x86_64-20-1.iso</span><br></pre></td></tr></table></figure>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elixir">root<span class="hljs-variable">@hanhan</span><span class="hljs-symbol">:/home/dominic/qemu/</span><span class="hljs-comment"># qemu-system-x86_64 -m 2048 -enable-kvm qmtest.img -cdrom ./Fedora-Live-Desktop-x86_64-20-1.iso</span><br></code></pre></td></tr></table></figure>
 <p><code>-m </code>指定虚拟机内存大小，默认单位是MB，<code>-enable-kvm</code>使用KVM进行加速，<code>-cdrom</code>添加fedora的安装镜像。</p>
 <p>该模式下，要比用户模式模拟慢得多，因为模拟了目标内核，以及设备输入/输出、中断等。</p>
 
@@ -434,11 +440,74 @@
 
 
 
+  
+
+  
+    <!-- MathJax -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        options: {
+          renderActions: {
+            findScript: [10, doc => {
+              document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                const display = !!node.type.match(/; *mode=display/);
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                const text = document.createTextNode('');
+                node.parentNode.replaceChild(text, node);
+                math.start = { node: text, delim: '', n: 0 };
+                math.end = { node: text, delim: '', n: 0 };
+                doc.math.push(math);
+              });
+            }, '', false],
+            insertedScript: [200, () => {
+              document.querySelectorAll('mjx-container').forEach(node => {
+                let target = node.parentNode;
+                if (target.nodeName.toLowerCase() === 'li') {
+                  target.parentNode.classList.add('has-jax');
+                }
+              });
+            }, '', false]
+          }
+        }
+      };
+    </script>
+
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.1.4/es5/tex-svg.js" ></script>
+
+  
 
 
 
 
 
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      var _hmt = _hmt || [];
+      (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 
 
 
