@@ -59,3 +59,17 @@ root@hanhan:/home/dominic/qemu/# qemu-system-x86_64 -m 2048 -enable-kvm qmtest.i
 
 
 该模式下，要比用户模式模拟慢得多，因为模拟了目标内核，以及设备输入/输出、中断等。
+
+
+## QEMU工作原理
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210721140349.png)
+单纯使用 qemu，采用的是完全虚拟化的模式。qemu 向 Guest OS 模拟 CPU，也模拟其他的硬件，GuestOS 认为自己和硬件直接打交道，其实是同 qemu 模拟出来的硬件打交道，qemu 会将这些指令转译给真正的硬件。由于所有的指令都要从 qemu 里面过一手，因而性能就会比较差。
+
+完全虚拟化是非常慢的，所以要使用硬件辅助虚拟化技术 Intel-VT，AMD-V，所以需要 CPU 硬件开启这个标志位，一般在 BIOS 里面设置。当确认开始了标志位之后，通过 KVM，GuestOS 的 CPU 指令不用经过 Qemu 转译，直接运行，大大提高了速度。所以，KVM 在内核里面需要有一个模块，来设置当前 CPU 是 Guest OS 在用，还是 Host OS 在用。
+
+可以通过如下命令查看内核模块中是否有KVM
+```
+lsmod | grep kvm
+```
+KVM 内核模块通过 `/dev/kvm` 暴露接口，用户态程序可以通过 `ioctl`来访问这个接口。Qemu 将 KVM 整合进来，将有关 CPU 指令的部分交由内核模块来做，就是 qemu-kvm (qemu-system-XXX)。
+
