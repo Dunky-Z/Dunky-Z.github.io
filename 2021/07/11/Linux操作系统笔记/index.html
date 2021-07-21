@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux操作系统学习笔记Linux操作系统综述系统调用创建进程fork在 Linux 里，要创建一个新的进程，需要一个老的进程调用 fork 来实现，其中老的进程叫作父进程（Parent Process），新的进程叫作子进程（Child Process）。为啥叫fork（分支），因为Linux 当父进程调用 fork 创建进程的时候，子进程将各个子系统为父进程创建的数据结构也全部拷贝了一份，甚至">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统笔记">
+<meta property="og:url" content="http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Dominic">
+<meta property="og:description" content="Linux操作系统学习笔记Linux操作系统综述系统调用创建进程fork在 Linux 里，要创建一个新的进程，需要一个老的进程调用 fork 来实现，其中老的进程叫作父进程（Parent Process），新的进程叫作子进程（Child Process）。为啥叫fork（分支），因为Linux 当父进程调用 fork 创建进程的时候，子进程将各个子系统为父进程创建的数据结构也全部拷贝了一份，甚至">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-11T01:09:53.000Z">
+<meta property="article:modified_time" content="2021-07-21T01:10:27.901Z">
+<meta property="article:author" content="Dominic">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux操作系统笔记</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+         
+          <li><a href="/projects_url">项目</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇 " href="/2021/07/20/Hexo%E5%92%8CGitHub%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E4%BB%A5%E5%8F%8A%E6%9B%B4%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8C%E6%AD%A5%E5%8D%9A%E5%AE%A2/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="返回顶部 " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章 " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&text=Linux操作系统笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&is_video=false&description=Linux操作系统笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux操作系统笔记&body=Check out this article: http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&name=Linux操作系统笔记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&t=Linux操作系统笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="toc-number">1.</span> <span class="toc-text">Linux操作系统学习笔记</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%BC%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">Linux操作系统综述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">1.1.1.</span> <span class="toc-text">系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%BF%9B%E7%A8%8Bfork"><span class="toc-number">1.1.1.1.</span> <span class="toc-text">创建进程fork</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#waitpid%E6%9F%A5%E7%9C%8B%E5%AD%90%E8%BF%9B%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%83%85%E5%86%B5"><span class="toc-number">1.1.1.2.</span> <span class="toc-text">waitpid查看子进程运行情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86brk%E5%92%8Cmmap"><span class="toc-number">1.1.1.3.</span> <span class="toc-text">内存管理brk和mmap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E3%80%81%E6%89%93%E5%BC%80%E3%80%81%E8%AF%BB%E5%86%99%E3%80%81%E8%B7%B3%E8%BD%AC%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.1.4.</span> <span class="toc-text">创建、打开、读写、跳转文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1"><span class="toc-number">1.1.1.5.</span> <span class="toc-text">进程间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E6%9C%BA%E5%99%A8%E4%B9%8B%E9%97%B4%E7%9A%84%E9%80%9A%E4%BF%A1-sorket"><span class="toc-number">1.1.1.6.</span> <span class="toc-text">不同机器之间的通信 sorket</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%8F%8B%E5%A5%BD%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%BA%93Glibc"><span class="toc-number">1.1.1.7.</span> <span class="toc-text">用户友好的系统调用库Glibc</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.2.</span> <span class="toc-text">系统初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">1.2.1.</span> <span class="toc-text">x86架构概述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86"><span class="toc-number">1.3.</span> <span class="toc-text">进程管理</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Linux操作系统笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Dominic</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-07-11T01:09:53.000Z" itemprop="datePublished">2021-07-11</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="Linux操作系统学习笔记"><a href="#Linux操作系统学习笔记" class="headerlink" title="Linux操作系统学习笔记"></a>Linux操作系统学习笔记</h1><h2 id="Linux操作系统综述"><a href="#Linux操作系统综述" class="headerlink" title="Linux操作系统综述"></a>Linux操作系统综述</h2><h3 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h3><h4 id="创建进程fork"><a href="#创建进程fork" class="headerlink" title="创建进程fork"></a>创建进程<code>fork</code></h4><p>在 Linux 里，要创建一个新的进程，需要一个老的进程调用 <code>fork</code> 来实现，其中老的进程叫作<code>父进程</code>（Parent Process），新的进程叫作<code>子进程</code>（Child Process）。为啥叫<code>fork</code>（分支），因为Linux 当父进程调用 fork 创建进程的时候，子进程将各个子系统为父进程创建的数据结构也全部拷贝了一份，甚至连程序代码也是拷贝过来的。如果当前进程是父进程，就接着做之前的事，如果是子进程就调用<code>execve</code>来执行另一个程序，这时候子进程就和父进程彻底分离，也就产生了一个分支(fork)。</p>
+<h4 id="waitpid查看子进程运行情况"><a href="#waitpid查看子进程运行情况" class="headerlink" title="waitpid查看子进程运行情况"></a><code>waitpid</code>查看子进程运行情况</h4><p>父进程可以调用<code>waitpid</code>查看子进程是否运行完成，成功与否</p>
+<h4 id="内存管理brk和mmap"><a href="#内存管理brk和mmap" class="headerlink" title="内存管理brk和mmap"></a>内存管理<code>brk</code>和<code>mmap</code></h4><p>每个进程都有自己的内存，互相之间不干扰，叫做<code>进程内存空间</code>，里面存放<code>代码段</code>(code segment)和<code>数据段</code>(data segment)。数据段中局部变量部分只有在函数执行时才起作用，当进入另一个函数时就会被释放，也有动态分配的，保存时间较长，这部分叫做<code>堆</code>（heap）。</p>
+<p>当分配的内存数量比较小的时候，使用 <code>brk</code>，会和原来的堆的数据连在一起，这就像多分配两三个工位，在原来的区域旁边搬两把椅子就行了。当分配的内存数量比较大的时候，使用 <code>mmap</code>，会重新划分一块区域，也就是说，当办公空间需要太多的时候，索性来个一整块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">brk</span><span class="params">(boid *addr)</span>；</span></span><br><span class="line"><span class="function"><span class="comment">//addr:把内存末尾指针设置为addr.返回值：0表示成功，非0表示失败</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sbrk</span><span class="params">(<span class="keyword">intptr_t</span> increment)</span></span>;</span><br><span class="line"><span class="comment">//increment:把内存的末尾指针移动increment个字节。返回值：上次调用sbrk/brk的内存末尾指针。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span>   </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span>   </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">void</span>* p = sbrk(<span class="number">0</span>);  </span><br><span class="line">    <span class="keyword">int</span>* p1 = p;  </span><br><span class="line">    brk(p1+<span class="number">4</span>);<span class="comment">//分配了16个字节的空间   </span></span><br><span class="line">    p1[<span class="number">0</span>] = <span class="number">10</span>;  </span><br><span class="line">    p1[<span class="number">1</span>] = <span class="number">20</span>;  </span><br><span class="line">    p1[<span class="number">2</span>] = <span class="number">30</span>;  </span><br><span class="line">    p1[<span class="number">3</span>] = <span class="number">40</span>;  </span><br><span class="line">    p1[<span class="number">4</span>] = <span class="number">50</span>;  </span><br><span class="line">    <span class="keyword">int</span>* p2 = sbrk(<span class="number">4</span>);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;*p2=%d\n&quot;</span>, *p2);  </span><br><span class="line">    brk(p1+<span class="number">1024</span>);<span class="comment">//分配整个页面的空间   </span></span><br><span class="line">    brk(p1+<span class="number">512</span>);<span class="comment">//释放一半空间   </span></span><br><span class="line">    brk(p1);<span class="comment">//释放所有空间   </span></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="创建、打开、读写、跳转文件"><a href="#创建、打开、读写、跳转文件" class="headerlink" title="创建、打开、读写、跳转文件"></a>创建、打开、读写、跳转文件</h4><p><code>open</code>打开文件<br><code>close</code>关闭文件<br><code>creat</code>创建文件<br><code>lseek</code>跳转到文件某位置<br><code>read</code>读取文件<br><code>write</code>写入文件</p>
+<h4 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h4><p>当进程之间交互的信息较小时，使用<code>消息队列</code>(message queue)<br><code>msgget</code>创建新的消息队列<br><code>msgsnd</code>将消息发送到消息队列<br><code>msgrcv</code>从消息队列中取消息<br>当进程之间交互的信息较大时，使用<code>共享内存</code><br><code>shmget</code>创建一个共享内存块<br><code>shmat</code>将共享内存映射到自己的内存空间<br>进程之间通信共享数据就会存在竞争的问题，如果同时修改同一块数据就会出问题，这就有了<code>信号量</code>机制(semaphore)<br>对于只允许一个进程访问的需求，我们可以将信号量设为 <code>1</code>。当一个进程要访问的时候，先调用<code>sem_wait</code>。如果这时候没有进程访问，则占用这个信号量，他就可以开始访问了。如果这个时候另一个进程要访问，也会调用 <code>sem_wait</code>。由于前一个进程已经在访问了，所以后面这个进程就必须等待上一个进程访问完之后才能访问。当上一个进程访问完毕后，会调用<code>sem_post</code>将信号量释放，于是下一个进程等待结束，可以访问这个资源了。</p>
+<h4 id="不同机器之间的通信-sorket"><a href="#不同机器之间的通信-sorket" class="headerlink" title="不同机器之间的通信 sorket"></a>不同机器之间的通信 <code>sorket</code></h4><p>不同机器的通过网络相互通信，要遵循相同的网络协议，也即<code>TCP/IP</code> 网络协议栈。网络服务是通过套接字 <code>Socket</code> 来提供服务的。<code>Socket</code> 这个名字很有意思，可以作“插口”或者“插槽”讲。虽然我们是写软件程序，但是你可以想象成弄一根网线，一头插在客户端，一头插在服务端，然后进行通信。因此，在通信之前，双方都要建立一个 <code>Socket</code>。</p>
+<h4 id="用户友好的系统调用库Glibc"><a href="#用户友好的系统调用库Glibc" class="headerlink" title="用户友好的系统调用库Glibc"></a>用户友好的系统调用库Glibc</h4><p><code>Glibc 是</code> Linux 下使用的开源的标准 C 库，它是 GNU 发布的 libc 库。<code>Glibc</code> 为程序员提供丰富的 API，除了例如字符串处理、数学运算等用户态服务之外，最重要的是封装了操作系统提供的系统服务，即系统调用的封装。<br>每个特定的系统调用对应了至少一个 <code>Glibc</code> 封装的库函数，比如说，系统提供的打开文件系统调用 <code>sys_open</code> 对应的是 <code>Glibc </code>中的 <code>open</code> 函数。<br>有时候，<code>Glibc</code> 一个单独的 API 可能调用多个系统调用，比如说，Glibc 提供的 printf 函数就会调用如 <code>sys_open</code>、<code>sys_mmap</code>、<code>sys_write</code>、<code>sys_close</code> 等等系统调用。<br>也有时候，多个 API 也可能只对应同一个系统调用，如 Glibc 下实现的 <code>malloc</code>、<code>calloc</code>、<code>free</code> 等函数用来分配和释放内存，都利用了内核的 <code>sys_brk</code> 的系统调用。</p>
+<h2 id="系统初始化"><a href="#系统初始化" class="headerlink" title="系统初始化"></a>系统初始化</h2><h3 id="x86架构概述"><a href="#x86架构概述" class="headerlink" title="x86架构概述"></a>x86架构概述</h3><p><strong>CPU（Central Processing Unit）</strong>：中央处理器，计算机所有设备都围绕它展开工作。</p>
+<ul>
+<li>运算单元：只管算，例如做加法、做位移等等。但是，它不知道应该算哪些数据，运算结果应该放在哪里。</li>
+<li>数据单元：运算单元计算的数据如果每次都要经过总线，到内存里面现拿，这样就太慢了，所以就有了数据单元。数据单元包括 CPU 内部的缓存和寄存器组，空间很小，但是速度飞快，可以暂时存放数据和运算结果。</li>
+<li>控制单元：有了放数据的地方，也有了算的地方，还需要有个指挥到底做什么运算的地方，这就是控制单元。控制单元是一个统一的指挥中心，它可以获得下一条指令，然后执行这条指令。这个指令会指导运算单元取出数据单元中的某几个数据，计算出个结果，然后放在数据单元的某个地方。</li>
+</ul>
+<p><strong>内存（Memory）</strong>：CPU本身不能保存大量数据，许多复杂的计算需要将中间结果保存下来就必须用到内存。</p>
+<p><strong>总线（Bus）</strong>：CPU 和其他设备连接，就靠总线，其实就是主板上密密麻麻的集成电路，这些东西组成了 CPU 和其他设备的高速通道。</p>
+<ul>
+<li>地址总线：传输地址数据（我想拿内存中哪个位置的数据）</li>
+<li>数据总线：传输真正的数据</li>
+</ul>
+<p>总线就像CPU和内存之间的高速公路，总线多少位就类似高速公路多少个车道，但两种总线的位数意义不同。<br>地址总线的位数决定了访问地址范围有多广，数据总线位数决定了一次能拿多少数据进来。那么 CPU中总线的位数有没有标准呢？如果没有标准，那操作系统作为软件就很难办了，因为软件层没办法实现通用的运算逻辑。早期每家公司的CPU架构都不同，后来历史将x86平台推到了<strong>开放，统一，兼容</strong>的位置。</p>
+<h2 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h2>
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+         
+          <li><a href="/projects_url">项目</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="toc-number">1.</span> <span class="toc-text">Linux操作系统学习笔记</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BB%BC%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">Linux操作系统综述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">1.1.1.</span> <span class="toc-text">系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%BF%9B%E7%A8%8Bfork"><span class="toc-number">1.1.1.1.</span> <span class="toc-text">创建进程fork</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#waitpid%E6%9F%A5%E7%9C%8B%E5%AD%90%E8%BF%9B%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%83%85%E5%86%B5"><span class="toc-number">1.1.1.2.</span> <span class="toc-text">waitpid查看子进程运行情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86brk%E5%92%8Cmmap"><span class="toc-number">1.1.1.3.</span> <span class="toc-text">内存管理brk和mmap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E3%80%81%E6%89%93%E5%BC%80%E3%80%81%E8%AF%BB%E5%86%99%E3%80%81%E8%B7%B3%E8%BD%AC%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.1.4.</span> <span class="toc-text">创建、打开、读写、跳转文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1"><span class="toc-number">1.1.1.5.</span> <span class="toc-text">进程间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E6%9C%BA%E5%99%A8%E4%B9%8B%E9%97%B4%E7%9A%84%E9%80%9A%E4%BF%A1-sorket"><span class="toc-number">1.1.1.6.</span> <span class="toc-text">不同机器之间的通信 sorket</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%8F%8B%E5%A5%BD%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%BA%93Glibc"><span class="toc-number">1.1.1.7.</span> <span class="toc-text">用户友好的系统调用库Glibc</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.2.</span> <span class="toc-text">系统初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">1.2.1.</span> <span class="toc-text">x86架构概述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86"><span class="toc-number">1.3.</span> <span class="toc-text">进程管理</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&text=Linux操作系统笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&is_video=false&description=Linux操作系统笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Linux操作系统笔记&body=Check out this article: http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&title=Linux操作系统笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&name=Linux操作系统笔记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/07/11/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%AC%94%E8%AE%B0/&t=Linux操作系统笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Dominic
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">首页</a></li>
+         
+          <li><a href="/about/">关于</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+         
+          <li><a href="/projects_url">项目</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
