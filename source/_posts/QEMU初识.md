@@ -1,7 +1,7 @@
 ---
 title: QEMU初识
 date: 2021-07-23 11:54:49
-tags:
+tags: linux,qemu
 ---
 
 
