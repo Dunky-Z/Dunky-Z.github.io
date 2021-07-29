@@ -36,3 +36,4 @@ git clone https://gitee.com/mirrors/riscv-newlib.git
 git clone --depth=1 https://hub.fastgit.org/riscv/riscv-binutils-gdb.git
 ```
 
+make 错误127

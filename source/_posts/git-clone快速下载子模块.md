@@ -9,11 +9,11 @@ tags: [git]
 好在可以通过一些小技巧，下载国内镜像，进行加速。但是下载项目时，只是主体是国内的镜像，子模块仍然下载很慢。首先解决获取国内镜像的问题。有三个方法：
 - **在码云Gitee上搜索下载**
 
-    在码云上搜索同样的项目，然后用码云的地址下载
-    
+    在码云上搜索同样的项目，然后用码云git 的地址下载。
+
 - **加上`.cnpmjs.org`后缀**
 
-    在地址后面加上后缀，如`git clone https://github.com.cnpmjs.org/riscv/riscv-binutils-gdb.git`
+    在地址后面加上后缀，如`git clone https://github.com.cnpmjs.org/riscv/riscv-binutils-gdb.git`。
 
 - **使用油猴脚本获取镜像地址**
 
@@ -21,8 +21,14 @@ tags: [git]
 
     ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728155417.png)
 
-  对于含有子模块的项目，一般我们在克隆这种项目的时候都会采取git clone --recursive https://github.com/susername/xxx.git的方式去克隆，这种方式很慢，即使加上.cnpmjs.org后缀，因为就算加上.cnpmjs.org后缀，也只是使得项目的主体克隆的很快，当克隆到该项目中的子模块时，由于子模块的url未加上.cnpmjs.org，导致了子模块克隆时依然是龟速。
+再来解决子模块下载速度慢的问题，下载项目时，先不加`--recursive`参数，只下载项目的本题。
 
-  可以先不要在git clone的时候加上--recursive，等主体部分下载完之后，该文件夹中有个隐藏文件称为：.gitmodules，把子项目中的url地址同样加上.cnpmjs.org后缀，然后利用git submodule sync更新子项目对应的url，最后再git submodule update --init --recursive，即可正常网速克隆完所有子项目。
+下载完后找到`.gitmodules`文件，这是一个隐藏文件，需要显示隐藏文件，Linux下使用快捷键`Ctrl+H`。用`vim`打开后可以得到：
 
- 在git clone的时候，例如git clone https://github.com/username/xxx.git，改为git clone https://github.com.cnpmjs.org/username/xxx.git，也即加上后缀.cnpmjs.org，从国内镜像源里直接下载，速度瞬间提升。（实测有效）
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728164406.png)
+
+这个文件里写入了子模块的下载信息，`url`就是下载地址。我们把所有子模块中的url地址同样加上`.cnpmjs.org`后缀。或者使用上述三种方式得到的镜像地址。
+
+然后利用`git submodule sync`更新子项目对应的`url`
+
+最后再`git submodule update --init --recursive`，即可快速下载所有子项目。

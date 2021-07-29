@@ -173,6 +173,19 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 
 
 ### 内核初始化
+
+{% pullquote mindmap mindmap-md %}
+- start_kernel()
+  - INIT_TASK(init_task)
+  - trap_init()
+  - mm_init()
+  - sched_init()
+  - rest_init()
+    - kernel_thread(kernel_init, NULL,CLONE_FS)
+    - kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES)
+
+{% endpullquote %}
+
 内核的启动从入口函数`start_kernel()` 开始。在 `init/main.c` 文件中，`start_kernel` 相当于内核的 `main` 函数。打开这个函数，我们会发现，里面是各种各样初始化函数 `XXXX_init`。
 
 在操作系统里面，先要有个**创始进程**，有一行指令 `set_task_stack_end_magic(&init_task)`。这里面有一个参数 `init_task`，它的定义是 `struct task_struct init_task = INIT_TASK(init_task)`。它是系统创建的第一个进程，我们称为`0 `号进程。这是唯一一个没有通过` fork` 或者` kernel_thread` 产生的进程，是进程列表的第一个。
@@ -236,6 +249,62 @@ int search_binary_handler(struct linux_binprm *bprm)
   ......
 }
 ```
+
+也就是说，我要运行一个程序，需要加载这个二进制文件，这就是我们常说的项目执行计划书。它是有一定格式的。Linux 下一个常用的格式是ELF（Executable and Linkable Format，可执行与可链接格式）。于是我们就有了下面这个定义：
+```c
+static struct linux_binfmt elf_format = {
+.module	= THIS_MODULE,
+.load_binary	= load_elf_binary,
+.load_shlib	= load_elf_library,
+.core_dump	= elf_core_dump,
+.min_coredump	= ELF_EXEC_PAGESIZE,
+};
+```
+这其实就是先调用 `load_elf_binary`，最后调用 `start_thread`。
+
+```c
+void
+start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
+{
+set_user_gs(regs, 0);
+regs->fs	= 0;
+regs->ds	= __USER_DS;
+regs->es	= __USER_DS;
+regs->ss	= __USER_DS;
+regs->cs	= __USER_CS;
+regs->ip	= new_ip;
+regs->sp	= new_sp;
+regs->flags	= X86_EFLAGS_IF;
+force_iret();
+}
+EXPORT_SYMBOL_GPL(start_thread);
+```
+`struct pt_regs`，看名字里的 `register`，就是寄存器啊！这个结构就是在系统调用的时候，内核中保存用户态运行上下文的，里面将用户态的代码段 `CS `设置为 `__USER_CS`，将用户态的数据段 `DS` 设置为 `__USER_DS`，以及`指令指针寄存器 IP`、`栈指针寄存器 SP`。这里相当于补上了原来系统调用里，保存寄存器的一个步骤。
+
+最后的 `iret` 是干什么的呢？它是用于从系统调用中返回。这个时候会恢复寄存器。从哪里恢复呢？按说是从进入系统调用的时候，保存的寄存器里面拿出。好在上面的函数补上了寄存器。`CS` 和指令指针寄存器 `IP` 恢复了，指向用户态下一个要执行的语句。`DS` 和函数栈指针 `SP` 也被恢复了，指向用户态函数栈的栈顶。所以，下一条指令，就从用户态开始运行了。
+
+init 终于从内核到用户态了。一开始到用户态的是 ramdisk 的 init，后来会启动真正根文件系统上的 init，成为所有用户态进程的祖先。
+
+为什么会有 ramdisk 这个东西呢？还记得上一节咱们内核启动的时候，配置过这个参数：
+```
+initrd16 /boot/initramfs-3.10.0-862.el7.x86_64.img
+```
+就是这个东西，这是一个基于内存的文件系统。为啥会有这个呢？
+
+是因为刚才那个 init 程序是在文件系统上的，文件系统一定是在一个存储设备上的，例如硬盘。Linux 访问存储设备，要有驱动才能访问。如果存储系统数目很有限，那驱动可以直接放到内核里面，反正前面我们加载过内核到内存里了，现在可以直接对存储系统进行访问。
+
+但是存储系统越来越多了，如果所有市面上的存储系统的驱动都默认放进内核，内核就太大了。这该怎么办呢？
+
+我们只好先弄一个基于内存的文件系统。内存访问是不需要驱动的，这个就是 `ramdisk`。这个时候，`ramdisk` 是根文件系统。
+
+然后，我们开始运行 `ramdisk` 上的 `/init`。等它运行完了就已经在用户态了。`/init` 这个程序会先根据存储系统的类型加载驱动，有了驱动就可以设置真正的根文件系统了。有了真正的根文件系统，`ramdisk `上的 `/init` 会启动文件系统上的 `init`。
+
+接下来就是各种系统的初始化。启动系统的服务，启动控制台，用户就可以登录进来了。
+
+至此，用户态进程有了一个祖宗，那内核态的进程呢？这就是`rest_init`接下来要做的是，**创建2号线程**。
+
+`kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES) `又一次使用 `kernel_thread` 函数创建进程。这里的函数 `kthreadd`，负责所有内核态的线程的调度和管理，是内核态所有线程运行的祖先。
+
 
 ### 系统调用
 
