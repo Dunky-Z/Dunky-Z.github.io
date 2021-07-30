@@ -35,5 +35,31 @@ git clone https://gitee.com/mirrors/riscv-newlib.git
 # riscv-gdb
 git clone --depth=1 https://hub.fastgit.org/riscv/riscv-binutils-gdb.git
 ```
+### 编译riscv-gnu-toolchain
+提前安装如下软件：
+```
+$ sudo apt-get install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
+```
+不听老人言，吃亏在眼前呀，本以为这是可选项，很多库都安装了，就没有操作这一步，结果就是编译半天结果还错了。如果报`make 错误 127`，那就老老实实把前置的这些库都装上。
 
-make 错误127
+
+建立`riscv-gnu-toolchain`安装目录`/opt/riscv64 `。
+```
+$ ./configure --prefix=/opt/riscv64 
+$ sudo make linux -j8
+```
+### 导出安装路径
+```
+export PATH="$PATH:/opt/riscv64/bin"
+```
+出现一下信息表示安装成功。
+```
+Using built-in specs.
+COLLECT_GCC=riscv64-unknown-linux-gnu-gcc
+COLLECT_LTO_WRAPPER=/opt/riscv64/libexec/gcc/riscv64-unknown-linux-gnu/10.2.0/lto-wrapper
+Target: riscv64-unknown-linux-gnu
+Configured with: /home/dominic/riscv64-linux/riscv-gnu-toolchain/riscv-gcc/configure --target=riscv64-unknown-linux-gnu --prefix=/opt/riscv64 --with-sysroot=/opt/riscv64/sysroot --with-system-zlib --enable-shared --enable-tls --enable-languages=c,c++,fortran --disable-libmudflap --disable-libssp --disable-libquadmath --disable-libsanitizer --disable-nls --disable-bootstrap --src=.././riscv-gcc --disable-multilib --with-abi=lp64d --with-arch=rv64imafdc --with-tune=rocket 'CFLAGS_FOR_TARGET=-O2   -mcmodel=medlow' 'CXXFLAGS_FOR_TARGET=-O2   -mcmodel=medlow'
+Thread model: posix
+Supported LTO compression algorithms: zlib
+gcc version 10.2.0 (GCC) 
+```

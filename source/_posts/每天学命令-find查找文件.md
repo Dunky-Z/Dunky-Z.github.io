@@ -45,3 +45,22 @@ find  / -size -30M              # 查找系统中大小小于30M的文件
 ```
 
 ## 按时间来查找文件
+Linux 会存储下面的时间：
+- Access time 上一次文件读或者写的时间
+- Modifica time 上一次文件被修改的时间
+- Change time 上一次文件 `inode meta` 信息被修改的时间
+
+在按照时间查找时，可以使用 `-atime`， `-mtime` 或者 `-ctime `，和之前 `size `参数一样可以使用 `+` 或者 `- `时间范围，下图表示`find`的时间轴。`+`表示超过多少天，`-`表示多少天以内。
+
+此外，也可以换成`-amin`， `-mmin` 或者 `-cmin `参数，单位是分钟。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210729151915.png)
+```
+find / -mtime 1          # 寻找修改时间超过一天的文件
+find / -atime -1         # 寻找在一天时间内被访问的文件
+find / -ctime +3         # 寻找 meta 信息被修改的时间超过 3 天的文件
+```
+## Reference
+1. http://c.biancheng.net/view/779.html
+
+2. https://einverne.github.io/post/2018/02/find-command.html#%E6%89%B9%E9%87%8F%E5%88%A0%E9%99%A4%E6%97%B6%E9%97%B4%E8%B6%85%E8%BF%87-1-%E5%A4%A9%E7%9A%84%E6%96%87%E4%BB%B6
