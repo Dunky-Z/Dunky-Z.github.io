@@ -82,10 +82,11 @@ int main(int argc, char *argv[ ])
 ```
 qmake -project
 ```
-添加以下内容
+用`vim`打开`HelloWorldQt.pro`文件，添加以下内容
 ```
 QT += gui widgets
 ```
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210730095602.png)
 运行`qmake`，使项目platform-specific，会得到一个`Makefile`文件
 ```
 qmake HelloWorldQt.pro 

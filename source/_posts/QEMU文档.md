@@ -164,10 +164,10 @@ qemu-system-x86_64  -smp 1,sockets=1,cores=2,threads=2
 - 调用实例
     ```
     # 尝试先从网络启动，然后从硬盘启动
-    qemu-system-x86_64 
-    -boot order=nc # 先从光驱启动，重启后切换回默认顺序
-    qemu-system-x86_64 
-    -boot once=d # boot with 5 秒钟的启动画面。
+    qemu-system-x86_64 -boot order=nc
+    # 先从光驱启动，重启后切换回默认顺序
+    qemu-system-x86_64 -boot once=d
+    # 5 秒钟的启动画面。
     qemu-system-x86_64 -boot menu=on,splash=/root/boot.bmp,splash-time=5000
     ```
 
