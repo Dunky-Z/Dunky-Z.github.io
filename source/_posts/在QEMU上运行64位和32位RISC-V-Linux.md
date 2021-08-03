@@ -66,3 +66,4 @@ gcc version 10.2.0 (GCC)
 
 ## 制作内核
 ### 下载Linux内核
+makefile
