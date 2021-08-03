@@ -123,3 +123,12 @@ chown -R dominic riscv64
 
 ## linux显示隐藏的文件
 Ctrl+H 可以显示/隐藏 文件
+
+
+## fatal: cannot make .repo directory：Permission denied
+利用`repo`从远程服务器上取代码时候，出现错误  `fatal: cannot make .repo directory：Permission denied`。
+
+加了sudo 之后，还是不行，提示 `Sorry, user "user" is not allowed to execute '/usr/bin/xxxxxxxxxxxx' as root on xxxxxxxxx`
+
+原因：我在`repo init`时，用的目录是`opt`下的目录，这个需要`root`权限才能访问，所以不能在这初始化仓库。
+解决：在`/home/用户名/`目录下建立目录就不需要`root`权限了。

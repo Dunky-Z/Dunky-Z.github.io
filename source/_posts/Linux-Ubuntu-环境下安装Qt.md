@@ -3,6 +3,27 @@ title: Linux(Ubuntu)环境下安装Qt
 date: 2021-07-27 16:34:50
 tags: [qt,linux]
 ---
+
+真蠢，之前费那么大劲，只要一句命令就完事了
+## 下载安装
+```
+sudo apt install qtcreator
+```
+但是在用命令行构建project时可能会报错
+```
+qmake -project
+could not find a Qt installation of ''
+```
+这时候需要
+```
+sudo apt-get install qt5-default 
+```
+好了可以愉快玩耍了。
+
+
+
+---
+瞎折腾
 ## 下载Qt
 从Qt5.15.0起，对于开源用户，Qt官方不再提供独立安装文件，且不再有bug修复版本（比如Qt5.15.1），如果从官网下载，需要自己编译。虽然想试试编译，但是虚拟机刚开始开的空间太小了，还是另寻他法吧。以后有机会再来编译试试新功能。若读者有兴趣可以从[官网](https://download.qt.io/archive/qt/)下载源码并编译。或者参考[官方的编译教程](https://wiki.qt.io/Building_Qt_5_from_Git#Getting_the_source_code)，从github上下载。
 
