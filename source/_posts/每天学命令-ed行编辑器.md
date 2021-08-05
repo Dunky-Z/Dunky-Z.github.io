@@ -1,7 +1,7 @@
 ---
 title: 每天学命令-ed行编辑器
 date: 2021-08-02 09:57:10
-tags: [每天学命令,linux]
+tags: [每天学命令,Linux]
 ---
 
 `ed`命令是文本编辑器，用于文本编辑。
@@ -61,7 +61,7 @@ w test.txt      # 写入并保存文件
 q               # 退出编辑器
 
 dominic@hanhan:~$ cat test.txt      # 查看内容
-This is firt line!
+This is first line!s
 This is second line!
 This is third line!
 This is fourth line!

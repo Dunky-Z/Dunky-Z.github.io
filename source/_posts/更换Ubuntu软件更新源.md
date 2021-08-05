@@ -1,7 +1,7 @@
 ---
 title: 更换Ubuntu软件更新源
 date: 2021-07-30 11:14:41
-tags: [linux]
+tags: [Linux]
 ---
 
 Ubuntu默认是国外的源，软件下载和更新都比较慢。两种方法将下载源换成国内的源。

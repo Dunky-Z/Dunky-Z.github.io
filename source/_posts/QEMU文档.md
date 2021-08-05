@@ -1,7 +1,7 @@
 ---
 title: QEMU文档
 date: 2021-07-27 11:12:01
-tags: [linux, qemu]
+tags: [Linux,QEMU]
 ---
 # 调用文档
 `qemu-system-x86_64 [options] [disk_image]

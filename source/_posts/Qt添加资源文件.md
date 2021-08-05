@@ -5,7 +5,7 @@ tags: [Qt]
 ---
 >本文是学习【[Qt学习之路](https://www.devbean.net/2012/08/qt-study-road-2-catelog/)】的学习笔记，源码非原创。[Github](https://github.com/Dunky-Z/learning-qt/tree/main/MainWindow)同步本文更改的代码。
 
-在
+在建立Qt学习代码仓时，推送到远程的代码比较乱，所以用`gitignore`文件屏蔽了一些。相关方法在[这里](https://dunky-z.github.io/2021/08/04/Git%E4%B8%AD%E6%B7%BB%E5%8A%A0gitignore%E5%B9%B6%E6%9B%B4%E6%96%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/)。
 ## 资源文件
 Qt 资源系统是一个跨平台的资源机制，用于将程序运行时所需要的资源以二进制的形式存储于可执行文件内部。如果你的程序需要加载特定的资源（图标、文本翻译等），那么，将其放置在资源文件中，就再也**不需要担心这些文件的丢失**。也就是说，如果你将资源以资源文件形式存储，它是会**编译到可执行文件内部**。
 

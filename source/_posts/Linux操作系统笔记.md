@@ -1,7 +1,7 @@
 ---
 title: Linux操作系统笔记
 date: 2021-07-11 09:09:53
-tags:
+tags: [Linux,OS]
 ---
 
 # Linux操作系统学习笔记

@@ -1,7 +1,7 @@
 ---
 title: TCG动态二进制翻译
 date: 2021-07-29 17:59:24
-tags: [qemu,TCG,linux]
+tags: [QEMU,TCG,Linux]
 ---
 
 从之前的学习可以知道，QEMU可以在不同架构的host上模拟不同架构的机器。而能够完成这项任务的最主要技术就是二进制动态翻译技术。

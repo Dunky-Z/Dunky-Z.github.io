@@ -1,7 +1,7 @@
 ---
 title: 在QEMU上运行64位和32位RISC-V-Linux
 date: 2021-07-28 13:47:56
-tags: [linux,qemu,RISC-V]
+tags: [Linux,QEMU,RISC-V]
 ---
 ## 制作交叉工具链 riscv-gnu-toolchain
 ### 下载源码

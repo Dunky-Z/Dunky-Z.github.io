@@ -1,7 +1,7 @@
 ---
 title: Linux(Ubuntu)环境下安装Qt
 date: 2021-07-27 16:34:50
-tags: [qt,linux]
+tags: [Qt,Linux]
 ---
 
 真蠢，之前费那么大劲，只要一句命令就完事了

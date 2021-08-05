@@ -1,7 +1,7 @@
 ---
 title: QEMU学习记录
 date: 2021-07-20 16:51:34
-tags:
+tags: [Linux,QEMU]
 ---
 # QEMU学习记录
 ## 什么是KVM？

@@ -1,7 +1,7 @@
 ---
 title: Linux常见问题
 date: 2021-07-27 11:04:51
-tags:
+tags: [Linux]
 ---
 
 ## 什么是shell，bash

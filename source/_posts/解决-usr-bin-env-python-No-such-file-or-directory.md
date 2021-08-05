@@ -1,7 +1,7 @@
 ---
 title: '解决/usr/bin/env:python:No such file or directory'
 date: 2021-08-03 15:58:44
-tags: [linux]
+tags: [Linux]
 ---
 
 在执行的程序源码开头有这么一句`!#/usr/bin/env python`，`!#`这玩意叫`shebang`也叫`hashbang`。他用来指定脚本的解释器，也就是说这个程序指定`python`解释器。

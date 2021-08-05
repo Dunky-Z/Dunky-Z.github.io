@@ -1,7 +1,7 @@
 ---
 title: Vim编辑器笔记
 date: 2021-07-28 16:51:01
-tags: [vim,linux]
+tags: [vim,Linux]
 ---
 ## `Vi`工作模式
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210710151133.png)

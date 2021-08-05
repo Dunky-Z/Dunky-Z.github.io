@@ -1,7 +1,7 @@
 ---
 title: 【译】Unix是什么，为什么重要？
 date: 2021-07-20 15:44:05
-tags: [linux]
+tags: [Linux]
 ---
 
 # Unix是什么，为什么重要？
