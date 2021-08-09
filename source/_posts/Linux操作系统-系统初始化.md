@@ -1,80 +1,8 @@
 ---
-title: Linux操作系统笔记
-date: 2021-07-11 09:09:53
-tags: [Linux,OS]
-sticky: 100
+title: Linux操作系统-系统初始化
+date: 2021-08-09 15:47:12
+tags: [Linux,操作系统]
 ---
-
-# Linux操作系统学习笔记
-## Linux操作系统综述
-### 系统调用
-#### 创建进程`fork`
-在 Linux 里，要创建一个新的进程，需要一个老的进程调用 `fork` 来实现，其中老的进程叫作`父进程`（Parent Process），新的进程叫作`子进程`（Child Process）。为啥叫`fork`（分支），因为Linux 当父进程调用 fork 创建进程的时候，子进程将各个子系统为父进程创建的数据结构也全部拷贝了一份，甚至连程序代码也是拷贝过来的。如果当前进程是父进程，就接着做之前的事，如果是子进程就调用`execve`来执行另一个程序，这时候子进程就和父进程彻底分离，也就产生了一个分支(fork)。
-
-#### `waitpid`查看子进程运行情况
-父进程可以调用`waitpid`查看子进程是否运行完成，成功与否
-
-
-#### 内存管理`brk`和`mmap`
-每个进程都有自己的内存，互相之间不干扰，叫做`进程内存空间`，里面存放`代码段`(code segment)和`数据段`(data segment)。数据段中局部变量部分只有在函数执行时才起作用，当进入另一个函数时就会被释放，也有动态分配的，保存时间较长，这部分叫做`堆`（heap）。
-
-当分配的内存数量比较小的时候，使用 `brk`，会和原来的堆的数据连在一起，这就像多分配两三个工位，在原来的区域旁边搬两把椅子就行了。当分配的内存数量比较大的时候，使用 `mmap`，会重新划分一块区域，也就是说，当办公空间需要太多的时候，索性来个一整块。
-
-```c
-#include <unistd.h>
-int brk(void *addr); 
-//addr:把内存末尾指针设置为addr.返回值：0表示成功，非0表示失败
-void *sbrk(intptr_t increment);
-//increment:把内存的末尾指针移动increment个字节。返回值：上次调用sbrk/brk的内存末尾指针。
-#include <stdio.h>   
-#include <unistd.h>   
-int main()  
-{  
-    void* p = sbrk(0);  
-    int* p1 = p;  
-    brk(p1+4);//分配了16个字节的空间   
-    p1[0] = 10;  
-    p1[1] = 20;  
-    p1[2] = 30;  
-    p1[3] = 40;  
-    p1[4] = 50;  
-    int* p2 = sbrk(4);  
-    printf("*p2=%d\n", *p2);  
-    brk(p1+1024);//分配整个页面的空间   
-    brk(p1+512);//释放一半空间   
-    brk(p1);//释放所有空间   
-}  
-```
-
-#### 创建、打开、读写、跳转文件
-`open`打开文件
-`close`关闭文件
-`creat`创建文件
-`lseek`跳转到文件某位置
-`read`读取文件
-`write`写入文件
-
-#### 进程间通信
-当进程之间交互的信息较小时，使用`消息队列`(message queue)
-`msgget`创建新的消息队列
-`msgsnd`将消息发送到消息队列
-`msgrcv`从消息队列中取消息
-当进程之间交互的信息较大时，使用`共享内存`
-`shmget`创建一个共享内存块
-`shmat`将共享内存映射到自己的内存空间
-进程之间通信共享数据就会存在竞争的问题，如果同时修改同一块数据就会出问题，这就有了`信号量`机制(semaphore)
-对于只允许一个进程访问的需求，我们可以将信号量设为 `1`。当一个进程要访问的时候，先调用`sem_wait`。如果这时候没有进程访问，则占用这个信号量，他就可以开始访问了。如果这个时候另一个进程要访问，也会调用 `sem_wait`。由于前一个进程已经在访问了，所以后面这个进程就必须等待上一个进程访问完之后才能访问。当上一个进程访问完毕后，会调用`sem_post`将信号量释放，于是下一个进程等待结束，可以访问这个资源了。
-
-#### 不同机器之间的通信 `socket`
-不同机器的通过网络相互通信，要遵循相同的网络协议，也即`TCP/IP` 网络协议栈。网络服务是通过套接字 `Socket` 来提供服务的。`Socket` 这个名字很有意思，可以作“插口”或者“插槽”讲。虽然我们是写软件程序，但是你可以想象成弄一根网线，一头插在客户端，一头插在服务端，然后进行通信。因此，在通信之前，双方都要建立一个 `Socket`。
-
-#### 用户友好的系统调用库`Glibc`
-`Glibc 是` Linux 下使用的开源的标准 C 库，它是 GNU 发布的 libc 库。`Glibc` 为程序员提供丰富的 API，除了例如字符串处理、数学运算等用户态服务之外，最重要的是封装了操作系统提供的系统服务，即系统调用的封装。
-每个特定的系统调用对应了至少一个 `Glibc` 封装的库函数，比如说，系统提供的打开文件系统调用 `sys_open` 对应的是 `Glibc `中的 `open` 函数。
-有时候，`Glibc` 一个单独的 API 可能调用多个系统调用，比如说，Glibc 提供的 printf 函数就会调用如 `sys_open`、`sys_mmap`、`sys_write`、`sys_close` 等等系统调用。
-也有时候，多个 API 也可能只对应同一个系统调用，如 Glibc 下实现的 `malloc`、`calloc`、`free` 等函数用来分配和释放内存，都利用了内核的 `sys_brk` 的系统调用。
-
-
 ## 系统初始化
 ### x86架构概述
 **CPU（Central Processing Unit）**：中央处理器，计算机所有设备都围绕它展开工作。
@@ -309,41 +237,43 @@ initrd16 /boot/initramfs-3.10.0-862.el7.x86_64.img
 
 ### 系统调用
 
+Linux 提供了`glibc`这个库封装了系统调用，方便用户使用。那么在打开一个文件时，`glibc`是如何调用内核的`open`的呢？
 
-
-
-
-
-
-
-
-
-
-
-## 进程管理
-
-
-## 虚拟化
-### 虚拟机
-
-#### QEMU工作原理
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210721140349.png)
-单纯使用 qemu，采用的是完全虚拟化的模式。qemu 向 Guest OS 模拟 CPU，也模拟其他的硬件，GuestOS 认为自己和硬件直接打交道，其实是同 qemu 模拟出来的硬件打交道，qemu 会将这些指令转译给真正的硬件。由于所有的指令都要从 qemu 里面过一手，因而性能就会比较差。
-
-完全虚拟化是非常慢的，所以要使用硬件辅助虚拟化技术 Intel-VT，AMD-V，所以需要 CPU 硬件开启这个标志位，一般在 BIOS 里面设置。当确认开始了标志位之后，通过 KVM，GuestOS 的 CPU 指令不用经过 Qemu 转译，直接运行，大大提高了速度。所以，KVM 在内核里面需要有一个模块，来设置当前 CPU 是 Guest OS 在用，还是 Host OS 在用。
-
-可以通过如下命令查看内核模块中是否有KVM
+在 `glibc` 的源代码中，有个文件` syscalls.list`，里面列着所有 `glibc` 的函数对应的系统调用，就像下面这个样子：
 ```
-lsmod | grep kvm
+# File name Caller  Syscall name    Args    Strong name Weak names
+open		-	open		Ci:siv	__libc_open __open open
 ```
-KVM 内核模块通过 `/dev/kvm` 暴露接口，用户态程序可以通过 `ioctl`来访问这个接口。Qemu 将 KVM 整合进来，将有关 CPU 指令的部分交由内核模块来做，就是 qemu-kvm (qemu-system-XXX)。
+另外，`glibc` 还有一个脚本 `make-syscall.sh`，可以根据上面的配置文件，对于每一个封装好的系统调用，生成一个文件。这个文件里面定义了一些宏，例如 `#define SYSCALL_NAME open`。
 
-qemu 和 kvm 整合之后，CPU 的性能问题解决了。另外 Qemu 还会模拟其他的硬件，如网络和硬盘。同样，全虚拟化的方式也会影响这些设备的性能。
+`glibc` 还有一个文件 `syscall-template.S`，使用上面这个宏，定义了这个系统调用的调用方式。
 
-于是，qemu 采取半虚拟化的方式，让 Guest OS 加载特殊的驱动来做这件事情。
 
-例如，网络需要加载 `virtio_net`，存储需要加载 `virtio_blk`，Guest 需要安装这些半虚拟化驱动，GuestOS 知道自己是虚拟机，所以数据会直接发送给半虚拟化设备，经过特殊处理（例如排队、缓存、批量处理等性能优化方式），最终发送给真正的硬件。这在一定程度上提高了性能。
+对于任何一个系统调用，会调用` DO_CALL`。这也是一个宏，这个宏 32 位和 64 位的定义是不一样的。
 
-### 计算虚拟化之CPU
+#### 32位系统调用过程
+i386 目录下的` sysdep.h` 文件
+```
+/* Linux takes system call arguments in registers:
+	syscall number	%eax	     call-clobbered
+	arg 1		%ebx	     call-saved
+	arg 2		%ecx	     call-clobbered
+	arg 3		%edx	     call-clobbered
+	arg 4		%esi	     call-saved
+	arg 5		%edi	     call-saved
+	arg 6		%ebp	     call-saved
+......
+*/
+#define DO_CALL(syscall_name, args)                           
+    PUSHARGS_##args                             
+    DOARGS_##args                                
+    movl $SYS_ify (syscall_name), %eax;                          
+    ENTER_KERNEL                                 
+    POPARGS_##args
+```
+这里，我们将请求参数放在寄存器里面，根据系统调用的名称，得到系统调用号，放在寄存器 `eax` 里面，然后执行 `ENTER_KERNEL`。
 
-### 计算虚拟化之内存
+```
+# define ENTER_KERNEL int $0x80
+```
+`ENTER_KERNEL`就是一个软中断，通过它可以陷入(trap)内核。
