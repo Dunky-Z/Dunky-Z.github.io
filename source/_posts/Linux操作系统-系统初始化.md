@@ -277,3 +277,15 @@ i386 目录下的` sysdep.h` 文件
 # define ENTER_KERNEL int $0x80
 ```
 `ENTER_KERNEL`就是一个软中断，通过它可以陷入(trap)内核。
+
+在内核启动的时候，还记得有一个 `trap_init()`，这是一个软中断的陷入门。当接到一个系统调用时，`trap_init()`就会调用`entry_INT80_32`。
+
+通过 `push` 和 `SAVE_ALL` 将当前用户态的寄存器，保存在 `pt_regs` 结构里面，然后调用 `do_syscall_32_irqs_on`。
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210809163844.png)
+
+#### 64 位系统调用过程
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210809170711.png)
+
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210809171554.png)
