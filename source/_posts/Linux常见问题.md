@@ -31,6 +31,11 @@ sudo rm /var/cache/apt/archives/lock
 sudo rm /var/lib/dpkg/lock
 ```
 
+ 有时也会报/var/lib/dpkg/lock-front
+ ```shell
+sudo rm /var/lib/dpkg/lock-front
+```
+
 ## 普通用户下VSCode无法保存写入文件
 sudo创建的目录，存取模式为只读，普通用户只具有可读的权限，必须只有root用户才可以进行修改和删除之类的操作，查看文件夹的属性可以看到。所以我们要把文件夹变更权限为普通用户可以编辑的状态，一条命令可以搞定．
 

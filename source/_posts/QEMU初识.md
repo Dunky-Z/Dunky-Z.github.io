@@ -15,9 +15,9 @@ sudo apt-get install qemu
 ```
 #### 使用源码安装
 ```
-wget https://download.qemu.org/qemu-3.1.0-rc3.tar.xz
-tar xvJf qemu-3.1.0-rc3.tar.xz
-cd qemu-3.1.0-rc3
+wget wget https://download.qemu.org/qemu-6.1.0-rc3.tar.xz
+tar xvJf qemu-6.1.0-rc3.tar.xz
+cd qemu-6.1.0-rc3
 ```
 通过` ./configure --help` 的查看编译时的选项，` --target-list`选项为可选的模拟器，默认全选。
 `--target-list` 中的 `xxx-soft` 和 `xxx-linux-user` 分别指系统模拟器和应用程序模拟器, 生成的二进制文件名字为` qemu-system-xxx `和 `qemu-xxx`
@@ -31,9 +31,9 @@ cd qemu-3.1.0-rc3
 ```
 接着进行编译
 ```
-make -j16
+make -j8
 ```
-直接`make`会很慢，第一次编译时默认安装说有模拟器，编译了三四个小时。加上`-j16`可以进行多线程编译
+直接`make`会很慢，第一次编译时默认安装说有模拟器，编译了三四个小时。加上`-j8`可以进行多线程编译
 
 ## 创建与使用
 ### 创建虚拟镜像
