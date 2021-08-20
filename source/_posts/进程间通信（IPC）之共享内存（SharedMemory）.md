@@ -1,7 +1,7 @@
 ---
 title: 进程间通信（IPC）之共享内存(SharedMemory)
 date: 2021-08-10 17:41:26
-tags: [Linux]
+tags: [Linux,IPC]
 ---
 关于进程间通信的概述可以查看[Linux操作系统-进程间通信](https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/)，[代码同步在这里](https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory)。
 

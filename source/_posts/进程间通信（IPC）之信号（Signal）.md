@@ -1,12 +1,12 @@
 ---
 title: 进程间通信（IPC）之信号（Signal）
 date: 2021-08-11 10:59:22
-tags: [Linux]
+tags: [Linux,IPC]
 ---
 关于进程间通信的概述可以查看[Linux操作系统-进程间通信](https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/)，[代码同步在这里](https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory)。
 
 本文通过实例介绍通过共享内存实现进程间通信。
-## 信号简介
+## 简介
 信号就像实际生产过程中的应急预案，发生了某个异常就会启动特定的应急预案，为了响应各类异常情况，所以就定义了很多个信号，信号的名称是在头文件`signal.h`中定义的，信号都以`SIG`开头，常用的信号并不多，常用的信号如下：
 ```
 SIGALRM     #时钟定时信号, 计算的是实际的时间或时钟时间
