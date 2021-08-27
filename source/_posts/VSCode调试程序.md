@@ -1,10 +1,10 @@
 ---
-title: VSCode调试程序
+title: VSCode调试RISCV程序
 date: 2021-08-23 15:51:51
 tags: [Linux,GDB,RISCV]
 ---
 ## 前提
-本文主要设计VSCode的相关配置，编译及调试工具需要提前安装好。
+本文主要涉及VSCode的相关配置，编译及调试工具需要提前安装好。
 
 - 已经安装好`riscv-toolchain`，包括`riscv64-unknown-elf-gcc`，`riscv64-unknown-elf-gdb`
 - 已经安装好`qemu`，包括`riscv32-softmmu,riscv32-linux-user,riscv64-softmmu,riscv64-linux-user`
@@ -200,3 +200,6 @@ tags: [Linux,GDB,RISCV]
 点击第一个，选择任务，我们可以看到出现的三个任务就是我们在`tasks.jason`中配置的三个任务。选择第一个Build，编译出程序，再重复操作，选择第三个执行QEMU任务。
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824094609.png)
+
+## 预定义变量
+[官网](https://code.visualstudio.com/docs/editor/variables-reference#_predefined-variables)
