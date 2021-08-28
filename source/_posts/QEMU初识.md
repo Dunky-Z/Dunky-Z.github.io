@@ -13,12 +13,22 @@ QEMU是一款开源的模拟器及虚拟机监管器(Virtual Machine Monitor, VM
 ```
 sudo apt-get install qemu
 ```
-#### 使用源码安装
+### 使用源码安装
 ```
 wget wget https://download.qemu.org/qemu-6.1.0-rc3.tar.xz
 tar xvJf qemu-6.1.0-rc3.tar.xz
 cd qemu-6.1.0-rc3
 ```
+### 安装相关库
+```
+apt-get install libglib2.0-dev
+apt-get install ninja-build
+apt install g++
+apt install libpixman-1-dev
+apt install libsdl2-dev -y
+```
+
+### 配置
 通过` ./configure --help` 的查看编译时的选项，` --target-list`选项为可选的模拟器，默认全选。
 `--target-list` 中的 `xxx-soft` 和 `xxx-linux-user` 分别指系统模拟器和应用程序模拟器, 生成的二进制文件名字为` qemu-system-xxx `和 `qemu-xxx`
 本文使用如下配置：

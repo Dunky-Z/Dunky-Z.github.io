@@ -248,3 +248,4 @@ Q我吧和离开状态之间的分割线。
 
 向下偏移`20`个单位的效果，因为我们`mapToGlobal(QPoint(0, 0))`的参数是`(0,0)`为起点。如果我们`mapToGlobal(QPoint(0, 20))`的参数是`(0,20)`，就不用再加上偏移了。
  ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820141521.png)
+

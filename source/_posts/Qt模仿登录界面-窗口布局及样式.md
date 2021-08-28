@@ -3,6 +3,8 @@ title: Qt模仿登录界面-窗口布局及样式
 date: 2021-08-17 11:30:06
 tags: [Qt]
 ---
+## 框架类图
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210827120419.png)
 
 ## 效果预览
 
