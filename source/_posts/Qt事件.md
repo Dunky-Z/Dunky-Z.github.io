@@ -3,7 +3,7 @@ title: Qt事件
 date: 2021-08-09 09:55:07
 tags: [Qt]
 ---
-[参考代码](https://github.com/Dunky-Z/learning-qt/tree/main/Event)
+本篇文章所涉及代码可在[此处查看](https://github.com/Dunky-Z/learning-qt/tree/main/Event)
 
 ## 事件以及与信号的区别
 **事件**（event）是由系统或者 Qt 本身在不同的时刻发出的。当用户按下鼠标、敲下键盘，或者是窗口需要重新绘制的时候，都会发出一个相应的事件。一些事件在对用户操作做出响应时发出，如键盘事件等；另一些事件则是由系统自动发出，如计时器事件。

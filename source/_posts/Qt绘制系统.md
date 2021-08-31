@@ -3,6 +3,8 @@ title: Qt绘制系统
 date: 2021-08-27 14:39:12
 tags: [Qt]
 ---
+本篇文章所涉及代码可在[此处查看](https://github.com/Dunky-Z/learning-qt/tree/main/QtRoad2)。
+
 ## 绘制系统简介
 Qt的绘图系统允许使用相同的 API 在屏幕和其它打印设备上进行绘制。整个绘图系统基于`QPainter`,`QPainterDevice`和`QPaintEngine`三个类。
 
@@ -153,4 +155,112 @@ painter.drawLine(30, 300, 600, 30);
 
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210827193833.png)
+
+## 反走样
+我们在光栅图形显示器上绘制非水平、非垂直的直线或多边形边界时，或多或少会呈现锯齿状外观。这是因为直线和多边形的边界是连续的，而光栅则是由离散的点组成。在光栅显示设备上表现直线、多边形等，必须在离散位置采样。由于采样不充分重建后造成的信息失真，就叫走样；用于减少或消除这种效果的技术，就称为反走样。也就是常说的防锯齿现象。因为性能方面的考虑，Qt默认关闭反走样。
+```cpp
+void paintEvent(QPaintEvent *)
+{
+    ///////////////////对比反走样效果
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::black, 5, Qt::DashDotLine, Qt::RoundCap));
+    painter.setBrush(Qt::yellow);
+    painter.drawEllipse(550, 150, 200, 150);
+
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(QPen(Qt::black, 5, Qt::DashDotLine, Qt::RoundCap));
+    painter.setBrush(Qt::yellow);
+    painter.drawEllipse(300, 150, 200, 150);
+}
+```
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830192414.png)
+
+我们可以明显观察到右边的椭圆轮廓是有锯齿现象的，这两个椭圆除了位置位置不同，唯一的区别就是右边的开启了反锯齿。
+```cpp
+painter.setRenderHint(QPainter::Antialiasing, true);
+```
+
+虽然反走样比不反走样的图像质量高很多，但是，没有反走样的图形绘制还是有很大用处的。首先，就像前面说的一样，在一些对图像质量要求不高的环境下，或者说性能受限的环境下，比如嵌入式和手机环境，一般是不进行反走样的。另外，在一些必须精确操作像素的应用中，也是不能进行反走样的。
+
+## 坐标系统
+在 Qt 的坐标系统中，每个像素占据 `1x1` 的空间。你可以把它想象成一张方格纸，每个小格都是1个像素。方格的焦点定义了坐标，也就是说，像素 `(x, y)` 的中心位置其实是在` (x + 0.5, y + 0.5) `的位置上。这个坐标系统实际上是一个“半像素坐标系”。我们可以通过下面的示意图来理解这种坐标系：
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830195728.png)
+
+我们使用一个像素的画笔进行绘制，可以看到，每一个绘制像素都是以坐标点为中心的矩形。注意，这是坐标的逻辑表示，实际绘制则与此不同。因为在实际设备上，像素是最小单位，我们不能像上面一样，在两个像素之间进行绘制。所以在实际绘制时，Qt 的定义是，绘制点所在像素是逻辑定义点的右下方的像素。
+
+接下来，我们探究Qt绘制图像的坐标情况，
+对于画笔大小为一个像素的情况比较容易理解，当我们绘制矩形左上角 `(1, 2)` 时，实际绘制的像素是在右下方。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830195744.png)
+
+当画笔大小超过1个像素时，就略显复杂了。如果绘制像素是偶数，则实际绘制会包裹住逻辑坐标值；如果是奇数，则是包裹住逻辑坐标值，再加上右下角一个像素的偏移。具体请看下面的图示：
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830200442.png)
+
+从上图可以看出，如果实际绘制是偶数像素，则会将逻辑坐标值夹在相等的两部分像素之间；如果是奇数，则会在右下方多出一个像素。
+
+Qt 的这种处理，带来的一个问题是，我们可能获取不到真实的坐标值。由于历史原因，`QRect::right()`和`QRect::bottom()`的返回值并不是矩形右下角点的真实坐标值：`QRect::right()`返回的是` left() + width() - 1`；`QRect::bottom()`则返回 `top() + height() - 1`，上图的绿色点指出了这两个函数的返回点的坐标。
+
+为避免这个问题，我们建议是使用`QRectF。QRectF`使用浮点值，而不是整数值，来描述坐标。这个类的两个函数`QRectF::right()`和`QRectF::bottom()`是正确的。如果你不得不使用`QRect`，那么可以利用 `x() + width()` 和 `y() + height() `来替代 `right() `和` bottom() `函数。
+
+对于反走样，实际绘制会包裹住逻辑坐标值：
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830201429.png)
+
+前面说过，`QPainter`是一个状态机。那么，有时我想保存下当前的状态：当我临时绘制某些图像时，就可能想这么做。当然，我们有最原始的办法：将可能改变的状态，比如画笔颜色、粗细等，在临时绘制结束之后再全部恢复。对此，`QPainter`提供了内置的函数：`save()`和`restore()`。`save()`就是保存下当前状态；`restore()`则恢复上一次保存的结果。这两个函数必须成对出现：`QPainter`使用栈来保存数据，每一次`save()`，将当前状态压入栈顶，`restore()`则弹出栈顶进行恢复。
+
+在了解了这两个函数之后，我们就可以进行示例代码了：
+
+```cpp
+//绘制一个网格背景
+void CoordinateWidget::paintGrid()
+{
+    size_t win_width = this->geometry().width();
+    size_t win_height = this->geometry().height();
+    QPainter painter(this);
+    for (size_t x = 0; x < win_width; x += 25)
+    {
+        painter.drawLine(QPoint(x, 1), QPoint(x, win_height));
+    }
+    for (size_t y = 0; y < win_height; y += 25)
+    {
+        painter.drawLine(QPoint(1, y), QPoint(win_width, y));
+    }
+}
+void CoordinateWidget::paintEvent(QPaintEvent *)
+{
+    paintGrid();
+    QPainter painter(this);
+    painter.fillRect(10, 10, 50, 100, Qt::red);
+    painter.save();
+    painter.translate(100, 0); // 向右平移 100px
+    painter.fillRect(10, 10, 50, 100, Qt::yellow);
+    painter.restore();
+    painter.save();
+    painter.translate(300, 0); // 向右平移 300px
+    painter.rotate(30);        // 顺时针旋转 30 度
+    painter.fillRect(10, 10, 50, 100, Qt::green);
+    painter.restore();
+    painter.save();
+    painter.translate(400, 0); // 向右平移 400px
+    painter.scale(2, 3);       // 横坐标单位放大 2 倍，纵坐标放大 3 倍
+    painter.fillRect(10, 10, 50, 100, Qt::blue);
+    painter.restore();
+    painter.save();
+    painter.translate(600, 0); // 向右平移 600px
+    painter.shear(0, 1);       // 横向不变，纵向扭曲 1 倍
+    painter.fillRect(10, 10, 50, 100, Qt::cyan);
+    painter.restore();
+}
+```
+
+Qt 提供了四种坐标变换：平移 `translate`，旋转 `rotate`，缩放 `scale` 和扭曲 `shear`。在这段代码中，我们首先在 `(10, 10)` 点绘制一个红色的 `50x100` 矩形。保存当前状态，将坐标系平移到 `(100, 0)`，绘制一个黄色的矩形。注意，`translate()`操作平移的是坐标系，不是矩形。因此，我们还是在` (10, 10)` 点绘制一个 `50x100` 矩形，现在，它跑到了右侧的位置。然后恢复先前状态，也就是把坐标系重新设为默认坐标系（相当于进行`translate(-100, 0)`），再进行下面的操作。之后也是类似的。由于我们只是保存了默认坐标系的状态，因此我们之后的`translate()`横坐标值必须增加，否则就会覆盖掉前面的图形。所有这些操作都是针对坐标系的，因此在绘制时，我们提供的矩形的坐标参数都是不变的。
+
+为了更直观的查看绘制坐标，先在背景画了一个网格。
+
+运行结果如下：
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830201720.png)
 
