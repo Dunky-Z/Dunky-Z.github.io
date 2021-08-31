@@ -4,7 +4,7 @@ date: 2021-08-05 10:11:33
 tags: [Qt]
 ---
 
->[代码](https://github.com/Dunky-Z/learning-qt/tree/main/Dialog)
+本篇文章所涉及代码，可在[此处查看](https://github.com/Dunky-Z/learning-qt/tree/main/Dialog)
 
 Qt 中使用QDialog类实现对话框。就像主窗口一样，我们通常会设计一个类继承QDialog。QDialog（及其子类，以及所有Qt::Dialog类型的类）的对于其 parent 指针都有额外的解释：
 
