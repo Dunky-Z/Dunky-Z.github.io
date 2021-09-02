@@ -9,6 +9,26 @@ tags: [Linux,GDB,CSAPP]
 (gdb) file bomb
 Reading symbols from bomb...
 ```
+## set args带参数调试
+有时候程序不是直接可以运行的，需要加上一些必要的参数。带上参数运行很容易，只要在程序名后加上相应参数即可，但是如何带上参数进行调试呢？这就需要`set args`命令。
+
+比如在`BombLab`实验中，我们不可能一次解决所有`phase`，但是每次重新调试，已经解决的`phase`还要重新输入一次答案，这就很麻烦，好在这个实验的作者也考虑到了，他支持读取文本。我们可以把答案预先写入一个文本文件中，程序读取已经保存的答案即可跳过相应的`phase`。
+
+假设我们把答案写入了`solutions.txt`文件中，首先，我们加载程序，然后通过`set args solutions.txt`设置运行参数。
+```bash
+(gdb) file bomb
+Reading symbols from bomb...
+(gdb) set args solutions.txt 
+(gdb) r
+Starting program: /home/dominic/learning-linux/bomb/bomb solutions.txt 
+Welcome to my fiendish little bomb. You have 6 phases with
+which to blow yourself up. Have a nice day!
+Phase 1 defused. How about the next one?
+That's number 2.  Keep going!
+```
+
+
+
 ## list查看源码
 ### 查看10行源码
 每条命令显示10行代码

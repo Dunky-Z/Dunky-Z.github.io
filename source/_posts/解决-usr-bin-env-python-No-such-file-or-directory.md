@@ -43,3 +43,5 @@ sudo ln -s /usr/bin/python3 /usr/bin/python
 ```
 这样程序再找`python`时就会链接到`python3`，然后用`python3`去当解释器。
 
+## 解决方案四
+可能在`root`目录下使用过`repo`，将其删除
