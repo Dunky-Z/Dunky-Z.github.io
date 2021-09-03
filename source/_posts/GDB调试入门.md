@@ -56,6 +56,18 @@ That's number 2.  Keep going!
 41	     * fantastic GUI on it. */
 42
 ```
+
+### set list num设置默认显示代码行数
+```
+(gdb) set list 20   //默认显示20行代码
+```
+### list linenumber查看指定行代码
+```
+(gdb) l 10  
+(gdb) l main.h : 10 //指定main.c文件中的第十行
+```
+
+### list function查看指定函数的代码
 ## break 打断点
 ### break linenum对指定行打断点
 ```shell
@@ -98,6 +110,10 @@ Num     Type           Disp Enb Address            What
 (gdb) info b
 Deleted breakpoint 4 No breakpoints or watchpoints.
 ```
+
+## 启动程序
+### run启动程序知道遇到断点
+### start启动程序并在第一条代码处停下
 
 ## layout分割窗口，边调试边看源码
 ### layout src
