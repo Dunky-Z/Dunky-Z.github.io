@@ -1,5 +1,5 @@
 ---
-title: '解决/usr/bin/env:python:No such file or directory'
+title: 解决/usr/bin/env:python:No such file or directory
 date: 2021-08-03 15:58:44
 tags: [Linux]
 ---
