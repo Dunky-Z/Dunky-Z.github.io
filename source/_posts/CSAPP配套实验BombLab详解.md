@@ -397,3 +397,44 @@ Dump of assembler code for function func4:
    0x0000000000401007 <+57>:	add    $0x8,%rsp
    0x000000000040100b <+61>:	retq   
 ```
+```C
+func (edi, esi, edx)
+{
+   // edi = 第一个参数, esi = 0, edx = 14
+   eax = edx            // 4:mov %edx, %eax
+   eax = eax -esi       // 5:sub esi, %eax
+   eax = edx -esi
+   ecx = eax            // 6:mov %eax, %ecx
+   ecx = edx - esi
+   eсx = ecx >> 31      // 7:shr  $0x1f, %ecx
+   ecx = (edx - esi) >> 31
+   eax = eax + ecx      // 8:add %ecx, %eax
+   eax = (edx - esi) + ((edx - esi) >> 31)//替换eax和ecx
+   eax = eax > 1;       // 9:sar %eax
+   eax = ((edx - esi) +((edx -esi) >> 31)) / 2
+   ecx = eax + esi * 1   // 10:lea (rax,ersi,1), %ecx
+   ecx = ((edx - esi) +((edx -esi) >> 31)) / 2 + esi * 1
+
+   ecx = ((14 - 0) + ((14 - 0) >> 31)) / 2 + 0
+   ecx = 7
+
+   // 11:cmp %edi, %ecx
+   if (ecx <= edi)
+   {
+      // 12:jle 400ff2
+      eax = 0    // mov $0x0,%eax
+      // 18:cmp %edi, %ecx
+      if(ecx >= edi)
+      {
+         // 19:jge    0x401007 <func4+57>
+         return;
+         //由此可以得知道 edx == edi
+      }
+   }
+}
+```
+
+
+从某种程度上来说，一个好的老师就像一位灵魂的雕刻者，他不仅只是拉着你完成一次又一次的考试，而是能够传道、授业、解惑，以他自身的为人处事方式、一些宝贵的品质提供给你观看世界的不同角度。
+他的身上流淌着一种淡淡的光芒，不夺人眼目，而是温煦如初秋的阳光，但你一旦沐浴过那样的光，便无法忘记，便也有了淡淡的信心，甚至会在日后越来越污秽不清的生活中，想到那道光，它提着你，就像所有给过你触动的人、书、事情......在你即将沉沦时，像缰绳一样牢牢牵住你。
+你们甚至会在漫长的岁月里，彼此扶持，成为精神上的友人。就像木心之于陈丹青，沈从文之于汪曾祺。
