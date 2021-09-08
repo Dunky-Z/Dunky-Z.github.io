@@ -294,15 +294,32 @@ qemu-system-x86_64  -smp 1,sockets=1,cores=2,threads=2
 
 ## USB参数 USB convenience options
 ## 显示参数 Display options
-## 网络参数 Network options
+
 ## 仅限i386架构的参数 i386 target only
+## 网络参数 Network options
+## 字符设备参数 Character device options
 
+## TPM设备 TPM device options
 
+## 指定启动指引 Linux/Multiboot boot specific 
+当使用该调用参数时，你可以使用给定的Linux或者多重引导内核，而不需要安装内核到一个光盘中。这样可以更方便地测试不同内核。
+- `-kernel bzImage`
+  - 功能
+  用bzImage作为内核镜像，也可以使用其他启动格式。
+- `-append cmdline`
+  - 功能
+  用`cmd`命令行，作为内核的命令行
+- `-initrd file`
+  - 功能
+  用文件作为初始化ram
+- `-initrd "file1 arg=foo,file2"`
+  - 功能
+  此语法仅适用于多重引导
+  使用 `file1` 和 `file2` 作为模块并将 `arg=foo` 作为参数传递给第一个模块
 
-
-
-
-
+- `-dtb file`
+  - 功能
+  将文件用作设备树二进制 (dtb) 映像并在启动时将其传递给内核
 
 
 
