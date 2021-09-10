@@ -56,3 +56,23 @@ int main(void)
     return 0;
 }
 ```
+
+或者在将形参`argv`进行强制转换。
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(void)
+{
+    printf("entering main process---\n");
+    int ret;
+    char const *argv[] = {"ls", "-l", NULL};
+    ret = execvp("ls",(char * const *)argv);
+    if(ret == -1)
+        perror("execl error");
+    printf("exiting main process ----\n");
+    return 0;
+}
+```
