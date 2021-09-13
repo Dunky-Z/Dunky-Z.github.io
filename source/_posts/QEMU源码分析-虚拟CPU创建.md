@@ -171,18 +171,15 @@ static void kvm_type_init(void)
 {
     type_register_static(&kvm_accel_type);
 }
- 
 TypeImpl *type_register_static(const TypeInfo *info)
 {
     return type_register(info);
 }
- 
 TypeImpl *type_register(const TypeInfo *info)
 {
     assert(info->parent);
     return type_register_internal(info);
 }
- 
 static TypeImpl *type_register_internal(const TypeInfo *info)
 {
     TypeImpl *ti;
@@ -191,7 +188,6 @@ static TypeImpl *type_register_internal(const TypeInfo *info)
     type_table_add(ti);
     return ti;
 }
- 
 static TypeImpl *type_new(const TypeInfo *info)
 {
     TypeImpl *ti = g_malloc0(sizeof(*ti));
@@ -199,37 +195,28 @@ static TypeImpl *type_new(const TypeInfo *info)
  
     if (type_table_lookup(info->name) != NULL) {
     }
- 
     ti->name = g_strdup(info->name);
     ti->parent = g_strdup(info->parent);
- 
     ti->class_size = info->class_size;
     ti->instance_size = info->instance_size;
- 
     ti->class_init = info->class_init;
     ti->class_base_init = info->class_base_init;
     ti->class_data = info->class_data;
- 
     ti->instance_init = info->instance_init;
     ti->instance_post_init = info->instance_post_init;
     ti->instance_finalize = info->instance_finalize;
- 
     ti->abstract = info->abstract;
- 
     for (i = 0; info->interfaces && info->interfaces[i].type; i++) {
         ti->interfaces[i].typename = g_strdup(info->interfaces[i].type);
     }
     ti->num_interfaces = i;
- 
     return ti;
 }
- 
 static void type_table_add(TypeImpl *ti)
 {
     assert(!enumerating_types);
     g_hash_table_insert(type_table_get(), (void *)ti->name, ti);
 }
- 
 static GHashTable *type_table_get(void)
 {
     static GHashTable *type_table;
@@ -240,7 +227,6 @@ static GHashTable *type_table_get(void)
  
     return type_table;
 }
- 
 static const TypeInfo kvm_accel_type = {
     .name = TYPE_KVM_ACCEL,
     .parent = TYPE_ACCEL,
@@ -269,13 +255,162 @@ static const TypeInfo kvm_accel_type = {
 
 
 ## 初始化machine
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210913115046.svg)
+
 ```c
 //vl.c
 qemu_create_machine (select_machine());
 ```
-在创建machine之前，先要通过`select_machine`确定一个machine。`select_machine`又是怎么确定的呢，这就和我们命令行的输入有关，比如我们`-m spike`，那么这里就会选择`spike`作为`machine`。它的定义在`hw/riscv/spike.c`中。
+在创建machine之前，先要通过`select_machine`确定一个`machine`。`select_machine`又是怎么确定的呢，这就和我们命令行的输入有关，比如我们`-m spike`，那么这里就会选择`spike`作为`machine`。它的定义在`hw/riscv/spike.c`中。
 
 在源码最后有这么一句，会和我们上面解析的`type_init` 是一样的，在全局的表里面注册了一个全局的名字是`spike`的纸面上的 `class`，也即 `TypeImpl`。
 ```c
 type_init(spike_machine_init_reqister_types)
 ```
+
+现在全局表中有这个纸面上的 `class` 了。我们回到 `select_machine`。
+
+在 `select_machine` 中，有两种方式可以生成 `MachineClass`。一种方式是 `find_default_machine`，找一个默认的；另一种方式是 `machine_parse`，通过解析参数生成 `MachineClass`。无论哪种方式，都会调用 `object_class_get_list` 获得一个 `MachineClass` 的列表，然后在里面找。
+
+```c
+static MachineClass *select_machine(void)
+{
+    GSList *machines = object_class_get_list(TYPE_MACHINE, false);
+    MachineClass *machine_class = find_default_machine(machines);
+    const char *optarg;
+    QemuOpts *opts;
+    Location loc;
+    loc_push_none(&loc);
+    opts = qemu_get_machine_opts();
+    qemu_opts_loc_restore(opts);
+    optarg = qemu_opt_get(opts, "type");
+    if (optarg) {
+        machine_class = machine_parse(optarg, machines);
+    }
+    if (!machine_class) {
+        error_report("No machine specified, and there is no default");
+        error_printf("Use -machine help to list supported machines\n");
+        exit(1);
+    }
+    loc_pop(&loc);
+    g_slist_free(machines);
+    return machine_class;
+}
+
+static MachineClass *find_default_machine(GSList *machines)
+{
+    GSList *el;
+    MachineClass *default_machineclass = NULL;
+    for (el = machines; el; el = el->next) {
+        MachineClass *mc = el->data;
+
+        if (mc->is_default) {
+            assert(default_machineclass == NULL && "Multiple default machines");
+            default_machineclass = mc;
+        }
+    }
+    return default_machineclass;
+}
+
+static MachineClass *machine_parse(const char *name, GSList *machines)
+{
+    MachineClass *mc;
+    GSList *el;
+    if (is_help_option(name)) {
+        printf("Supported machines are:\n");
+        machines = g_slist_sort(machines, machine_class_cmp);
+        for (el = machines; el; el = el->next) {
+            MachineClass *mc = el->data;
+            if (mc->alias) {
+                printf("%-20s %s (alias of %s)\n", mc->alias, mc->desc, mc->name);
+            }
+            printf("%-20s %s%s%s\n", mc->name, mc->desc,
+                   mc->is_default ? " (default)" : "",
+                   mc->deprecation_reason ? " (deprecated)" : "");
+        }
+        exit(0);
+    }
+    mc = find_machine(name, machines);
+    if (!mc) {
+        error_report("unsupported machine type");
+        error_printf("Use -machine help to list supported machines\n");
+        exit(1);
+    }
+    return mc;
+}
+
+```
+
+`object_class_get_list` 定义如下：
+```c
+GSList *object_class_get_list(const char *implements_type,bool include_abstract)
+{
+    GSList *list = NULL;
+    object_class_foreach(object_class_get_list_tramp,
+                         implements_type, include_abstract, &list);
+    return list;
+}
+
+void object_class_foreach(void (*fn)(ObjectClass *klass, void *opaque),
+                          const char *implements_type, bool include_abstract,
+                          void *opaque)
+{
+    OCFData data = { fn, implements_type, include_abstract, opaque };
+
+    enumerating_types = true;
+    g_hash_table_foreach(type_table_get(), object_class_foreach_tramp, &data);
+    enumerating_types = false;
+}
+```
+在全局表 `type_table_get()` 中，对于每一项 `TypeImpl`，我们都执行 `object_class_foreach_tramp`。
+```c
+static void object_class_foreach_tramp(gpointer key, gpointer value,
+                                       gpointer opaque)
+{
+    OCFData *data = opaque;
+    TypeImpl *type = value;
+    ObjectClass *k;
+    type_initialize(type);
+    k = type->class;
+    if (!data->include_abstract && type->abstract) {
+        return;
+    }
+    if (data->implements_type && 
+        !object_class_dynamic_cast(k, data->implements_type)) {
+        return;
+    }
+    data->fn(k, data->opaque);
+}
+```
+
+在 `object_class_foreach_tramp` 中，会调用将 `type_initialize`，这里面会调用 `class_init` 将纸面上的 `class` 也即 `TypeImpl` 变为 `ObjectClass`，`ObjectClass` 是所有` Class` 类的祖先，`MachineClass` 是它的子类。
+
+因为在 `machine` 的命令行里面，我们指定了名字为`spike`，就肯定能够找到我们注册过了的 `TypeImpl`，并调用它的 `class_init` 函数。
+
+所以，当 `select_machine` 执行完毕后，就有一个 `MachineClass` 了。
+
+接着，我们回到 `qemu_create_machine` 中的`object_new_with_class`。这就很好理解了，`MachineClass` 是一个 `Class` 类，接下来应该通过它生成一个 `Instance`，也即对象，这就是 `object_new_with_class` 的作用。
+
+`object_new_with_class` 中，`TypeImpl` 的 `instance_init` 会被调用，创建一个对象。`current_machine` 就是这个对象，它的类型是` MachineState`。
+
+```c
+Object *object_new_with_class(ObjectClass *klass)
+{
+    return object_new_with_type(klass->type);
+}
+static Object *object_new_with_type(Type type)
+{
+    Object *obj;
+    type_initialize(type);
+    obj = g_malloc(type->instance_size);
+    object_initialize_with_type(obj, type->instance_size, type);
+    obj->free = g_free;
+
+    return obj;
+}
+```
+
+至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到` current_machine`。
+
+
