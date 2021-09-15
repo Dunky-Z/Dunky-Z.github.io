@@ -111,9 +111,56 @@ Num     Type           Disp Enb Address            What
 Deleted breakpoint 4 No breakpoints or watchpoints.
 ```
 
-## 启动程序
-### run启动程序知道遇到断点
+## 启动与退出
+### run启动程序直到遇到断点
+```
+(gdb) run  
+```
+
 ### start启动程序并在第一条代码处停下
+
+```
+(gdb) start
+```
+### quit退出调试
+
+```
+(gdb) quit
+```
+
+## 调试命令
+### print打印变量值
+| 格式化字符 (/fmt) | 说明                                 |
+|-------------------|--------------------------------------|
+| /x                | 以十六进制的形式打印出整数。         |
+| /d                | 以有符号、十进制的形式打印出整数。   |
+| /u                | 以无符号、十进制的形式打印出整数。   |
+| /o                | 以八进制的形式打印出整数。           |
+| /t                | 以二进制的形式打印出整数。           |
+| /f                | 以浮点数的形式打印变量或表达式的值。 |
+| /c                | 以字符形式打印变量或表达式的值。     |
+
+```
+(gdb) p i       # 10进制
+$5 = 3
+(gdb) p/x i     # 16进制
+$6 = 0x3
+(gdb) p/o i     # 8进制
+$7 = 03
+
+```
+### ptype打印变量类型
+
+```
+(gdb) ptype i
+type = int
+(gdb) ptype array[i]
+type = int
+(gdb) ptype array
+type = int [12]
+```
+
+### display跟踪显示变量
 
 ## layout分割窗口，边调试边看源码
 ### layout src
