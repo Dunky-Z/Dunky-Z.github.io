@@ -115,3 +115,25 @@ int main(void)
 在两个终端分别运行`client`和`server`，`client`会每三秒在终端打印出`server`输入的内容。
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210810205816.png)
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210810205830.png)
+
+如何手动删除共享内存？
+列出所有的共享内存段：
+```
+ipcs -m
+------------ 共享内存段 --------------
+键        shmid      拥有者  权限     字节     连接数  状态      
+0x00000000 2          dominic    600        16384      1          目标       
+0x00000000 753668     dominic    606        10089696   2          目标       
+0x00000000 622597     dominic    600        4194304    2          目标       
+0x00000000 753670     dominic    606        10089696   2          目标       
+0x00000000 688135     dominic    600        899976     2          目标       
+0x00000000 8          dominic    600        524288     2          目标       
+0x00000000 9          dominic    600        524288     2          目标       
+0x00000000 753674     dominic    600        7127040    2          目标 
+0x0000006f 720918     dominic    666        1024        0
+```
+我们发现最后一个键值为`0x0000006f = 111`的共享内存段，就是我们创建的共享内存段。
+删除指定共享内存段：
+```
+ ipcrm -M 720918     
+```
