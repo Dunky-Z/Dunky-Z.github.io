@@ -122,6 +122,22 @@ Deleted breakpoint 4 No breakpoints or watchpoints.
 ```
 (gdb) start
 ```
+
+### x配置gdb常用命令
+```
+$ gdb -q -x gdbinit
+```
+```
+//gdbinit
+display/z $xs
+display/z $x6
+display/z $x7
+set disassemble-next-line on
+b _start
+target remote: 34
+```
+有了配置文件，就不用每次启动gdb时都要重新输入一遍调试命令。
+
 ### quit退出调试
 
 ```
@@ -201,3 +217,8 @@ type = int [12]
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830153520.png)
 ### layout split
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830153555.png)
+
+## 远程调试
+### `-s -S`
+`-s`启动`gdb server`，默认端口号为1234
+`-S`让程序在`_start`处停下。

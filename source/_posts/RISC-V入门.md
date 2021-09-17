@@ -149,9 +149,16 @@ HART = HARdware+Thread=硬件线程
 
 ## 指令详解
 ### 算术运算指令
+算数指令只包含加减，不包含乘除，乘除运算有专门的扩展。
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108262335167.png)
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108262343942.png)
+
+数据传送顺序是由后向前，和正常的编码习惯类似。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202109172320337.png)
+`.text`告诉编译器下面内容放到`elf`的`text section`中。
+`.global`声明一个全局函数
 
 elf文件包含了调试信息
 使用objcopy命令生成的bin文件，剔除了调试信息
