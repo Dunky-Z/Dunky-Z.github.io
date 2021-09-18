@@ -149,6 +149,7 @@ HART = HARdware+Thread=硬件线程
 
 ## 指令详解
 ### 算术运算指令
+#### ADD
 算数指令只包含加减，不包含乘除，乘除运算有专门的扩展。
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108262335167.png)
@@ -162,6 +163,38 @@ HART = HARdware+Thread=硬件线程
 
 elf文件包含了调试信息
 使用objcopy命令生成的bin文件，剔除了调试信息
+
+#### SUB Substract
+##### 练习
+现知道某条RISC-V的机器指令在内存中的值为`b3 05 95 00`,从左往右为从低地址到高地址，单位为字节，请将其翻译为对应的汇编指令。
+- 确定字节序
+在RISCV中存放是小端序，根据题意真正指令应该是`00 95 05 b3`
+- 转换二进制
+机器码是二进制，所以需要将上述指令值转换为二进制，可得`0000000 01001 01010 000 01011 0110011`
+- 查阅手册
+查阅`The RISC-V Instruction Set Manual Volume I: Unprivileged ISA`找到`RV32/64G Instruction Set Listings`指令表格，低7位是`opcode`，查表可得`0110011`对应操作码有多个`SLLI SRAI SUB `等等，此时再看最高位`00000000`,可以确定是`ADD`指令
+- 将分割的二进制转成十进制
+`0000000 9 10 000 11 010011`->`ADD x11 x10 x9`
+#### ADDI ADD Immediate
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918102935.png)
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104115.png)
+
+#### LUI Load Upper Immediate
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104625.png)
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104556.png)
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104911.png)
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104929.png)
+#### 基于算术运算指令实现的其他伪指令
+
+`x0`寄存器具有特殊含义，往里写数据没有意义。
+`NOP`指令主要为了占位，空转。
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918103237.png)
+
+
+
 ### 逻辑运算指令
 ### 移位运算指令
 ### 内存读写指令
