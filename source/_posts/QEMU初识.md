@@ -34,7 +34,8 @@ apt install libsdl2-dev -y
 本文使用如下配置：
 
 ```
-./configure --prefix=XXX --enable-debug --target-list=riscv32-softmmu,riscv32-linux-user --enable-kvm
+./configure --prefix=XXX --enable-debug --target-list=riscv32-softmmu,riscv32-linux-user, riscv64-linux-user,riscv64-softmmu
+--enable-kvm
 # --prefix 选项设置qemu的安装位置绝对路径，之后若要卸载删除qemu只要删除该文件夹即可，--enable-kvm开启kvm
 # config完，可以在指定的qemu安装文件夹下面找到config-host.mak文件，
 # 该文件记录着qemu配置的选项，可以和自己设置的进行对比，确保配置和自己已知

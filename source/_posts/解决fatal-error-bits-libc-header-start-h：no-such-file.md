@@ -1,7 +1,7 @@
 ---
 title: '解决fatal error: bits/libc-header-start.h：no such file'
 date: 2021-09-03 09:26:34
-tags: [Linux,汇编语言,GCC]
+tags: [Linux,汇编语言,GCC,Bug]
 ---
 想要分别编译32位和64位的程序时，gcc出现了错误，
 
