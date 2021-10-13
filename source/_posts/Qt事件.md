@@ -54,8 +54,6 @@ void CustomButton::onButtonClicked()
 {
     qDebug() << "You clicked this!";
 }
-
-
 ```
 
 ```cpp
@@ -211,4 +209,55 @@ CustomWidget
 
 这里值得注意的是，`CustomButtonEx`的事件传播给了父组件`CustomWidget`，而不是它的父类`CustomButton`。**事件的传播是在组件层次上面的，而不是依靠类继承机制**。
 
-在一个特殊的情形下，我们必须使用accept()和ignore()函数，那就是窗口关闭的事件。对于窗口关闭QCloseEvent事件，调用accept()意味着 Qt 会停止事件的传播，窗口关闭；调用ignore()则意味着事件继续传播，即阻止窗口关闭。[回到我们前面写的简单的文本编辑器](https://github.com/Dunky-Z/learning-qt/blob/main/Dialog/mainwindow.cpp)。
+在一个特殊的情形下，我们必须使用`accept()`和`ignore()`函数，那就是窗口关闭的事件。对于窗口关闭`QCloseEvent`事件，调用`accept()`意味着 Qt 会停止事件的传播，窗口关闭；调用`ignore()`则意味着事件继续传播，即阻止窗口关闭。[回到我们前面写的简单的文本编辑器](https://github.com/Dunky-Z/learning-qt/blob/main/Dialog/mainwindow.cpp)。
+
+## event()函数
+事件对象创建完毕后，Qt 将这个事件对象传递给`QObject`的`event()`函数。`event()`函数并不直接处理事件，而是将这些事件对象按照它们不同的类型，分发给不同的事件处理器（`event handler`）。
+
+如上所述，`event()`函数主要用于事件的分发。所以，如果你希望在事件分发之前做一些操作，就可以重写这个`event()`函数了。例如，我们希望在一个QWidget组件中监听 `tab` 键的按下，那么就可以继承QWidget，并重写它的`event()`函数，来达到这个目的：
+
+```cpp
+bool CustomWidget::event(QEvent *e)
+{
+    if (e->type() == QEvent::KeyPress) 
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(e);
+        if (keyEvent->key() == Qt::Key_Tab) 
+        {
+            qDebug() << "You press tab.";
+            return true;
+        }
+    }
+    return QWidget::event(e);
+}
+```
+
+`CustomWidget`是一个普通的`QWidget`子类。我们重写了它的`event()`函数，这个函数有一个`QEvent`对象作为参数，也就是需要转发的事件对象。函数返回值是 `bool` 类型。如果传入的事件已被识别并且处理，则需要返回 `true`，否则返回 `false`。如果返回值是 `true`，并且，该事件对象设置了`accept()`，那么 Qt 会认为这个事件已经处理完毕，不会再将这个事件发送给其它对象，而是会继续处理事件队列中的下一事件。注意，在`event()`函数中，调用事件对象的`accept()`和`ignore()`函数是没有作用的，不会影响到事件的传播。
+
+我们可以通过使用`QEvent::type()`函数可以检查事件的实际类型，其返回值是`QEvent::Type`类型的枚举。我们处理过自己感兴趣的事件之后，可以直接返回 `true`，表示我们已经对此事件进行了处理；对于其它我们不关心的事件，则需要调用父类的`event()`函数继续转发，否则这个组件就只能处理我们定义的事件了。为了测试这一种情况，我们可以尝试下面的代码：
+```cpp
+bool CustomTextEdit::event(QEvent *e)
+{
+    if (e->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(e);
+        if (keyEvent->key() == Qt::Key_Tab) {
+            qDebug() << "You press tab.";
+            return true;
+        }
+    }
+    return false;
+}
+```
+`CustomTextEdit`是`QTextEdit`的一个子类。我们重写了其`event()`函数，却没有调用父类的同名函数。这样，我们的组件就只能处理 `Tab` 键，再也无法输入任何文本，也不能响应其它事件，比如鼠标点击之后也不会有光标出现。这是因为我们只处理的`KeyPress`类型的事件，并且如果不是`KeyPress`事件，则直接返回 `false`，鼠标事件根本不会被转发，也就没有了鼠标事件。
+
+## 事件过滤器
+有时候，对象需要查看、甚至要拦截发送到另外对象的事件。例如，对话框可能想要拦截按键事件，不让别的组件接收到；或者要修改回车键的默认处理。
+
+通过前面的章节，我们已经知道，Qt 创建了`QEvent`事件对象之后，会调用`QObject`的`event()`函数处理事件的分发。显然，我们可以在`event()`函数中实现拦截的操作。由于`event()`函数是 `protected` 的，因此，需要继承已有类。如果组件很多，就需要重写很多个`event()`函数。这当然相当麻烦，更不用说重写`event()`函数还得小心一堆问题。好在 Qt 提供了另外一种机制来达到这一目的：事件过滤器。
+
+`QObject`有一个`eventFilter()`函数，用于建立事件过滤器。这个函数的签名如下：
+
+这个函数正如其名字显示的那样，是一个“事件过滤器”。所谓事件过滤器，可以理解成一种过滤代码。想想做化学实验时用到的过滤器，可以将杂质留到滤纸上，让过滤后的液体溜走。事件过滤器也是如此：它会检查接收到的事件。如果这个事件是我们感兴趣的类型，就进行我们自己的处理；如果不是，就继续转发。这个函数返回一个 `bool` 类型，如果你想将参数 `event` 过滤出来，比如，不想让它继续转发，就返回 `true`，否则返回 `false`。事件过滤器的调用时间是目标对象（也就是参数里面的`watched`对象）接收到事件对象之前。也就是说，如果你在事件过滤器中停止了某个事件，那么，`watched`对象以及以后所有的事件过滤器根本不会知道这么一个事件。
+
+
+
