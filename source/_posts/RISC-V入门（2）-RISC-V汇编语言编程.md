@@ -1,43 +1,10 @@
 ---
-title: RISCV入门
-date: 2021-08-26 13:42:34
-tags: [RISCV]
+title: RISC-V入门（2）-RISC-V汇编语言编程
+date: 2021-10-16 23:26:42
+tags:
 ---
 
-## 计算机基础
 
-### 计算机硬件基础
-
-两大硬件架构
-
-- 冯诺依曼架构
-
-  - 一根总线，开销小，控制逻辑实现简单
-
-  - 执行效率低
-
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211529332.png)
-
-- 哈佛架构
-
-  - 与上一架构相反
-
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211529619.png)
-
-### 程序的存储与执行
-
-`.c`文件经过编译链接，生成`.out`文件。加载到内存中，到控制单元运行。进行取值，译码，执行。
-
-晶振发出脉冲。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211621792.png)
-
-### 语言的设计与进化
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211735861.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211736944.png)
-上图是冯诺依曼架构，特点就是指令与数据放在一起。黄色部分表示指令，绿色部分表示数据。我们来看看指令是如何执行的。
-`ProgramCounter`指到右图内存的第一条指令，程序开始执行。将第一条 指令读入指令寄存器。然后将指令解码，根据之前的规定，我们可以知道这条指令是将`0100(二进制即5)`位置的数据，`00(load)`到`00(Register 0)`中。下面的指令一次类推，每次取指，`Program Counter`移动一次。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211743999.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108211719114.png)
 
 ## 汇编语法介绍
 一条典型的RISCV汇编语句由三个部分组成`[label:][operation][comment]`。
@@ -210,3 +177,80 @@ elf文件包含了调试信息
 
 ### 无条件跳转指令
 ### RISC-V指令寻址模式总结
+## 汇编函数调用约定
+### 函数调用过程概述
+栈（stack）数据结构，在函数调用过程中会用来保存变量，函数地址等等。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162130267.png)
+
+栈帧里保存的变量是自动变量，会被内存自动释放。
+
+为何要有调用者与被调用者保存的概念
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162137133.png)
+
+函数调用过程中就会有参数和返回值的传递，自己写的函数可能由别人来调用，如果没有约定好某个参数存放位置，就不能够顺利执行函数。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162144447.png)
+
+因为寄存器需要经常在编程中使用，所以ABI名就是寄存器的别名。
+
+> 这些寄存器其实都可以设置成被调用者保存，也就是在被调用函数中保存一遍为啥还要分这么多
+答：因为保存一遍效率低
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162209273.png)
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162217164.gif)
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162234551.png)
+## 汇编与C混合编程
+###  前提
+遵守ABI（Abstract Binary Interface）的规定
+- 数据类型大小，布局，对齐
+- 函数调用约定
+- 系统调用约定
+等等
+
+RISC-V函数调用约定规定
+- 函数参数采用寄存器`a0-a7`
+- 函数返回值采用寄存器`a0,a1`
+
+### 汇编嵌入C语言
+```ASM
+# ASM call C
+
+	.text			# Define beginning of text section
+	.global	_start		# Define entry _start
+	.global	foo		# foo is a C function defined in test.c
+
+_start:
+	la sp, stack_end	# prepare stack for calling functions
+
+	# RISC-V uses a0 ~ a7 to transfer parameters
+	li a0, 1
+	li a1, 2
+	call foo    #调用了C语言函数
+	# RISC-V uses a0 & a1 to transfer return value
+	# check value of a0
+
+stop:
+	j stop			# Infinite loop to stop execution
+
+	nop			# just for demo effect
+
+stack_start:
+	.rept 10
+	.word 0
+	.endr
+stack_end:
+
+	.end			# End of file
+
+```
+
+`call foo`就是在调用C语言函数，`foo`。
+`.global foo`告诉编译器`foo`函数定义在外面。
+
+### C语言嵌入汇编
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162347033.png)
+下图中为简化写法
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162342119.png)
