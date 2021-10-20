@@ -74,7 +74,6 @@ Hello world!            #标准输出1
 $ cat text.md
 cat: test.md: No such file or directory #标准错误2
 
-
 $ ls text.txt text.md 1>file.out 2>file.err 
 # 执行后,没有任何返回值. 原因是, 返回值都重定向到相应的文件中了,而不再前端显示 
 $ cat file.out 
