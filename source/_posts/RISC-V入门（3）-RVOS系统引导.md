@@ -89,3 +89,37 @@ bnez t0, park       # 跳转指令，不等于0就跳转到park标签
 
 - 并行就是需要多根线，比如有两根线，那么就可以一次发送两位。但是串行节省材料。
 - 数据通信就会涉及同步的问题，同步的话需要一根时钟线来协商好发送时间和接收时间。而UART使用异步，发送的数据不仅仅是真实的数据，还会带有一些标识信息。这些标识可以判断出是收还是发。
+
+### 物理接口
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110252233134.png)
+
+### UART通讯协议
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110252235270.png)
+
+图示中横轴可以表示时间，纵轴表示高低电平。
+
+在需要发送数据时，会进行“下拉”1bit，1bit持续的时间就是波特率分之一秒。
+
+数据在发送过程中可能会受到干扰，会产生畸变，所以需要检验位来判断是否发生畸变。
+
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110252246423.png)
+
+### 初始化
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110252305528.png)
+
+在软件中，配置UART就是配置寄存器的信息。
+
+在板子上有个元器件叫晶振（crystal），他会产生固定频率的时钟。一种是1.8432MHZ，一种是7.3728MHZ。想要获得指定的输出频率就需要对寄存器进行配置。查表可以得到配置信息。比如获得38.4K频率的输出，就要配置寄存器值为3。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110252310435.png)
+
+LCR寄存器功能比较多，将第7位设置为1就是用来设置波特率。
+
+图中`DLL`和`DLM`寄存器就是需要配置的寄存器。因为UART寄存器都是8位的，将值`0x0003`高位`0x00`存在`DLM`中，将低位`0x03`存入`DLL`。
+
+
+
