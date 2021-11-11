@@ -1,7 +1,7 @@
 ---
 title: RISC-V入门（2）-RISC-V汇编语言编程
 date: 2021-10-16 23:26:42
-tags:
+tags: [RISCV]
 ---
 
 
