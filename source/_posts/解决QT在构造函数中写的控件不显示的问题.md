@@ -2,7 +2,7 @@
 title: 解决QT在构造函数中写的控件不显示的问题
 date: 2021-11-16 16:15:26
 tags: [Bug, Qt]
-categories: [Qt]
+categories: [Bug踩坑记录]
 ---
 ## 保留现场
 
