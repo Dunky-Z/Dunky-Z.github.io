@@ -7,7 +7,7 @@ categories: [Bug踩坑记录]
 ---
 
 ## 保留现场
-
+`undefined reference to sleep`同样的问题。
 在使用C语言线程函数时，需要包含`#include <pthread>`，编译时就会报这种错误。
 
 ## 探究原因

@@ -151,7 +151,7 @@ void module_call_init(module_init_type type)
     }
     ```
 - 把`TypeImpl`放入链表：`type_table`。
-  在 `qemu` 里面，有一个全局的哈希表 `type_table`，用来存放所有定义的类。在 `type_new` 里面，我们先从全局表里面根据名字`type_table_lookup`查找找这个类。如果找到，说明这个类曾经被注册过，就报错；如果没有找到，说明这是一个新的类，则将 `TypeInfo` 里面信息填到 `TypeImpl` `里面。type_table_add` 会将这个类注册到全局的表里面。到这里，我们注意，`class_init` 还没有被调用，也即这个类现在还处于**纸面的状态**。
+  在 `qemu` 里面，有一个全局的哈希表 `type_table`，用来存放所有定义的类。在 `type_new` 里面，我们先从全局表里面根据名字`type_table_lookup`查找找这个类。如果找到，说明这个类曾经被注册过，就报错；如果没有找到，说明这是一个新的类，则将 `TypeInfo` 里面信息填到 `TypeImpl` 里面。`type_table_add` 会将这个类注册到全局的表里面。到这里，我们注意，`class_init` 还没有被调用，也即这个类现在还处于**纸面的状态**。
     ```c
     static void type_table_add(TypeImpl *ti)
     {
