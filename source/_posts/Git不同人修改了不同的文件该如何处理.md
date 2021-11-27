@@ -1,5 +1,5 @@
 ---
-title: Git-不同人修改了不同的文件该如何处理
+title: Git不同人修改了不同的文件该如何处理
 date: 2021-09-12 23:19:28
 updated:
 tags: [Git]

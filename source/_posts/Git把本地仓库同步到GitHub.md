@@ -2,6 +2,7 @@
 title: Git-把本地仓库同步到GitHub
 date: 2021-09-23 23:06:28
 tags: [Git]
+categories: [Git实战]
 ---
 
 ## 需求
