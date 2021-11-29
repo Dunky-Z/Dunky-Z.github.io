@@ -10,13 +10,9 @@ categories:
 
 ## 探究原因
 
-
-
-大意就是，你删除了属于你的文件夹，但其中包含属于另一个用户的文件时，文件可能会卡住，就会在Trash目录里不会被彻底删除。
+查阅了一个[网上的答案](https://askubuntu.com/questions/351400/deleting-contents-of-local-share-trash-expunged)，大意就是，你删除了属于你的文件夹，但其中包含属于另一个用户的文件时，文件可能会卡住，就会在Trash目录里不会被彻底删除。
 
 ## 解决方法
-
-
 
 ```bash
 sudo rm -rv /home/<your_username>/.local/share/Trash/expunged/*

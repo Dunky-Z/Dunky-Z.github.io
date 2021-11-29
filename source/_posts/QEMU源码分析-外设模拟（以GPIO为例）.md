@@ -2,6 +2,7 @@
 title: QEMU源码分析-外设模拟（以GPIO为例）
 date: 2021-11-11 10:11:32
 tags: [QEMU, GPIO]
+categories: [QEMU源码分析]
 ---
 
 ## QEMU模拟外设的原理

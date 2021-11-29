@@ -2,6 +2,7 @@
 title: QEMU源码分析-虚拟外设创建(以GPIO为例)
 date: 2021-11-09 17:39:38
 tags: [QEMU]
+categories: [QEMU源码分析]
 ---
 一个板子上有很多硬件：芯片，LED、按键、LCD、触摸屏、网卡等等。芯片里面也有很多部件，比如CPU、GPIO、SD控制器、中断控制器等等。
 
