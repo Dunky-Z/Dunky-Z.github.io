@@ -2,6 +2,7 @@
 title: 解决gcc编译后fflush失效
 date: 2021-10-21 09:56:51
 tags: [Bug,C]
+categories: [Bug踩坑记录]
 ---
 ## 保留现场
 
