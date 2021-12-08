@@ -2,6 +2,7 @@
 title: '解决gcc-multilib : 依赖: gcc-4.8-multilib (>= 4.8.2-5~) 但是它将不会被安装'
 date: 2021-09-03 10:44:44
 tags: [Linux,Bug]
+categories: [Bug踩坑记录]
 ---
 
 ## 问题
