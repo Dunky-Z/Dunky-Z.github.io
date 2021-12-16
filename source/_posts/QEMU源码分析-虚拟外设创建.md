@@ -94,7 +94,6 @@ void module_call_init(module_init_type type)
 }
 ```
 
-
 在 `module_call_init` 中，我们会找到 `MODULE_INIT_QOM` 这种类型对应的 `ModuleTypeList`，找出列表中所有的 `ModuleEntry`，然后调用每个 `ModuleEntry` 的 `init` 函数。
 
 这些`xxx_register_types`执行后，又得到了什么？
