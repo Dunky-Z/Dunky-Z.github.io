@@ -257,13 +257,6 @@ UseTab:          Never
 
 ```
 
-#### 一些注意事项
-```
-# 宏定义对齐
-AlignConsecutiveMacros: AcrossEmptyLinesAndComments
-```
-使用宏定义对齐更详细的配置，可以[参考官方文档](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)。使用该配置一定要使用等宽的字体，否则配置生效但是显示不正确。
-
 ### 格式化最新的commit代码
 `clang-format`还提供一个`clang-format-diff.py`脚本，用来格式化`patch`，`code review`提交代码前，跑一遍下面的代码。
 
@@ -271,3 +264,51 @@ AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 // 格式化最新的commit，并直接在原文件上修改
 git diff -U0 HEAD^ | clang-format-diff.py -i -p1
 ```
+
+
+### 常见问题
+#### 如何看懂官方文档并编写配置文件
+[官方文档](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)里有各种设置的示例代码，即使不知道想要的格式化是哪个配置参数，翻一翻官方文档是示例大概率能找到。那么找到了想要的配置参数，如何在文件里配置呢？
+
+以宏定义对齐为例。我们想要宏定义的值保持对齐的状态，如下一节图片所示。可以翻一遍官方文档，可以发现这个示例代码对应的参数可能是我们想要的，`AlignConsecutiveMacros `翻译为**对齐连续的宏定义**。那应该八九不离十了。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112202021134.png)
+
+找到了参数如何编写配置文件呢？可以继续看这个参数下面的更多示例，每一个示例都对应一个配置可能值`Possible values`。
+
+- `ACS_None` (in configuration: `None`)
+Do not align macro definitions on consecutive lines.
+`ACS_None`为这个配置的缩写，`None`表示在配置文件里的值。该配置表示不对宏定义进行对齐操作，在配置文件里可以添加如下：
+  ```
+  AlignConsecutiveMacros: None
+  ```
+
+- `ACS_Consecutive` (in configuration: `Consecutive`)
+Align macro definitions on consecutive lines. This will result in formattings like:
+  ```
+  #define SHORT_NAME       42
+  #define LONGER_NAME      0x007f
+  #define EVEN_LONGER_NAME (2)
+
+  #define foo(x) (x * x)
+  /* some comment */
+  #define bar(y, z) (y + z)
+  ```
+  `ACS_Consecutive`为这个配置的缩写，`Consecutive`表示在配置文件里的值。该配置表示对连续的宏定义进行对齐，在配置文件里可以添加如下：
+  ```
+  AlignConsecutiveMacros: Consecutive
+  ```
+
+#### 宏定义对齐失效
+```
+# 宏定义对齐
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+```
+使用宏定义对齐更详细的配置，可以[参考官方文档](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)。使用该配置一定要使用等宽的字体，否则配置生效但是显示不正确。
+比如我是用**微软雅黑**字体作为编码字体，因为该字体每个字符不等宽，导致格式化正确，但是显示不正确。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112201954096.png)
+
+如果将字体换位等宽字体如常用的**Consolas**，就可以正常显示。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112201958869.png)
