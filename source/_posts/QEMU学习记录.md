@@ -82,7 +82,7 @@ qemu 和 kvm 整合之后，CPU 的性能问题解决了。另外 Qemu 还会模
 > Q : 系统模式和用户模式的区别？
 > 系统模式 是qemu虚拟出一套完整的硬件环境， 包含cpu，内存，网卡，硬盘，对于虚拟机上运行的OS看到的和硬件和真实的是一样的。
 > 用户模式是直接将可执行的文件进行指令翻译，只虚拟出cpu。
-> 假设有KVM：host 是 x86 ，QEMU 虚拟出x86 的系统模式 运行windows系统。QEMU会将 windows 指令直接交给  host cpu 直接运行（ 这个功能是由KVM 实现的，相当于直接调用host CPU）， 性能损失小  。 内存，硬盘，网洛等外设是由qemu虚拟出来的。
+> 假设有KVM：host 是 x86 ，QEMU 虚拟出x86 的系统模式 运行windows系统。QEMU会将 windows 指令直接交给  host cpu 直接运行（ 这个功能是由KVM 实现的，相当于直接调用host CPU）， 性能损失小  。 内存，硬盘，网络等外设是由qemu虚拟出来的。
 > 假设无KVM：host 是 x86 ，QEMU 虚拟出x86 的系统模式运行windows系统。QEMU会将windows指令翻译成中间码，中间码再转成   host cpu 指令（ 这个功能是由qemu TCG 实现的），性能损失大。内存，硬盘，网洛等外设是由qemu 虚拟出来的。
 > 假设有KVM：host 是 x86 ，QEMU 虚拟出riscv 的系统模式 运行Linux系统。QEMU会将Linux指令翻译成中间码，中间码再转成host cpu指令（ 这个功能是由qemu TCG 实现的），性能损失大。内存，硬盘，网洛等外设是由qemu 虚拟出来的。
 > KVM需要在虚拟机与宿主机架构相同时才生效。
