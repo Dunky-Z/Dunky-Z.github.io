@@ -2,6 +2,7 @@
 title: 解决expected 'char * const*' but argument is of type 'char **'
 date: 2021-09-08 19:07:27
 tags: [C,Bug]
+categories: [Bug踩坑记录]
 ---
 在使用`exec`系列函数时，`execle`，`execv`，`execvp`三个函数，都可以使用`char *arg[]`传入启动参数。以下面的程序为例，
 ```c
