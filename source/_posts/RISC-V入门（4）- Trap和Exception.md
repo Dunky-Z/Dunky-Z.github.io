@@ -14,7 +14,7 @@ categories: [RISC-V入门]
     - exception
     - interrupt
 
-RISC-V 把 ECP 统称为 `Trap`。
+RISC-V 把 ECF 统称为 `Trap`。
 
 ## RISC-V Trap 处理中涉及的寄存器
 
