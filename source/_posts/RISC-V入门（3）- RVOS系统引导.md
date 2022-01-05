@@ -2,6 +2,7 @@
 title: RISC-V入门（3）-RVOS系统引导
 date: 2021-10-20 23:13:40
 tags: [RISCV]
+categories: [RISC-V入门]
 ---
 
 ## 硬件的基本概念
