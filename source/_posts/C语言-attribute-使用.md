@@ -75,8 +75,31 @@ int main() {
 `constructor` 和 `+load` 都是在 main 函数执行前调用，但 +load 比 constructor 更加早一丢丢，因为 dyld（动态链接器，程序的最初起点）在加载 image（可以理解成 Mach-O 文件）时会先通知 objc runtime 去加载其中所有的类，每加载一个类时，它的 +load 随之调用，全部加载完成后，dyld 才会调用这个 image 中所有的 constructor 方法。
 
 若有多个 `constructor` 且想控制优先级的话，可以写成 `attribute((constructor(101)))`，里面的数字越小优先级越高，`1 ~ 100` 为系统保留。
+### 变量属性
+#### cleanup
+该属性在变量作用域结束时，调用指定的一个函数。这个属性只能应用于自动函数范围的变量；它不能应用于参数或具有静态存储期限的变量。该函数必须接受一个参数，一个指向与变量兼容的类型的指针。函数的返回值（如果有的话）被忽略。
+```c
+#include <stdlib.h>
+#include <string.h>
 
+void test_cleanup(char **str) {
+  printf("after cleanup: %s\n", *str);
+  free(*str);
+}
 
+int main(int argc, char **argv) {
+
+  char *str __attribute__((__cleanup__(test_cleanup))) = NULL;
+  str = (char *)malloc((sizeof(char)) * 100);
+  strcpy(str, "test");
+  printf("before cleanup : %s\n", str);
+  return 0;
+}
+/*--- 输出 ---*/ 
+//before cleanup : test
+//after cleanup: test
+```
+作用域结束包括大括号结束、`return`、`goto`、`break`、`exception`等各种情况。在上面的实验中，`main`函数返回标志变量`str`作用域结束，所以最后才打印`after cleanup: test`。
 ### 类型属性
 
 #### aligned (alignment)
@@ -111,6 +134,9 @@ int main() {
 //0x5646e130e040 0x5646e130e044,0x5646e130e048,0x5646e130e04a
 ```
 由以上代码实验结果发现，默认对齐代下为4字节，小于这个值就被忽略，大于4字节才生效。
+
+
+
 
 ## Refernece
 [__attribute__ 机制使用 - 简书](https://www.jianshu.com/p/e2dfccc32c80)
