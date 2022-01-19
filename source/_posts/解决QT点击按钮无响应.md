@@ -2,7 +2,7 @@
 title: 解决QT点击按钮无响应
 date: 2021-11-16 17:42:47
 updated:
-tags: [Qt]
+tags: [Qt, Bug]
 categories: [Bug踩坑记录]
 ---
 

@@ -2,7 +2,7 @@
 title: 解决Linux启动出现fsck exited with status code 4
 date: 2021-12-04 10:18:09
 updated:
-tags: [Linux]
+tags: [Linux, Bug]
 categories: [Bug踩坑记录]
 ---
 ## 保留现场

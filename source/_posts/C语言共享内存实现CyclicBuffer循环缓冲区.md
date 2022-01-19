@@ -1,5 +1,5 @@
 ---
-title: 使用C共享内存实现CyclicBuffer循环缓冲区
+title: C语言共享内存实现CyclicBuffer循环缓冲区
 date: 2021-10-21 17:12:06
 tags:
 ---
