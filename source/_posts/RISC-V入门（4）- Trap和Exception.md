@@ -8,7 +8,6 @@ categories: [RISC-V入门]
 ## 控制流（Control Flow）和 Trap
 
 - 控制流（Control Flow）
-
     正常的程序运行指令都可以称为控制流，包括 `branch`,`jump`等跳转指令。
 - 异常控制流（Exceptional Control Flow）
     - exception
@@ -130,9 +129,7 @@ RISC-V 把 ECF 统称为 `Trap`。
 
 当 `trap` 发生时，除了通过` mcause` 可以获取` exception`的种类 `code` 值外，`hart` 还提供了 `mtval` 来提供`exception` 的其他信息来辅助我们执行更进一步的操作。
 
-具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有
-定义具体的值。但规范定义了一些行为，譬如访问地址出错
-时的地址信息、或者执行非法指令时的指令本身等。
+具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。
 
 ### mstatus（Machine Status）
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042020644.png)
@@ -204,3 +201,4 @@ trap_vector:
 - 当前 Hart的权限级别 = mstatus.MPP；mstatus.MPP = U（如果 hart 不支持 U 则为 M）
 - mstatus.MIE = mstatus.MPIE; mstatus.MPIE = 1
 - pc = mepc
+
