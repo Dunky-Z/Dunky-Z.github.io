@@ -8,8 +8,11 @@ categories: [RISC-V入门]
 ## 控制流（Control Flow）和 Trap
 
 - 控制流（Control Flow）
-    正常的程序运行指令都可以称为控制流，包括 `branch`,`jump`等跳转指令。
+从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列
+$$a_0,a_1,\dotsb,a_{n-1}$$
+每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。
 - 异常控制流（Exceptional Control Flow）
+  系统也必须能够对系统状态的变化做出反应，这些系统状态不是被内部程序变量捕获的，而且也不一定要和程序的执行相关。比如，一个硬件定时器定期产生信号，这个事件必须得到处理。包到达网络适配器后，必须存放在内存中。程序向磁盘请求数据，然后休眠，直到被通知说数据已就绪。现代系统通过使控制流发生突变来对这些情况做出反应。我们把这些突变称为异常控制流。
     - exception
     - interrupt
 
@@ -129,7 +132,9 @@ RISC-V 把 ECF 统称为 `Trap`。
 
 当 `trap` 发生时，除了通过` mcause` 可以获取` exception`的种类 `code` 值外，`hart` 还提供了 `mtval` 来提供`exception` 的其他信息来辅助我们执行更进一步的操作。
 
-具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。
+具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有
+定义具体的值。但规范定义了一些行为，譬如访问地址出错
+时的地址信息、或者执行非法指令时的指令本身等。
 
 ### mstatus（Machine Status）
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042020644.png)
@@ -201,4 +206,3 @@ trap_vector:
 - 当前 Hart的权限级别 = mstatus.MPP；mstatus.MPP = U（如果 hart 不支持 U 则为 M）
 - mstatus.MIE = mstatus.MPIE; mstatus.MPIE = 1
 - pc = mepc
-
