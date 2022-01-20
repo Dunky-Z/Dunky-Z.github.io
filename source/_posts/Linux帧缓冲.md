@@ -80,8 +80,13 @@ int open(const char *path, int oflags);
 extern int ioctl (int __fd, unsigned long int __request, ...) __THROW;
 ```
 `ioctl`调用实现访问设备驱动各种各样的配置信息功能，它提供了一个控制设备的行为和配置底层服务接口的驱动函数，各种设备驱动程序，例如套接字和系统终端，还有磁带机都有`ioctl`命令可以支持。
+- `__fd`：`ioctl`命令中是该帧缓冲的文件描述符；
+- `__request`：`ioctl`函数将要执行的命令，实现参数给定的对象描述符中指定的函数操作，各种设备支持的功能是有差异的
+    - `FBIOGET_VSCREENINFO`命令字返回与Framebuffer有关的固定的信息；
+    - `FBIOGET_VSCREENINFO`命令字返回与Framebuffer有关的可变的信息；
+- 第三个参数是一个指针用来指向结构体`fb_var_screeninfo`。
 
-`__request`是`ioctl`函数将要执行的命令，实现参数给定的对象描述符中指定的函数操作，各种设备支持的功能是有差异的，还有可能存在令一个可选的第三个参数，第一个参数在`ioctl`命令中是该帧缓冲的文件描述符，`FBIOGET_VSCREENINFO`是第二个参数，第三个参数是一个指针用来指向结构体`fb_var_screeninfo`。最后使用者可以通过结构体`fb_var_screeninfo`来获得屏幕的分辨率和颜色位深和其他重要的屏幕信息。根据这些信息可以计算屏幕缓冲区的大小:屏幕缓冲区大小(以字节为单位) = 屏幕宽度x高度x屏幕颜色深度/8
+最后使用者可以通过结构体`fb_var_screeninfo`来获得屏幕的分辨率和颜色位深和其他重要的屏幕信息。根据这些信息可以计算屏幕缓冲区的大小:屏幕缓冲区大小(以字节为单位) = 屏幕宽度x高度x屏幕颜色深度/8
 
 ### 帧缓冲映射
 在进行帧缓冲的`MMAP`映射之前，要先得到帧缓冲文件描述符，才能像屏幕上面显示，必须首先将缓冲区的内核地址映射映射到用户地址空间。Linux系统将使用`MMAP`系统调用完成功能，`MMAP`函数原型如下:
@@ -93,15 +98,15 @@ extern void *mmap (void *__addr, size_t __len, int __prot,
 - `__len`：可以请求使用特定内存地址，通过设置地址参数，如果值为`0`，将自动分配指针，这是推荐的做法，否则会降低程序的可移植性，因为不同的系统可用的地址范围是不一样的。
 
 - `__prot`：设置内存访问的权限设定，通过端口相关的参数定义，位的定义值如下:
-    - PORT-EXEC:允许内存段的执行。
-    - PORTNONE:无法访问内存段。
-    - PORT-READ:允许读取内存段。
-    - PORT-WRITE:允许编写内存段。
+    - `PORT_EXEC`:允许内存段的执行。
+    - `PORT_NONE`:无法访问内存段。
+    - `PORT_READ`:允许读取内存段。
+    - `PORT_WRITE`:允许编写内存段。
 
 - `__flags`：改变控制参数标志，能够影响该内存段的作用域，如下所示:
-    - MAP-FIXED:内存段必须位于addr中指定的地址。
-    - MAPSHARED:内存的修改保存到一个文件中。
-    - MAP-PRIVATE:内存段是私人的，变化仅在本地范围内有效。
+    - `MAP_FIXED`:内存段必须位于addr中指定的地址。
+    - `MAP_SHARED`:内存的修改保存到一个文件中。
+    - `MAP_PRIVATE`:内存段是私人的，变化仅在本地范围内有效。
 
 -  `__fd`：是通过一个`open`调用得到的访问文件的描述符。
 
@@ -131,6 +136,80 @@ extern int close (int __fd);
 
 
 ## 帧缓冲实例
+以下代码摘自[xianjimli/linux-framebuffer-tools: linux framebuffer tool](https://github.com/xianjimli/linux-framebuffer-tools)，演示了帧缓冲设备的使用流程。
+```c
+fb_info_t *linux_fb_open(const char *filename)
+{
+    uint32_t                 size = 0;
+    fb_info_t               *fb   = NULL;
+    struct fb_fix_screeninfo fix;
+    struct fb_var_screeninfo var;
+    return_value_if_fail(filename != NULL, NULL);
+
+    fb = (fb_info_t *)calloc(1, sizeof(fb_info_t));
+    return_value_if_fail(fb != NULL, NULL);
+
+    // 打开帧缓冲设备，O_RDWR读写模式
+    fb->fd = open(filename, O_RDWR);
+    if (fb->fd < 0)
+    {
+        log_debug("open %s failed(%d)\n", filename, errno);
+        free(fb);
+        return NULL;
+    }
+    // 通过系统调用ioctl函数获得帧设备相关信息
+    // FBIOGET_FSCREENINFO命令字返回与Framebuffer有关的固定的信息
+    if (ioctl(fb->fd, FBIOGET_FSCREENINFO, &fix) < 0)
+        goto fail;
+    //命令字返回与Framebuffer有关的可变的信息
+    if (ioctl(fb->fd, FBIOGET_VSCREENINFO, &var) < 0)
+        goto fail;
+
+    var.xoffset = 0;
+    var.yoffset = 0;
+    // 显示
+    ioctl(fb->fd, FBIOPAN_DISPLAY, &(var));
+
+    log_debug("fb_info_t: %s\n", filename);
+    log_debug("fb_info_t: xres=%d yres=%d bits_per_pixel=%d mem_size=%d\n", var.xres, var.yres,
+              var.bits_per_pixel, fb_size(fb));
+    log_debug("fb_info_t: red(%d %d) green(%d %d) blue(%d %d)\n", var.red.offset, var.red.length,
+              var.green.offset, var.green.length, var.blue.offset, var.blue.length);
+
+    fb->w           = var.xres;
+    fb->h           = var.yres;
+    fb->bpp         = var.bits_per_pixel / 8;
+    fb->line_length = fix.line_length;
+
+    size = fb_size(fb);
+    // 帧缓冲映射
+    // PROT_READ | PROT_WRITE:可读写
+    // MAP_SHARED：内存的修改保存到一个文件
+    fb->data = (uint8_t *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb->fd, 0);
+
+    if (fb->data == MAP_FAILED)
+    {
+        log_debug("map framebuffer failed.\n");
+        goto fail;
+    }
+
+    log_debug("line_length=%d mem_size=%d\n", fix.line_length, fb_size(fb));
+    log_debug("xres_virtual =%d yres_virtual=%d xpanstep=%d ywrapstep=%d\n", var.xres_virtual,
+              var.yres_virtual, fix.xpanstep, fix.ywrapstep);
+
+    return fb;
+fail:
+    log_debug("%s is not a framebuffer.\n", filename);
+    close(fb->fd);
+    free(fb);
+
+    return NULL;
+}
+```
+
+感兴趣可以下载源码编译运行，其中`/bin/fbshow`可以使用帧缓冲设备显示图片。图形界面下直接运行可能提示无法运行，需要`Chrtl+Alt+F1`切换到控制台模式。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220120202118.png)
 
 ## Reference
 [Linux驱动之Framebuffer子系统 | 量子范式](https://carlyleliu.github.io/2021/Linux%E9%A9%B1%E5%8A%A8%E4%B9%8BFramebuffer%E5%AD%90%E7%B3%BB%E7%BB%9F/)
@@ -139,3 +218,4 @@ extern int close (int __fd);
 [research/framebuffer/fivechess/fivechess-0.1 at master · tsuibin/research](https://github.com/tsuibin/research/tree/master/framebuffer/fivechess/fivechess-0.1)
 [五子棋 framebuffer版 - 尚码园](https://www.shangmayuan.com/a/f67d260756ce42258a9ed4ef.html)
 [FrameBuffer驱动程序分析_深入剖析Android系统-CSDN博客_framebuffer](https://blog.csdn.net/yangwen123/article/details/12096483)
+[xianjimli/linux-framebuffer-tools: linux framebuffer tool](https://github.com/xianjimli/linux-framebuffer-tools)
