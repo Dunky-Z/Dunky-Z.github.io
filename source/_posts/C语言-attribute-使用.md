@@ -140,3 +140,5 @@ int main() {
 
 ## Refernece
 [__attribute__ 机制使用 - 简书](https://www.jianshu.com/p/e2dfccc32c80)
+[C语言复杂声明解析_wangweixaut061的专栏-CSDN博客_c语言复杂声明](https://blog.csdn.net/wangweixaut061/article/details/6549768)
+[__attribute__ 你知多少？](http://www.360doc.com/content/15/0305/15/14530056_452758913.shtml)
