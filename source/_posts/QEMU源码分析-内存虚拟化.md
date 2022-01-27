@@ -8,7 +8,9 @@ categories: [QEMU源码分析]
 >1.大部分转载自[QEMU 内存虚拟化源码分析 | Keep Coding | 苏易北](https://abelsu7.top/2019/07/07/kvm-memory-virtualization/)
 >2.原文源码为QEMU1.2.0，版本较旧，部分源码内容根据QEMU6.2版本修改
 >3.部分内容根据自己理解补充添加
-
+>1.大部分转载自[QEMU 内存虚拟化源码分析 | Keep Coding | 苏易北](https://abelsu7.top/2019/07/07/kvm-memory-virtualization/)
+>2.原文源码为QEMU1.2.0，版本较旧，部分源码内容根据QEMU6.2版本修改
+>3.部分内容根据自己理解补充添加
 ## 概述
 我们知道操作系统给每个进程分配虚拟内存，通过页表映射，变成物理内存进行访问。当有了虚拟机之后，情况会变得更加复杂。因为虚拟机对于物理机来讲是一个进程，但是虚拟机里面也有内核，也有虚拟机里面跑的进程。所以有了虚拟机，内存就变成了四类：
 - 虚拟机里面的虚拟内存（Guest OS Virtual Memory，GVA），这是虚拟机里面的进程看到的内存空间；
@@ -627,6 +629,505 @@ int main()
 ```
 
 进入`configure_accelerator()`后，`QEMU `会先调用`configure_accelerator()`设置 `KVM` 的加速支持，之后进入`kvm_init()`。该函数主要完成对 KVM 的初始化，包括一些常规检查如 `CPU` 个数、`KVM` 版本等，之后通过`kvm_ioctl(KVM_CREATE_VM)`与内核交互，创建 `KVM` 虚拟机。在`kvm_init()`的最后，会调用`memory_listener_register()`注册`kvm_memory_listener`：
+
+```c
+static int kvm_init(MachineState *ms)
+{
+    MachineClass *mc = MACHINE_GET_CLASS(ms);
+    // 打开/dev/kvm
+    s->fd = qemu_open_old("/dev/kvm", O_RDWR);
+    // 创建VM
+    do {
+        ret = kvm_ioctl(s, KVM_CREATE_VM, type);
+    } while (ret == -EINTR);
+/* ... */
+    ret = kvm_arch_init(s); // 针对不同的架构进行初始化
+
+    // 对于以下 AddressSpace，设置其对应的 listener
+    kvm_memory_listener_register(s, &s->memory_listener,
+                                 &address_space_memory, 0, "kvm-memory");
+    memory_listener_register(&kvm_coalesced_pio_listener,
+                             &address_space_io);
+/* ... */
+}
+```
+
+```c
+void memory_listener_register(MemoryListener *listener, AddressSpace *as)
+{
+    MemoryListener *other = NULL;
+
+    /* Only one of them can be defined for a listener */
+    assert(!(listener->log_sync && listener->log_sync_global));
+
+    listener->address_space = as;
+    if (QTAILQ_EMPTY(&memory_listeners)
+        || listener->priority >= QTAILQ_LAST(&memory_listeners)->priority) {
+        QTAILQ_INSERT_TAIL(&memory_listeners, listener, link);
+    } else {
+        QTAILQ_FOREACH(other, &memory_listeners, link) {
+            if (listener->priority < other->priority) {
+                break;
+            }
+        }
+        QTAILQ_INSERT_BEFORE(other, listener, link);
+    }
+
+    if (QTAILQ_EMPTY(&as->listeners)
+        || listener->priority >= QTAILQ_LAST(&as->listeners)->priority) {
+        QTAILQ_INSERT_TAIL(&as->listeners, listener, link_as);
+    } else {
+        QTAILQ_FOREACH(other, &as->listeners, link_as) {
+            if (listener->priority < other->priority) {
+                break;
+            }
+        }
+        QTAILQ_INSERT_BEFORE(other, listener, link_as);
+    }
+
+    listener_add_address_space(listener, as);
+}
+```
+
+最后的`listener_add_address_space()`主要是将listener注册到其对应的 `AddressSpace` 上，并根据 `AddressSpace` 对应的 `FlatRange` 数组，生成 `MemoryRegionSection`【`MemoryRegionSection`就像是为`FlatRange`数组设置的一种中介表示，便于传入`KVM`，因为传入`KVM`应该是对平坦内存的一种表示】，并注册到 `KVM` 中：
+
+```c
+
+static void listener_add_address_space(MemoryListener *listener,
+                                       AddressSpace *as)
+{
+    FlatView *view;
+    FlatRange *fr;
+
+    if (listener->begin) {
+        listener->begin(listener);
+    }
+    /* 开启内存脏页记录 */
+    if (global_dirty_tracking) {
+        if (listener->log_global_start) {
+            listener->log_global_start(listener);
+        }
+    }
+
+    /* 遍历 AddressSpace 对应的 FlatRange 数组，并将其转换成 MemoryRegionSection */
+    view = address_space_get_flatview(as);
+    FOR_EACH_FLAT_RANGE(fr, view) {
+        MemoryRegionSection section = section_from_flat_range(fr, view);
+        /* 将 section 所代表的内存区域注册到 KVM 中 */
+        if (listener->region_add) {
+            listener->region_add(listener, &section);
+        }
+        if (fr->dirty_log_mask && listener->log_start) {
+            listener->log_start(listener, &section, 0, fr->dirty_log_mask);
+        }
+    }
+    if (listener->commit) {
+        listener->commit(listener);
+    }
+    flatview_unref(view);
+}
+```
+由于此时 `AddressSapce` 尚未初始化，所以此处的循环为空，仅是在全局注册了`kvm_memory_listener`。最后调用了`kvm_memory_listener->region_add()`，对应的实现是`kvm_region_add()`，该函数最终会通过`ioctl(KVM_SET_USER_MEMORY_REGION)`，将 `QEMU` 侧申请的内存信息传入 `KVM` 进行注册，这里的流程会在下一部分进行分析。
+
+
+### AddressSpace 的初始化
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220125154841.png)
+
+```c
+int main()
+  └─ void cpu_exec_init_all()
+       ├─ static void memory_map_init()
+       |    ├─ void memory_region_init()    // 初始化 system_memory/io 这两个全局 MemoryRegion
+       |    ├─ void set_system_memory_map() // address_space_memory->root = system_memory
+       |    |    └─ static void memory_region_update_topology()        // 为 MemoryRegion 生成 FlatView
+       |    |         └─ static void address_space_update_topology()   // as->current_map = new_view
+       |    |              └─ static void address_space_update_topology_pass()
+       |    |                   └─ static void kvm_region_add()        // region_add 对应的回调实现
+       |    |                        └─ static void kvm_set_phys_mem() // 根据传入的 section 填充 KVMSlot
+       |    |                             └─ static int kvm_set_user_memory_region()
+       |    |                                  └─ int ioctl(KVM_SET_USER_MEMORY_REGION)
+       |    |
+       |    └─ void memory_listener_register() // 注册对应的 MemoryListener
+       |         └─ static void listener_add_address_space()
+       |
+       └─ static void io_mem_init()
+            └─ void memory_region_init_io() // ram/rom/unassigned/notdirty/subpage-ram/watch
+                 └─ void memory_region_init()
+```
+
+第一部分在全局注册了`kvm_memory_listener`，但由于` AddressSpace` 尚未初始化，实际上并未向 `KVM` 中注册任何实际的内存信息。`QEMU` 在`main()`函数中会继续调用`cpu_exec_init_all()`对` AddressSpace `进行初始化，该函数实际上是对两个 `init` 函数的封装调用：
+
+```c
+
+void cpu_exec_init_all(void)
+{
+    qemu_mutex_init(&ram_list.mutex);
+    /* The data structures we set up here depend on knowing the page size,
+     * so no more changes can be made after this point.
+     * In an ideal world, nothing we did before we had finished the
+     * machine setup would care about the target page size, and we could
+     * do this much later, rather than requiring board models to state
+     * up front what their requirements are.
+     */
+    finalize_target_page_bits();
+    io_mem_init();      // 初始化六个I/O MemoryRegion
+    memory_map_init(); // 初始化两个全局 AddressSpace，以及对应的 MemoryRegion、FlatView
+    qemu_mutex_init(&map_client_list_lock);
+}
+```
+先来看`memory_map_init()`，主要用来初始化两个全局的系统地址空间`system_memory`、`system_io`
+```c
+static void memory_map_init(void)
+{
+    system_memory = g_malloc(sizeof(*system_memory));
+    // 1. 初始化 system_memory
+    memory_region_init(system_memory, NULL, "system", UINT64_MAX);
+    // 2. 设置 address_space_memory 关联 system_memory
+    // 这两个都是全局变量，也就是把内存地址空间和IO地址空间于对应的MemoryRegion联系起来 
+    //及其对应的 FlatView
+    address_space_init(&address_space_memory, system_memory, "memory");
+
+    system_io = g_malloc(sizeof(*system_io));
+    // 1. 初始化 system_io  
+    memory_region_init_io(system_io, NULL, &unassigned_io_ops, NULL, "io",
+                          65536);
+    // 2. 设置 address_space_io 关联 system_io 
+    // 及其对应的 FlatView
+    address_space_init(&address_space_io, system_io, "I/O");
+}
+```
+
+这里比较重要的是`address_space_init()`，先设置 `AddressSpace` 对应的 `MemoryRegion`，之后根据`system_memory`更新`address_space_memory`对应的 `FlatView`：
+```c
+void address_space_init(AddressSpace *as, MemoryRegion *root, const char *name)
+{
+    memory_region_ref(root);
+    // 将 address_space_memory 的 root 域指向 system_memory
+    as->root = root;        
+    as->current_map = NULL;
+    as->ioeventfd_nb = 0;
+    as->ioeventfds = NULL;
+    QTAILQ_INIT(&as->listeners);
+    QTAILQ_INSERT_TAIL(&address_spaces, as, address_spaces_link);
+    as->name = g_strdup(name ? name : "anonymous");
+    // 根据 system_memory 更新 address_space_memory 对应的 FlatView
+    address_space_update_topology(as);  
+    address_space_update_ioeventfds(as);
+}
+```
+`address_space_update_topology()`会继续调用`generate_memory_topology()`生成 `AddressSpace` 对应的 `FlatView `视图：
+```c
+static void address_space_update_topology(AddressSpace *as)
+{
+    MemoryRegion *physmr = memory_region_get_flatview_root(as->root);
+
+    flatviews_init();
+    if (!g_hash_table_lookup(flat_views, physmr)) {
+        generate_memory_topology(physmr);
+    }
+    address_space_set_flatview(as);
+}
+```
+
+`address_space_update_topology()`会先调用`generate_memory_topology()`生成`system_memory`更新后的视图`new_view`，再将`address_space_memory`的`current_map`指向这个`new_view`，最后销毁`old_view`：
+
+```c
+static void address_space_set_flatview(AddressSpace *as)
+{
+    FlatView *old_view = address_space_to_flatview(as);
+    MemoryRegion *physmr = memory_region_get_flatview_root(as->root);
+    FlatView *new_view = g_hash_table_lookup(flat_views, physmr);
+
+    assert(new_view);
+
+    if (old_view == new_view) {
+        return;
+    }
+
+    if (old_view) {
+        flatview_ref(old_view);
+    }
+
+    flatview_ref(new_view);
+
+    if (!QTAILQ_EMPTY(&as->listeners)) {
+        FlatView tmpview = { .nr = 0 }, *old_view2 = old_view;
+
+        if (!old_view2) {
+            old_view2 = &tmpview;
+        }
+        address_space_update_topology_pass(as, old_view2, new_view, false);
+        address_space_update_topology_pass(as, old_view2, new_view, true);
+    }
+
+    /* Writes are protected by the BQL.  */
+    qatomic_rcu_set(&as->current_map, new_view);
+    if (old_view) {
+        flatview_unref(old_view);
+    }
+
+    /* Note that all the old MemoryRegions are still alive up to this
+     * point.  This relieves most MemoryListeners from the need to
+     * ref/unref the MemoryRegions they get---unless they use them
+     * outside the iothread mutex, in which case precise reference
+     * counting is necessary.
+     */
+    if (old_view) {
+        flatview_unref(old_view);
+    }
+}
+```
+在`address_space_update_topology_pass()`的最后，会调用`MEMORY_LISTENER_UPDATE_REGION`这个宏，触发`region_add`对应的回调函数`kvm_region_add()`。
+
+这个宏在`memory.c`中定义，会将 `FlatView` 中的 `FlatRange` 转换为 `MemoryRegionSection`，作为入参传递给`kvm_region_add()`：
+
+```C
+/* No need to ref/unref .mr, the FlatRange keeps it alive.  */
+#define MEMORY_LISTENER_UPDATE_REGION(fr, as, dir, callback, _args...)  \
+    do {                                                                \
+        MemoryRegionSection mrs = section_from_flat_range(fr,           \
+                address_space_to_flatview(as));                         \
+        MEMORY_LISTENER_CALL(as, callback, dir, &mrs, ##_args);         \
+    } while(0)
+```
+
+而`kvm_region_add()`实际上是对`kvm_set_phys_mem()`的封装调用。该函数比较复杂，会根据传入的`section`填充 KVMSlot，再传递给`kvm_set_user_memory_region()`：
+
+```C
+
+static int kvm_set_user_memory_region(KVMMemoryListener *kml, KVMSlot *slot, bool new)
+{
+    KVMState *s = kvm_state;
+    struct kvm_userspace_memory_region mem;
+    int ret;
+
+    // 根据 KVMSlot 填充 kvm_userspace_memory_region
+    mem.slot = slot->slot | (kml->as_id << 16);
+    mem.guest_phys_addr = slot->start_addr;
+    mem.userspace_addr = (unsigned long)slot->ram;
+    mem.flags = slot->flags;
+
+    if (slot->memory_size && !new && (mem.flags ^ slot->old_flags) & KVM_MEM_READONLY) {
+        /* Set the slot size to 0 before setting the slot to the desired
+         * value. This is needed based on KVM commit 75d61fbc. */
+        mem.memory_size = 0;
+        ret = kvm_vm_ioctl(s, KVM_SET_USER_MEMORY_REGION, &mem);
+        if (ret < 0) {
+            goto err;
+        }
+    }
+    mem.memory_size = slot->memory_size;
+    ret = kvm_vm_ioctl(s, KVM_SET_USER_MEMORY_REGION, &mem);
+    slot->old_flags = mem.flags;
+    return ret;
+}
+```
+可以看到这里又将 `KVMSlot` 转换为 `kvm_userspace_memory_region`，作为`ioctl()`的参数，交给内核中的 `KVM` 进行内存的注册【设置`GPA->HVA`的映射关系，在内核空间维护并管理 Guest 的内存】。
+
+至此 QEMU 侧负责管理内存的数据结构均已完成初始化，**可以参考下面的图片了解各数据结构之间的对应关系**
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127155506.png)
+
+
+### 实际内存的分配
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127160121.png)
+
+```C
+int main()
+  └─ void machine->init(ram_size, ...)
+       └─ static void pc_init_pci(ram_size, ...) // 初始化虚拟机
+            └─ static void pc_init1(system_memory, system_io, ram_size, ...)
+                 ├─ void memory_region_init(pci_memory, "pci", ...) // pci_memory, rom_memory
+                 └─ void pc_memory_init() // 初始化内存，分配实际的物理内存地址
+                      ├─ void memory_region_init_ram() // 创建 pc.ram, pc.rom 并分配内存
+                      |    ├─ void memory_region_init()
+                      |    └─ ram_addr_t qemu_ram_alloc()
+                      |         └─ ram_addr_t qemu_ram_alloc_from_ptr()
+                      |
+                      ├─ void vmstate_register_ram_global() // 将 MR 的 name 写入 RAMBlock 的 idstr
+                      |    └─ void vmstate_register_ram()
+                      |         └─ void qemu_ram_set_idstr()
+                      |
+                      ├─ void memory_region_init_alias()    // 初始化 ram_below_4g, ram_above_4g
+                      └─ void memory_region_add_subregion() // 在 system_memory 中添加 subregions
+                           └─ static void memory_region_add_subregion_common()
+                                └─ static void memory_region_update_topology() // 为 MemoryRegion 生成 FlatView
+                                     └─ static void address_space_update_topology() // as->current_map = new_view
+                                          └─ static void address_space_update_topology_pass()
+                                               └─ static void kvm_region_add() // region_add 对应的回调实现
+                                                    └─ static void kvm_set_phys_mem() // 根据传入的 section 填充 KVMSlot
+                                                         └─ static int kvm_set_user_memory_region()
+                                                              └─ int ioctl(KVM_SET_USER_MEMORY_REGION)
+```
+之前的回调函数注册、AddressSpace 的初始化，实际上均没有对应的物理内存。【实际的内存是在RAMBlock中】
+
+我们再回到 `qemu` 启动的 `main` 函数中。接下来的初始化过程会调用 `pc_init1`。在这里面，对于 `CPU` 虚拟化，我们会调用 `pc_cpus_init`。另外，`pc_init1` 还会调用` pc_memory_init`，进行内存的虚拟化。
+
+```c
+void *pc_memory_init(MemoryRegion *system_memory,
+                    const char *kernel_filename,
+                    const char *kernel_cmdline,
+                    const char *initrd_filename,
+                    ram_addr_t below_4g_mem_size,
+                    ram_addr_t above_4g_mem_size,
+                    MemoryRegion *rom_memory,
+                    MemoryRegion **ram_memory)
+{
+    MemoryRegion *ram, *option_rom_mr;         // 两个实体 MR: pc.ram, pc.rom
+    MemoryRegion *ram_below_4g, *ram_above_4g; // 两个别名 MR: ram_below_4g, ram_above_4g
+
+    /* Allocate RAM.  We allocate it as a single memory region and use
+     * aliases to address portions of it, mostly for backwards compatibility
+     * with older qemus that used qemu_ram_alloc().
+     */
+    ram = g_malloc(sizeof(*ram)); // 创建 ram
+    // 分配具体的内存（实际上会创建一个 RAMBlock 并将其 offset 值写入 ram.ram_addr，对应 GPA）
+    memory_region_init_ram(ram, "pc.ram", below_4g_mem_size + above_4g_mem_size);
+    // 将 MR 的 name 写入 RAMBlock 的 idstr
+    vmstate_register_ram_global(ram);
+    *ram_memory = ram;
+
+    // 创建 ram_below_4g 表示 4G 以下的内存
+    ram_below_4g = g_malloc(sizeof(*ram_below_4g));
+    memory_region_init_alias(ram_below_4g, "ram-below-4g", ram, 0, below_4g_mem_size);
+    // 将 ram_below_4g 挂在 system_memory 下
+    memory_region_add_subregion(system_memory, 0, ram_below_4g);
+
+    if (above_4g_mem_size > 0) {
+        ram_above_4g = g_malloc(sizeof(*ram_above_4g));
+        memory_region_init_alias(ram_above_4g, "ram-above-4g", ram, below_4g_mem_size, above_4g_mem_size);
+        memory_region_add_subregion(system_memory, 0x100000000ULL, ram_above_4g);
+    }
+    /* ... */
+}
+```
+
+这里的重点在于`memory_region_init_ram()`，它通过`qemu_ram_alloc()`获取ram这个 `MemoryRegion` 对应的 `RAMBlock` 的`offset`，并存入`ram.ram_addr`，这样就可以在`ram_list`中根据该字段查找 `MR` 对应的 `RAMBlock`：
+
+```c
+void memory_region_init_ram(MemoryRegion *mr, const char *name, uint64_t size)
+{
+    memory_region_init(mr, name, size); // 填充字段，初始化默认值
+    mr->ram = true; // 表示为 RAM
+    mr->terminates = true; // 表示为实体 MemoryRegion
+    mr->destructor = memory_region_destructor_ram;
+    mr->ram_addr = qemu_ram_alloc(size, mr); // 这里保存 RAMBlock 的 offset，即 GPA
+}
+```
+
+而qemu_ram_alloc()最终会调用qemu_ram_alloc_from_ptr()，创建一个对应大小 RAMBlock 并分配内存，返回对应的 GPA 地址存入mr->ram_addr中：
+
+```C
+ram_addr_t qemu_ram_alloc_from_ptr(ram_addr_t size, void *host,
+                                   MemoryRegion *mr)
+{
+    RAMBlock *new_block; // 创建一个 RAMBlock
+
+    size = TARGET_PAGE_ALIGN(size); // 页对齐
+    new_block = g_malloc0(sizeof(*new_block)); // 初始化 new_block
+
+    new_block->mr = mr; // 将 new_block-> 指向入参的 MemoryRegion
+    new_block->offset = find_ram_offset(size); // 从 ram_list 中的 RAMBlock 之间找到一段可以满足 size 需求的 gap，并返回起始地址的 offset，对应 GPA
+    if (host) { // 新建的 RAMBlock host 字段为空，跳过
+        new_block->host = host;
+        new_block->flags |= RAM_PREALLOC_MASK;
+    } else {
+        if (mem_path) { // 未指定 mem_path
+#if defined (__linux__) && !defined(TARGET_S390X)
+            new_block->host = file_ram_alloc(new_block, size, mem_path);
+            if (!new_block->host) {
+                new_block->host = qemu_vmalloc(size);
+                qemu_madvise(new_block->host, size, QEMU_MADV_MERGEABLE);
+            }
+#else
+            fprintf(stderr, "-mem-path option unsupported\n");
+            exit(1);
+#endif
+        } else {
+            if (xen_enabled()) {
+                xen_ram_alloc(new_block->offset, size, mr);
+            } else if (kvm_enabled()) { // 从这里继续
+                /* some s390/kvm configurations have special constraints */
+                new_block->host = kvm_vmalloc(size); // 实际上还是调用 qemu_vmalloc(size)
+            } else {
+                new_block->host = qemu_vmalloc(size); // 从 QEMU 的线性空间中分配 size 大小的内存，返回 HVA
+            }
+            qemu_madvise(new_block->host, size, QEMU_MADV_MERGEABLE);
+        }
+    }
+    new_block->length = size; // 将 length 设置为 size
+
+    QLIST_INSERT_HEAD(&ram_list.blocks, new_block, next); // 将该 RAMBlock 插入 ram_list 头部
+
+    ram_list.phys_dirty = g_realloc(ram_list.phys_dirty, // 重新分配 ram_list.phys_dirty 的内存空间
+                                       last_ram_offset() >> TARGET_PAGE_BITS);
+    memset(ram_list.phys_dirty + (new_block->offset >> TARGET_PAGE_BITS),
+           0, size >> TARGET_PAGE_BITS);
+    cpu_physical_memory_set_dirty_range(new_block->offset, size, 0xff); // 对该 RAMBlock 对应的内存标记为 dirty
+
+    qemu_ram_setup_dump(new_block->host, size);
+
+    if (kvm_enabled())
+        kvm_setup_guest_memory(new_block->host, size);
+
+    return new_block->offset;
+}
+```
+
+这样一来`ram`【其实就是`system memory`，整个`Guest`物理空间的大小】对应的 `RAMBlock` 中就分配好了 `GPA` 和 `HVA`，就可以**将内存信息同步至 KVM 侧**了。
+
+最后回到`pc_memory_init()`中，在分配完实际内存后，会先调用`memory_region_init_alias()`初始化`ram_below_4g`、`ram_above_4g`这两个` alias`，之后调用`memory_region_add_subregion()`将这两个 `alias` 指向`ram`这个实体 `MemoryRegion`。如下图，该函数最终会触发`kvm_region_add()`回调，将实际的内存信息传入 `KVM` 注册。该过程如下图所示，与之前分析的流程相同，此处不再赘述。
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127163205.png)
+
+## 总结
+虚拟机的内存管理也是需要用户态的 `qemu` 和内核态的 `KVM` 共同完成。为了加速内存映射，需要借助硬件的 `EPT` 技术。
+
+### QEMU 侧
+- 创建一系列 `MemoryRegion`，分别表示 `Guest` 中的 `RAM`、`ROM` 等区域。`MemoryRegion `之间通过 `alias` 或 `subregions` 的方式维护相互之间的关系，从而进一步细化区域的定义
+
+- 对于一个实体 `MemoryRegion`（非 `alias`），在初始化内存的过程中 `QEMU` 会创建它所对应的 `RAMBlock`。该 `RAMBlock` 通过调用`qemu_ram_alloc_from_ptr()`从 `QEMU` 的进程地址空间中**以 mmap 的方式分配内存**，并负责**维护该 MemoryRegion 对应内存的起始 GPA/HVA/size 等相关信息**【在`qemu_ram_alloc_from_ptr`中创建的新`RAMBlock`有`offset`、`host`的赋值，即`GPA->HVA`的对应关系】
+
+- `AddressSpace` 表示 `Guest` 的物理地址空间。如果 `AddressSpace` 中的 `MemoryRegion` 发生变化，则注册的 `listener` 会被触发，将所属的 `MemoryRegion` 树展开生成一维的 `FlatView`，比较 FlatRange 是否发生了变化。如果是，则调用相应的方法对 `MemoryRegionSection` 进行检查，更新 `QEMU` 中的 `KVMSlot`，同时填充`kvm_userspace_memory_region`结构体，作为`ioctl()`的参数更新 `KVM` 中的`kvm_memory_slot`
+
+
+### KVM 侧
+- 当 `QEMU` 通过`ioctl()`创建 `vcpu` 时，调用`kvm_mmu_create()`初始化 `MMU` 相关信息.
+当 `KVM` 要进入 `Guest` 前，`vcpu_enter_guest()=>kvm_mmu_reload()`会将根级页表地址加载到 `VMCS`，让 `Guest` 使用该页表
+
+- 当发生` EPT Violation` 时，`VM-EXIT `到 `KVM` 中。如果是缺页，则根据 `GPA` 算出 `gfn`，再根据 `gfn` 找到对应的 `KVMSlot`，从中得到对应的 `HVA`。然后根据 `HVA` 算出对应的 `pfn`，确保该 `Page` 位于内存中。填好缺失的页之后，需要更新 `EPT`，完善其中缺少的页表项，逐层补全页表
+
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127163418.png)
+
+
+>虚拟机的物理内存空间里面的页面当然不是一开始就映射到物理页面的，只有当虚拟机的内存被访问的时候，也即 `mmap` 分配的虚拟内存空间被访问的时候，先查看 `EPT` 页表，是否已经映射过，如果已经映射过，则经过四级页表映射，就能访问到物理页面。
+如果没有映射过，则虚拟机会通过` VM-Exit `指令回到宿主机模式，通过 `handle_ept_violation` 补充页表映射。先是通过 `handle_mm_fault `为虚拟机的物理内存空间分配真正的物理页面，然后通过 `__direct_map` 添加 `EPT` 页表映射。
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127171031.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
