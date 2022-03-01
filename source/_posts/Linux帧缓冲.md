@@ -2,15 +2,14 @@
 title: Linux帧缓冲
 date: 2022-01-17 17:38:04
 updated:
-tags: [Linux]
+tags: [Linux, FrameBuffer, LCD]
 categories:
 ---
 ## 简介
 
 FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。
 
-Framebuffer机制模仿显卡的功能，将显卡硬件结构抽象掉，可以通过Framebuffer的读写直接对显存进行操作。用户可以将Framebuffer看成是显示内存的一个映像，将其映射到进程地址空间之后，就可以直接进行读写操作，而写操作可以立即反应在屏幕上。 这种操作是抽象的，统一的。用户不必关心物理显存的位置、换页机制等等具体细节。这些都是由Framebuffer设备驱动来完成的。 
-
+ 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220118092227.png)
 
 ## 帧缓冲主要结构
@@ -211,6 +210,16 @@ fail:
 
 ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220120202118.png)
 
+## LCD与Framebuffer的关系
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220225141549.jpg)
+
+LCD控制器首先通过VDEN信号，使能。接下来根据VCLK时钟信号，在像素点上“喷涂”不同的颜色（打个比方），控制器有VD（video data）信号，传送不同颜色信息。每来一个时钟信号，就向右移动一个像素，根据行同步信号HSYNC，就从最右边移动到最左边。当移动到右下角时根据垂直同步信号VSYNC。
+
+那么问题来了，不同颜色的信息从哪里来？就是从上文介绍的Framebuffer中来的。
+
+很多人都会说操纵LCD显示就是操纵FrameBuffer，表面上来看是这样的。实际上是FrameBuffer就是linux内核驱动申请的一片内存空间，然后LCD内有一片sram，cpu内部有个LCD控制器，它有个单独的dma用来将FrameBuffer中的数据拷贝到LCD的sram中去 拷贝到LCD的sram中的数据就会显示在LCD上，LCD驱动和FrameBuffer驱动没有必然的联系，它只是驱动LCD正常工作的，比如有信号传过来，那么LCD驱动负责把信号转成显示屏上的内容，至于什么内容这就是应用层要处理的。
+> 静态随机存取存储器（Static Random-Access Memory，SRAM）是随机存取存储器的一种。所谓的“静态”，是指这种存储器只要保持通电，里面储存的数据就可以恒常保持。
+>DMA（Direct Memory Access），直接内存访问。使用DMA的好处就是它不需要CPU的干预而直接服务外设，这样CPU就可以去处理别的事务，从而提高系统的效率。
 ## Reference
 [Linux驱动之Framebuffer子系统 | 量子范式](https://carlyleliu.github.io/2021/Linux%E9%A9%B1%E5%8A%A8%E4%B9%8BFramebuffer%E5%AD%90%E7%B3%BB%E7%BB%9F/)
 [Linux驱动开发（9）——- framebuffer驱动详解 | 码农家园](https://www.codenong.com/cs106598190/)
@@ -219,3 +228,5 @@ fail:
 [五子棋 framebuffer版 - 尚码园](https://www.shangmayuan.com/a/f67d260756ce42258a9ed4ef.html)
 [FrameBuffer驱动程序分析_深入剖析Android系统-CSDN博客_framebuffer](https://blog.csdn.net/yangwen123/article/details/12096483)
 [xianjimli/linux-framebuffer-tools: linux framebuffer tool](https://github.com/xianjimli/linux-framebuffer-tools)
+[韦东山_嵌入式Linux_第2期_Linux高级驱动视频教程_免费试看版_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1HW411L76t?p=2)
+[Linux LCD Frambuffer 基础介绍和使用（1） - 知乎](https://zhuanlan.zhihu.com/p/356443723)

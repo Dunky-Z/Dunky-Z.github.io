@@ -397,17 +397,16 @@ typedef struct RAMList {
     QLIST_HEAD(, RAMBlockNotifier) ramblock_notifiers;
 } RAMList;
 extern RAMList ram_list;
-````
+```
 
 每一个新分配的 `RAMBlock` 都会被插入到`ram_list`的头部。如需查找地址所对应的 `RAMBlock`，则需要遍历`ram_list`，当目标地址落在当前` RAMBlock `的地址区间时，该 `RAMBlock` 即为查找目标。
 
 
-####  AS、MR、RAMBlock 之间的关系
+#### AS、MR、RAMBlock 之间的关系
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220125133133.svg)
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220225155936.png)
 
 ### FlatView
-
 
 AddressSpace 的root域及其子树共同构成了 Guest 的物理地址空间，但这些都是在 QEMU 侧定义的。要传入 KVM 进行设置时，复杂的树状结构是不利于内核进行处理的，因此需要将其**转换为一个“平坦”的地址模**型，也就是一个从零开始、只包含地址信息的数据结构，这在 QEMU 中通过 **FlatView** 来表示。每个 AddressSpace 都有一个与之对应的 FlatView 指针current_map，表示其对应的平面展开视图。
 
