@@ -42,3 +42,6 @@ tags: [VSCode]
     - `prefix`:输入时的缩写，触发器
     - `body`:内容
     - `description`:描述
+
+
+[VSCode 利用 Snippets 设置超实用的代码块 - 掘金](https://juejin.cn/post/6844903869424599053)
