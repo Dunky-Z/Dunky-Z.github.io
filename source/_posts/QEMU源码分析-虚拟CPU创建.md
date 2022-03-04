@@ -414,4 +414,4 @@ static Object *object_new_with_type(Type type)
 
 至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到` current_machine`。
 
-
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220304173354.png)
