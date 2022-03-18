@@ -128,6 +128,7 @@ tags: [Linux,GDB,RISCV]
                 "-o",
                 "${workspaceFolder}/debug/${fileBasenameNoExtension}" // 我选择将可执行文件放在debug目录下
             ],
+            // 当前工作路径：执行当前命令时所在的路径
             "options": {
                 "cwd": "${workspaceFolder}"
             },

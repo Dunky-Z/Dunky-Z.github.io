@@ -414,4 +414,8 @@ static Object *object_new_with_type(Type type)
 
 至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到` current_machine`。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220304173354.png)
+![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220308180036.png)
+
+## 参考
+[Qemu CPU虚拟化 - 人生一世，草木一秋。 - 博客园](https://www.cnblogs.com/nm90/p/15661202.html)
+[【原创】Linux虚拟化KVM-Qemu分析（四）之CPU虚拟化（2） - LoyenWang - 博客园](https://www.cnblogs.com/LoyenWang/p/13796537.html)
