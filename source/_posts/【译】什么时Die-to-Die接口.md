@@ -81,3 +81,4 @@ Synopsys 结合了广泛的 Die2Die 112G USR/XSR 和 HBI PHY IP、控制器 IP �
 ## 原文参考
 
 [What is a Die-to-Die Interface? – How it Works | Synopsys](https://www.synopsys.com/glossary/what-is-die-to-die-interface.html)
+

@@ -56,6 +56,27 @@ tags: [Linux,GDB,RISCV]
     ]
 }
 ```
+
+如果项目是通过Makefile编译的，那就更加简单，只需要配置一个任务即可。
+
+```
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+       //任务的名字方便执行
+      "label": "Make Project",
+      "type": "shell",
+      "command": "make",
+      "args":[
+          //8线程编译
+          "-j8",
+      ],
+    },
+  ]
+}
+```
+运行该任务时就会执行`make`命令进行编译。
 ## 配置`launch.json`
 
 ```
@@ -157,7 +178,7 @@ tags: [Linux,GDB,RISCV]
     ]
 }
 ```
-`tasks.jason`是可以配置多个任务的，第一个任务用来编译成`riscv`架构下的程序，第二个任务用来启动qemu，让程序再qemu上运行起来。
+`tasks.jason`是可以配置多个任务的，第一个任务用来编译成`riscv`架构下的程序，第二个任务用来启动qemu，让程序在qemu上运行起来。
 
 第一个任务中，`command`就是配置编译器`riscv64-unkonown-elf-gcc`的属性，第二个任务中，`command`是配置qemu模拟器`qemu-system-riscv32`的属性。第三个任务中，用来配置结束qemu模拟器的命令。
 
