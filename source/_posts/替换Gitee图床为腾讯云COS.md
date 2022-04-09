@@ -6,6 +6,9 @@ tags:
 categories:
 ---
 
+[Gitee图床挂了](https://cloud.tencent.com/developer/article/1964208)，但是各大云服务厂商提供的对象存储服务免费额度，对于个人小博客来说也够用了。下面介绍如何将图床更换为腾讯云COS。
+
+
 ## 下载原有图片
 
 从`gitee`下载整个仓库。保持原有目录结构。
@@ -18,6 +21,8 @@ categories:
 
 ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204091731554.png)
 
+如果忘了设置读写权限可以按一下方法设置；
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204091727355.png)
 
 选择**菜单**--**文件列表**。上传下载好的文件夹（整个仓库的文件夹）。鼠标放到**选择文件**出现**上传文件夹选项**，或者将文件夹**拖入浏览器**。
 
