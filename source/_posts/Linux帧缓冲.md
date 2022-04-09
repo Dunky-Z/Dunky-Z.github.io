@@ -10,7 +10,7 @@ categories:
 FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。
 
  
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220118092227.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png)
 
 ## 帧缓冲主要结构
 - fb_info
@@ -30,7 +30,7 @@ FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护
     `fb_cmap`指定颜色映射，用于以内核可以理解的方式存储用户的颜色定义。
 
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220117192106.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220117192106.png)
 
 ## 帧缓冲显示原理
 帧缓冲设备是一种显示抽象的设备，也可以被理解为它是一个内存区域，上面的应用程序可以直接对显示缓冲区进行读和写操作，就像访问文件的通用接口一样，用户可以认为帧缓冲是一块内存，能读取数据的内存块也可以向这个内存写入数据，因此显示器显示图形界面实际上根据根据的是指定的内存数据块内的数据。
@@ -208,10 +208,10 @@ fail:
 
 感兴趣可以下载源码编译运行，其中`/bin/fbshow`可以使用帧缓冲设备显示图片。图形界面下直接运行可能提示无法运行，需要`Chrtl+Alt+F1`切换到控制台模式。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220120202118.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220120202118.png)
 
 ## LCD与Framebuffer的关系
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220225141549.jpg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225141549.jpg)
 
 LCD控制器首先通过VDEN信号，使能。接下来根据VCLK时钟信号，在像素点上“喷涂”不同的颜色（打个比方），控制器有VD（video data）信号，传送不同颜色信息。每来一个时钟信号，就向右移动一个像素，根据行同步信号HSYNC，就从最右边移动到最左边。当移动到右下角时根据垂直同步信号VSYNC。
 

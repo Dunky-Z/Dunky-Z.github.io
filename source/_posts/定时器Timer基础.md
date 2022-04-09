@@ -43,5 +43,5 @@ $$
 
 
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211214140256.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png)
 

@@ -9,7 +9,7 @@ categories:
 
 ## 保留现场
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201192309069.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201192309069.png)
 
 ## 探究原因
 
@@ -31,7 +31,7 @@ categories:
 
 将Path强制设置成`Git`安装包内的`ssh.exe`
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201192304598.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201192304598.png)
 
 或者`mobaxterm`安装包内的`ssh.exe`
 

@@ -11,7 +11,7 @@ CSAPP：Computer Systems A Programmer’s Perspective（深入理解计算机操
 
 ### 寄存器信息
 了解寄存器的基本用途，看到一个汇编代码，可以大概了解这个寄存器是在栈中使用的，还是保存参数的，是调用者保存，还是被调用者保存。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830160500.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830160500.png)
 
 <div STYLE="page-break-after: always;"></div>
 

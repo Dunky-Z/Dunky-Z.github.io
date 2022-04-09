@@ -21,7 +21,7 @@ tags: [Linux,GDB,RISCV]
 首先得安装一个插件`C/C++`，打开插件中心`Ctrl+Shit+X`，搜索，安装。
 
 然后输入`F5`，会弹出对话框，选择`C++(GDB)`，继续选择`g++`。VSCode会自动创建`.vscode`文件夹，已经两个文件`launch.json`和`tasks.json`。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210823193157.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210823193157.png)
 
 `launch.json`用来配置调试环境，`tasks.json`主要用来配置编译环境，当然也可以配置其他任务。`task.json`里配置的每个任务其实就相当于多开一个控制台。
 ## 配置`tasks.json`
@@ -118,13 +118,13 @@ tags: [Linux,GDB,RISCV]
 ## 运行
 经过以上配置后，我们打开`main.cpp`文件，在`cout`处打一个断点，按`F5`，即可编译，运行，调试。一定要打开`main.cpp`文件，不能随便打开文件就开始哦。因为我们在配置时使用了一些预定义，比如`${file}`表示当前文件，所以只有打开需要调试的文件才能开始。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210823201621.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210823201621.png)
 
 程序将会在`cout`语句停下来。
 
 我们可以注意一下界面下方的控制台，可以更直观了解`launch.jason`和`tasks.jason`。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210823202012.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210823202012.png)
 
 右边的框，就是我们在`tasks.jason`中配置的任务，左边的框就是我们在`tasks.jason`中`command`以及`args`的内容，他就是帮我们提前写好编译的选项。然后在shell中运行。
 
@@ -217,11 +217,11 @@ tags: [Linux,GDB,RISCV]
 
 因为启动qemu会导致阻塞，所以这里没有加`preLaunchTask`，在启动调试之前，先把qemu运行起来。输入`Ctrl+Shift+P`，打开VSCode命令行。输入`Run Task`，
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824094556.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824094556.png)
 
 点击第一个，选择任务，我们可以看到出现的三个任务就是我们在`tasks.jason`中配置的三个任务。选择第一个Build，编译出程序，再重复操作，选择第三个执行QEMU任务。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824094609.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824094609.png)
 
 ## 预定义变量
 [官网](https://code.visualstudio.com/docs/editor/variables-reference#_predefined-variables)

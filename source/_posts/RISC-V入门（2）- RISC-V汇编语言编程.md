@@ -60,7 +60,7 @@ RISC(Reduced Instruction Set Computing)：只定义常用指令,对复杂的功�
 宽度指的是CPU通用寄存器的宽度（二进制位数），这决定了寻址大小，数据运算能力
 
 ### 开源与闭源
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108232257173.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108232257173.png)
 
 ### RISCV是什么
 - 一款高质量,免许可证，开放的RISC ISA
@@ -74,18 +74,18 @@ ISA命名格式: `RV[###][abc...xyz]`
 - `[##]`: `{32, 64, 128}`用于标识处理器的字宽,也就是处理器的寄存器的宽度单位为bit
 - `[abc xyz]`:标识该处理器支持的指令集模块集合。例子: `RV32IMA`, `RV64GC`
 ### 模块化
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108232325834.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108232325834.png)
 
 ### 通用寄存器
 `PC`寄存器没有暴露出来，无法直接获取，改动。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108232328265.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108232328265.png)
 
 ### HART
 HART = HARdware+Thread=硬件线程
 以往一个Core里可能有两个执行流，
 ### 特权级别
 不同特权级别下分别对应一套寄存器，比如用户态不能访问内核态的寄存器，这就起到了保护的作用。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108232356276.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108232356276.png)
 
 高级别可以访问低级别的寄存器。
 
@@ -100,19 +100,19 @@ HART = HARdware+Thread=硬件线程
 	- RV32可以访问最多`2^32`个字节的内存空间。
 
 ### 编码格式
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210826142737.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png)
 
 #### 小端序
 - 主机字节序(HBO-Host Byte Order)
 - 一个多字节整数在计算机内存中存储的字节顺序称主机字节序(HBO- Host Byte Order，或者叫本地字节序)
 - 不同类型CPU的HBO不同,这与CPU的设计有关。分为大端序(Big-Endian)和小端序(Little-Endian)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210826144713.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826144713.png)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210826145319.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826145319.png)
 
 ### 指令分类
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210826145633.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826145633.png)
 
 
 ## 指令详解
@@ -120,12 +120,12 @@ HART = HARdware+Thread=硬件线程
 #### ADD
 算数指令只包含加减，不包含乘除，乘除运算有专门的扩展。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108262335167.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202108262343942.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262335167.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262343942.png)
 
 数据传送顺序是由后向前，和正常的编码习惯类似。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202109172320337.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202109172320337.png)
 `.text`告诉编译器下面内容放到`elf`的`text section`中。
 `.global`声明一个全局函数
 
@@ -145,21 +145,21 @@ elf文件包含了调试信息
 `0000000 9 10 000 11 010011`->`ADD x11 x10 x9`
 #### ADDI ADD Immediate
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918102935.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918102935.png)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104115.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104115.png)
 
 #### LUI Load Upper Immediate
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104625.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104556.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104911.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918104929.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104625.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104556.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104911.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104929.png)
 #### 基于算术运算指令实现的其他伪指令
 
 `x0`寄存器具有特殊含义，往里写数据没有意义。
 `NOP`指令主要为了占位，空转。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210918103237.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918103237.png)
 
 
 
@@ -172,7 +172,7 @@ elf文件包含了调试信息
 只有右移，没有左移。左移会把最高位覆盖。
 ### 内存读写指令
 ### 条件分支指令
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211008115038.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211008115038.png)
 
 指令格式中的立即数(imm)存放有些奇怪，第[1-4]位和第[11]位放在一起，第[5-10]位和第[12]位放在一起。这是为了迎合硬件处理效率，编程时不需要考虑立即数存储方式。
 
@@ -182,27 +182,27 @@ elf文件包含了调试信息
 ### 函数调用过程概述
 栈（stack）数据结构，在函数调用过程中会用来保存变量，函数地址等等。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162130267.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162130267.png)
 
 栈帧里保存的变量是自动变量，会被内存自动释放。
 
 为何要有调用者与被调用者保存的概念
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162137133.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162137133.png)
 
 函数调用过程中就会有参数和返回值的传递，自己写的函数可能由别人来调用，如果没有约定好某个参数存放位置，就不能够顺利执行函数。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162144447.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162144447.png)
 
 因为寄存器需要经常在编程中使用，所以ABI名就是寄存器的别名。
 
 > 这些寄存器其实都可以设置成被调用者保存，也就是在被调用函数中保存一遍为啥还要分这么多
 答：因为保存一遍效率低
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162209273.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162209273.png)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162217164.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162217164.gif)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162234551.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162234551.png)
 ## 汇编与C混合编程
 ###  前提
 遵守ABI（Abstract Binary Interface）的规定
@@ -252,6 +252,6 @@ stack_end:
 `.global foo`告诉编译器`foo`函数定义在外面。
 
 ### C语言嵌入汇编
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162347033.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162347033.png)
 下图中为简化写法
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202110162342119.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162342119.png)

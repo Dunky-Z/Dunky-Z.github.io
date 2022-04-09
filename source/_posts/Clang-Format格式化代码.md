@@ -26,21 +26,21 @@ clang g-format -i main.cpp -style=LLVM
 VSCode最常用，因为内置了`Clang-Format`也最容易配置。
 - 安装`C/C++`插件，`Ctrl+Shift+X`打开应用商店，搜索`C/C++`找到下图插件，安装后会自动安装`Clang-Format`程序，无需单独下载。默认安装路径为:
 `C:\Users\(你的用户名)\.vscode\extensions\ms-vscode.cpptools-1.7.1\LLVM\bin\clang-format.exe`。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112012311818.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012311818.png)
 - 打开设置页面（左下角齿轮-设置），搜索`format`，勾选`Format On Save`，每次保存文件时自动格式化文档。下方的设置是决定每次格式化是整个文档，还是做过修改的内容。默认是`file`，对整个文档进行格式化。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112012304766.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012304766.png)
 - 仍在设置页面搜索`Clang`，配置如下。`.clang-format`文件最后详解。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112012321838.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012321838.png)
 - 效果图
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112012327867.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012327867.gif)
 
 #### QtCreator
 - 安装`Beautifier`插件：帮助（`Help`）-关于插件（`About Plugins`）- `Beautifier`勾选，重启QtCreator。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211202183720.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202183720.png)
 - 工具（Tool）- `Beautifier`，配置如图。该配置，保存文档时自动格式化，并选择`Clang-Format`作为格式化工具。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211202184119.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202184119.png)
 配置`Clang-Format`程序路径，如果开头已经`apt install`安装过，这里会自动补全。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211202184247.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202184247.png)
 - `Use predefined style`可以选择内置的一些代码风格，如`LLVM`，`Google`等。
 - `Use customized style`使用自定义的一些代码风格。点击添加（`Add`）将配置文件粘贴进去即可，具体配置文件见最后。
 - 别忘了点击`OK`保存。
@@ -50,7 +50,7 @@ VSCode最常用，因为内置了`Clang-Format`也最容易配置。
 - 下载`cpplint`。
     可以去github上下载[cpplint的源码](https://github.com/google/styleguide)，下载完之后解压放到某个目录下。
 - 在`Window` - `Preferences` - `C/C++` - `CppStyle`页面把`clang-format`的路径添加进去，然后把`cpplint`的目录指向刚才下载的`styleguide`目录下的`cpplint/cpplint.py`就可以了。勾选下面的`Enable cpplint`，`Run clang-format on file save`，然后点击`Apply and Close`保存修改并退出。如下图所示。
-  ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211202190912.png)
+  ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202190912.png)
 - 此时再保存代码，将会出现如下错误，因为我们还未给当前项目编写配置文件`.clang-format`。将最后一章提到的配置文件放到当前项目的下即可，程序会自动搜索。
     ```bash
     Cannot find .clang-format or _clang-format configuration file under any level parent directories of path.
@@ -273,7 +273,7 @@ git diff -U0 HEAD^ | clang-format-diff.py -i -p1
 
 以宏定义对齐为例。我们想要宏定义的值保持对齐的状态，如下一节图片所示。可以翻一遍官方文档，可以发现这个示例代码对应的参数可能是我们想要的，`AlignConsecutiveMacros `翻译为**对齐连续的宏定义**。那应该八九不离十了。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112202021134.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112202021134.png)
 
 找到了参数如何编写配置文件呢？可以继续看这个参数下面的更多示例，每一个示例都对应一个配置可能值`Possible values`。
 
@@ -308,8 +308,8 @@ AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 使用宏定义对齐更详细的配置，可以[参考官方文档](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)。使用该配置一定要使用等宽的字体，否则配置生效但是显示不正确。
 比如我是用**微软雅黑**字体作为编码字体，因为该字体每个字符不等宽，导致格式化正确，但是显示不正确。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112201954096.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112201954096.png)
 
 如果将字体换位等宽字体如常用的**Consolas**，就可以正常显示。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202112201958869.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112201958869.png)

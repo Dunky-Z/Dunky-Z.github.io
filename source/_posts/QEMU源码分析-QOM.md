@@ -87,7 +87,7 @@ do_qemu_init_x86_cpu_register_types(void) {
 通过 `gcc` 扩展属性` __attribute__((constructor)) `可以让 `do_qemu_init_x86_cpu_register_types` 在运行 `main` 函数之前运行。 `register_module_init` 会让 `x86_cpu_register_types` 这个函数挂载到 `init_type_list[MODULE_INIT_QOM]` 这个链表上。
 
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210907133931.svg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg)
 
 到底，所有的 `TypeInfo` 通过 `type_init` 都被放到 `type_table` 上了，之后通过 `Typeinfo` 的名称调用 `type_table_lookup` 获取到 `TypeImpl` 了。
 

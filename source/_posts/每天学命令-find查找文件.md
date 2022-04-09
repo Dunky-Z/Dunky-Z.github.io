@@ -54,7 +54,7 @@ Linux 会存储下面的时间：
 
 此外，也可以换成`-amin`， `-mmin` 或者 `-cmin `参数，单位是分钟。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210729151915.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210729151915.png)
 ```
 find / -mtime 1          # 寻找修改时间超过一天的文件
 find / -atime -1         # 寻找在一天时间内被访问的文件

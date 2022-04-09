@@ -7,7 +7,7 @@ categories: [QEMU源码分析]
 ## 流程图
 先开个头吧，把创建流程稍微捋一下，找到创建虚拟CPU的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210901182329.svg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg)
 
 ## `qemu_add_opts`解析qemu的命令行
 `qemu_init`函数中下面这一长串内容，就是在解析命令行的参数。
@@ -238,7 +238,7 @@ static const TypeInfo kvm_accel_type = {
 
 调用流程如下：虚线表示返回
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210907133931.svg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg)
 
 每一个 `Module` 既然要模拟某种设备，那应该定义一种类型 `TypeImpl` 来表示这些设备，这其实是一种`面向对象编程`的思路，只不过这里用的是纯 C 语言的实现，所以需要变相实现一下类和对象。
 
@@ -257,7 +257,7 @@ static const TypeInfo kvm_accel_type = {
 
 ## 初始化machine
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210913115046.svg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210913115046.svg)
 
 ```c
 //vl.c
@@ -414,7 +414,7 @@ static Object *object_new_with_type(Type type)
 
 至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到` current_machine`。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220308180036.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220308180036.png)
 
 ## 参考
 [Qemu CPU虚拟化 - 人生一世，草木一秋。 - 博客园](https://www.cnblogs.com/nm90/p/15661202.html)

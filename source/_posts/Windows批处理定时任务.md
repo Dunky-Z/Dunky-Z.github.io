@@ -42,8 +42,8 @@ pause
 ### 定时任务
 
 控制面板-管理工具-任务计划程序
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201052247765.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201052247153.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201052247889.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201052248070.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201052248353.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247765.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247153.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247889.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052248070.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052248353.png)

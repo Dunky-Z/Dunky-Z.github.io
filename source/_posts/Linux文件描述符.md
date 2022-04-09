@@ -18,7 +18,7 @@ Linux 中一切皆文件，比如 C++ 源文件、视频文件、Shell脚本、�
 
 文件描述符表每个进程都有一个，打开文件表和 `i-node` 表整个系统只有一个，它们三者之间的关系如下图所示。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210930132546.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210930132546.png)
 
 对上图的说明：
 - 在进程` A` 中，文件描述符 `1` 和` 20` 都指向了同一个打开文件表项，标号为 `23`（指向了打开文件表中下标为 23 的数组元素），这可能是通过调用 `dup()`、`dup2()`、`fcntl()` 或者对同一个文件多次调用了 `open()` 函数形成的。

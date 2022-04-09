@@ -57,8 +57,8 @@ make
 ./MainWindow
 ```
 如果一切顺利，将会得到下面的窗口：
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210804120719.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210804120719.png)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210804120739.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210804120739.png)
 ## Reference
 1. https://www.devbean.net/2012/08/qt-study-road-2-action/

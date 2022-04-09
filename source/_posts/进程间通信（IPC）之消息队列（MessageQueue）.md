@@ -176,6 +176,6 @@ int main()
 
 ## 运行结果
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210819142858.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142858.png)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210819142913.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142913.png)

@@ -1,5 +1,5 @@
 ---
-title: 更换图床
+title: 替换Gitee图床为腾讯云COS
 date: 2022-04-09 16:43:08
 updated:
 tags:
@@ -46,3 +46,6 @@ categories:
 
 ## 替换旧图床URL
 
+VSCode全局替换：
+
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204091753809.png)

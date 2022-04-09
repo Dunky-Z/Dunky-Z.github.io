@@ -35,7 +35,7 @@ KVM 通过维护记录GVA->HPA的影子页表 SPT，减少了地址转换带来�
 为了实现客户机虚拟地址空间到宿主机物理地址空间的直接映射。客户机中每个进程都有自己的虚拟地址空间，所以 KVM 需要为客户机中的每个进程页表都要维护一套相应的影子页表。
 在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220124192700.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124192700.png)
 
 为了快速检索Guest页表对应的影子页表，KVM为每个客户机维护了一个hash表来进行客户机页表到影子页表之间的映射。 对于每一个Guest来说，其页目录和页表都有唯一的GPA，通过页目录/页表的GPA就可以在哈希链表中快速地找到对应的影子页目录/页表。
 
@@ -61,7 +61,7 @@ KVM 只需为每个客户机维护一套 EPT 页表，也大大减少了内存�
 
 EPT 的页表结构也是分为四层，EPT Pointer （EPTP）指向 PML4 的首地址。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220124194059.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124194059.png)
 
 ## QEMU 的主要工作
 
@@ -401,7 +401,7 @@ extern RAMList ram_list;
 
 #### AS、MR、RAMBlock 之间的关系
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220225155936.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225155936.png)
 
 ### FlatView
 
@@ -492,7 +492,7 @@ struct MemoryRegionSection {
 - `offset_within_address_space`：在所属 `AddressSpace` 中的 `offset`，它是全局的
 
 #### 和其他数据结构之间的关系
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220125110422.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125110422.png)
 
 - `AddressSpace` 的`root`指向对应的根级`MemoryRegion`，`current_map`指向`AddressSpace` 的`root`通过`generate_memory_topology()`生成的 `FlatView`
 - `FlatView` 中的`ranges`数组表示该` MemoryRegion` 所表示的` Guest `地址区间【GPA的整个平坦物理空间】，并按照地址的顺序进行排列
@@ -608,7 +608,7 @@ QEMU 的内存申请流程大致可分为三个部分：回调函数的注册、
 
 ### 回调函数的注册
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220125133808.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125133808.png)
 
 ```c
 int main()
@@ -728,7 +728,7 @@ static void listener_add_address_space(MemoryListener *listener,
 
 ### AddressSpace 的初始化
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220125154841.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125154841.png)
 
 ```c
 int main()
@@ -923,12 +923,12 @@ static int kvm_set_user_memory_region(KVMMemoryListener *kml, KVMSlot *slot, boo
 
 至此 QEMU 侧负责管理内存的数据结构均已完成初始化，**可以参考下面的图片了解各数据结构之间的对应关系**
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127155506.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127155506.png)
 
 
 ### 实际内存的分配
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127160121.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127160121.png)
 
 ```C
 int main()
@@ -1076,7 +1076,7 @@ ram_addr_t qemu_ram_alloc_from_ptr(ram_addr_t size, void *host,
 
 最后回到`pc_memory_init()`中，在分配完实际内存后，会先调用`memory_region_init_alias()`初始化`ram_below_4g`、`ram_above_4g`这两个` alias`，之后调用`memory_region_add_subregion()`将这两个 `alias` 指向`ram`这个实体 `MemoryRegion`。如下图，该函数最终会触发`kvm_region_add()`回调，将实际的内存信息传入 `KVM` 注册。该过程如下图所示，与之前分析的流程相同，此处不再赘述。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127163205.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163205.png)
 
 ## 总结
 虚拟机的内存管理也是需要用户态的 `qemu` 和内核态的 `KVM` 共同完成。为了加速内存映射，需要借助硬件的 `EPT` 技术。
@@ -1095,12 +1095,12 @@ ram_addr_t qemu_ram_alloc_from_ptr(ram_addr_t size, void *host,
 
 - 当发生` EPT Violation` 时，`VM-EXIT `到 `KVM` 中。如果是缺页，则根据 `GPA` 算出 `gfn`，再根据 `gfn` 找到对应的 `KVMSlot`，从中得到对应的 `HVA`。然后根据 `HVA` 算出对应的 `pfn`，确保该 `Page` 位于内存中。填好缺失的页之后，需要更新 `EPT`，完善其中缺少的页表项，逐层补全页表
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127163418.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163418.png)
 
 
 >虚拟机的物理内存空间里面的页面当然不是一开始就映射到物理页面的，只有当虚拟机的内存被访问的时候，也即 `mmap` 分配的虚拟内存空间被访问的时候，先查看 `EPT` 页表，是否已经映射过，如果已经映射过，则经过四级页表映射，就能访问到物理页面。
 如果没有映射过，则虚拟机会通过` VM-Exit `指令回到宿主机模式，通过 `handle_ept_violation` 补充页表映射。先是通过 `handle_mm_fault `为虚拟机的物理内存空间分配真正的物理页面，然后通过 `__direct_map` 添加 `EPT` 页表映射。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220127171031.jpg)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127171031.jpg)
 
 
 

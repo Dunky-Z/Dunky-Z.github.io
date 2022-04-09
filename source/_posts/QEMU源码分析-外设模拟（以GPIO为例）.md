@@ -15,7 +15,7 @@ QEMU的模拟外设的原理很简单：**硬件即内存**。
 
 以GPIO为例：
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211111102930.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png)
 
 QEMU 为`GPIO`内存地址提供读写回调函数，
 ```c
