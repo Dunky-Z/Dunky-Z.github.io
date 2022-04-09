@@ -33,7 +33,7 @@ $$
 
 ## 计数模式
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211214100956.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png)
 
 - 中心计数：计数器从0开始计数到自动装入的值-1，产生一个计数器溢出事件，0然后向下计数到1并且产生一个计数器溢出事件，然后再从0开始重新计数。
 
