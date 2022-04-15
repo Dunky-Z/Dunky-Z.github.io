@@ -109,7 +109,7 @@ IndentWidth:     4
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 ```
 
-基于LLVM代码风格修改的个人使用版本：
+基于LLVM代码风格修改的个人使用版本，使用时需要删除中文：
 ```
 ---
 Language:        Cpp
