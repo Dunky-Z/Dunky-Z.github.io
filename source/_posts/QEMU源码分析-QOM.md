@@ -137,27 +137,202 @@ main
                                                     x86_cpu_initfn 
 ```
 
-### 动态类型装换(dynamic cast)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### 多态
+多态是指同一操作作用于不同的对象，可以有不同的解释，产生不同的执行结果。为了实现多态，QOM实现了一个非常重要的功能，就是动态类型转换。我们可以使用相关的函数，将一个`Object`的指针在运行时转换为子类对象的指针，可以将一个`ObjectClass`的指针在运行时转换为子类的指针。这样就可以调用子类中定义的函数指针来完成相应的功能。
+
+
+QEMU 定义了一些列的宏封来进行动态类型转换：
+```C
+//include/qom/object.h
+
+/**
+ * DECLARE_INSTANCE_CHECKER:
+ * @InstanceType: instance struct name
+ * @OBJ_NAME: the object name in uppercase with underscore separators
+ * @TYPENAME: type name
+ *
+ * Direct usage of this macro should be avoided, and the complete
+ * OBJECT_DECLARE_TYPE macro is recommended instead.
+ *
+ * This macro will provide the instance type cast functions for a
+ * QOM type.
+ */
+#define DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \
+    static inline G_GNUC_UNUSED InstanceType * \
+    OBJ_NAME(const void *obj) \
+    { return OBJECT_CHECK(InstanceType, obj, TYPENAME); }
+
+/**
+ * DECLARE_CLASS_CHECKERS:
+ * @ClassType: class struct name
+ * @OBJ_NAME: the object name in uppercase with underscore separators
+ * @TYPENAME: type name
+ *
+ * Direct usage of this macro should be avoided, and the complete
+ * OBJECT_DECLARE_TYPE macro is recommended instead.
+ *
+ * This macro will provide the class type cast functions for a
+ * QOM type.
+ */
+#define DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME) \
+    static inline G_GNUC_UNUSED ClassType * \
+    OBJ_NAME##_GET_CLASS(const void *obj) \
+    { return OBJECT_GET_CLASS(ClassType, obj, TYPENAME); } \
+    \
+    static inline G_GNUC_UNUSED ClassType * \
+    OBJ_NAME##_CLASS(const void *klass) \
+    { return OBJECT_CLASS_CHECK(ClassType, klass, TYPENAME); }
+
+/**
+ * DECLARE_OBJ_CHECKERS:
+ * @InstanceType: instance struct name
+ * @ClassType: class struct name
+ * @OBJ_NAME: the object name in uppercase with underscore separators
+ * @TYPENAME: type name
+ *
+ * Direct usage of this macro should be avoided, and the complete
+ * OBJECT_DECLARE_TYPE macro is recommended instead.
+ *
+ * This macro will provide the three standard type cast functions for a
+ * QOM type.
+ */
+#define DECLARE_OBJ_CHECKERS(InstanceType, ClassType, OBJ_NAME, TYPENAME) \
+    DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \
+    \
+    DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME)
+
+/**
+ * OBJECT_DECLARE_TYPE:
+ * @InstanceType: instance struct name
+ * @ClassType: class struct name
+ * @MODULE_OBJ_NAME: the object name in uppercase with underscore separators
+ *
+ * This macro is typically used in a header file, and will:
+ *
+ *   - create the typedefs for the object and class structs
+ *   - register the type for use with g_autoptr
+ *   - provide three standard type cast functions
+ *
+ * The object struct and class struct need to be declared manually.
+ */
+#define OBJECT_DECLARE_TYPE(InstanceType, ClassType, MODULE_OBJ_NAME) \
+    typedef struct InstanceType InstanceType; \
+    typedef struct ClassType ClassType; \
+    \
+    G_DEFINE_AUTOPTR_CLEANUP_FUNC(InstanceType, object_unref) \
+    \
+    DECLARE_OBJ_CHECKERS(InstanceType, ClassType, \
+                         MODULE_OBJ_NAME, TYPE_##MODULE_OBJ_NAME)
+
+/**
+ * OBJECT:
+ * @obj: A derivative of #Object
+ *
+ * Converts an object to a #Object.  Since all objects are #Objects,
+ * this function will always succeed.
+ */
+#define OBJECT(obj) \
+    ((Object *)(obj))
+
+/**
+ * OBJECT_CLASS:
+ * @class: A derivative of #ObjectClass.
+ *
+ * Converts a class to an #ObjectClass.  Since all objects are #Objects,
+ * this function will always succeed.
+ */
+#define OBJECT_CLASS(class) \
+    ((ObjectClass *)(class))
+
+/**
+ * OBJECT_CHECK:
+ * @type: The C type to use for the return value.
+ * @obj: A derivative of @type to cast.
+ * @name: The QOM typename of @type
+ *
+ * A type safe version of @object_dynamic_cast_assert.  Typically each class
+ * will define a macro based on this type to perform type safe dynamic_casts to
+ * this object type.
+ *
+ * If an invalid object is passed to this function, a run time assert will be
+ * generated.
+ */
+#define OBJECT_CHECK(type, obj, name) \
+    ((type *)object_dynamic_cast_assert(OBJECT(obj), (name), \
+                                        __FILE__, __LINE__, __func__))
+
+/**
+ * OBJECT_CLASS_CHECK:
+ * @class_type: The C type to use for the return value.
+ * @class: A derivative class of @class_type to cast.
+ * @name: the QOM typename of @class_type.
+ *
+ * A type safe version of @object_class_dynamic_cast_assert.  This macro is
+ * typically wrapped by each type to perform type safe casts of a class to a
+ * specific class type.
+ */
+#define OBJECT_CLASS_CHECK(class_type, class, name) \
+    ((class_type *)object_class_dynamic_cast_assert(OBJECT_CLASS(class), (name), \
+                                               __FILE__, __LINE__, __func__))
+
+/**
+ * OBJECT_GET_CLASS:
+ * @class: The C type to use for the return value.
+ * @obj: The object to obtain the class for.
+ * @name: The QOM typename of @obj.
+ *
+ * This function will return a specific class for a given object.  Its generally
+ * used by each type to provide a type safe macro to get a specific class type
+ * from an object.
+ */
+#define OBJECT_GET_CLASS(class, obj, name) \
+    OBJECT_CLASS_CHECK(class, object_get_class(OBJECT(obj)), name)
+
+```
+以`OBJECT_DECLARE_TYPE(X86CPU, X86CPUClass, X86_CPU)`为例，宏展开如下：
+```c
+typedef struct X86CPU X86CPU;
+typedef struct X86CPUClass X86CPUClass;
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(X86CPU, object_unref)
+static inline G_GNUC_UNUSED X86CPU *X86_CPU(const void *obj) {
+  return ((X86CPU *)object_dynamic_cast_assert(
+      ((Object *)(obj)), (TYPE_X86_CPU),
+      "~/core/vn/docs/qemu/res/qom-macros.c", 64, __func__));
+}
+static inline G_GNUC_UNUSED X86CPUClass *X86_CPU_GET_CLASS(const void *obj) {
+  return ((X86CPUClass *)object_class_dynamic_cast_assert(
+      ((ObjectClass *)(object_get_class(((Object *)(obj))))), (TYPE_X86_CPU),
+      "~/core/vn/docs/qemu/res/qom-macros.c", 64, __func__));
+}
+static inline G_GNUC_UNUSED X86CPUClass *X86_CPU_CLASS(const void *klass) {
+  return ((X86CPUClass *)object_class_dynamic_cast_assert(
+      ((ObjectClass *)(klass)), (TYPE_X86_CPU),
+      "~/core/vn/docs/qemu/res/qom-macros.c", 64, __func__));
+}
+```
+`OBJECT_DECLARE_TYPE`通常在头文件中使用，效果是：
+- 创建了`X86CPU`和`X86CPUClass`的`typedef`
+- 用`G_DEFINE_AUTOPTR_CLEANUP_FUNC`注册类型
+- 创建了三个类型转换函数
+    - `X86_CPU` : 将任何一个 `object` 指针 转换为 `X86CPU`（Object转子对象）
+    - `X86_CPU_GET_CLASS` : 根据 `object` 指针获取到 `X86CPUClass`
+    - `X86_CPU_CLASS` : 根据 `ObjectClass` 指针转换到 `X86CPUClass`（基类转子类）
+
+这里的转换依赖内存布局，子类型的第一个成员总是基类型。子类转基类就很容易，只需要强制类型转换就可以实现。
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## 参考
 
 [QEMU 中的面向对象 : QOM | Deep Dark Fantasy](https://martins3.github.io/qemu/qom.html#init)
+[浅谈QEMU的对象系统 - 简书](https://www.jianshu.com/p/4a9d26abb44d)
