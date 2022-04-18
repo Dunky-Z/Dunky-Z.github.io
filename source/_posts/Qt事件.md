@@ -20,7 +20,7 @@ label->setMouseTracking(true);
 label->show();
 ```
 ### 显示效果
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210809102859.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210809102859.png)
 
 ## 事件的接受与忽略
 ```cpp
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 ```
 这段代码在一个`MainWindow`中添加了一个`CustomWidget`，里面有两个按钮对象：`CustomButton`和`CustomButtonEx`。每一个类都重写了`mousePressEvent()`函数。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210809145445.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210809145445.png)
 
 运行程序点击 `CustomButtonEx`，结果是
 ```

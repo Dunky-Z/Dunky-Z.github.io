@@ -32,12 +32,12 @@ RISC-V 把 ECF 统称为 `Trap`。
 
 ### mtvec（Machine Trap-Vector Base-Address）
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220104173734.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png)
 
 - BASE：trap入口函数的基地址，必须保证四字节对齐；
 - MODE：进一步用于控制入口函数的地址配置方式：
     - Direct，所有异常和中断发生后，PC都跳转到BASE指定的地址处；
-    ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201041945310.png)
+    ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png)
     通常中断处理函数内部会有`switch case`条件语句，通过不同的中断采用不同的处理方式。
     ```c
     reg_t trap_handler(reg_t epc, reg_t cause)
@@ -103,12 +103,12 @@ RISC-V 把 ECF 统称为 `Trap`。
         mret
     ```
     MODE可取值如下：
-    ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220104174219.png)
+    ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png)
 
 采用`Vectored`方式效率更高。
 
 ### mepc（Machine Exception Program Counter）
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201041958237.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png)
 
 当`trap`发生时，`pc`会被替换为 `mtvec `设定的地址，同时`hart` 会设置` mepc `为当前指令或者下一条指令的地址（处理异常时，mepc为当前指令的地址，处理中断时，mepc为下一条指令的地址）。
 
@@ -117,7 +117,7 @@ RISC-V 把 ECF 统称为 `Trap`。
 在处理 `trap` 的程序中我们可以修改 `mepc` 的值达到改变`mret` 返回地址的目的。
 
 ### mcause（Machine Cause）
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042012549.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png)
 
 当 `trap` 发生时，`hart` 会设置该寄存器通知我们 `trap` 发生的原因。
 
@@ -125,10 +125,10 @@ RISC-V 把 ECF 统称为 `Trap`。
 
 剩余的 `Exception Code` 用于标识具体的` interrupt `或者`exception` 的种类。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042014689.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png)
 
 ### mtval（Machine Trap Value）
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042016744.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png)
 
 当 `trap` 发生时，除了通过` mcause` 可以获取` exception`的种类 `code` 值外，`hart` 还提供了 `mtval` 来提供`exception` 的其他信息来辅助我们执行更进一步的操作。
 
@@ -137,7 +137,7 @@ RISC-V 把 ECF 统称为 `Trap`。
 时的地址信息、或者执行非法指令时的指令本身等。
 
 ### mstatus（Machine Status）
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042020644.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png)
 
 寄存器各个位可以大致分为以下三类，其中`x`可以为`U,S,M`。表示用户模式以及两种特权模式。
 
@@ -154,7 +154,7 @@ RISC-V 把 ECF 统称为 `Trap`。
 ### 初始化
 将`trap`的基地址写入寄存器，
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042053570.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png)
 ### Top Half
 
 1. 把 `mstatus` 的 `MIE` 值复制到 `MPIE` 中，清除 `mstatus `中的 `MIE` 标志位，效果是中断被禁止。

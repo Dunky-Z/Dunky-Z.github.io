@@ -44,13 +44,13 @@ chmod +x filename.run
 执行以上命令后就可以直接双击安装了。
 
 网上一些教程可以跳过登录，我没找到跳过按钮，需要注册一个账号才能继续安装。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728092743.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728092743.png)
 
 安装目录一般选择在`/opt`目录下
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728092813.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728092813.png)
 
 安装的附加组件最好都选择，以免后期使用再安装麻烦。Qt Creator肯定要装的。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728093014.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728093014.png)
 
 ## 安装依赖库
 ```
@@ -64,12 +64,12 @@ sudo apt install qt5-default # 如果要将Qt 5用作默认的Qt Creator版本�
 ## 使用Qt Creator创建第一个程序
 ### 使用Qt Creator创建
 首先我们先创建一个不带窗口的HelloWorld程序，测试安装是否成功，打开Qt Creator-文件-新建文件或项目，选择Non-Qt Project-Plain C++ Application。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728102920.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728102920.png)
 接下来就设置项目名等，一直下一步。完成后就可以在编辑器看到如下
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728103424.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728103424.png)
 
 点击左下角运行按钮就可以得到如下：
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728103540.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728103540.png)
 
 再创建一个带窗口的HelloWorld，在选择模板时选择Application-Qt Widgets Application。一路点下一步就可以完成创建，运行后就可得到一个灰白的HelloWorld窗口。
 
@@ -107,7 +107,7 @@ qmake -project
 ```
 QT += gui widgets
 ```
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210730095602.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210730095602.png)
 运行`qmake`，使项目platform-specific，会得到一个`Makefile`文件
 ```
 qmake HelloWorldQt.pro 
@@ -134,4 +134,4 @@ g++ -Wl,-O1 -o HelloWorldQt main.o  /
 ```
 ./HelloWorldQt 
 ```
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728112155.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728112155.png)

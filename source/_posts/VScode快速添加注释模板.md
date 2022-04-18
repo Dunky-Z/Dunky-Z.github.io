@@ -8,8 +8,8 @@ tags: [VSCode]
 
 ## 方法
 - `Ctrl+Shift+P`打开编辑器命令窗口-输入`snippets`-选择`Preferences:Configure User Snippets`-选择·c.json·
-    ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210929170226.png)
-    ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210929170717.png)
+    ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210929170226.png)
+    ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210929170717.png)
 - 更改如下：
     ```json
     {

@@ -5,11 +5,11 @@ tags:
 ---
 ## 效果预览
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820152215.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820152215.gif)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820152316.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820152316.gif)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820153546.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820153546.gif)
 ## 设置窗口拖动
 因为这个项目中没有将登录界面直接继承`MainWindow`，而是继承的`Dialog`类，所以它是不能直接移动的，需要我们自己添加相应的方法。这里实现了三种方法，点击，拖动，释放。
 ```cpp
@@ -182,7 +182,7 @@ void LoginWindow::onRemoveAccount(int index)
 当接收到删除信号时，调用`onRemoveAccount`槽函数，删除指定的用户信息。
 ### `hidPopup()`隐藏下拉框
 文章开头的效果图是隐藏下拉框的效果，每次切换用户下拉框隐藏，我们再来看一下不隐藏什么效果就容易理解了。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820105158.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820105158.gif)
 
 ### `takeItem()`删除部件
 ```cpp
@@ -234,18 +234,18 @@ void LoginWindow::onMenuClicked(QAction * action)
 在接收到点击状态按钮信号时，调用`onLoginStateClicked`槽函数，改变用户登录状态。切换的下拉菜单用的是`QMenu`。
 ### `addSeparator()`添加分割线
 Q我吧和离开状态之间的分割线。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820113856.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820113856.png)
 
 ### `mapToGlobal()`映射成全局坐标
 弹出登录状态菜单`m_loginStateMemu`是我们自己new出来的，默认显示是从左上角开始显示，这样当然不行。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820140445.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820140445.png)
 
  `mapToGlobal()`的作用就是将控件的坐标映射成全局坐标。代码里的意思就是将`loginState`控件里面的坐标用全局坐标表示。然后再向下偏移`20`个单位。再把得到的全局坐标作为`m_loginStateMemu`显示起始坐标。
 
 下图是未偏移的结果，
- ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820141408.png)
+ ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820141408.png)
 
 向下偏移`20`个单位的效果，因为我们`mapToGlobal(QPoint(0, 0))`的参数是`(0,0)`为起点。如果我们`mapToGlobal(QPoint(0, 20))`的参数是`(0,20)`，就不用再加上偏移了。
- ![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210820141521.png)
+ ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820141521.png)
 

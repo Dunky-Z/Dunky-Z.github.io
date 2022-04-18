@@ -18,5 +18,5 @@ tags: [Qt,Bug]
 项目设置文件`.pro`内增加 `UI_DIR=./UI`，同时删除掉源代码目录中`ui_*.h`，`clear all`,`->qmake->rebuilt all`
 方法二：
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210926105252.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210926105252.png)
 

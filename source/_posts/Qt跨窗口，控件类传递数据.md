@@ -18,7 +18,7 @@ categories:
 
 三个空间关系模型参考如下，
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211208122116.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211208122116.png)
 
 ## B向A（C向A）传递参数
 

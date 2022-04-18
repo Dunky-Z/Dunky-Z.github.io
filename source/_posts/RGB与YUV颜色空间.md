@@ -59,7 +59,7 @@ A = color & 0x000000FF;
 ```
 
 ### YUV采样
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220301170332.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220301170332.png)
 
 - YUV444：一个像素就有YUV三个值，和RGB类似；一个YUV占8+8+8 = 24bits 3个字节。
 - YUV422：第一个像素有YUV三个值，第二个像素只有Y，与前一个像素共用UV；一个YUV占8+4+4 = 16bits 2个字节。

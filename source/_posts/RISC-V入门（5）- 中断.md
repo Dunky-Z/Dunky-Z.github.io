@@ -19,13 +19,13 @@ categories: [RISC-V入门]
 | mip <br> （Machine Interrupt Pending）|它列出目前已发生等待处理的中断。|
 
 ### mie(Machine Interrupt Enable)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042159268.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png)
 
 打开（1）或者关闭（0）M/S/U 模式下对应的 External/Timer/Software 中断。
 
 ### mip(Machine Interrupt Pending)
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042200772.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png)
 
 获取当前 M/S/U 模式下对应的 External/Timer/Software 中断是否发生。
 
@@ -47,7 +47,7 @@ categories: [RISC-V入门]
 ## PLIC（Platform-Level Interrupt Controller）
 
 HART只能处理一个中断，PLIC相当于一个控制中心，它通过中断类型，优先级等等来选出一个需要处理的中断。协调多个中断，服务一个HART。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/202201042206664.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png)
 
 
 ```c

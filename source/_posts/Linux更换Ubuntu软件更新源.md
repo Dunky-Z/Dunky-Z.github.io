@@ -8,11 +8,11 @@ Ubuntu默认是国外的源，软件下载和更新都比较慢。两种方法�
 ## 用"软件和更新"工具
 从Ubuntu菜单中找到**软件和更新**这个应用并打开。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210730112638.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210730112638.png)
 
 找到**下载自**，选择**其他-国内-aliyun**，然后勾选前四个选项。关闭时会弹出对话框，点击**更新**。然后就能愉**快**的下载软件了。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210730113029.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210730113029.png)
 
 ## 修改`sourcelist`
 ### 备份原文件

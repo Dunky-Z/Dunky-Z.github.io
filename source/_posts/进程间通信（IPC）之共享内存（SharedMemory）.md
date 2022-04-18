@@ -156,8 +156,8 @@ int main(void)
 }
 ```
 在两个终端分别运行`client`和`server`，`client`会每三秒在终端打印出`server`输入的内容。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210810205816.png)
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210810205830.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png)
 
 ### 如何手动删除共享内存？
 列出所有的共享内存段：

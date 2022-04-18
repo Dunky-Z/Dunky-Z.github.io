@@ -7,7 +7,7 @@ tags: [Qt]
 Qt 通过`QIODevice`提供了对 `I/O` 设备的抽象，这些设备具有读写字节块的能力。下面是 `I/O` 设备的类图：
 
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210831200940.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210831200940.png)
 
 图中所涉及的类及其用途简要说明如下：
 

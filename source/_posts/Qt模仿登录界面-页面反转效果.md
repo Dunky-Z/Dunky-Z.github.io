@@ -7,11 +7,11 @@ tags: [Qt,Linux]
 设置一个旋转效果，将登录界面旋转翻个面，设置一些网络参数。
 ## 效果
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210826100416.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826100416.gif)
 
 ## 网络参数设置界面布局
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824144033.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824144033.png)
 
 ## 网络参数设置界面
 ```cpp
@@ -109,7 +109,7 @@ void RotateWidget::initRotateWindow()
 对正面和反面分别定义了信号槽，当对应的面接收到信号时，执行对应的动作。因为是旋转一百八十度，所以选择函数可以公用。
 
 ## 旋转窗口
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824182705.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824182705.gif)
 ```cpp
 
 // 开始旋转窗口;
