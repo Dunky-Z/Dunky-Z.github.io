@@ -1,7 +1,7 @@
 ---
 title: VSCode使用sftp插件上传本地文件至局域网服务器
 date: 2021-12-24 11:39:03
-updated: 2022-12-24 11:39:03
+updated: 2022-02-24 11:39:03
 tags: [VSCode,Linux]
 categories:
 ---
