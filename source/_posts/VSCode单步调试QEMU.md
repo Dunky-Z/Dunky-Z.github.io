@@ -18,10 +18,10 @@ tags: [VSCode,Linux,QEMU]
 ## 调试
 打开`qemu-6.X.X/softmmu/main.c`文件，在`main`函数入口处打上断点，即可开始调试。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824194442.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824194442.png)
 
 现在只需要点击屏幕上的图标，就可以快速的进行单步调试。
 
 如果需要进行命令行操作，在屏幕下方打开`DEBUG CONSOLE`，输入`-exec+正常命令行下的命令`即可在命令行中进行更多的调试。如查看断点信息`-exec info breakpoints`
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210824201427.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824201427.png)

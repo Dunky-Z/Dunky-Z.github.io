@@ -73,7 +73,9 @@ PCHAR pa, pb;
 这种用法很有用，特别是`char* pa, pb`的定义，初学者往往认为是定义了两个字符型指针，其实不是，而用`typedef char* PCHAR`就不会出现这样的问题，减少了错误的发生。
 
 ## 直观简洁
-```
+声明`struct`新对象时，必须要带上`struct`
+
+```c
 struct tagPOINT1
  {
     int x;
@@ -81,7 +83,60 @@ struct tagPOINT1
 };
 struct tagPOINT1 p1;
 ```
-## Reference
-https://blog.csdn.net/liitdar/article/details/80069638
+在经常使用这个结构体时，就显得麻烦，可以用`typedef`简化
+```c
+typedef struct tagPOINT
+{
+    int x;
+    int y;
+}POINT;
+```
 
-https://blog.csdn.net/wangqiulin123456/article/details/8284939
+## 定义平台无关的类型
+当跨平台时，只要改下 `typedef` 本身就行，不用对其他源码做任何修改。
+```c
+typedef unsigned int u_32t; 
+```
+
+## 掩饰复合类型
+
+
+`typedef` 还可以掩饰复合类型，如指针和数组。 
+
+例如，你不用像下面这样重复定义有 81 个字符元素的数组： 
+```c
+char line[81];
+```
+定义一个 `typedef`，每当要用到相同类型和大小的数组时，可以这样： 
+```c
+typedef char Line[81]; 
+```
+此时Line类型即代表了具有81个元素的字符数组，使用方法如下： 
+```c
+Line text, secondline; 
+```
+同样，可以象下面这样隐藏指针语法： 
+```c
+typedef char * pstr;
+```
+这里将带我们到达第一个 `typedef` 陷阱。标准函数 `strcmp()`有两个`const char *`类型的参数。因此，它可能会误导人们象下面这样声明 `mystrcmp()`： 
+```c
+int mystrcmp(const pstr, const pstr); 
+```
+用GNU的gcc和g++编译器，是会出现警告的，按照顺序，`const pstr`被解释为`char* const`（一个指向 `char` 的指针常量），两者表达的并非同一意思。为了得到正确的类型，应当如下声明： 
+```c
+typedef const char* pstr;
+```
+
+## typedef 和存储类关键字
+`typedef` 就像 `auto`，`extern`，`mutable`，`static`，和 `register` 一样，是一个存储类关键字。这并不是说 `typedef` 会真正影响对象的存储特性；它只是说在语句构成上，`typedef` 声明看起来象 `static`，`extern` 等类型的变量声明。下面将带到第二个陷阱： 
+```c
+typedef register int FAST_COUNTER; // 错误
+```
+
+编译通不过。问题出在你不能在声明中有多个存储类关键字。因为符号 `typedef` 已经占据了存储类关键字的位置，在 `typedef` 声明中不能用 `register`（或任何其它存储类关键字）。
+
+## Reference
+[typedef介绍_liitdar的博客-CSDN博客_typedef](https://blog.csdn.net/liitdar/article/details/80069638)
+
+[关于typedef的用法总结_IT民工-CSDN博客_typedef](https://blog.csdn.net/wangqiulin123456/article/details/8284939)

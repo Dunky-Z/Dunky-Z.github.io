@@ -20,7 +20,7 @@ https://gitee.com/mirrors/riscv-gnu-toolchain.git
 
 如果你有油猴插件可以去[greasyfork](https://greasyfork.org/zh-CN)搜索安装**GitHub镜像访问，加速下载**这个脚本，刷新GitHub仓库界面就会多出几个镜像地址，一般下载都会快好几倍。如果不用油猴插件的可以用我复制好的链接。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210728155417.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png)
 ```
 # riscv-binutils
 git clone https://gitee.com/mirrors/riscv-binutils-gdb.git

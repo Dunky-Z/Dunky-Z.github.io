@@ -2,7 +2,7 @@
 title: QWidget中update不执行paintEvent
 date: 2021-11-15 18:04:50
 updated:
-tags: [Qt]
+tags: [Qt, Bug]
 categories: [Bug踩坑记录]
 ---
 ## 保留现场

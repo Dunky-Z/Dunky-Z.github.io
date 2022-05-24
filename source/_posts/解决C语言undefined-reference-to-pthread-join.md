@@ -2,7 +2,7 @@
 title: 解决C语言undefined reference to pthread_join
 date: 2021-11-17 19:30:20
 updated:
-tags: [C]
+tags: [C, Bug]
 categories: [Bug踩坑记录]
 ---
 

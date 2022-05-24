@@ -57,6 +57,6 @@ SIG_DFL : 恢复信号的默认行为
 
 我们程序的目的是想要捕获键盘输入`Ctrl+C`，这个中断。通过表里可以查到，我们使用`SIGINT`这个信号，当我们的程序出现`SIGINT`信号时，让程序接下来干啥呢？正常情况下，我们的`Ctrl+C`会中断当前运行的程序，但是现在我们做了一些更改，更改的内容在我们自己编写的`signalHandler`中。我们让程序输出一行字符串加上信号值。然后再把信号的行为恢复原样。此时我们运行程序可以得到如下
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210811143147.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210811143147.png)
 
 在我们第一输入`Ctrl+C`时，程序没有中断，而是调用了`signalHanlder`函数，因为我们更改了信号的行为。但是第二次输入`Ctrl+C`时，程序中断了。

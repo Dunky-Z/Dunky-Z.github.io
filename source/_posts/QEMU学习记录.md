@@ -62,7 +62,7 @@ root@hanhan:/home/dominic/qemu/# qemu-system-x86_64 -m 2048 -enable-kvm qmtest.i
 
 
 ## QEMU工作原理
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210721140349.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210721140349.png)
 单纯使用 qemu，采用的是完全虚拟化的模式。qemu 向 Guest OS 模拟 CPU，也模拟其他的硬件，GuestOS 认为自己和硬件直接打交道，其实是同 qemu 模拟出来的硬件打交道，qemu 会将这些指令转译给真正的硬件。由于所有的指令都要从 qemu 里面过一手，因而性能就会比较差。
 
 完全虚拟化是非常慢的，所以要使用硬件辅助虚拟化技术 `Intel-VT`，`AMD-V`，所以需要 CPU 硬件开启这个标志位，一般在 BIOS 里面设置。当确认开始了标志位之后，通过` KVM`，GuestOS 的 CPU 指令不用经过 Qemu 转译，直接运行，大大提高了速度。所以，`KVM` 在内核里面需要有一个模块，来设置当前 CPU 是 Guest OS 在用，还是 Host OS 在用。
@@ -87,15 +87,3 @@ qemu 和 kvm 整合之后，CPU 的性能问题解决了。另外 Qemu 还会模
 > 假设有KVM：host 是 x86 ，QEMU 虚拟出riscv 的系统模式 运行Linux系统。QEMU会将Linux指令翻译成中间码，中间码再转成host cpu指令（ 这个功能是由qemu TCG 实现的），性能损失大。内存，硬盘，网洛等外设是由qemu 虚拟出来的。
 > KVM需要在虚拟机与宿主机架构相同时才生效。
 此外， 用户模式下调用IO硬件会报错。qemu系统模式下会模拟出所有设备，但是模拟的IO设备效率低，所以后来有了半虚拟化。
-
-## TCG动态二进制翻译
-
-微指令
-基本块
-
-hypervisor 可以划分为两大类。首先是类型 1，这种 hypervisor 是直接运行在物理硬件之上的。其次是类型 2，这种 hypervisor 运行在另一个操作系统（运行在物理硬件之上）中。类型 1 hypervisor 的一个例子是基于内核的虚拟机（KVM —— 它本身是一个基于操作系统的 hypervisor）。类型 2 hypervisor 包括 QEMU 和 WINE。
-
-作者：cheneydc
-链接：https://www.jianshu.com/p/dd463368a3c9
-来源：简书
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。

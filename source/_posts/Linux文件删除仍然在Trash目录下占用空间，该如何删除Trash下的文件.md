@@ -24,4 +24,4 @@ PS：发现一个好用的磁盘分析工具，Linux内置应用`Disk Usage Anal
 
 图形化的方式快速找到占用空间较大的目录，文件。可以右击直接删除。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211125102946.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211125102946.png)

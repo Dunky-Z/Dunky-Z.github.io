@@ -2,7 +2,7 @@
 title: 解决expected identifier before ‘(’ token
 date: 2021-11-12 19:34:54
 updated:
-tags: [C]
+tags: [C, Bug]
 categories: [Bug踩坑记录]
 ---
 

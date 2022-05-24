@@ -1,5 +1,5 @@
 ---
-title: git踩坑记录
+title: Git踩坑记录
 date: 2021-07-23 11:55:57
 tags: [Git]
 ---

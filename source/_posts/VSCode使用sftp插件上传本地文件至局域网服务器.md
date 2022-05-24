@@ -1,7 +1,7 @@
 ---
 title: VSCode使用sftp插件上传本地文件至局域网服务器
 date: 2021-12-24 11:39:03
-updated: 2022-12-24 11:39:03
+updated: 2022-02-24 11:39:03
 tags: [VSCode,Linux]
 categories:
 ---
@@ -11,7 +11,7 @@ categories:
 ## 安装插件
 打开插件中心，搜索`sftp`，安装量最高的就是我们需要的插件，点击安装。
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220104114810.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104114810.png)
 
 ## 配置插件
 
@@ -54,7 +54,7 @@ categories:
 
 - 可以直接右击文件，选择`Upload`，会将文件上传至配置好的`remotePath`。
 - 可以`Control + Shift + P`输入`sftp`，选择想要执行的命令，命令都是字面意思，不多做解释。
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20220104115716.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104115716.png)
 
 - 如果有多个IP需要配置，可以在`sftp.json`文件中，通过方括号`[]`添加。比如
     ```json

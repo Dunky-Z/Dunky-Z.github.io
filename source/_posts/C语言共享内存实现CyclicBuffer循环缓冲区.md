@@ -1,12 +1,12 @@
 ---
-title: 使用C共享内存实现CyclicBuffer循环缓冲区
+title: C语言共享内存实现CyclicBuffer循环缓冲区
 date: 2021-10-21 17:12:06
 tags:
 ---
 
 完整代码详见[GitHub CyclicBuffer](https://github.com/Dunky-Z/learning-linux/tree/main/helloworld/c/CyclicBuffer)。
 ## 什么是循环缓冲区
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211021171456.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211021171456.gif)
 
 循环缓冲区通常应用在模块与模块之间的通信，可以减少程序挂起的时间，节省内存空间。
 
@@ -15,7 +15,7 @@ tags:
 
 为了方便两个进程之间的通信，我们在共享内存中创建循环缓冲区。基本原理如图：
 
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211021173628.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211021173628.png)
 ### 结构体定义
 ```c
 typedef struct CyclicBuffer
@@ -127,7 +127,7 @@ void client(CyCBuf *cycbuff, SHMS *shms)
 读取数据以回车符为分界，当读到回车符时进行换行处理，并等待接收下一波数据。
 
 ## 实验结果
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20211021195237.gif)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211021195237.gif)
 ## Reference
 
 [Circular buffer](https://en.wikipedia.org/wiki/Circular_buffer)

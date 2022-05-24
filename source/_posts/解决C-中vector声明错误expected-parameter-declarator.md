@@ -2,7 +2,7 @@
 title: 解决C++中vector声明错误expected parameter declarator
 date: 2021-11-13 19:00:29
 updated:
-tags: [C++]
+tags: [C++,Bug]
 categories: [Bug踩坑记录]
 ---
 ## 保留现场
