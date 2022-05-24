@@ -91,7 +91,7 @@ BraceWrapping:
   AfterExternBlock: true
   BeforeCatch:     true
   BeforeElse:      true
-  # 缩进大括号
+  # 缩进大括号，if else语句后面的括号缩进
   IndentBraces:    false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
