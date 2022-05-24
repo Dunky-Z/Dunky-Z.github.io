@@ -3,7 +3,7 @@ title: VSCode使用sftp插件上传本地文件至局域网服务器
 date: 2021-12-24 11:39:03
 updated: 2022-02-24 11:39:03
 tags: [VSCode,Linux]
-categories:
+categories: [万能VSCode]
 ---
 
 测试代码时经常需要上传文件至服务器端运行，每次上传都需要通过第三方传输工具如FileZilla，有了`SFTP`插件，可以直接在VSCode上编译成功后，一键上传本地文件。
