@@ -4,7 +4,7 @@ date: 2020-08-23 09:09:13
 layout: about
 ---
 <p align="center">
-  <img src="https://gitee.com//dominic_z/markdown_picbed/raw/master/img/GIF2.gif" width="40%">
+  <img src="https://gitee.com//dominic_z/markdown_picbed/img/GIF2.gif" width="40%">
   <br><br>
   <samp>
     𝑯𝒊, 𝑰'𝒎 𝑫𝒐𝒎𝒊𝒏𝒊𝒄 :wave:

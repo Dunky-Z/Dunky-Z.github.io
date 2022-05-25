@@ -214,11 +214,11 @@ type = int [12]
 
 ## layout分割窗口，边调试边看源码
 ### layout src
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830153452.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830153452.png)
 ### layout asm
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830153520.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830153520.png)
 ### layout split
-![](https://gitee.com/dominic_z/markdown_picbed/raw/master/img/20210830153555.png)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830153555.png)
 
 ## 远程调试
 ### `-s -S`
