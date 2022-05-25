@@ -1,5 +1,5 @@
 ---
-title: CPU亲和性
+title: CPU亲和性与中断亲和性
 date: 2022-05-23 22:38:14
 updated:
 tags: [亲和性, CPU, Affinity, 操作系统, Linux]
