@@ -133,7 +133,7 @@ taskset -p pid
 举例:查看init进程(PID=1)的CPU亲和性
 　　 taskset -p 1
 ```
-3) 改变已经运行进程的CPU亲和力
+3) 改变已经运行进程的CPU亲和性
 ```
 taskset -p[c] mask pid
 举例:打开2个终端,在第一个终端运行top命令,第二个终端中
@@ -195,8 +195,7 @@ pid 23848's new affinity list: 10
 2. 绑定中断
 中断绑定时，需要关闭系统中断平衡守护进程`systemctl stop irqbalance`计算机当前各种中断响应情况在 `/proc/interrupts` 文件中。
 
-    ![](https://s3.51cto.com/images/blog/202101/17/429383702d1cf9e331ee52409b7c1c07.png?x-oss-process=image/watermark,size_16,text_QDUxQ1RP5Y2a5a6i,color_FFFFFF,t_100,g_se,x_10,y_10,shadow_90,type_ZmFuZ3poZW5naGVpdGk=)
-
+    ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png)
     第一列是中断 ID 号，CPU N 列是中断在第 n 个 CPU 核心上的响应次数，倒数第二列是中断类型，最后一列是描述。  
 
     利用 echo 命令将 CPU 掩码写入 `/proc/irq/中断 ID/smp_affinity` 文件中，即可实现修改某一中断的 CPU 亲和性。例如  
