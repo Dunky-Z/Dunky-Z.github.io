@@ -91,7 +91,7 @@ BraceWrapping:
   AfterExternBlock: true
   BeforeCatch:     true
   BeforeElse:      true
-  # 缩进大括号
+  # 缩进大括号，if else语句后面的括号缩进
   IndentBraces:    false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
@@ -109,7 +109,7 @@ IndentWidth:     4
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 ```
 
-基于LLVM代码风格修改的个人使用版本，使用时需要删除中文：
+基于LLVM代码风格修改的个人使用版本：
 ```
 ---
 Language:        Cpp

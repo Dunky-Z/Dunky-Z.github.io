@@ -2,7 +2,7 @@
 title: SoC存储器比较
 date: 2022-05-21 17:13:33
 updated:
-tags: [存储器]
+tags: [固件开发,芯片开发,SoC,存储器]
 categories: 
 ---
 

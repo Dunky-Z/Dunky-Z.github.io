@@ -2,6 +2,7 @@
 title: VSCode调试RISCV程序
 date: 2021-08-23 15:51:51
 tags: [Linux,GDB,RISCV]
+categories: [万能VSCode]
 ---
 ## 前提
 本文主要涉及VSCode的相关配置，编译及调试工具需要提前安装好。

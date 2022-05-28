@@ -132,9 +132,7 @@ RISC-V 把 ECF 统称为 `Trap`。
 
 当 `trap` 发生时，除了通过` mcause` 可以获取` exception`的种类 `code` 值外，`hart` 还提供了 `mtval` 来提供`exception` 的其他信息来辅助我们执行更进一步的操作。
 
-具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有
-定义具体的值。但规范定义了一些行为，譬如访问地址出错
-时的地址信息、或者执行非法指令时的指令本身等。
+具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。
 
 ### mstatus（Machine Status）
 ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png)
@@ -206,3 +204,7 @@ trap_vector:
 - 当前 Hart的权限级别 = mstatus.MPP；mstatus.MPP = U（如果 hart 不支持 U 则为 M）
 - mstatus.MIE = mstatus.MPIE; mstatus.MPIE = 1
 - pc = mepc
+<<<<<<< HEAD
+
+=======
+>>>>>>> d653fe09ec3df98cb68542dae9cb2f376e3ef45f
