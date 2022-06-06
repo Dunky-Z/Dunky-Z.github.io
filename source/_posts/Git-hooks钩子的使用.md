@@ -60,7 +60,7 @@ Git 能在特定的重要动作发生时触发自定义脚本。比如，`commit
 
 ## 如何同步hooks文件
 
-### 与源码放在一起
+### 方案一：与源码放在一起
 
 代码仓库中新建一个`hooks`目录，将该目录同步到远程。其他成员下载代码时也会下载`hooks`目录，通过脚本的方式将`hooks`目录覆盖本地的`.git/hooks`目录。
 ```
@@ -71,6 +71,52 @@ echo 'Hooks sync to remote success!'
 exit 0
 ```
 
+### 方案二：使用pre_commit框架
+
+`pre_commit` 是 `pre-commit` 同名的开源应用，使用`pre_commit`，代码仓库里只需要有一个配置文件，所有成员都可以根据配置文件，使用`pre_commit`生成统一的`hooks`。
+
+`pre_commit`随着发展，已经不单单只能用于`git hooks的pre-commit`阶段，而是能作用于所有`git hooks`的所有阶段，如上面说的`prepare-commit-msg`, `commit-msg`, `post-commi`等。
+
+安装pre_commit
+
+```
+pip install pre-commit
+```
+
+添加配置文件 `.pre-commit-config.yaml` 
+- 首先了解配置的格式
+    - 顶层有一个参数名为 `repos`
+    - `repos` 中每个元素为 `repo` ，代表一个代码库，一般是`github`或`gitlab`链接。在使用时会从对应地址下载，如果出现下载慢的情况，可以在`gitee`搜索是否有相关镜像。
+    - 每个 `repo` 中有一个或多个 `hook` ，每个 `hook` 代表一个任务。
+    - 每个任务里可理解为一个命令行指令，例如`flake8/yapf/black`。
+- `pre_commit`官方提供了[各种配置](https://pre-commit.com/hooks.html)，我们可以根据需要选择一个合适的。比如我需要一个格式化C语言代码的配置，选择了[pocc/pre-commit-hooks](https://github.com/pocc/pre-commit-hooks)
+    
+    ```
+    fail_fast: false
+    repos:
+    - repo: https://github.com/pocc/pre-commit-hooks
+        rev: master
+        hooks:
+        - id: clang-format
+            args: [--style=Google]
+        - id: clang-tidy
+        - id: oclint
+        - id: uncrustify
+        - id: cppcheck
+        - id: cpplint
+        - id: include-what-you-use
+    ```
+    参数的含义可以参考[pre-commit](https://pre-commit.com/#pre-commit-configyaml---top-level)的文档。
+
+- 根据配置文件安装`hooks`
+    在项目根目录下运行：
+    ```
+    pre-commit install
+    ```
+- 在执行`git commit`命令时将会自动检查。
 ## 参考资料
 [C++ 项目中使用 Pre-commit 协助实现代码规范检查_清欢守护者的博客-CSDN博客](https://blog.csdn.net/irving512/article/details/124377109)
 [git push之前自动编译验证 - 简书](https://www.jianshu.com/p/7951ff907ccb)
+[使用 pre-commit 实现代码检查_清欢守护者的博客-CSDN博客](https://blog.csdn.net/irving512/article/details/108701017)
+[pre-commit](https://pre-commit.com/#pre-commit-configyaml---top-level)
+[Git基本原理介绍(32)——git hook和python_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1eZ4y1G7hh/?spm_id_from=333.788)
