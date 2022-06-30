@@ -5,7 +5,7 @@ updated:
 tags:
 categories:
 ---
-
+# Git huoks
 ## Git hooks简介
 
 Git 能在特定的重要动作发生时触发自定义脚本。比如，`commit`之前检查`commit message`是否符合约定的格式，`push`之前检查代码格式是否正确，是否编译通过等等。Git就提供了`hooks`这样的机制。
