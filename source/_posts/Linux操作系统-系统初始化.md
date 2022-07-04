@@ -1,6 +1,6 @@
 ---
 title: Linux操作系统-系统初始化
-date: 2022-08-04 09:45:57
+date: 2021-08-24 09:45:57
 updated:
 tags:
 categories: [Linux操作系统]

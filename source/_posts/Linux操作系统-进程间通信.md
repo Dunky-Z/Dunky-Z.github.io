@@ -1,6 +1,6 @@
 ---
 title: Linux操作系统-进程间通信
-date: 2022-07-04 09:46:39
+date: 2021-08-14 09:46:39
 updated:
 tags:
 categories: [Linux操作系统]
