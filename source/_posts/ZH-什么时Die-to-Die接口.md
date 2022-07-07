@@ -2,7 +2,7 @@
 title: 【译】什么时Die-to-Die接口
 date: 2022-03-28 19:06:56
 updated:
-tags: [Die2Die]
+tags: [Die2Die, 翻译]
 categories:
 ---
 
