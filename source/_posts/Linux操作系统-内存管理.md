@@ -20,11 +20,9 @@ categories: [Linux操作系统]
 
 通过以上的原理，我们可以看出，操作系统的内存管理，主要分为三个方面。
 
-第一，物理内存的管理；
-
-第二，虚拟地址的管理；
-
-第三，虚拟地址和物理地址如何映射；
+1. 物理内存的管理；
+2. 虚拟地址的管理；
+3. 虚拟地址和物理地址如何映射；
 
 进程获取了一段独立的虚拟内存空间后，可以不用管其他进程，“任意”使用这片内存，但是也有一点规则。这篇内存需要存放内核态和用户态的内容。高地址存放内核态的内容，低地址存放用户态的内容。具体分界线64位与32位不同，暂不深究。
 
@@ -32,7 +30,7 @@ categories: [Linux操作系统]
 
 ![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129170110.png)
 
-接下来是**堆**（Heap）**段**。堆是往高地址增长的，是用来动态分配内存的区域，malloc 就是在这里面分配的。
+接下来是**堆**（Heap）**段**。堆是往高地址增长的，是用来动态分配内存的区域，`malloc` 就是在这里面分配的。
 接下来的区域是**Memory Mapping Segment**。这块地址可以用来把文件映射进内存用的，如果二进制的执行文件依赖于某个动态链接库，就是在这个区域里面将 so 文件映射到了内存中。
 再下面就是**栈**（Stack）**地址段**。主线程的函数调用的函数栈就是用这里的。
 
@@ -93,7 +91,6 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
 #define __KERNEL_DS      (GDT_ENTRY_KERNEL_DS*8)
 #define __USER_DS      (GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
 #define __USER_CS      (GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-
 ```
 
 通过分析，我们发现，所有的段的起始地址都是一样的，都是 0。所以，在 Linux 操作系统中，并没有使用到全部的分段功能。那分段是不是完全没有用处呢？分段可以做权限审核，例如用户态 DPL 是 3，内核态 DPL 是 0。当用户态试图访问内核态的时候，会因为权限不足而报错。
@@ -123,15 +120,11 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
 
 当然对于 64 位的系统，两级肯定不够了，就变成了四级目录，分别是全局页目录项 PGD（Page Global Directory）、上层页目录项 PUD（Page Upper Directory）、中间页目录项 PMD（Page Middle Directory）和页表项 PTE（Page Table Entry）。
 
-![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192832.png)
 
 
 
 
-
-
-
-## 进程控件管理
+## 进程空间管理
 
 ## 物理内存管理
 
