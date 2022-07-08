@@ -2,6 +2,7 @@
 title: oh-my-zsh让你的终端更加顺手（眼）
 date: 2021-08-29 09:56:21
 tags: [Linux,Plugins]
+categories: [工欲善其事必先利其器]
 ---
 ## 效果
 ## 安装

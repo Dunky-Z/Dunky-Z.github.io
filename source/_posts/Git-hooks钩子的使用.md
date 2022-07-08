@@ -2,8 +2,8 @@
 title: Git hooks钩子的使用
 date: 2022-05-30 12:16:11
 updated:
-tags:
-categories:
+tags: [Git]
+categories: [Git实战]
 ---
 # Git huoks
 ## Git hooks简介

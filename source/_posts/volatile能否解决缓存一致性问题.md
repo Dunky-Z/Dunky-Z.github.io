@@ -1,0 +1,65 @@
+---
+title: volatile能否解决缓存一致性问题
+date: 2022-07-08 09:10:27
+updated:
+tags: [缓存一致性, Cache]
+categories: 
+---
+
+# volatile能否解决缓存一致性问题
+为何会产生这样的疑问，还得从一个工作中的Bug说起。在使用PMP（Physical Memory Protect）对物理内存进行保护时，无法成功保护，简单来说PMP可以对一段物理内存设置保护，如保护这段内存不可写。测试时，先对这段内存写入`0x1234`，再读取这段内存。如果读取的值为`0x0`表示保护成功，但实际总能成功读取`0x1234`。
+
+```C
+volatile int test;
+test = read(0xFF740000);
+print("Before = %x\n", test); // 保护之前数据 Before = 0x1111 
+PMP(0xFF740000, 0x400);       // 保护这段内存不可写
+write(0xFF740000, 0x1234);    // 写入数据
+test = read(0xFF740000);
+print("After = %x\n", test);  // 预期读取为0x0，实际总能成功读取0x1234
+```
+
+因为读取的变量`test`设置为`volatile`，所以按照以往的理解，系统总是重新从它所在的内存读取数据，这里应该能正确读取出数据。
+
+但是忽略了一点，当使用`volatile`变量时，CPU只是不再使用寄存器中的值，直接去内存中读取数据，这里的内存实际上是包括Cache的。
+
+所以当数据被Cached之后，当再次读取时，CPU可能会直接读取Cached的数据，而不是去读取真正内存中的数据。
+
+## 存储器的层次结构
+
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205081652018.png)
+
+
+从Cache、内存，到SSD和HDD硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到CPUCache中，而是先加载到内存，再从内存加载到Cache中。
+
+这样，各个存储器只和相邻的一层存储器打交道，并且随着一层层向下，存储器的容量逐层增大，访问速度逐层变慢，而单位存储成本也逐层下降，也就构成了我们日常所说的存储器层次结构。
+
+## 缓存
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220708092012.png)
+
+按照摩尔定律，CPU的访问速度每18个月便会翻一翻，相当于每年增长60%。内存的访问速度虽然不断增长，却远没有那么快，每年只增长7%左右。这样就导致CPU性能和内存访问的差距不断拉大。为了弥补两者之间差异，现代CPU引入了**高速缓存**。
+
+CPU的读（load）实质上就是从缓存中读取数据到寄存器（register）里，在多级缓存的架构中，如果缓存中找不到数据（Cache miss），就会层层读取二级缓存三级缓存，一旦所有的缓存里都找不到对应的数据，就要去内存里寻址了。寻址到的数据首先放到寄存器里，其副本会驻留到CPU的缓存中。
+
+CPU的写（store）也是针对缓存作写入。并不会直接和内存打交道，而是通过某种机制实现数据从缓存到内存的写回（write back）。
+
+CPU从内存中读取数据到CPU Cache的过程中，是一小块一小块来读取数据的，而不是按照单个数组元素来读取数据的。这样的一小块数据，在CPU Cache中称为**Cache Line(缓存行)**。
+
+### 缓存写入
+
+写入Cache的性能比写入主内存要快，那么写入数据到底是写入Cache还是写入主内存呢？如果直接写入主内存里，Cache里面的数据是否会失效呢？
+#### 写直达
+写直达策略（Write-Through）：当数据要写入主内存里面，写入前，会先去判断数据是否已经在Cache里面了。如果数据已经在Cache里了，先把数据写入更新到Cache里面，再写入到主内存里面；如果数据不在Cache里，就只更新主内存。
+
+#### 写回
+写回策略（Write-Back）：如果发现要写入的数据，就在CPU Cache里面，那么就只是更新CPU Cache里面的数据。同时，会标记CPU Cache里的这个Block是脏（Dirty）的，表示CPU Cache里面的这个Block的数据，和主内存是不一致的。如果发现，要写入的数据所对应的Cache Block里，放的是别的内存地址的数据，那么就要看一看，那个Cache Block里面的数据有没有标记成脏的。如果是脏的话，要先把这个Cache Block里面的数据，写入到主内存里面。然后，再把当前要写入的数据，写入到Cache里，同时把Cache Block标记成脏的。如果Block里面的数据没有被标记成脏的话，那么直接把数据写入到Cache里面，然后再把Cache Block标记成脏的就好了。
+
+在用了写回这个策略之后，在加载内存数据到 Cache 里面的时候，也要多出一步同步脏 Cache 的动作。如果加载内存里面的数据到 Cache 的时候，发现 Cache Block 里面有脏标记，也要先把 Cache Block 里的数据写回到主内存，才能加载数据覆盖掉 Cache。
+
+### 缓存一致性
+[CPU缓存一致性MESI协议 - 如云泊](https://dunky-z.github.io/2022/05/29/CPU%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7MESI%E5%8D%8F%E8%AE%AE/)
+
+## 参考资料
+[C/C++中volatile关键字详解 - chao_yu - 博客园](https://www.cnblogs.com/yc_sunniwell/archive/2010/07/14/1777432.html)
+[volatile能解决cache的数据一致性吗？答案是不能_天才2012的博客-CSDN博客_volatilewritecache](https://blog.csdn.net/gzzaigcnforever/article/details/41806033)
+[cpu缓存和volatile - XuMinzhe - 博客园](https://www.cnblogs.com/xmzJava/p/11417943.html)

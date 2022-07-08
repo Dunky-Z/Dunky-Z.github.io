@@ -2,8 +2,8 @@
 title: 替换Gitee图床为腾讯云COS
 date: 2022-04-09 16:43:08
 updated:
-tags:
-categories:
+tags: [Markdown, 图床, 腾讯云]
+categories: [工欲善其事必先利其器]
 ---
 
 [Gitee图床挂了](https://cloud.tencent.com/developer/article/1964208)，但是各大云服务厂商提供的对象存储服务免费额度，对于个人小博客来说也够用了。下面介绍如何将图床更换为腾讯云COS。

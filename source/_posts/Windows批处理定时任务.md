@@ -3,7 +3,7 @@ title: Windows批处理定时任务
 date: 2022-01-05 22:39:03
 updated: 
 tags: [DOS]
-categories:
+categories: [工欲善其事必先利其器]
 ---
 
 ## 折腾背景

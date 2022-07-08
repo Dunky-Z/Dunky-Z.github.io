@@ -2,6 +2,7 @@
 title: Git中添加gitignore并更新远程仓库
 date: 2021-08-04 14:09:20
 tags: [Qt,Git]
+categories: [Git实战]
 ---
 
 ## gitignore的作用

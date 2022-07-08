@@ -2,6 +2,7 @@
 title: Git踩坑记录
 date: 2021-07-23 11:55:57
 tags: [Git]
+categories: [Git实战]
 ---
 
 ## 创建仓库时没有加入gitignore文件，上传了不需要的文件，后添加了gitignore文件如何同步远程与本地的文件（自动删除不需要的文件）

@@ -3,7 +3,7 @@ title: Git-git pull与git pull --rebase的区别
 date: 2021-11-29 16:09:12
 updated:
 tags:
-categories:
+categories: [Git实战]
 ---
 ```bash
 git pull == git fetch + git merge
