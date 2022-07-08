@@ -5,8 +5,9 @@ tags: [Linux, Unix, 翻译]
 ---
 
 # Unix是什么，为什么重要？
+
 >Author：CHRIS HOFFMAN
-译 ：https://www.howtogeek.com/182649/htg-explains-what-is-unix/
+译 ：[What Is Unix, and Why Does It Matter?](https://www.howtogeek.com/182649/htg-explains-what-is-unix/)
 
 大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几乎所有其他系统的祖宗都是Unix。
 

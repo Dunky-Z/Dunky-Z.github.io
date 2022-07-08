@@ -1,11 +1,15 @@
 ---
-title: 【译】什么时Die-to-Die接口
+title: ZH-什么是Die-to-Die接口
 date: 2022-03-28 19:06:56
 updated:
 tags: [Die2Die, 翻译]
 categories:
 ---
 
+# 什么是Die-to-Die接口
+
+>Author：Synopsys
+译 ：[What is a Die-to-Die Interface? – How it Works | Synopsys](https://www.synopsys.com/glossary/what-is-die-to-die-interface.html)
 ## 定义
 
 裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一封装中的两个硅管芯之间的数据接口。芯片到芯片接口利用非常短的通道连接封装内的两个芯片，以实现功率效率和非常高的带宽效率，这超出了传统芯片到芯片接口所能达到的效果。

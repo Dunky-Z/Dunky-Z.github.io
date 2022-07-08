@@ -5,7 +5,13 @@ updated:
 tags: [Git, 翻译]
 categories:
 ---
+
+
+
 #  CS可视化-常用的Git命令
+
+>Author：Lydia Hallie
+译 ：[🌳🚀 CS Visualized: Useful Git Commands - DEV Community](https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1)
 
 尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在`master`分支执行`hard reset`、`force push`到 `origin`、在`.git`文件夹执行`rimraf`的时候，为什么我的同事都哭了？
 
