@@ -1,0 +1,872 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=dark>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="什么是CPU亲和性CPU的亲和性(Affinity)，属于一种调度属性，可以绑定进程到指定CPU上。 换句话说，就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器。 为何会出现这种技术？在SMP(Symmetric Multi-Processing对称多处理)架构下，调度器会试图保持进程在相同的CPU上运行，这意味着进程通常不会在处理器之间频繁迁移，进程迁移的频率小就意味着产生的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CPU亲和性与中断亲和性">
+<meta property="og:url" content="http://example.com/2022/05/23/CPU%E4%BA%B2%E5%92%8C%E6%80%A7%E4%B8%8E%E4%B8%AD%E6%96%AD%E4%BA%B2%E5%92%8C%E6%80%A7/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="什么是CPU亲和性CPU的亲和性(Affinity)，属于一种调度属性，可以绑定进程到指定CPU上。 换句话说，就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器。 为何会出现这种技术？在SMP(Symmetric Multi-Processing对称多处理)架构下，调度器会试图保持进程在相同的CPU上运行，这意味着进程通常不会在处理器之间频繁迁移，进程迁移的频率小就意味着产生的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png">
+<meta property="article:published_time" content="2022-05-23T14:38:14.000Z">
+<meta property="article:modified_time" content="2022-07-09T08:40:53.876Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="CPU">
+<meta property="article:tag" content="亲和性">
+<meta property="article:tag" content="Affinity">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>CPU亲和性与中断亲和性 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/bg/banner_post03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CPU亲和性与中断亲和性"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-23 22:38" pubdate>
+          2022年5月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          5.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          45 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CPU亲和性与中断亲和性</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    <!-- compatible with older versions-->
+                    本文最后更新于：15 分钟前
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <h2 id="什么是CPU亲和性"><a href="#什么是CPU亲和性" class="headerlink" title="什么是CPU亲和性"></a>什么是CPU亲和性</h2><p>CPU的亲和性(Affinity)，属于一种调度属性，可以绑定进程到指定CPU上。 换句话说，就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器。</p>
+<p>为何会出现这种技术？在SMP(Symmetric Multi-Processing对称多处理)架构下，调度器会试图保持进程在相同的CPU上运行，这意味着进程通常不会在处理器之间频繁迁移，进程迁移的频率小就意味着产生的负载小。</p>
+<p>又如，每个CPU本身自己会有缓存，缓存着进程使用的信息，而进程可能会被操作系统调度到其他CPU上，如此，CPU 缓存命中率就低了，当绑定CPU后，程序就会一直在指定的CPU跑，不会由操作系统调度到其他CPU上，性能有一定的提高。</p>
+<p>软亲和性（affinity）:  就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器，Linux 内核进程调度器天生就具有被称为 软 CPU 亲和性（affinity） 的特性，这意味着进程通常不会在处理器之间频繁迁移。这种状态正是我们希望的，因为进程迁移的频率小就意味着产生的负载小。</p>
+<p>硬亲和性（affinity）：简单来说就是利用linux内核提供给用户的API，强行将进程或者线程绑定到某一个指定的cpu核运行。</p>
+<h2 id="硬亲和性"><a href="#硬亲和性" class="headerlink" title="硬亲和性"></a>硬亲和性</h2><p>**<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/HwDqCk8vtMdSEVSCLHAsbg">超线程技术(Hyper-Threading)</a>**：就是利用特殊的硬件指令，把两个逻辑内核(CPU core)模拟成两个物理芯片，<br>让单个处理器都能使用线程级并行计算，进而兼容多线程操作系统和软件，减少了CPU的闲置时间，提高的CPU的运行效率。<br>我们常听到的双核四线程/四核八线程指的就是支持超线程技术的CPU.</p>
+<p><strong>物理CPU</strong>：机器上安装的实际CPU, 比如说你的主板上安装了一个8核CPU,那么物理CPU个数就是1个,所以物理CPU个数就是主板上安装的CPU个数。</p>
+<p><strong>逻辑CPU</strong>：一般情况，我们认为一颗CPU可以有多核，加上intel的超线程技术(HT), 可以在逻辑上再分一倍数量的CPU core出来；</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs x86asm">逻辑<span class="hljs-meta">CPU</span>数量 = 物理<span class="hljs-meta">CPU</span>数量 x <span class="hljs-meta">CPU</span> cores x <span class="hljs-number">2</span>(如果支持并开启HT) //前提是<span class="hljs-meta">CPU</span>的型号一致，如果不一致只能一个一个的加起来，不用直接乘以物理<span class="hljs-meta">CPU</span>数量<br>//比如你的电脑安装了一块<span class="hljs-number">4</span>核<span class="hljs-meta">CPU</span>，并且支持且开启了超线程（HT）技术，那么逻辑<span class="hljs-meta">CPU</span>数量 = <span class="hljs-number">1</span> × <span class="hljs-number">4</span> × <span class="hljs-number">2</span> = <span class="hljs-number">8</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="linux命令实现硬亲和性"><a href="#linux命令实现硬亲和性" class="headerlink" title="linux命令实现硬亲和性"></a>linux命令实现硬亲和性</h3><p><strong>Linux下查看CPU相关信息</strong>, CPU的信息主要都在<code>/proc/cupinfo</code>中,</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs gradle"># 查看物理CPU个数<br>➜  ~ cat <span class="hljs-regexp">/proc/</span>cpuinfo|<span class="hljs-keyword">grep</span> <span class="hljs-string">&quot;physical id&quot;</span>|<span class="hljs-keyword">sort</span> -u|wc -l<br><span class="hljs-number">32</span><br><br># 查看每个物理CPU中core的个数(即核数)<br>➜  ~ cat <span class="hljs-regexp">/proc/</span>cpuinfo|<span class="hljs-keyword">grep</span> <span class="hljs-string">&quot;cpu cores&quot;</span>|uniq<br><span class="hljs-number">1</span><br><br># 查看逻辑CPU的个数<br>➜  ~ cat <span class="hljs-regexp">/proc/</span>cpuinfo|<span class="hljs-keyword">grep</span> <span class="hljs-string">&quot;processor&quot;</span>|wc -l<br><span class="hljs-number">32</span><br><br># 查看CPU的名称型号<br>➜  ~ cat <span class="hljs-regexp">/proc/</span>cpuinfo|<span class="hljs-keyword">grep</span> <span class="hljs-string">&quot;name&quot;</span>|cut -f2 -d:|uniq<br>Intel Xeon Processor (Skylake, IBRS)<br></code></pre></td></tr></table></figure>
+<p><strong>Linux查看某个进程运行在哪个逻辑CPU上</strong></p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs awk">ps -eo pid,args,psr<br><span class="hljs-comment"># 参数的含义：</span><br><span class="hljs-comment"># pid  - 进程ID</span><br><span class="hljs-comment"># args - 该进程执行时传入的命令行参数</span><br><span class="hljs-comment"># psr  - 分配给进程的逻辑CPU</span><br><br>例子:<br>➜  ~ ps -eo pid,args,psr | grep firefox<br><span class="hljs-number">20118</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -n  <span class="hljs-number">13</span><br><span class="hljs-number">20208</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c   <span class="hljs-number">9</span><br><span class="hljs-number">20266</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">29</span><br><span class="hljs-number">20329</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">24</span><br><span class="hljs-number">20499</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c   <span class="hljs-number">7</span><br><span class="hljs-number">20565</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">15</span><br><span class="hljs-number">20596</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">24</span><br><span class="hljs-number">20760</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">18</span><br><span class="hljs-number">22110</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">27</span><br><span class="hljs-number">25857</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">28</span><br><span class="hljs-number">26347</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">19</span><br><span class="hljs-number">26899</span> <span class="hljs-regexp">/usr/</span>lib<span class="hljs-regexp">/firefox/</span>firefox -c  <span class="hljs-number">29</span><br></code></pre></td></tr></table></figure>
+<p><strong>Linux查看线程的TID</strong></p>
+<p>TID就是Thread ID,他和POSIX中pthread_t表示的线程ID完全不是同一个东西.</p>
+<p>Linux中的POSIX线程库实现的线程其实也是一个轻量级进程(LWP),这个TID就是这个线程的真实PID.</p>
+<p>但是又不能通过<code>getpid()</code>函数获取，Linux中定义了<code>gettid()</code>这个接口，但是通常都是未实现的，所以需要使用下面的方式获取TID。</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs sqf"><span class="hljs-comment">//program</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/syscall.h&gt;  </span></span><br>pid_t tid;<br>tid = syscall(<span class="hljs-variable">__NR_gettid</span>);<span class="hljs-comment">// or syscall(SYS_gettid)  </span><br><br><span class="hljs-comment">//command-line 3种方法(推荐第三种方法)</span><br>➜  ~ ps -efL | grep prog_name<br>➜  ~ ls /proc/pid/task            <span class="hljs-comment">//文件夹名即TID</span><br>➜  ~ ps -<span class="hljs-keyword">To</span> <span class="hljs-string">&#x27;pid,lwp,psr,cmd&#x27;</span> -p PID<br></code></pre></td></tr></table></figure>
+<h4 id="使用taskset命令设置CPU亲和性"><a href="#使用taskset命令设置CPU亲和性" class="headerlink" title="使用taskset命令设置CPU亲和性"></a>使用<code>taskset</code>命令设置CPU亲和性</h4><p><strong>命令行形式</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs css">taskset <span class="hljs-selector-attr">[options]</span> <span class="hljs-attribute">mask</span> command <span class="hljs-selector-attr">[arg]</span>...<br>taskset <span class="hljs-selector-attr">[options]</span> -<span class="hljs-selector-tag">p</span> <span class="hljs-selector-attr">[mask]</span> pid<br></code></pre></td></tr></table></figure>
+
+<p><strong>参数解析</strong><br>[OPTIONS]taskset的可选参数</p>
+<ul>
+<li><p>-a, –all-tasks (旧版本中没有这个选项)　　　　　　　　</p>
+<pre><code class="hljs">  这个选项涉及到了linux中TID的概念,他会将一个进程中所有的TID都执行一次CPU亲和性设置.　　　　　　　　
+  TID就是Thread ID,他和POSIX中pthread_t表示的线程ID完全不是同一个东西.　　　　　　　　
+  Linux中的POSIX线程库实现的线程其实也是一个进程(LWP),这个TID就是这个线程的真实PID.
+</code></pre>
+</li>
+<li><p>-p, –pid</p>
+<pre><code class="hljs">  操作已存在的PID,而不是加载一个新的程序
+</code></pre>
+</li>
+<li><p>-c, –cpu-list</p>
+<pre><code class="hljs">        声明CPU的亲和力使用数字表示而不是用位掩码表示. 例如 0,5,7,9-11.
+</code></pre>
+</li>
+<li><p>-h, –help</p>
+<pre><code class="hljs">  显示帮助信息
+</code></pre>
+</li>
+<li><p>-V, –version</p>
+<pre><code class="hljs">  显示版本信息
+</code></pre>
+</li>
+<li><p>mask : cpu亲和性,当没有-c选项时, 其值前无论有没有0x标记都是16进制的,　　　　　　　　当有-c选项时,其值是十进制的.　　　　</p>
+</li>
+<li><p>command : 命令或者可执行程序</p>
+</li>
+<li><p>pid : 进程ID,可以通过ps/top/pidof等命令获取</p>
+</li>
+</ul>
+<p>[arg]command的参数　</p>
+<p><strong>实例</strong></p>
+<ol>
+<li>使用指定的CPU亲和性运行一个新程序<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">taskset [-c] mask <span class="hljs-keyword">command</span> [arg]<span class="hljs-string">...</span><br>举例:使用CPU0运行<span class="hljs-keyword">ls</span>命令显示<span class="hljs-string">/etc/init.d</span>下的所有内容 <br>　　 taskset -c 0 <span class="hljs-keyword">ls</span> -al <span class="hljs-string">/etc/init.d/</span><br></code></pre></td></tr></table></figure></li>
+<li>显示已经运行的进程的CPU亲和性<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs routeros">taskset -p pid<br>举例:查看init进程(<span class="hljs-attribute">PID</span>=1)的CPU亲和性<br>　　 taskset -p 1<br></code></pre></td></tr></table></figure></li>
+<li>改变已经运行进程的CPU亲和性<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs coq">taskset -p[c] mask pid<br>举例:打开<span class="hljs-number">2</span>个终端,在第一个终端运行<span class="hljs-built_in">top</span>命令,第二个终端中<br> 　　首先运行:[~]# ps -eo pid,args,psr | <span class="hljs-type">grep</span> <span class="hljs-built_in">top</span> #获取<span class="hljs-built_in">top</span>命令的pid和其所运行的CPU号<br> 　　其次运行:[~]# taskset -cp 新的CPU号 pid       #更改<span class="hljs-built_in">top</span>命令运行的CPU号<br> 　　最后运行:[~]# ps -eo pid,args,psr | <span class="hljs-type">grep</span> <span class="hljs-built_in">top</span> #查看是否更改成功<br><br>➜  ~ ps -eo pid,args,psr | <span class="hljs-type">grep</span> <span class="hljs-built_in">top</span><br><span class="hljs-number">2501</span> nautilus-desktop             <span class="hljs-number">24</span><br><span class="hljs-number">2634</span> /usr/libexec/xdg-desktop-po  <span class="hljs-number">18</span><br><span class="hljs-number">2658</span> /usr/libexec/xdg-desktop-po  <span class="hljs-number">11</span><br><span class="hljs-number">23848</span> <span class="hljs-built_in">top</span>                           <span class="hljs-number">6</span><br>➜  ~ taskset -cp <span class="hljs-number">10</span> <span class="hljs-number">23848</span><br>pid <span class="hljs-number">23848</span>&#x27;s current affinity list: <span class="hljs-number">0</span><span class="hljs-number">-31</span><br>pid <span class="hljs-number">23848</span>&#x27;s new affinity list: <span class="hljs-number">10</span><br>➜  ~ ps -eo pid,args,psr | <span class="hljs-type">grep</span> <span class="hljs-built_in">top</span><br> <span class="hljs-number">2501</span> nautilus-desktop             <span class="hljs-number">24</span><br> <span class="hljs-number">2634</span> /usr/libexec/xdg-desktop-po  <span class="hljs-number">18</span><br> <span class="hljs-number">2658</span> /usr/libexec/xdg-desktop-po  <span class="hljs-number">11</span><br><span class="hljs-number">23848</span> <span class="hljs-built_in">top</span>                          <span class="hljs-number">10</span><br>➜  ~ <br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>      </p>
+<blockquote>
+<p> 一个用户要设定一个进程的CPU亲和性,如果目标进程是该用户的,则可以设置,如果是其他用户的,则会设置失败,提示 Operation not permitted.当然root用户没有任何限制.<br>任何用户都可以获取任意一个进程的CPU亲和性.</p>
+</blockquote>
+<h3 id="程序API实现硬亲和性"><a href="#程序API实现硬亲和性" class="headerlink" title="程序API实现硬亲和性"></a>程序API实现硬亲和性</h3><p>参见<a target="_blank" rel="noopener" href="https://www.cnblogs.com/lubinlew/p/cpu_affinity.html">Linux中CPU亲和性(affinity) - LubinLew - 博客园</a></p>
+<h2 id="什么是中断亲和性"><a href="#什么是中断亲和性" class="headerlink" title="什么是中断亲和性"></a>什么是中断亲和性</h2><p>计算机中，中断是一种电信号，由硬件产生并直接送到中断控制器上，再由中断控制器向 CPU 发送中断信号，CPU 检测到信号后，中断当前工作转而处理中断信号。CPU 会通知操作系统已经产生中断，操作系统就会对中断进行处理。<br>这里有篇推文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzIyNjMxOTY0NA==&mid=2247484717&idx=1&sn=2c1dd6c389c8476eb4fd178c714eaafc&scene=21#wechat_redirect">CPU明明8个核，网卡为啥拼命折腾一号核？</a>生动的解释了中断亲和性。</p>
+<p>默认情况下，Linux 中断响应会被平均分配到所有 CPU 核心上，势必会发生写新的数据和指令缓存，并与 CPU 核心上原有进程产生冲突，造成中断响应延迟，影响进程处理时间。为了解决这个问题，可以将中断（或进程）绑定到指定 CPU 核心上，中断（或进程）所需要指令代码和数据有更大概率位于指定 CPU 本地数据和指令缓存内，而不必进行新的写缓存，从而提高中断响应（或进程）的处理速度。</p>
+<h2 id="中断亲和性的使用场景"><a href="#中断亲和性的使用场景" class="headerlink" title="中断亲和性的使用场景"></a>中断亲和性的使用场景</h2><p>对于文件服务器、Web 服务器，把不同的网卡 IRQ 均衡绑定到不同的 CPU 上将会减轻某 CP 的负载，提高多个 CPU 整体处理中断的能力; 对于数据库服务器，把磁盘控制器绑到一个 CPU、把网卡绑定到另一个 CPU 将会提高数据库的响应时间、优化性能。<br>合理的根据自己的生产环境和应用的特点来平衡 IRQ 中断有助于提高系统的整体吞吐能力和性能。</p>
+<h2 id="中断绑定流程"><a href="#中断绑定流程" class="headerlink" title="中断绑定流程"></a>中断绑定流程</h2><ol>
+<li><p>关闭中断平衡守护进程<br>中断平衡守护进程（irqbalance daemon）会周期性地将中断平均地公平地分配给各个 CPU 核心，默认开启。为了实现中断绑定，首先需要将中断平衡守护进程关闭。</p>
+<ul>
+<li><code>systemctl status irqbalance</code>查看守护进程的运行状态</li>
+</ul>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  ~ systemctl status irqbalance<br><br>● irqbalance.service - irqbalance daemon<br>Loaded: loaded (/lib/systemd/system/irqbalance.service; enabled; vendor preset: <span class="hljs-built_in">enable</span><br>Active: active (running) since Thu 2022-05-19 14:46:20 CST; 1 weeks 1 days ago<br>Main PID: 1062 (irqbalance)<br>    Tasks: 2 (<span class="hljs-built_in">limit</span>: 4915)<br>CGroup: /system.slice/irqbalance.service<br>        └─1062 /usr/sbin/irqbalance --foreground<br><br>5月 19 14:46:20 zdd systemd[1]: Started irqbalance daemon.<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>systemctl stop irqbalance</code>关闭中断平衡守护进程，中断响应默认都会由 CPU0 核心处理。或者<code>systemctl disable irqbalance</code>取消中断平衡守护进程开机重启。因为关闭中断平衡守护进程过于强硬，可以在不关闭中断平衡守护进程条件下，让某些 CPU 核心脱离中断平衡守护进程的管理。</li>
+</ul>
+</li>
+<li><p>绑定中断<br>中断绑定时，需要关闭系统中断平衡守护进程<code>systemctl stop irqbalance</code>计算机当前各种中断响应情况在 <code>/proc/interrupts</code> 文件中。</p>
+<p> <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png" srcset="/img/loading.gif" lazyload><br> 第一列是中断 ID 号，CPU N 列是中断在第 n 个 CPU 核心上的响应次数，倒数第二列是中断类型，最后一列是描述。  </p>
+<p> 利用 echo 命令将 CPU 掩码写入 <code>/proc/irq/中断 ID/smp_affinity</code> 文件中，即可实现修改某一中断的 CPU 亲和性。例如  </p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> 0x0004 &gt; /proc/irq /50/smp_affinity<br></code></pre></td></tr></table></figure>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/lubinlew/p/cpu_affinity.html">Linux中CPU亲和性(affinity) - LubinLew - 博客园</a><br><a target="_blank" rel="noopener" href="https://blog.51cto.com/u_15302006/3075968">操作系统底层技术——CPU亲和性_mb60ed33cfc44fa的技术博客_51CTO博客</a><br><a target="_blank" rel="noopener" href="https://blog.51cto.com/u_15484754/4907846">linux进程、线程与cpu的亲和性（affinity）_wx61d68abba262d的技术博客_51CTO博客</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzIyNjMxOTY0NA==&mid=2247484717&idx=1&sn=2c1dd6c389c8476eb4fd178c714eaafc&scene=21#wechat_redirect">CPU明明8个核，网卡为啥拼命折腾一号核？</a><br><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Processor_affinity">Processor affinity - Wikipedia</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/HwDqCk8vtMdSEVSCLHAsbg">什么？一个核同时执行两个线程？</a></p>
+</li>
+</ol>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CPU/">#CPU</a>
+      
+        <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/">#亲和性</a>
+      
+        <a href="/tags/Affinity/">#Affinity</a>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">#操作系统</a>
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CPU亲和性与中断亲和性</div>
+      <div>http://example.com/2022/05/23/CPU亲和性与中断亲和性/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月23日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/24/VSCode%E8%AE%BE%E7%BD%AE%E7%BB%88%E7%AB%AF%E4%B8%BAGitbash/" title="VSCode设置终端为Gitbash">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">VSCode设置终端为Gitbash</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/21/SoC%E5%AD%98%E5%82%A8%E5%99%A8%E6%AF%94%E8%BE%83/" title="SoC存储器比较">
+                        <span class="hidden-mobile">SoC存储器比较</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'eef989bf1542f08ececa4e3c8aea9835'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3.1.4/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

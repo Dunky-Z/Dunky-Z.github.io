@@ -1,0 +1,923 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=dark>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="进程源码1234567891011121314151617181920&#x2F;&#x2F;process.c#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;sys&#x2F;types.h&gt;#include &lt;unistd.h&gt;extern int create_process (char* program, char** arg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统-进程管理">
+<meta property="og:url" content="http://example.com/2021/08/30/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="进程源码1234567891011121314151617181920&#x2F;&#x2F;process.c#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;sys&#x2F;types.h&gt;#include &lt;unistd.h&gt;extern int create_process (char* program, char** arg">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810085445.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810085520.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810114727.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810143343.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826183622.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826190834.png">
+<meta property="article:published_time" content="2021-08-30T01:41:50.000Z">
+<meta property="article:modified_time" content="2022-07-04T00:41:50.000Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="进程管理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810085445.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux操作系统-进程管理 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/bg/banner_post03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux操作系统-进程管理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-08-30 09:41" pubdate>
+          2021年8月30日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          6.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          53 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Linux操作系统-进程管理</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    <!-- compatible with older versions-->
+                    本文最后更新于：5 天前
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <h2 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h2><h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">//process.c</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">create_process</span> <span class="hljs-params">(<span class="hljs-keyword">char</span>* program, <span class="hljs-keyword">char</span>** arg_list)</span></span>;<br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">create_process</span> <span class="hljs-params">(<span class="hljs-keyword">char</span>* program, <span class="hljs-keyword">char</span>** arg_list)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">pid_t</span> child_pid;<br>    child_pid = fork ();<br>    <span class="hljs-keyword">if</span> (child_pid != <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-keyword">return</span> child_pid;<br>    &#125;<br>    <span class="hljs-keyword">else</span> <br>    &#123;<br>        <span class="hljs-built_in">execvp</span> (program, arg_list);<br>        <span class="hljs-built_in">abort</span> ();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在这里，我们创建的子程序运行了一个最最简单的命令 <code>ls</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">//createprocess.c</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">create_process</span> <span class="hljs-params">(<span class="hljs-keyword">char</span>* program, <span class="hljs-keyword">char</span>** arg_list)</span></span>;<br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span> <span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">char</span>* arg_list[] = &#123;<br>        <span class="hljs-string">&quot;ls&quot;</span>,<br>        <span class="hljs-string">&quot;-l&quot;</span>,<br>        <span class="hljs-string">&quot;/etc/yum.repos.d/&quot;</span>,<br>        <span class="hljs-literal">NULL</span><br>    &#125;;<br>    <span class="hljs-built_in">create_process</span> (<span class="hljs-string">&quot;ls&quot;</span>, arg_list);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>CPU看不懂源码里的函数，命令，CPU只认二进制数据，所以源码需要翻译成<code>01</code>二进制数据，这个过程就是<strong>编译（Compile）</strong>的过程。</p>
+<p>编译出的文件好比一个公司的项目执行计划书，你要把一个项目执行好，计划书得有章法，有一定格式。在Linux下，二进制程序也有这样的格式，叫<strong>ELF</strong>（Executeable and Linkable Format，可执行与可链接格式），这个格式可以根据编译的结果不同，分为不同的格式。</p>
+<h3 id="ELF-可重定位文件"><a href="#ELF-可重定位文件" class="headerlink" title="ELF-可重定位文件"></a>ELF-可重定位文件</h3><p>下图展示了如何从源码到二进制文件的转化</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810085445.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs llvm">gcc -<span class="hljs-keyword">c</span> -fPIC process.<span class="hljs-keyword">c</span><br>gcc -<span class="hljs-keyword">c</span> -fPIC createprocess.<span class="hljs-keyword">c</span><br></code></pre></td></tr></table></figure>
+
+<p><code>-fPIC </code>作用于编译阶段，告诉编译器产生与位置无关代码(Position-Independent Code)。产生的代码中，没有绝对地址，全部使用相对地址，故而代码可以被加载器加载到内存的任意位置，都可以正确的执行。</p>
+<p>在编译的时候，先做<strong>预处理</strong>工作，例如将头文件嵌入到正文中，将定义的宏展开，然后就是真正的编译过程，最终编译成为<code>.o </code>文件，这就是<code>ELF</code>的第一种类型，<strong>可重定位文件</strong>（Relocatable File）。文件格式如下，</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810085520.png" srcset="/img/loading.gif" lazyload></p>
+<p><code>ELF</code> 文件的头是用于描述整个文件的。这个文件格式在内核中有定义，分别为 <code>struct elf32_hdr</code> 和 <code>struct elf64_hdr</code>。</p>
+<table>
+<thead>
+<tr>
+<th>section</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.text</td>
+<td>放编译好的二进制可执行代码</td>
+</tr>
+<tr>
+<td>.data</td>
+<td>已经初始化好的全局变量（临时变量放在栈里）</td>
+</tr>
+<tr>
+<td>.rodata</td>
+<td>只读数据，例如字符串常量、const 的变量</td>
+</tr>
+<tr>
+<td>.bss</td>
+<td>未初始化全局变量，运行时会置 0</td>
+</tr>
+<tr>
+<td>.symtab</td>
+<td>符号表，记录的则是函数和变量</td>
+</tr>
+<tr>
+<td>.strtab</td>
+<td>字符串表、字符串常量和变量名</td>
+</tr>
+</tbody></table>
+<p>第一种ELF文件叫可重定位文件，为啥可重定位？我们可以想象一下，这个编译好的代码和变量，将来<strong>加载到内存</strong>里面的时候，都是要加载到一定位置的。比如说，调用一个函数，其实就是跳到这个函数所在的代码位置执行；再比如修改一个全局变量，也是要到变量的位置那里去修改。但是现在这个时候，还是<code>.o </code>文件，不是一个可以直接运行的程序，这里面只是部分代码片段。</p>
+<p>例如这里的 <code>create_process </code>函数，将来被谁调用，在哪里调用都不清楚，就更别提确定位置了。所以，<code>.o </code>里面的位置是不确定的，但是必须是可重新定位的，因为它将来是要做函数库的嘛，就是一块砖，哪里需要哪里搬，搬到哪里就重新定位这些代码、变量的位置。</p>
+<h4 id="ELF-可执行文件"><a href="#ELF-可执行文件" class="headerlink" title="ELF-可执行文件"></a>ELF-可执行文件</h4><p>要让<code>create_process</code>这个函数作为库文件重用，需要将其形成库文件，最简单的类型是静态链接库<code>.a</code>文件，它将一系列<code>.o</code>文件归档为一个文件。使用<code>ar</code>命令创建<code>.a</code>文件。<a href="">使用方法看这里</a>。</p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs livecodeserver">ar <span class="hljs-literal">cr</span> libstaticprocess.<span class="hljs-keyword">a</span> <span class="hljs-built_in">process</span>.o<br></code></pre></td></tr></table></figure>
+
+<p>虽然这里 <code>libstaticprocess.a</code> 里面只有一个<code>.o</code>，但是实际情况可以有多个<code>.o</code>。当有程序要使用这个静态连接库的时候，会将.o 文件提取出来，链接到程序中。</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">gcc</span> -o staticcreateprocess createprocess.o -L. -lstaticprocess<br></code></pre></td></tr></table></figure>
+
+<p><code>-L </code>表示在当前目录下找<code>.a </code>文件，<code>-lstaticprocess</code> 会自动补全文件名，比如加前缀 <code>lib</code>，后缀<code>.a</code>，变成 <code>libstaticprocess.a</code>，找到这个<code>.a </code>文件后，将里面的 process.o 取出来，和 <code>createprocess.o</code> 做一个链接，形成二进制执行文件 <code>staticcreateprocess</code>。</p>
+<p>在链接过程中，重定位就起作用了，在<code>createprocess.o</code>里调用了<code>create_process</code>函数，但是不能确定位置，现在将<code>process.o</code>合并进来，就知道位置了。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810114727.png" srcset="/img/loading.gif" lazyload></p>
+<p>这个格式和<code>.o</code> 文件大致相似，还是分成一个个的 <code>section</code>，并且被节头表描述。只不过这些<code> section</code> 是多个<code>.o</code> 文件合并过的。但是这个时候，这个文件已经是马上就可以加载到内存里面执行的文件了，因而这些 <code>section</code> 被分成了需要加载到内存里面的<strong>代码段</strong>、<strong>数据段</strong>和<strong>不需要加载</strong>到内存里面的部分，将小的 <code>section</code> 合成了大的段 <code>segment</code>，并且在最前面加一个<strong>段头表</strong>（Segment Header Table）。</p>
+<p>在代码里面的定义为 <code>struct elf32_phdr </code>和 <code>struct elf64_phdr</code>，这里面除了有对于段的描述之外，最重要的是 <code>p_vaddr</code>，这个是这个段加载到内存的虚拟地址。</p>
+<p>在 <code>ELF</code> 头里面，有一项 <code>e_entry</code>，也是个虚拟地址，是这个<strong>程序运行的入口</strong>。</p>
+<h4 id="ELF-共享对象文件"><a href="#ELF-共享对象文件" class="headerlink" title="ELF-共享对象文件"></a>ELF-共享对象文件</h4><p>静态库一旦被链接，代码和变量的<code>section</code>会被合并，所以运行时不依赖静态库文件，但是缺点就是，相同代码段被多个程序使用，在<strong>内存里会有多份</strong>，而且<strong>静态库更新需要重新编译</strong>。</p>
+<p>因而就出现了另一种，<strong>动态链接库</strong>（Shared Libraries），不仅仅是一组对象文件的简单归档，而是多个对象文件的重新组合，可被多个程序共享。</p>
+<figure class="highlight vhdl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs vhdl">gcc -<span class="hljs-keyword">shared</span> -fPIC -o libdynamicprocess.so <span class="hljs-keyword">process</span>.o<br></code></pre></td></tr></table></figure>
+
+<p>当一个动态链接库被链接到一个程序文件中的时候，最后的程序文件并不包括动态链接库中的代码，而仅仅包括对动态链接库的引用，并且不保存动态链接库的全路径，仅仅保存动态链接库的名称。</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">gcc</span> -o dynamiccreateprocess createprocess.o -L. -ldynamicprocess<br></code></pre></td></tr></table></figure>
+
+<p>当运行这个程序的时候，首先寻找动态链接库，然后加载它。默认情况下，系统在 <code>/lib</code> 和<code> /usr/lib</code> 文件夹下寻找动态链接库。如果找不到就会报错，我们可以设定 <code>LD_LIBRARY_PATH </code>环境变量，程序运行时会在此环境变量指定的文件夹下寻找动态链接库。</p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs tap"><span class="hljs-comment"># export LD_LIBRARY_PATH=.</span><br><span class="hljs-comment"># ./dynamiccreateprocess</span><br><span class="hljs-comment"># total 40</span><br>-rw-r--r--.<span class="hljs-number"> 1 </span>root root<span class="hljs-number"> 1572 </span>Oct<span class="hljs-number"> 24 </span>18:38 CentOS-Base.repo<br>......<br></code></pre></td></tr></table></figure>
+
+<p>动态链接库，就是<code>ELF</code>的第三种类型，<strong>共享对象文件</strong>（Shared Object）。</p>
+<p>文件格式和上两种文件稍有不同，首先，多了一个<code>.interp </code>的 <code>Segment</code>，这里面是 <code>ld-linux.so</code>，这是动态链接器，也就是说，运行时的链接动作都是它做的。</p>
+<p>另外，<code>ELF </code>文件中还多了两个<code> section</code>，一个是<code>.plt</code>，<strong>过程链接表</strong>（Procedure Linkage Table，PLT），一个是.<code>got.plt</code>，<strong>全局偏移量表</strong>（Global Offset Table，GOT）。</p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>在内核中，有<code>linux_binfmt elf_format </code>数据结构定义了加载ELF的方法，使用<code>load_elf_binary </code>加载二进制文件，该函数由<code>do_execve</code>调用，学过系统调用知道<code>exec</code>调用了<code>do_execve</code>函数。所以流程为</p>
+<figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xl"><span class="hljs-function"><span class="hljs-title">exec</span>-&gt;</span><span class="hljs-function"><span class="hljs-title">do_execve</span>-&gt;</span>load_elf_binary<br></code></pre></td></tr></table></figure>
+
+<h4 id="进程树"><a href="#进程树" class="headerlink" title="进程树"></a>进程树</h4><p>所有进程都是从父进程fork来的，祖宗进程就是<code>init</code> 进程。</p>
+<p>系统启动之后，<code>init</code> 进程会启动很多的<code> daemon</code> 进程，为系统运行提供服务，然后就是启动 <code>getty</code>，让用户登录，登录后运行 <code>shell</code>，用户启动的进程都是通过 <code>shell </code>运行的，从而形成了一棵进程树。</p>
+<p>我们可以通过 <code>ps -ef </code>命令查看当前系统启动的进程，我们会发现有三类进程。<code>PID 1</code> 的进程就是我们的<code>init</code>进程 <code>systemd</code>，<code>PID 2</code> 的进程是内核线程 <code>kthreadd</code>。</p>
+<p>内核态进程的<code>PPID</code>祖先进程都是2号进程，用户态进程祖先进程都是1号进程，<code>tty</code>列是问号的，说明是后台服务进程。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810143343.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="进程数据结构"><a href="#进程数据结构" class="headerlink" title="进程数据结构"></a>进程数据结构</h2><p>在Linux里面，无论是进程还是线程，到了内核里面，我们统一都叫任务（Task），由一个统一的结构<code>task_struct</code>进行管理。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826183622.png" srcset="/img/loading.gif" lazyload></p>
+<p>每个任务应该包含的字段：</p>
+<h3 id="任务ID"><a href="#任务ID" class="headerlink" title="任务ID"></a>任务ID</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">pid_t</span> pid; <span class="hljs-meta">#process id</span><br><span class="hljs-keyword">pid_t</span> tgid; <span class="hljs-meta">#thread group ID</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> *<span class="hljs-title">group_leader</span>;</span> <br></code></pre></td></tr></table></figure>
+
+<p>为何要有这么多ID，一个不够吗？</p>
+<ul>
+<li>可以方便任务展示，比如在命令行中ps显示所有进程，只显示<code>pid_t pid</code>，而不会把所有内部线程摊开展示，这样太碍眼。</li>
+<li>方便下达命令，当我kill一个进程时，我们是对整个进程发送信号，但是有时候一些命令只需要对某个线程发送信号。</li>
+<li></li>
+</ul>
+<h3 id="信号处理"><a href="#信号处理" class="headerlink" title="信号处理"></a>信号处理</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* Signal handlers: */</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">signal_struct</span>    *<span class="hljs-title">signal</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sighand_struct</span>    *<span class="hljs-title">sighand</span>;</span><br><span class="hljs-keyword">sigset_t</span>      blocked;<br><span class="hljs-keyword">sigset_t</span>      real_blocked;<br><span class="hljs-keyword">sigset_t</span>      saved_sigmask;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sigpending</span>    <span class="hljs-title">pending</span>;</span><br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span>      sas_ss_sp;<br><span class="hljs-keyword">size_t</span>        sas_ss_size;<br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span>      sas_ss_flags;<br></code></pre></td></tr></table></figure>
+
+<p>这里定义了哪些信号被阻塞暂不处理（blocked），哪些信号尚等待处理（pending），哪些信号正在通过信号处理函数进行处理（sighand）。处理的结果可以是忽略，可以是结束进程等等。</p>
+<h3 id="任务状态"><a href="#任务状态" class="headerlink" title="任务状态"></a>任务状态</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><br><span class="hljs-keyword">volatile</span> <span class="hljs-keyword">long</span> state;    <span class="hljs-comment">/* -1 unrunnable, 0 runnable, &gt;0 stopped */</span><br><br><span class="hljs-keyword">int</span> exit_state;<br><br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span> flags;<br><br></code></pre></td></tr></table></figure>
+
+<p><code>state</code>可取值定义如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* Used in tsk-&gt;state: */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_RUNNING                    0</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_INTERRUPTIBLE              1</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_UNINTERRUPTIBLE            2</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> __TASK_STOPPED                  4</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> __TASK_TRACED                   8</span><br><span class="hljs-comment">/* Used in tsk-&gt;exit_state: */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> EXIT_DEAD                       16</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> EXIT_ZOMBIE                     32</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> EXIT_TRACE                      (EXIT_ZOMBIE | EXIT_DEAD)</span><br><span class="hljs-comment">/* Used in tsk-&gt;state again: */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_DEAD                       64</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_WAKEKILL                   128</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_WAKING                     256</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_PARKED                     512</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_NOLOAD                     1024</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_NEW                        2048</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TASK_STATE_MAX                  4096</span><br></code></pre></td></tr></table></figure>
+
+<p>可以发现Linux通过bitset方式设置状态，当前什么状态，哪一位就置1。</p>
+<h3 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h3><p>进程的状态切换往往涉及调度，下面这些字段都是用于调度的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 是否在运行队列上</span><br><span class="hljs-keyword">int</span>               on_rq;<br><span class="hljs-comment">// 优先级</span><br><span class="hljs-keyword">int</span>               prio;<br><span class="hljs-keyword">int</span>               static_prio;<br><span class="hljs-keyword">int</span>               normal_prio;<br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span>      rt_priority;<br><span class="hljs-comment">// 调度器类</span><br><span class="hljs-keyword">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_class</span>  *<span class="hljs-title">sched_class</span>;</span><br><span class="hljs-comment">// 调度实体</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_entity</span>       <span class="hljs-title">se</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_rt_entity</span>    <span class="hljs-title">rt</span>;</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_dl_entity</span>    <span class="hljs-title">dl</span>;</span><br><span class="hljs-comment">// 调度策略</span><br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span>      policy;<br><span class="hljs-comment">// 可以使用哪些 CPU</span><br><span class="hljs-keyword">int</span>            nr_cpus_allowed;<br><span class="hljs-keyword">cpumask_t</span>      cpus_allowed;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sched_info</span>    <span class="hljs-title">sched_info</span>;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="运行统计信息"><a href="#运行统计信息" class="headerlink" title="运行统计信息"></a>运行统计信息</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">u64        utime;<span class="hljs-comment">// 用户态消耗的 CPU 时间</span><br>u64        stime;<span class="hljs-comment">// 内核态消耗的 CPU 时间</span><br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span>      nvcsw;<span class="hljs-comment">// 自愿 (voluntary) 上下文切换计数</span><br><span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span>      nivcsw;<span class="hljs-comment">// 非自愿 (involuntary) 上下文切换计数</span><br>u64        start_time;<span class="hljs-comment">// 进程启动时间，不包含睡眠时间</span><br>u64        real_start_time;<span class="hljs-comment">// 进程启动时间，包含睡眠时间</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="进程亲缘关系"><a href="#进程亲缘关系" class="headerlink" title="进程亲缘关系"></a>进程亲缘关系</h3><p>进程有棵进程树，所以有亲缘关系。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> __<span class="hljs-title">rcu</span> *<span class="hljs-title">real_parent</span>;</span> <span class="hljs-comment">/* real parent process */</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">task_struct</span> __<span class="hljs-title">rcu</span> *<span class="hljs-title">parent</span>;</span> <span class="hljs-comment">/* recipient of SIGCHLD, wait4() reports */</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">children</span>;</span>      <span class="hljs-comment">/* list of my children */</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">list_head</span> <span class="hljs-title">sibling</span>;</span>       <span class="hljs-comment">/* linkage in my parent&#x27;s children list */</span><br></code></pre></td></tr></table></figure>
+
+<p>通常情况下，<code>real_parent</code> 和 <code>parent</code> 是一样的，但是也会有另外的情况存在。例如，<code>bash</code> 创建一个进程，那进程的 parent 和 <code>real_parent</code> 就都是 <code>bash</code>。如果在 bash 上使用 <code>GDB</code> 来 <code>debug</code> 一个进程，这个时候 <code>GDB</code> 是 <code>real_parent</code>，<code>bash</code> 是这个进程的 <code>parent</code>。</p>
+<h3 id="进程权限"><a href="#进程权限" class="headerlink" title="进程权限"></a>进程权限</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* Objective and real subjective task credentials (COW): */</span><br><span class="hljs-keyword">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cred</span> __<span class="hljs-title">rcu</span>         *<span class="hljs-title">real_cred</span>;</span><br><span class="hljs-comment">/* Effective (overridable) subjective task credentials (COW): */</span><br><span class="hljs-keyword">const</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">cred</span> __<span class="hljs-title">rcu</span>   </span><br></code></pre></td></tr></table></figure>
+
+<p><code>real_cred</code> 就是说明谁能操作我这个进程，而 <code>cred</code> 就是说明我这个进程能够操作谁。</p>
+<p>总结到一起，<code>task_struct</code>结构图如下，</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826190834.png" srcset="/img/loading.gif" lazyload></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">Linux操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">#操作系统</a>
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+        <a href="/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">#进程管理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux操作系统-进程管理</div>
+      <div>http://example.com/2021/08/30/Linux操作系统-进程管理/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年8月30日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/08/31/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%99%9A%E6%8B%9F%E5%8C%96/" title="Linux操作系统-虚拟化">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux操作系统-虚拟化</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/08/29/CSAPP%E9%85%8D%E5%A5%97%E5%AE%9E%E9%AA%8CBombLab%E8%AF%A6%E8%A7%A3/" title="CSAPP配套实验BombLab详解">
+                        <span class="hidden-mobile">CSAPP配套实验BombLab详解</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'b40538837bf12af9c2a22b6bffcdafcc'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3.1.4/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

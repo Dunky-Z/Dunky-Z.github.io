@@ -1,0 +1,869 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=dark>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="关于进程间通信的概述可以查看Linux操作系统-进程间通信，代码同步在这里。 本文通过实例介绍通过共享内存实现进程间通信。 shmget(得到一个共享内存标识符或创建一个共享内存对象)我们可以通过shmget函数创建或打开共享内存，通过函数签名 1234&#x2F;&#x2F;key_t key:  唯一定位一个共享内存对象&#x2F;&#x2F;size_t size: 共享内存大小&#x2F;&#x2F;int flag: 如果是IPC_CREAT表示">
+<meta property="og:type" content="article">
+<meta property="og:title" content="进程间通信（IPC）之共享内存(SharedMemory)">
+<meta property="og:url" content="http://example.com/2021/08/10/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%EF%BC%88IPC%EF%BC%89%E4%B9%8B%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%EF%BC%88SharedMemory%EF%BC%89/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="关于进程间通信的概述可以查看Linux操作系统-进程间通信，代码同步在这里。 本文通过实例介绍通过共享内存实现进程间通信。 shmget(得到一个共享内存标识符或创建一个共享内存对象)我们可以通过shmget函数创建或打开共享内存，通过函数签名 1234&#x2F;&#x2F;key_t key:  唯一定位一个共享内存对象&#x2F;&#x2F;size_t size: 共享内存大小&#x2F;&#x2F;int flag: 如果是IPC_CREAT表示">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png">
+<meta property="article:published_time" content="2021-08-10T09:41:26.000Z">
+<meta property="article:modified_time" content="2022-07-09T08:40:53.941Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="IPC">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>进程间通信（IPC）之共享内存(SharedMemory) - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/bg/banner_post03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="进程间通信（IPC）之共享内存(SharedMemory)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-08-10 17:41" pubdate>
+          2021年8月10日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          <!-- compatible with older versions-->
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">进程间通信（IPC）之共享内存(SharedMemory)</h1>
+            
+              <p class="note note-info">
+                
+                  
+                    <!-- compatible with older versions-->
+                    本文最后更新于：15 分钟前
+                  
+                
+              </p>
+            
+            <div class="markdown-body">
+              
+              <p>关于进程间通信的概述可以查看<a target="_blank" rel="noopener" href="https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">Linux操作系统-进程间通信</a>，<a target="_blank" rel="noopener" href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory">代码同步在这里</a>。</p>
+<p>本文通过实例介绍通过共享内存实现进程间通信。</p>
+<h2 id="shmget-得到一个共享内存标识符或创建一个共享内存对象"><a href="#shmget-得到一个共享内存标识符或创建一个共享内存对象" class="headerlink" title="shmget(得到一个共享内存标识符或创建一个共享内存对象)"></a>shmget(得到一个共享内存标识符或创建一个共享内存对象)</h2><p>我们可以通过<code>shmget</code>函数创建或打开共享内存，通过函数签名</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//key_t key:  唯一定位一个共享内存对象</span><br><span class="hljs-comment">//size_t size: 共享内存大小</span><br><span class="hljs-comment">//int flag: 如果是IPC_CREAT表示创建新的共享内存空间</span><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">shmget</span><span class="hljs-params">(<span class="hljs-keyword">key_t</span> key, <span class="hljs-keyword">size_t</span> size, <span class="hljs-keyword">int</span> flag)</span></span>;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>第一个参数是共享内存的唯一标识，是需要我们指定的。那么如何指定<code>key</code>呢？如何保证唯一性呢？我们可以指定一个文件，<code>ftok </code>会根据这个文件的 <code>inode</code>，生成一个近乎唯一的 <code>key</code>。只要在这个消息队列的生命周期内，这个文件不要被删除就可以了。只要不删除，无论什么时刻，再调用 <code>ftok</code>，也会得到同样的<code> key</code>。</li>
+<li>第二个参数是申请的空间大小，我们就申请1024B。</li>
+<li>第三个参数是权限标识，<code>IPC_CREAT</code>表示创建共享内存，<code>0644</code>表示允许一个进程创建的共享内存被内存创建者所拥有的进程向共享内存读取和写入数据，同时其他用户创建的进程只能读取共享内存。</li>
+</ul>
+<h2 id="shmat-把共享内存区对象映射到调用进程的地址空间"><a href="#shmat-把共享内存区对象映射到调用进程的地址空间" class="headerlink" title="shmat(把共享内存区对象映射到调用进程的地址空间)"></a>shmat(把共享内存区对象映射到调用进程的地址空间)</h2><p>第一次创建完共享内存时，它还不能被任何进程访问，<code>shmat()</code>函数的作用就是用来启动对该共享内存的访问，并把共享内存连接到当前进程的地址空间。它的签名如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> *<span class="hljs-title">shmat</span><span class="hljs-params">(<span class="hljs-keyword">int</span> shm_id, <span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *shm_addr, <span class="hljs-keyword">int</span> shmflg)</span></span>;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>第一个参数就是上文产生的唯一标识。</li>
+<li>第二个参数，<code>shm_addr</code>指定共享内存连接到当前进程中的地址位置，通常为空，表示让系统来选择共享内存的地址。</li>
+<li>第三个参数，<code>shm_flg</code>是一组标志位，通常为0。<br>调用成功时返回一个指向共享内存第一个字节的指针，如果调用失败返回-1.</li>
+</ul>
+<p><code>(void *) - 1</code>把<code>-1</code>转换为指针<code>0xFFFFFFFF</code>，有时也会用到<code>(void*)0</code>，表示一个空指针。</p>
+<h2 id="shmdt-断开共享内存连接"><a href="#shmdt-断开共享内存连接" class="headerlink" title="shmdt(断开共享内存连接)"></a>shmdt(断开共享内存连接)</h2><p>与shmat函数相反，是用来断开与共享内存附加点的地址，禁止本进程访问此片共享内存</p>
+<p>函数签名如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">shmdt</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *shmaddr)</span></span><br></code></pre></td></tr></table></figure>
+<ul>
+<li>参数一<code>shmaddr</code>为连接共享内存的起始地址。</li>
+</ul>
+<p>需要注意的是，本函数调用并不删除所指定的共享内存区，而只是将先前用shmat函数连接（attach）好的共享内存脱离（detach）目前的进程。删除共享内存就需要下面的这个函数。</p>
+<h2 id="shmctl-共享内存管理"><a href="#shmctl-共享内存管理" class="headerlink" title="shmctl(共享内存管理)"></a>shmctl(共享内存管理)</h2><p>完成对共享内存的控制，包括改变状态，删除共享内存等。</p>
+<p>函数签名如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">shmctl</span><span class="hljs-params">(<span class="hljs-keyword">int</span> shmid, <span class="hljs-keyword">int</span> cmd, struct shmid_ds *buf)</span></span><br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>shmid</code>共享内存唯一标识符</li>
+<li><code>cmd</code>执行的操作，包括如下<ul>
+<li><code>IPC_STAT</code>：得到共享内存的状态，把共享内存的<code>shmid_ds</code>结构复制到<code>buf</code>中</li>
+<li><code>IPC_SET</code>：改变共享内存的状态，把<code>buf</code>所指的<code>shmid_ds</code>结构中的<code>uid</code>、<code>gid</code>、<code>mode</code>复制到共享内存的<code>shmid_ds</code>结构内</li>
+<li><code>IPC_RMID</code>：删除这片共享内存</li>
+</ul>
+</li>
+<li><code>buf</code>共享内存管理结构体。具体说明参见共享内存内核结构定义部分</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//server.c</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/ipc.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/shm.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">int</span> shmid;<br>    <span class="hljs-keyword">key_t</span> shmkey;<br>    <span class="hljs-keyword">char</span> *shmptr;<br>    shmkey = ftok(<span class="hljs-string">&quot;./client.c&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-comment">// 创建或打开内存共享区域</span><br>    shmid = shmget(shmkey, <span class="hljs-number">1024</span>, <span class="hljs-number">0666</span> | IPC_CREAT);<br>    <span class="hljs-keyword">if</span> (shmid == <span class="hljs-number">-1</span>)<br>    &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;shmget error!\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">//将共享内存映射到当前进程的地址中，</span><br>    <span class="hljs-comment">//之后直接对进程中的地址addr操作就是对共享内存操作</span><br>    shmptr = (<span class="hljs-keyword">char</span> *)shmat(shmid, <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (shmptr == (<span class="hljs-keyword">void</span> *)<span class="hljs-number">-1</span>)<br>    &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;shmat error!\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)<br>    &#123;<br>        <span class="hljs-comment">// 把用户的输入存到共享内存区域中</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;input:&quot;</span>);<br>        <span class="hljs-built_in">scanf</span>(<span class="hljs-string">&quot;%s&quot;</span>, shmptr);<br>    &#125;<br>    <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">//client.c</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/types.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/ipc.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/shm.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">int</span> shmid;<br>    <span class="hljs-keyword">char</span> *shmptr;<br>    <span class="hljs-keyword">key_t</span> shmkey;<br>    shmkey = ftok(<span class="hljs-string">&quot;./client.c&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-comment">// 创建或打开内存共享区域</span><br>    shmid = shmget(shmkey, <span class="hljs-number">1024</span>, <span class="hljs-number">0666</span> | IPC_CREAT);<br>    <span class="hljs-keyword">if</span> (shmid == <span class="hljs-number">-1</span>)<br>    &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;shmget error!\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-comment">//将共享内存映射到当前进程的地址中，</span><br>    <span class="hljs-comment">//之后直接对进程中的地址addr操作就是对共享内存操作</span><br>    shmptr = (<span class="hljs-keyword">char</span> *)shmat(shmid, <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (shmptr == (<span class="hljs-keyword">void</span> *)<span class="hljs-number">-1</span>)<br>    &#123;<br>        <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;shmat error!\n&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)<br>    &#123;<br>        <span class="hljs-comment">// 每隔 3 秒从共享内存中取一次数据并打印到控制台</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;string:%s\n&quot;</span>, shmptr);<br>        sleep(<span class="hljs-number">3</span>);<br>    &#125;<br>    <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在两个终端分别运行<code>client</code>和<code>server</code>，<code>client</code>会每三秒在终端打印出<code>server</code>输入的内容。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png" srcset="/img/loading.gif" lazyload><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="如何手动删除共享内存？"><a href="#如何手动删除共享内存？" class="headerlink" title="如何手动删除共享内存？"></a>如何手动删除共享内存？</h3><p>列出所有的共享内存段：</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs dns">ipcs -m<br>------------ 共享内存段 --------------<br>键        shmid      拥有者  权限     字节     连接数  状态      <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">2</span>          dominic    <span class="hljs-number">600</span>        <span class="hljs-number">16384</span>      <span class="hljs-number">1</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">753668</span>     dominic    <span class="hljs-number">606</span>        <span class="hljs-number">10089696</span>   <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">622597</span>     dominic    <span class="hljs-number">600</span>        <span class="hljs-number">4194304</span>    <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">753670</span>     dominic    <span class="hljs-number">606</span>        <span class="hljs-number">10089696</span>   <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">688135</span>     dominic    <span class="hljs-number">600</span>        <span class="hljs-number">899976</span>     <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">8</span>          dominic    <span class="hljs-number">600</span>        <span class="hljs-number">524288</span>     <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">9</span>          dominic    <span class="hljs-number">600</span>        <span class="hljs-number">524288</span>     <span class="hljs-number">2</span>          目标       <br><span class="hljs-number">0x00000000</span> <span class="hljs-number">753674</span>     dominic    <span class="hljs-number">600</span>        <span class="hljs-number">7127040</span>    <span class="hljs-number">2</span>          目标 <br><span class="hljs-number">0</span>x0000006f <span class="hljs-number">720918</span>     dominic    <span class="hljs-number">666</span>        <span class="hljs-number">1024</span>        <span class="hljs-number">0</span><br></code></pre></td></tr></table></figure>
+<p>我们发现最后一个键值为<code>0x0000006f = 111</code>的共享内存段，就是我们创建的共享内存段。<br>删除指定共享内存段：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">ipcrm</span> -m <span class="hljs-number">720918</span>  <br>或者 <br>ipcrm -M 0x0000006f  <br></code></pre></td></tr></table></figure>
+
+<p>信号量和消息队列的操作，命令类似，只是参数不同。<br>查看命令：</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs coq">ipcs [-m|<span class="hljs-type">-q</span>|<span class="hljs-type">-s</span>]<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>-m</code> 输出有关共享内存(shared memory)的信息</li>
+<li><code>-q</code> 输出有关信息队列(message queue)的信息</li>
+<li><code>-s</code> 输出有关“信号量”(semaphore)的信息</li>
+</ul>
+<p>删除命令</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xquery">ipcrm [ -M<span class="hljs-built_in"> key</span> | -m<span class="hljs-built_in"> id</span> | -Q<span class="hljs-built_in"> key</span> | -q<span class="hljs-built_in"> id</span> | -S<span class="hljs-built_in"> key</span> | -s<span class="hljs-built_in"> id</span> ]<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>-M</code>用shmkey删除共享内存</li>
+<li><code>-m</code>用shmid删除共享内存</li>
+<li><code>-Q</code>用msgkey删除消息队列</li>
+<li><code>-q</code>用msgid删除消息队列</li>
+<li><code>-S</code>用semkey删除信号量</li>
+<li><code>-s</code>用semid删除信号量</li>
+</ul>
+<h2 id="超过共享内存的大小限制"><a href="#超过共享内存的大小限制" class="headerlink" title="超过共享内存的大小限制"></a>超过共享内存的大小限制</h2><p>共享内存的总体大小是有限制的，这个大小通过SHMMAX参数来定义（以字节为单位），您可以通过执行以下命令来确定 SHMMAX 的值：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">cat <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/kernel/</span>shmmax<br></code></pre></td></tr></table></figure>
+<p>如果机器上创建的共享内存的总共大小超出了这个限制，在程序中使用标准错误<code>perror</code>可能会出现以下的信息：</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs vbnet">unable <span class="hljs-keyword">to</span> attach <span class="hljs-keyword">to</span> <span class="hljs-keyword">shared</span> memory<br></code></pre></td></tr></table></figure>
+
+<p>1、设置 SHMMAX</p>
+<p>　　SHMMAX 的默认值是 <code>32MB</code> 。一般使用下列方法之一种将 SHMMAX 参数设为 <code>2GB</code> ：<br>通过直接更改 <code>/proc</code> 文件系统，你不需重新启动机器就可以改变 SHMMAX 的默认设置。我使用的方法是将以下命令放入 <code>/&gt;etc/rc.local</code> 启动文件中：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">echo <span class="hljs-string">&quot;2147483648&quot;</span> &gt; <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/kernel/</span>shmmax<br></code></pre></td></tr></table></figure>
+<p>　　您还可以使用 <code>sysctl</code> 命令来更改 SHMMAX 的值：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">sysctl -w kernel.<span class="hljs-attribute">shmmax</span>=2147483648<br></code></pre></td></tr></table></figure>
+<p>最后，通过将该内核参数插入到<code> /etc/sysctl.conf</code> 启动文件中，您可以使这种更改永久有效：</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arcade">echo <span class="hljs-string">&quot;kernel.shmmax=2147483648&quot;</span> &gt;&gt; <span class="hljs-regexp">/etc/</span>sysctl.conf<br></code></pre></td></tr></table></figure>
+<p>　　2、设置 SHMMNI</p>
+<p>　　我们现在来看 SHMMNI 参数。这个内核参数用于设置系统范围内共享内存段的最大数量。该参数的默认值是 <code>4096</code> 。这一数值已经足够，通常不需要更改。您可以通过执行以下命令来确定 SHMMNI 的值：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">cat <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/kernel/</span>shmmni<br></code></pre></td></tr></table></figure>
+<p>　　3、设置 SHMALL</p>
+<p>　　最后，我们来看 SHMALL 共享内存内核参数。该参数控制着系统一次可以使用的共享内存总量（以页为单位）。简言之，该参数的值始终应该至少为：<code>ceil(SHMMAX/PAGE_SIZE)</code></p>
+<p>SHMALL 的默认大小为 <code>2097152</code> ，可以使用以下命令进行查询：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">cat <span class="hljs-regexp">/proc/</span>sys<span class="hljs-regexp">/kernel/</span>shmall<br></code></pre></td></tr></table></figure>
+<p>　　SHMALL 的默认设置对于我们来说应该足够使用。注意： 在 i386 平台上 Red Hat Linux 的 页面大小 为 <code>4096</code> 字节。但是，您可以使用 <code>bigpages</code> ，它支持配置更大的内存页面尺寸。</p>
+<h2 id="多次进行shmat操作会出现什么问题"><a href="#多次进行shmat操作会出现什么问题" class="headerlink" title="多次进行shmat操作会出现什么问题"></a>多次进行shmat操作会出现什么问题</h2><p>一个进程是可以对同一个共享内存多次 shmat进行挂载的，物理内存是指向同一块，如果shmaddr为NULL，则每次返回的线性地址空间都不同。而且指向这块共享内存的引用计数会增加。也就是进程多块线性空间会指向同一块物理地址。这样，如果之前挂载过这块共享内存的进程的线性地址没有被<code>shmdt</code>掉，即申请的线性地址都没有释放，就会一直消耗进程的虚拟内存空间，很有可能会最后导致进程线性空间被使用完而导致下次shmat或者其他操作失败。</p>
+<h2 id="shmget创建共享内存，当key相同时，什么情况下会出错？"><a href="#shmget创建共享内存，当key相同时，什么情况下会出错？" class="headerlink" title="shmget创建共享内存，当key相同时，什么情况下会出错？"></a>shmget创建共享内存，当key相同时，什么情况下会出错？</h2><p>当创建一个新的共享内存区时，size 的值必须大于 0 ；如果是访问一个已经存在的内存共享区，则置 size 为 0 。</p>
+<p>已经创建的共享内存的大小是可以调整的，但是已经创建的共享内存的大小只能调小，不能调大</p>
+<p>当多个进程都能创建共享内存的时候，如果key出现相同的情况，并且一个进程需要创建的共享内存的大小要比另外一个进程要创建的共享内存小，共享内存大的进程先创建共享内存，共享内存小的进程后创建共享内存，小共享内存的进程就会获取到大的共享内存进程的共享内存，并修改其共享内存的大小和内容，从而可能导致大的共享内存进程崩溃。</p>
+<h2 id="ftok是否一定会产生唯一的key值？"><a href="#ftok是否一定会产生唯一的key值？" class="headerlink" title="ftok是否一定会产生唯一的key值？"></a>ftok是否一定会产生唯一的key值？</h2><p>ftok原型如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">key_t</span> <span class="hljs-title">ftok</span><span class="hljs-params">(<span class="hljs-keyword">char</span> * pathname, <span class="hljs-keyword">int</span> proj_id)</span></span><br></code></pre></td></tr></table></figure>
+<p><code>pathname</code>就时你指定的文件名，<code>proj_id</code>是子序号。在一般的UNIX实现中，是将文件的索引节点号取出，前面加上子序号得到<code>key_t</code>的返回值。如指定文件的索引节点号为65538，换算成16进制为<code>0×010002</code>，而你指定的<code>proj_id</code>值为<code>38</code>，换算成16进制为<code>0×26</code>，则最后的<code>key_t</code>返回值为<code>0×26010002</code>。</p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+        <a href="/tags/IPC/">#IPC</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>进程间通信（IPC）之共享内存(SharedMemory)</div>
+      <div>http://example.com/2021/08/10/进程间通信（IPC）之共享内存（SharedMemory）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年8月10日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/08/11/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%EF%BC%88IPC%EF%BC%89%E4%B9%8B%E4%BF%A1%E5%8F%B7%EF%BC%88Signal%EF%BC%89/" title="进程间通信（IPC）之信号（Signal）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">进程间通信（IPC）之信号（Signal）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/08/10/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-ar%E5%A4%9A%E6%96%87%E4%BB%B6%E5%BD%92%E6%A1%A3%E4%B8%BA%E4%B8%80%E4%B8%AA%E6%96%87%E4%BB%B6/" title="每天学命令-ar多文件归档为一个文件">
+                        <span class="hidden-mobile">每天学命令-ar多文件归档为一个文件</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '5c4016f64089bc217d268d9f972b9177'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://cdn.jsdelivr.net/npm/mathjax@3.1.4/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
