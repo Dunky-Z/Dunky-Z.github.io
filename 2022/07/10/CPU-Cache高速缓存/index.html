@@ -16,15 +16,24 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
+    <meta name="description" content="存储器的层次结构 从Cache、内存，到SSD和HDD硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到CPUCache中，而是先加载到内存，再从内存加载到">
+<meta property="og:type" content="article">
 <meta property="og:title" content="CPU Cache高速缓存">
 <meta property="og:url" content="http://example.com/2022/07/10/CPU-Cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/index.html">
 <meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="存储器的层次结构 从Cache、内存，到SSD和HDD硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到CPUCache中，而是先加载到内存，再从内存加载到">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205081652018.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220708092012.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207101027188.png">
 <meta property="article:published_time" content="2022-07-10T02:43:17.000Z">
-<meta property="article:modified_time" content="2022-07-10T02:43:17.340Z">
+<meta property="article:modified_time" content="2022-07-10T03:53:38.790Z">
 <meta property="article:author" content="Dominic">
+<meta property="article:tag" content="缓存一致性">
+<meta property="article:tag" content="Cache">
+<meta property="article:tag" content="组成原理">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205081652018.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -217,7 +226,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          0 字
+          2.1k 字
         
       </span>
     
@@ -229,7 +238,7 @@
         
         
           <!-- compatible with older versions-->
-          1 分钟
+          18 分钟
         
       </span>
     
@@ -281,20 +290,50 @@
                 
                   
                     <!-- compatible with older versions-->
-                    本文最后更新于：1 分钟前
+                    本文最后更新于：11 小时前
                   
                 
               </p>
             
             <div class="markdown-body">
               
-              <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              <h2 id="存储器的层次结构"><a href="#存储器的层次结构" class="headerlink" title="存储器的层次结构"></a>存储器的层次结构</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205081652018.png" srcset="/img/loading.gif" lazyload></p>
+<p>从Cache、内存，到SSD和HDD硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到CPUCache中，而是先加载到内存，再从内存加载到Cache中。</p>
+<p>这样，各个存储器只和相邻的一层存储器打交道，并且随着一层层向下，存储器的容量逐层增大，访问速度逐层变慢，而单位存储成本也逐层下降，也就构成了我们日常所说的存储器层次结构。</p>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220708092012.png" srcset="/img/loading.gif" lazyload></p>
+<p>按照摩尔定律，CPU的访问速度每18个月便会翻一翻，相当于每年增长60%。内存的访问速度虽然不断增长，却远没有那么快，每年只增长7%左右。这样就导致CPU性能和内存访问的差距不断拉大。为了弥补两者之间差异，现代CPU引入了<strong>高速缓存</strong>。</p>
+<p>CPU的读（load）实质上就是从缓存中读取数据到寄存器（register）里，在多级缓存的架构中，如果缓存中找不到数据（Cache miss），就会层层读取二级缓存三级缓存，一旦所有的缓存里都找不到对应的数据，就要去内存里寻址了。寻址到的数据首先放到寄存器里，其副本会驻留到CPU的缓存中。</p>
+<p>CPU的写（store）也是针对缓存作写入。并不会直接和内存打交道，而是通过某种机制实现数据从缓存到内存的写回（write back）。</p>
+<p>CPU从内存中读取数据到CPU Cache的过程中，是一小块一小块来读取数据的，而不是按照单个数组元素来读取数据的。这样的一小块数据，在CPU Cache中称为**Cache Line(缓存行)**。</p>
+<h3 id="缓存写入"><a href="#缓存写入" class="headerlink" title="缓存写入"></a>缓存写入</h3><p>写入Cache的性能比写入主内存要快，那么写入数据到底是写入Cache还是写入主内存呢？如果直接写入主内存里，Cache里面的数据是否会失效呢？</p>
+<h4 id="写直达"><a href="#写直达" class="headerlink" title="写直达"></a>写直达</h4><p>写直达策略（Write-Through）：当数据要写入主内存里面，写入前，会先去判断数据是否已经在Cache里面了。如果数据已经在Cache里了，先把数据写入更新到Cache里面，再写入到主内存里面；如果数据不在Cache里，就只更新主内存。</p>
+<h4 id="写回"><a href="#写回" class="headerlink" title="写回"></a>写回</h4><p>写回策略（Write-Back）：如果发现要写入的数据，就在CPU Cache里面，那么就只是更新CPU Cache里面的数据。同时，会标记CPU Cache里的这个Block是脏（Dirty）的，表示CPU Cache里面的这个Block的数据，和主内存是不一致的。如果发现，要写入的数据所对应的Cache Block里，放的是别的内存地址的数据，那么就要看一看，那个Cache Block里面的数据有没有标记成脏的。如果是脏的话，要先把这个Cache Block里面的数据，写入到主内存里面。然后，再把当前要写入的数据，写入到Cache里，同时把Cache Block标记成脏的。如果Block里面的数据没有被标记成脏的话，那么直接把数据写入到Cache里面，然后再把Cache Block标记成脏的就好了。</p>
+<p>在用了写回这个策略之后，在加载内存数据到 Cache 里面的时候，也要多出一步同步脏 Cache 的动作。如果加载内存里面的数据到 Cache 的时候，发现 Cache Block 里面有脏标记，也要先把 Cache Block 里的数据写回到主内存，才能加载数据覆盖掉 Cache。</p>
+<h2 id="缓存读取"><a href="#缓存读取" class="headerlink" title="缓存读取"></a>缓存读取</h2><h3 id="直接映射-Direct-Mapped-Cache"><a href="#直接映射-Direct-Mapped-Cache" class="headerlink" title="直接映射 Direct Mapped Cache"></a>直接映射 Direct Mapped Cache</h3><p>确保任何一个内存块的地址，始终映射到一个固定的 CPU Cache 地址（Cache Line）。而这个映射关系，通常用 <code>mod</code> 运算（求余运算）来实现。<br>优点: 就是检索快简单,实现简单,不用为了降低查找时间而增加其他硬件成本.<br>缺点: 就是容量小,命中率低</p>
+<p>举个例子：<br>比如说，我们的主内存被分成 0～31 号这样 32 个块。我们一共有 8 个缓存块。用户想要访问第 21 号内存块。如果 21 号内存块内容在缓存块中的话，它一定在 5 号缓存块（21 mod 8 = 5）中。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207101027188.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="全相联"><a href="#全相联" class="headerlink" title="全相联"></a>全相联</h3><p>可以将全相联理解为数据结构中的链表, 全相连没有块号,若要检索就要从头开始直到找到块或者块缺失。<br>优点：容量大，cache命中率就高。<br>缺点：检索费时，为了降低检索时间，需要增加额外的硬件成本。</p>
+<h3 id="组相联"><a href="#组相联" class="headerlink" title="组相联"></a>组相联</h3><p>组相联就像使用了拉链法解决散列冲突的散列表, 组号相当于索引。<br>优点：提高cache容量，通过将一组中的多个cache块看成一个大的cache块的方式，提高命中率。提高块的复用率，因为     发现块缺失时，我们不需要将整组的cache块全部替换，只需要根据替换算法，替换组中一个块就好了。<br>缺点：比直接映射法多了检索的时间，和额外的硬件成本开销，比如n路选择器，但是开销比全相联小。</p>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p><a target="_blank" rel="noopener" href="https://dunky-z.github.io/2022/05/29/CPU%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7MESI%E5%8D%8F%E8%AE%AE/">CPU缓存一致性MESI协议 - 如云泊</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yc_sunniwell/archive/2010/07/14/1777432.html">C/C++中volatile关键字详解 - chao_yu - 博客园</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/gzzaigcnforever/article/details/41806033">volatile能解决cache的数据一致性吗？答案是不能_天才2012的博客-CSDN博客_volatilewritecache</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xmzJava/p/11417943.html">cpu缓存和volatile - XuMinzhe - 博客园</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
               
             </div>
             <hr/>
             <div>
               <div class="post-metas my-3">
   
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/">#缓存一致性</a>
+      
+        <a href="/tags/Cache/">#Cache</a>
+      
+        <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">#组成原理</a>
+      
+    </div>
   
 </div>
 
