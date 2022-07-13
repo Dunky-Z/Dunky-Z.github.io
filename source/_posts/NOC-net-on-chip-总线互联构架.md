@@ -17,7 +17,7 @@ categories:
 
 传统的 SoC 系统采用总线互连结构，如 所示。虽然人们已经提出了很多改进的总线结构，例如将共享总线改进为桥接多总线结构、层次化总线结构等更复杂的结构。但是当进入 MPSoC 时代，单芯片上集成的处理器核数越来越多时，总线结构在通讯性能、功耗、全局时钟同步、信号完整性以及信号可靠性等方面面临着巨大的挑战，这些复杂的改进型总线结构仍无法解决片上多核间通信所面临的问题。因此，**MPSoC 上多核间的通讯问题**已经成为制约系统性能提升的**主要瓶颈**。  
 
-![](https://img-blog.csdn.net/20170911211433996?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvUGllY2VzX3RoaW5raW5n/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713101328.png)
 
 NoC 的概念是由 Agarwal（1999 年）、Guerrier 和 Greiner（2000 年）、Dally 和 Towles（2001 年）、Benini 和 Micheli（2002 年）、Jantsch 和 Tenhunen（2003 年）等人逐步提出的。目前，对于 NoC 还没有一个统一的定义，大多数 NoC 研究者认为 NoC 是 SoC 系统的通讯子集，并且应该引入互联网络技术来解决片上多核的通讯问题。  
 
