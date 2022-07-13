@@ -124,4 +124,20 @@ make qemu_riscv64_virt_defconfig -j $(nproc)
 make rootfs-cpio -j $(nproc)
 ```
 
-## 创建 EFI 分区并复制文件。
+## 创建 EFI 分区并复制文件
+
+```bash
+fallocate -l 512M efi.img
+sgdisk -n 1:34: -t 1:EF00 $WORK_DIR/efi.img
+sudo losetup -fP $WORK_DIR/efi.img
+loopdev=`losetup -j $WORK_DIR/efi.img | awk -F: '{print $1}'`
+efi_part="$loopdev"p1
+sudo mkfs.msdos $efi_part
+mkdir -p /tmp/mnt
+sudo mount $efi_part /tmp/mnt/
+sudo cp $WORK_DIR/linux/arch/riscv/boot/Image /tmp/mnt/
+sudo umount /tmp/mnt
+sudo losetup -D $loopdev
+```
+
+## yun
