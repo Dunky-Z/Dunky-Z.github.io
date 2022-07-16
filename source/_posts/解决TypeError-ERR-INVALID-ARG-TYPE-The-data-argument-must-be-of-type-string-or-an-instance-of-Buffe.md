@@ -4,6 +4,7 @@ title: >-
   or an instance of Buffe
 date: 2021-09-10 15:59:34
 tags: [Bug]
+categories: [Bug踩坑记录]
 ---
 安装GitBook时出现这个错误，将`node`版本降级即可
 

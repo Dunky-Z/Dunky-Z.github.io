@@ -3,7 +3,7 @@ title: 解决unable to install libpng12.so.0
 date: 2022-01-05 13:01:47
 updated:
 tags: [Bug, Linux]
-categories:
+categories: [Bug踩坑记录]
 ---
 
 ## 保留现场
