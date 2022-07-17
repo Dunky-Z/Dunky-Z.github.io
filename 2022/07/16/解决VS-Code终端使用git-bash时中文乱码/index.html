@@ -16,14 +16,16 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
+    <meta name="description" content="保留现场Windows环境下，使用VSCode的终端时，中文显示为乱码，如使用git status命令查看修改文件时，中文文件名就无法正常显示： 探究原因因为终端被替换成了 git bash，它对所有非英文的字符进行了转义。 官方文档提到： 输出路径的命令（例如 ls-files、diff）将通过将路径名括在双引号中并以与 C 转义控制字符相同的方式用反斜杠转义这些字符来引用路径名中的异常字符（例">
+<meta property="og:type" content="article">
 <meta property="og:title" content="解决VS Code终端使用git bash时中文乱码">
 <meta property="og:url" content="http://example.com/2022/07/16/%E8%A7%A3%E5%86%B3VS-Code%E7%BB%88%E7%AB%AF%E4%BD%BF%E7%94%A8git-bash%E6%97%B6%E4%B8%AD%E6%96%87%E4%B9%B1%E7%A0%81/index.html">
 <meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="保留现场Windows环境下，使用VSCode的终端时，中文显示为乱码，如使用git status命令查看修改文件时，中文文件名就无法正常显示： 探究原因因为终端被替换成了 git bash，它对所有非英文的字符进行了转义。 官方文档提到： 输出路径的命令（例如 ls-files、diff）将通过将路径名括在双引号中并以与 C 转义控制字符相同的方式用反斜杠转义这些字符来引用路径名中的异常字符（例">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207162158602.png">
 <meta property="article:published_time" content="2022-07-16T13:59:50.000Z">
-<meta property="article:modified_time" content="2022-07-16T14:00:30.726Z">
+<meta property="article:modified_time" content="2022-07-16T14:09:54.358Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="VSCode">
 <meta property="article:tag" content="Bug">
@@ -221,7 +223,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          0 字
+          421 字
         
       </span>
     
@@ -233,7 +235,7 @@
         
         
           <!-- compatible with older versions-->
-          1 分钟
+          4 分钟
         
       </span>
     
@@ -285,14 +287,19 @@
                 
                   
                     <!-- compatible with older versions-->
-                    本文最后更新于：2 分钟前
+                    本文最后更新于：11 小时前
                   
                 
               </p>
             
             <div class="markdown-body">
               
-              <p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207162158602.png" srcset="/img/loading.gif" lazyload></p>
+              <h2 id="保留现场"><a href="#保留现场" class="headerlink" title="保留现场"></a>保留现场</h2><p>Windows环境下，使用VSCode的终端时，中文显示为乱码，如使用<code>git status</code>命令查看修改文件时，中文文件名就无法正常显示：<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207162158602.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="探究原因"><a href="#探究原因" class="headerlink" title="探究原因"></a>探究原因</h2><p>因为终端被替换成了 <code>git bash</code>，它对所有非英文的字符进行了转义。</p>
+<p><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-corequotePath">官方文档提到</a>：</p>
+<p>输出路径的命令（例如<code> ls-files</code>、<code>diff</code>）将通过将路径名括在双引号中并以与 C 转义控制字符相同的方式用反斜杠转义这些字符来引用路径名中的异常字符（例如<code>\t</code>用于 <code>TAB </code>, <code>\n</code> 表示<code> LF</code>，<code>\\ </code>表示反斜杠）或值大于 <code>0x80</code> 的字节（例如，八进制 <code>\302\265</code> 表示 UTF-8 中的“micro”）。如果此变量设置为 <code>false</code>，则高于 <code>0x80</code> 的字节不再被视为异常。无论此变量的设置如何，双引号、反斜杠和控制字符总是被转义。一个简单的空格字符不被认为是异常的。许多命令可以使用 <code>-z</code> 选项完全逐字输出路径名。默认值是true。</p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>命令行输入，取消转义：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git config --global core.quotepath <span class="hljs-literal">false</span><br></code></pre></td></tr></table></figure>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
               
             </div>
@@ -381,6 +388,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2022/07/16/C%E8%AF%AD%E8%A8%80getopt-%E5%87%BD%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/" title="C语言getopt()函数的用法">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C语言getopt()函数的用法</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
