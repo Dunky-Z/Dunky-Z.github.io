@@ -2,6 +2,7 @@
 title: 解决Undefined reference to问题
 date: 2021-09-17 11:14:30
 tags: [C,C++,Bug]
+categories: [Bug踩坑记录]
 ---
 
 ## 链接时缺失了相关目标文件

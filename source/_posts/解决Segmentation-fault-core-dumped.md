@@ -2,6 +2,7 @@
 title: 解决Segmentation fault (core dumped)
 date: 2021-10-20 14:23:02
 tags: [Bug, C]
+categories: [Bug踩坑记录]
 ---
 
 ## 相关概念
