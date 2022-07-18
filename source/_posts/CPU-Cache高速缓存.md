@@ -137,13 +137,24 @@ A：如果使用了高位作索引，那么一些连续的内存块就会映射�
 如果不命中，那么就需要从主存中取出需要的数据块，但是将数据块放在哪一行缓存行呢？如果存在空行($valid=0$)，那就放到空行里。如果没有空行，就得选择一个非空行来替换，同时希望CPU不会很快引用这个被替换的行。这里介绍几个替换策略。
 
 最简单的方式就是随机选择一行来替换，其他复杂的方式就是利用局部性原理，使得接下来CPU引用替换的行概率最小。如
+- 最不常使用(LFU, Least Frequently Used)，选择使用次数最少的行。
+- 最近最少使用(LRU, Least Recently Used)，选择最近使用最少的行。
 
-### 缓存一致性
-[CPU缓存一致性MESI协议 - 如云泊](https://dunky-z.github.io/2022/05/29/CPU%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7MESI%E5%8D%8F%E8%AE%AE/)
+### 全相联高速缓存 Fully Associative Cache
 
+整个Cache只有一个组，这个组包含了所有的缓存行。
 
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165007.png)
 
+**组选择**：因为只有一个组，所有默认总是选择set 0。实际上这不就直接可以忽略了，访问的地址也就只需要划分为标记和偏移。
 
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165209.png)
+
+**行匹配**：同组相联高速缓存。
+
+**字抽取**：同组相联高速缓存。
+
+由于硬件实现及成本等原因，全相联高速缓存只适合做小规模的缓存。例如虚拟内存中的TLB（翻译备用缓存器，Translation Lookaside Buffer）。
 
 ### 缓存写入
 
@@ -157,6 +168,9 @@ A：如果使用了高位作索引，那么一些连续的内存块就会映射�
 写回策略（Write-Back）：如果发现要写入的数据，就在CPU Cache里面，那么就只是更新CPU Cache里面的数据。同时，会标记CPU Cache里的这个Block是脏（Dirty）的，表示CPU Cache里面的这个Block的数据，和主内存是不一致的。如果发现，要写入的数据所对应的Cache Block里，放的是别的内存地址的数据，那么就要看一看，那个Cache Block里面的数据有没有标记成脏的。如果是脏的话，要先把这个Cache Block里面的数据，写入到主内存里面。然后，再把当前要写入的数据，写入到Cache里，同时把Cache Block标记成脏的。如果Block里面的数据没有被标记成脏的话，那么直接把数据写入到Cache里面，然后再把Cache Block标记成脏的就好了。
 
 在用了写回这个策略之后，在加载内存数据到 Cache 里面的时候，也要多出一步同步脏 Cache 的动作。如果加载内存里面的数据到 Cache 的时候，发现 Cache Block 里面有脏标记，也要先把 Cache Block 里的数据写回到主内存，才能加载数据覆盖掉 Cache。
+
+### 缓存一致性
+[CPU缓存一致性MESI协议 - 如云泊](https://dunky-z.github.io/2022/05/29/CPU%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7MESI%E5%8D%8F%E8%AE%AE/)
 
 
 
