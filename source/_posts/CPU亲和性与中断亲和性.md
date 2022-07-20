@@ -42,6 +42,9 @@ CPU的亲和性(Affinity)，属于一种调度属性，可以绑定进程到指�
 # 查看每个物理CPU中core的个数(即核数)
 ➜  ~ cat /proc/cpuinfo|grep "cpu cores"|uniq
 1
+# 或者
+➜    cat /proc/cpuinfo | grep 'process' | sort | uniq | wc -l
+1
 
 # 查看逻辑CPU的个数
 ➜  ~ cat /proc/cpuinfo|grep "processor"|wc -l
