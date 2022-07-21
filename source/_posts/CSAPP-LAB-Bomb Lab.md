@@ -1,5 +1,5 @@
 ---
-title: CSAPP_LAB-Bomb Lab
+title: CSAPPLAB-Bomb Lab
 date: 2021-08-29 18:40:16
 tags: [Linux,GDB,CSAPP]
 categories: [CSAPP-Lab]
