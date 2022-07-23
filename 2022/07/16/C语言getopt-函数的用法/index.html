@@ -16,15 +16,15 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta name="description" content="在做CSAPP_LAB-Cache Lab时，实验要求对输入参数进行处理如程序csim执行需要4个参数： 1.&#x2F;csim -s 4 -E 6 -b 4 -t &lt;tracefile&gt; 原先想通过字符串解析，一个个处理，但是看到了其他参考代码后发现了一个更简单的方法，可以通过getopt()函数来解析参数。 函数的功能： 解析命令行参数。头文件 #include &lt;unistd.h&amp;">
+    <meta name="description" content="在做CSAPP_LAB-Cache Lab时，实验要求对输入参数进行处理，如程序csim执行需要4个参数： 1.&#x2F;csim -s 4 -E 6 -b 4 -t &lt;tracefile&gt; 原先想通过字符串解析，一个个处理，但是看到了其他参考代码后发现了一个更简单的方法，可以通过getopt()函数来解析参数。 函数的功能： 解析命令行参数。头文件 #include &lt;unistd.h">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C语言getopt()函数的用法">
 <meta property="og:url" content="http://example.com/2022/07/16/C%E8%AF%AD%E8%A8%80getopt-%E5%87%BD%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/index.html">
 <meta property="og:site_name" content="如云泊">
-<meta property="og:description" content="在做CSAPP_LAB-Cache Lab时，实验要求对输入参数进行处理如程序csim执行需要4个参数： 1.&#x2F;csim -s 4 -E 6 -b 4 -t &lt;tracefile&gt; 原先想通过字符串解析，一个个处理，但是看到了其他参考代码后发现了一个更简单的方法，可以通过getopt()函数来解析参数。 函数的功能： 解析命令行参数。头文件 #include &lt;unistd.h&amp;">
+<meta property="og:description" content="在做CSAPP_LAB-Cache Lab时，实验要求对输入参数进行处理，如程序csim执行需要4个参数： 1.&#x2F;csim -s 4 -E 6 -b 4 -t &lt;tracefile&gt; 原先想通过字符串解析，一个个处理，但是看到了其他参考代码后发现了一个更简单的方法，可以通过getopt()函数来解析参数。 函数的功能： 解析命令行参数。头文件 #include &lt;unistd.h">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-07-16T14:42:03.000Z">
-<meta property="article:modified_time" content="2022-07-16T15:39:31.852Z">
+<meta property="article:modified_time" content="2022-07-17T01:58:53.590Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="C">
@@ -221,7 +221,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.4k 字
+          2.7k 字
         
       </span>
     
@@ -233,7 +233,7 @@
         
         
           <!-- compatible with older versions-->
-          21 分钟
+          23 分钟
         
       </span>
     
@@ -285,14 +285,14 @@
                 
                   
                     <!-- compatible with older versions-->
-                    本文最后更新于：9 小时前
+                    本文最后更新于：6 天前
                   
                 
               </p>
             
             <div class="markdown-body">
               
-              <p>在做<a target="_blank" rel="noopener" href="https://dunky-z.github.io/2022/07/11/CSAPP-LAB-Cache-Lab/">CSAPP_LAB-Cache Lab</a>时，实验要求对输入参数进行处理如程序<code>csim</code>执行需要4个参数：</p>
+              <p>在做<a target="_blank" rel="noopener" href="https://dunky-z.github.io/2022/07/11/CSAPP-LAB-Cache-Lab/">CSAPP_LAB-Cache Lab</a>时，实验要求对输入参数进行处理，如程序<code>csim</code>执行需要4个参数：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">./csim -s 4 -E 6 -b 4 -t &lt;tracefile&gt;<br></code></pre></td></tr></table></figure>
 <p>原先想通过字符串解析，一个个处理，但是看到了其他参考代码后发现了一个更简单的方法，可以通过<code>getopt()</code>函数来解析参数。</p>
 <p>函数的功能： 解析命令行参数。<br>头文件 <code>#include &lt;unistd.h&gt;</code></p>
@@ -312,7 +312,7 @@
 <p>参数解析：</p>
 <ul>
 <li>参数<code>argc</code> 和<code>argv</code> 是由<code>main()</code>传递的参数个数和内容。</li>
-<li><code>options</code> 参数是一个字符串，它指定对该程序有效的选项字符。此字符串中的选项字符后面可以跟一个冒号（<code>:</code>），表示它需要一个<strong>必需的参数</strong>。如果选项字符后跟两个冒号（<code>::</code>），则其参数是<strong>可选的</strong>；这是一个 GNU 扩展。</li>
+<li><code>options</code> 参数是一个字符串，它指定对该程序有效的选项字符。此字符串中的选项字符后面可以跟一个冒号（<code>:</code>），表示它需要一个<strong>必需的参数</strong>，这个参数可以与选项连写也可以空格分开，如<code>-a13 or  -a 13</code>。如果选项字符后跟两个冒号（<code>::</code>），则其参数是<strong>可选的</strong>，如果有参数，那么参数不能与选项分割，如只能写成<code>-a13</code>而不能写成<code>-a 13</code>；这是一个 GNU 扩展。</li>
 </ul>
 <p>实例：</p>
 <p>下面是一个示例，展示了通常如何使用 <code>getopt</code>。需要注意的关键点是：</p>
@@ -320,8 +320,9 @@
 <li>通常，<code>getopt</code> 在循环中被调用。当 <code>getopt</code> 返回 <code>-1</code> 表示没有更多选项存在时，循环终止。</li>
 <li><code>switch</code> 语句用于调度 <code>getopt</code> 的返回值。在典型使用中，每种情况只设置一个稍后在程序中使用的变量。</li>
 <li>第二个循环用于处理剩余的非选项参数。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;ctype.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-keyword">int</span></span><br><span class="hljs-function"><span class="hljs-title">main</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span> **argv)</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-keyword">int</span> aflag = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">int</span> bflag = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">char</span> *cvalue = <span class="hljs-literal">NULL</span>;<br>  <span class="hljs-keyword">int</span> index;<br>  <span class="hljs-keyword">int</span> c;<br><br>  opterr = <span class="hljs-number">0</span>;<br><br>  <span class="hljs-keyword">while</span> ((c = getopt (argc, argv, <span class="hljs-string">&quot;abc:&quot;</span>)) != <span class="hljs-number">-1</span>)<br>    <span class="hljs-keyword">switch</span> (c)<br>      &#123;<br>      <span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;a&#x27;</span>:<br>        aflag = <span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;b&#x27;</span>:<br>        bflag = <span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;c&#x27;</span>:<br>        cvalue = optarg;<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;?&#x27;</span>:<br>        <span class="hljs-keyword">if</span> (optopt == <span class="hljs-string">&#x27;c&#x27;</span>)<br>          <span class="hljs-built_in">fprintf</span> (<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Option -%c requires an argument.\n&quot;</span>, optopt);<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">isprint</span> (optopt))<br>          <span class="hljs-built_in">fprintf</span> (<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;Unknown option `-%c&#x27;.\n&quot;</span>, optopt);<br>        <span class="hljs-keyword">else</span><br>          <span class="hljs-built_in">fprintf</span> (<span class="hljs-built_in">stderr</span>,<br>                   <span class="hljs-string">&quot;Unknown option character `\\x%x&#x27;.\n&quot;</span>,<br>                   optopt);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>      <span class="hljs-keyword">default</span>:<br>        <span class="hljs-built_in">abort</span> ();<br>      &#125;<br><br>  <span class="hljs-built_in">printf</span> (<span class="hljs-string">&quot;aflag = %d, bflag = %d, cvalue = %s\n&quot;</span>,<br>          aflag, bflag, cvalue);<br><br>  <span class="hljs-keyword">for</span> (index = optind; index &lt; argc; index++)<br>    <span class="hljs-built_in">printf</span> (<span class="hljs-string">&quot;Non-option argument %s\n&quot;</span>, argv[index]);<br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-以下是一些示例，展示了该程序使用不同的参数组合打印的内容：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs C">% testopt<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br><br>% testopt -a -b<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">1</span>, cvalue = (null)<br><br>% testopt -ab<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">1</span>, cvalue = (null)<br><br>% testopt -c foo<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br><br>% testopt -cfoo<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br><br>% testopt arg1<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument arg1<br><br>% testopt -a arg1<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument arg1<br><br>% testopt -c foo arg1<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br>Non-option argument arg1<br><br>% testopt -a -- -b<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument -b<br><br>% testopt -a -<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument -<br></code></pre></td></tr></table></figure></li>
+以下是一些示例，展示了该程序使用不同的参数组合打印的内容：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs C">% testopt<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br><br><span class="hljs-comment">// 选项可以用空格分割</span><br>% testopt -a -b<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">1</span>, cvalue = (null)<br><br><span class="hljs-comment">// 也可以连写</span><br>% testopt -ab<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">1</span>, cvalue = (null)<br><br><span class="hljs-comment">// 必选参数，可以用空格分割</span><br>% testopt -c foo<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br><br><span class="hljs-comment">// 必选参数，可以连写</span><br>% testopt -cfoo<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br><br><span class="hljs-comment">// 没有对应的选项</span><br>% testopt arg1<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument arg1<br><br><span class="hljs-comment">// -a选项没有需要处理的参数，所以arg1无法处理</span><br>% testopt -a arg1<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument arg1<br><br>% testopt -c foo arg1<br>aflag = <span class="hljs-number">0</span>, bflag = <span class="hljs-number">0</span>, cvalue = foo<br>Non-option argument arg1<br><br>% testopt -a -- -b<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument -b<br><br>% testopt -a -<br>aflag = <span class="hljs-number">1</span>, bflag = <span class="hljs-number">0</span>, cvalue = (null)<br>Non-option argument -<br></code></pre></td></tr></table></figure></li>
 </ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/huangxiaohu_coder/article/details/7475156">原来命令行参数处理可以这么写-getopt？_huangxiaohu_coder的博客-CSDN博客</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/qingergege/p/5914218.html">Linux下getopt()函数的简单使用 - 青儿哥哥 - 博客园</a><br><a target="_blank" rel="noopener" href="http://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html">Using Getopt (The GNU C Library)</a></p>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
               
             </div>
@@ -389,6 +390,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2022/07/17/%E7%90%86%E8%A7%A3%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" title="理解虚拟内存">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">理解虚拟内存</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
