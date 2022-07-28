@@ -2,7 +2,7 @@
 title: Makefile确定宏定义
 date: 2022-07-27 08:28:03
 updated:
-tags:
+tags: [C, Makefile]
 categories:
 ---
 
