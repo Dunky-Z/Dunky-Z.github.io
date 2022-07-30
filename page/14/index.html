@@ -1,9 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=dark>
-
-<script type="text/javascript" src="/vvd_js/jquery.js"></script>
+<html lang="zh-CN" data-default-color-scheme=auto>
 
 
 
@@ -32,7 +30,7 @@
   
   <title>如云泊</title>
 
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
 
 
@@ -45,7 +43,7 @@
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -77,7 +75,20 @@
 
 
 <body>
-  
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
 
   <header>
     
@@ -181,9 +192,9 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/bg/index_banner_pic04.jpg') no-repeat center center; background-size: cover;">
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
@@ -205,6 +216,71 @@
 
 </div>
 
+	<script type="text/javascript" src="../js/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+
+					function set_video_attr(id){
+
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+
+					$.getJSON('../js/video_url.json', function(data){
+						if (true){
+							var video_list_length = data.length
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							
+							video_url = data[index][0]
+							pre_show_image_url = data[index][1]
+							
+							banner_obj = document.getElementById("banner")
+							banner_obj.style.cssText = "background: url('" + pre_show_image_url + "') no-repeat; background-size: cover;"
+
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							vvd_banner_content = "<img id='banner_img_item' src='" + pre_show_image_url + "' style='height: 100%; position: fixed; z-index: -999'>"
+							vvd_banner_obj.innerHTML = vvd_banner_content
+							set_video_attr('banner_img_item')
+
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+						}
+					});
+
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							}
+						}
+				</script>
+			
+			</div>
+		</div>
+    </div>
   </header>
 
   <main>
@@ -218,6 +294,189 @@
               <div class="col-12 col-md-10 m-auto">
                 
 
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/11/22/Git%E4%BF%AE%E6%94%B9%E6%9C%80%E6%96%B0commit%E7%9A%84message/" target="_self">
+          Git修改最新commit的message
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/11/22/Git%E4%BF%AE%E6%94%B9%E6%9C%80%E6%96%B0commit%E7%9A%84message/" target="_self">
+        <div>
+          
+          commit提交后觉得描述信息不准确，想重新修改message内容，该如何操作？ 1git commit --amend  弹出页面就和git commit操作时的一样，将其改为新内容即可。
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-11-22 22:44" pubdate>
+              2021-11-22
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Git/">#Git</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/09/12/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E4%B8%8D%E5%90%8C%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
+          Git不同人修改了不同的文件该如何处理
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/09/12/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E4%B8%8D%E5%90%8C%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
+        <div>
+          
+          需求同一个项目，不同的开发者修改了不同的文件，如何解决同步冲突。 模拟用户一修改第一个用户新建一个分支， 以上命令就是新建一个分支feature&#x2F;add_git_commands 将其与远端分支origin&#x2F;feature&#x2F;add_git_commands相关联，并切换到该分支。  修改readme文件，并推送到远端。因为新建分支时已经做了与远端关联，所以可以直接git push。 用户二修改第二
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-09-12 23:19" pubdate>
+              2021-09-12
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Git/">#Git</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/11/23/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8D%E5%90%8C%E5%8C%BA%E5%9F%9F%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
+          Git不同人修改了同一文件的不同区域该如何处理
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/11/23/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8D%E5%90%8C%E5%8C%BA%E5%9F%9F%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
+        <div>
+          
+          git fetch git merge或者 git pull
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-11-23 22:49" pubdate>
+              2021-11-23
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Git/">#Git</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
 
   <div class="row mx-auto index-card">
     
@@ -563,121 +822,6 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/10/12/C%E8%AF%AD%E8%A8%80%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0/" target="_self">
-          C语言可变参数
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/10/12/C%E8%AF%AD%E8%A8%80%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0/" target="_self">
-        <div>
-          
-          学习过程中查看了printf()源码，遇到了这样的函数定义， 1234567891011void printf(char *fmt, ...)&amp;#123;    char buf[256];    va_list args;    memset(buf, 0, sizeof(buf));    va_start(args, fmt);    vsprint(buf, fmt, args);
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-10-12 11:21" pubdate>
-              2021-10-12
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/C/">#C</a>
-            
-              <a href="/tags/C/">#C++</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/10/22/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E6%9D%82%E5%A3%B0%E6%98%8E/" target="_self">
-          C语言复杂声明
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/10/22/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E6%9D%82%E5%A3%B0%E6%98%8E/" target="_self">
-        <div>
-          
-          C语言常常因为声明的语法问题而受到人们的批评，特别是涉及到函数指针的语法。C语言的语法力图使声明和使用相一致。对于简单的情况， C语言的做法是很有效的，但是，如果情况比较复杂，则容易让人混淆，原因在于， C语言的声明不能从左至右阅读，而且使用了太多的圆括号。在C中，声明的形式为（dcl是declaration的简写）： 12345dcl: optional *&amp;#x27;s direct-dcl（
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-10-22 11:02" pubdate>
-              2021-10-22
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/C/">#C</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/10/21/C%E8%AF%AD%E8%A8%80%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0CyclicBuffer%E5%BE%AA%E7%8E%AF%E7%BC%93%E5%86%B2%E5%8C%BA/" target="_self">
-          C语言共享内存实现CyclicBuffer循环缓冲区
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/10/21/C%E8%AF%AD%E8%A8%80%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0CyclicBuffer%E5%BE%AA%E7%8E%AF%E7%BC%93%E5%86%B2%E5%8C%BA/" target="_self">
-        <div>
-          
-          完整代码详见GitHub CyclicBuffer。 什么是循环缓冲区 循环缓冲区通常应用在模块与模块之间的通信，可以减少程序挂起的时间，节省内存空间。 如图所示，蓝色箭头表示读取指针，红色表示写入指针。写入指针可以在缓冲区有剩余空间时不中断地写入数据，读取指针可以在循环缓冲区有数据时不停读取。 如何设计循环缓冲区为了方便两个进程之间的通信，我们在共享内存中创建循环缓冲区。基本原理如图：  结构体
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-10-21 17:12" pubdate>
-              2021-10-21
-            </time>
-          </div>
-        
-        
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
@@ -726,60 +870,7 @@
     
 
     
-    
-<div id="banner_video_insert">
-</div>
-<script>
-				
-	var ua = navigator.userAgent;
-	var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
-		isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
-		isAndroid = ua.match(/(Android)\s+([\d.]+)/),
-		isMobile = isIphone || isAndroid;
-
-	function set_video_attr(id){
-		
-		var height = document.body.children[0].clientHeight
-
-		var width = document.body.children[0].clientWidth
-
-		var video_item = document.getElementById(id);
-
-		if (height / width < 0.56){
-			video_item.setAttribute('width', '100%');
-			video_item.setAttribute('height', 'auto');
-		} else {
-			video_item.setAttribute('height', '100%');
-			video_item.setAttribute('width', 'auto');
-		}
-	}
-
-	$.getJSON('/vvd_js/video_url.json', function(data){
-	$.getJSON('/vvd_js/video_url.json', function(data){
-		if (!isMobile){
-			var video_list_length = data.length
-			var seed = Math.random()
-			index = Math.floor(seed * video_list_length)
-			
-			video_url = data[index]
-			video_html_res = "<video id='video_item' style='position: absolute;' muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
-
-			document.getElementById("banner_video_insert").innerHTML = video_html_res;
-			set_video_attr('video_item')
-		}
-
-	});
-
-	if (!isMobile){
-		window.onresize = function(){
-			set_video_attr('video_item')
-			}
-		}
-</script>
-
-
   </main>
-
   <footer>
     <div class="footer-inner">
   
@@ -796,8 +887,8 @@
 
   <!-- Scripts -->
   
-  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
 
   <script>
     NProgress.configure({"showSpinner":false,"trickleSpeed":100})
@@ -808,13 +899,13 @@
   </script>
 
 
-<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
-<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
 
-  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
   <script>
     (function (window, document) {
       var typing = Fluid.plugins.typing;

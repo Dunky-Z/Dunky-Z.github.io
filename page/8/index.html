@@ -1,9 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=dark>
-
-<script type="text/javascript" src="/vvd_js/jquery.js"></script>
+<html lang="zh-CN" data-default-color-scheme=auto>
 
 
 
@@ -32,7 +30,7 @@
   
   <title>如云泊</title>
 
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
 
 
@@ -45,7 +43,7 @@
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -77,7 +75,20 @@
 
 
 <body>
-  
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
 
   <header>
     
@@ -181,9 +192,9 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/bg/index_banner_pic04.jpg') no-repeat center center; background-size: cover;">
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
@@ -205,6 +216,71 @@
 
 </div>
 
+	<script type="text/javascript" src="../js/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+
+					function set_video_attr(id){
+
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+
+					$.getJSON('../js/video_url.json', function(data){
+						if (true){
+							var video_list_length = data.length
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							
+							video_url = data[index][0]
+							pre_show_image_url = data[index][1]
+							
+							banner_obj = document.getElementById("banner")
+							banner_obj.style.cssText = "background: url('" + pre_show_image_url + "') no-repeat; background-size: cover;"
+
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							vvd_banner_content = "<img id='banner_img_item' src='" + pre_show_image_url + "' style='height: 100%; position: fixed; z-index: -999'>"
+							vvd_banner_obj.innerHTML = vvd_banner_content
+							set_video_attr('banner_img_item')
+
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+						}
+					});
+
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							}
+						}
+				</script>
+			
+			</div>
+		</div>
+    </div>
   </header>
 
   <main>
@@ -218,6 +294,176 @@
               <div class="col-12 col-md-10 m-auto">
                 
 
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/" target="_self">
+          VSCode调试RISCV程序
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/" target="_self">
+        <div>
+          
+          前提本文主要涉及VSCode的相关配置，编译及调试工具需要提前安装好。  已经安装好riscv-toolchain，包括riscv64-unknown-elf-gcc，riscv64-unknown-elf-gdb 已经安装好qemu，包括riscv32-softmmu,riscv32-linux-user,riscv64-softmmu,riscv64-linux-user 已经安装好g++,g
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-08-23 15:51" pubdate>
+              2021-08-23
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%B8%87%E8%83%BDVSCode/" class="category-chain-item">万能VSCode</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+              <a href="/tags/GDB/">#GDB</a>
+            
+              <a href="/tags/RISCV/">#RISCV</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/09/29/VScode%E5%BF%AB%E9%80%9F%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A%E6%A8%A1%E6%9D%BF/" target="_self">
+          VScode快速添加注释模板
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/09/29/VScode%E5%BF%AB%E9%80%9F%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A%E6%A8%A1%E6%9D%BF/" target="_self">
+        <div>
+          
+          需求通常函数的注释一般都比较长，而且每个函数注释都格式一致，例如下面的函数注释模板。如果每次写注释都要复制一遍比较麻烦，复制完还要删除多余的字符。但是现有的编辑器一般都支持快捷输入。下面介绍在VSCode中如何快捷输入注释模板。 方法 Ctrl+Shift+P打开编辑器命令窗口-输入snippets-选择Preferences:Configure User Snippets-选择·c.json·
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-09-29 17:03" pubdate>
+              2021-09-29
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%B8%87%E8%83%BDVSCode/" class="category-chain-item">万能VSCode</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/VSCode/">#VSCode</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/08/24/VSCode%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95QEMU/" target="_self">
+          VSCode单步调试QEMU
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/08/24/VSCode%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95QEMU/" target="_self">
+        <div>
+          
+          了解了如何在VSCode中调试程序，接下来我们在VSCode中搭建调试QEMU的环境。 配置首先我们需要下载和编译QEMU源码 1.&#x2F;configure --enable-debug --target-list&#x3D;riscv32-softmmu,riscv32-linux-user --enable-kvm 一定要加上--enable-debug，编译出的程序才带有调试信息，不用设置安装路径，编译时
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-08-24 19:24" pubdate>
+              2021-08-24
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+              <a href="/tags/VSCode/">#VSCode</a>
+            
+              <a href="/tags/QEMU/">#QEMU</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
 
   <div class="row mx-auto index-card">
     
@@ -588,161 +834,6 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/01/04/RISC-V%E5%85%A5%E9%97%A8%EF%BC%885%EF%BC%89-%20%E4%B8%AD%E6%96%AD/" target="_self">
-          RISC-V入门（5）- 中断
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2022/01/04/RISC-V%E5%85%A5%E9%97%A8%EF%BC%885%EF%BC%89-%20%E4%B8%AD%E6%96%AD/" target="_self">
-        <div>
-          
-          中断分类 本地（Local）中断 软中断software interrupt 定时器中断timer interrupt   全局（Global）中断 外部中断externel interrupt    RISC-V 中断编程中涉及的寄存器   寄存器 用途说明    mie  （Machine Interrupt Enable） 用于进一步控制（打开和关闭）software interrupt&#x2F;t
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-01-04 19:42" pubdate>
-              2022-01-04
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/RISC-V%E5%85%A5%E9%97%A8/" class="category-chain-item">RISC-V入门</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RISCV/">#RISCV</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/03/01/RGB%E4%B8%8EYUV%E9%A2%9C%E8%89%B2%E7%A9%BA%E9%97%B4/" target="_self">
-          RGB与YUV颜色空间
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2022/03/01/RGB%E4%B8%8EYUV%E9%A2%9C%E8%89%B2%E7%A9%BA%E9%97%B4/" target="_self">
-        <div>
-          
-          基础概念RGB和YUV都属于一种颜色编码方式，或者说颜色空间。 RGB色彩模式是工业界的一种颜色标准，是通过对红、绿、蓝三个颜色通道的变化以及它们相互之间的叠加来得到各式各样的颜色的，RGB即是代表红、绿、蓝三个通道的颜色，这个标准几乎包括了人类视力所能感知的所有颜色，是目前运用最广的颜色系统之一。 在YUV空间中，Y代表亮度，其实Y就是图像的灰度值；UV代表色差，U和V是构成彩色的两个分量。在现
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-03-01 16:00" pubdate>
-              2022-03-01
-            </time>
-          </div>
-        
-        
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/08/26/RISC-V%E5%85%A5%E9%97%A8%EF%BC%881%EF%BC%89-%20%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" target="_self">
-          RISC-V入门（1）- 计算机基础
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/08/26/RISC-V%E5%85%A5%E9%97%A8%EF%BC%881%EF%BC%89-%20%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" target="_self">
-        <div>
-          
-          计算机基础计算机硬件基础两大硬件架构  冯诺依曼架构  一根总线，开销小，控制逻辑实现简单  执行效率低       哈佛架构  与上一架构相反     程序的存储与执行.c文件经过编译链接，生成.out文件。加载到内存中，到控制单元运行。进行取值，译码，执行。 晶振发出脉冲。 语言的设计与进化上图是冯诺依曼架构，特点就是指令与数据放在一起。黄色部分表示指令，绿色部分表示数据。我们来看看指令是如何
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-26 13:42" pubdate>
-              2021-08-26
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/RISC-V%E5%85%A5%E9%97%A8/" class="category-chain-item">RISC-V入门</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/RISCV/">#RISCV</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
@@ -791,60 +882,7 @@
     
 
     
-    
-<div id="banner_video_insert">
-</div>
-<script>
-				
-	var ua = navigator.userAgent;
-	var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
-		isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
-		isAndroid = ua.match(/(Android)\s+([\d.]+)/),
-		isMobile = isIphone || isAndroid;
-
-	function set_video_attr(id){
-		
-		var height = document.body.children[0].clientHeight
-
-		var width = document.body.children[0].clientWidth
-
-		var video_item = document.getElementById(id);
-
-		if (height / width < 0.56){
-			video_item.setAttribute('width', '100%');
-			video_item.setAttribute('height', 'auto');
-		} else {
-			video_item.setAttribute('height', '100%');
-			video_item.setAttribute('width', 'auto');
-		}
-	}
-
-	$.getJSON('/vvd_js/video_url.json', function(data){
-	$.getJSON('/vvd_js/video_url.json', function(data){
-		if (!isMobile){
-			var video_list_length = data.length
-			var seed = Math.random()
-			index = Math.floor(seed * video_list_length)
-			
-			video_url = data[index]
-			video_html_res = "<video id='video_item' style='position: absolute;' muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
-
-			document.getElementById("banner_video_insert").innerHTML = video_html_res;
-			set_video_attr('video_item')
-		}
-
-	});
-
-	if (!isMobile){
-		window.onresize = function(){
-			set_video_attr('video_item')
-			}
-		}
-</script>
-
-
   </main>
-
   <footer>
     <div class="footer-inner">
   
@@ -861,8 +899,8 @@
 
   <!-- Scripts -->
   
-  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
 
   <script>
     NProgress.configure({"showSpinner":false,"trickleSpeed":100})
@@ -873,13 +911,13 @@
   </script>
 
 
-<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
-<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
 
-  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
   <script>
     (function (window, document) {
       var typing = Fluid.plugins.typing;

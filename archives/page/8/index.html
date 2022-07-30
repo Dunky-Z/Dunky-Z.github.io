@@ -1,9 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=dark>
-
-<script type="text/javascript" src="/vvd_js/jquery.js"></script>
+<html lang="zh-CN" data-default-color-scheme=auto>
 
 
 
@@ -32,7 +30,7 @@
   
   <title>归档 - 如云泊</title>
 
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
 
 
@@ -45,7 +43,7 @@
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -77,7 +75,20 @@
 
 
 <body>
-  
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
 
   <header>
     
@@ -205,6 +216,71 @@
 
 </div>
 
+	<script type="text/javascript" src="../js/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+
+					function set_video_attr(id){
+
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+
+					$.getJSON('../js/video_url.json', function(data){
+						if (true){
+							var video_list_length = data.length
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							
+							video_url = data[index][0]
+							pre_show_image_url = data[index][1]
+							
+							banner_obj = document.getElementById("banner")
+							banner_obj.style.cssText = "background: url('" + pre_show_image_url + "') no-repeat; background-size: cover;"
+
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							vvd_banner_content = "<img id='banner_img_item' src='" + pre_show_image_url + "' style='height: 100%; position: fixed; z-index: -999'>"
+							vvd_banner_obj.innerHTML = vvd_banner_content
+							set_video_attr('banner_img_item')
+
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+						}
+					});
+
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							}
+						}
+				</script>
+			
+			</div>
+		</div>
+    </div>
   </header>
 
   <main>
@@ -219,13 +295,31 @@
                 
 
 <div class="list-group">
-  <p class="h4">共计 153 篇文章</p>
+  <p class="h4">共计 156 篇文章</p>
   <hr>
   
   
     
       
       <p class="h5">2021</p>
+    
+    <a href="/2021/11/13/%E8%A7%A3%E5%86%B3C-%E4%B8%ADvector%E5%A3%B0%E6%98%8E%E9%94%99%E8%AF%AFexpected-parameter-declarator/" class="list-group-item list-group-item-action">
+      <time>11-13</time>
+      <div class="list-group-item-title">解决C++中vector声明错误expected parameter declarator</div>
+    </a>
+  
+    
+    <a href="/2021/11/12/%E8%A7%A3%E5%86%B3expected-identifier-before-%E2%80%98-%E2%80%99-token/" class="list-group-item list-group-item-action">
+      <time>11-12</time>
+      <div class="list-group-item-title">解决expected identifier before ‘(’ token</div>
+    </a>
+  
+    
+    <a href="/2021/11/11/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%A4%96%E8%AE%BE%E6%A8%A1%E6%8B%9F%EF%BC%88%E4%BB%A5GPIO%E4%B8%BA%E4%BE%8B%EF%BC%89/" class="list-group-item list-group-item-action">
+      <time>11-11</time>
+      <div class="list-group-item-title">QEMU源码分析-外设模拟（以GPIO为例）</div>
+    </a>
+  
     
     <a href="/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/" class="list-group-item list-group-item-action">
       <time>11-09</time>
@@ -266,24 +360,6 @@
     <a href="/2021/10/20/%E8%A7%A3%E5%86%B3Segmentation-fault-core-dumped/" class="list-group-item list-group-item-action">
       <time>10-20</time>
       <div class="list-group-item-title">解决Segmentation fault (core dumped)</div>
-    </a>
-  
-    
-    <a href="/2021/10/16/RISC-V%E5%85%A5%E9%97%A8%EF%BC%882%EF%BC%89-%20RISC-V%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/" class="list-group-item list-group-item-action">
-      <time>10-16</time>
-      <div class="list-group-item-title">RISC-V入门（2）-RISC-V汇编语言编程</div>
-    </a>
-  
-    
-    <a href="/2021/10/12/C%E8%AF%AD%E8%A8%80%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0/" class="list-group-item list-group-item-action">
-      <time>10-12</time>
-      <div class="list-group-item-title">C语言可变参数</div>
-    </a>
-  
-    
-    <a href="/2021/09/30/Linux%E4%B8%8B%E5%B0%86%E7%BC%96%E8%AF%91%E7%BB%93%E6%9E%9C%E8%BE%93%E5%87%BA%E5%88%B0%E6%96%87%E4%BB%B6/" class="list-group-item list-group-item-action">
-      <time>09-30</time>
-      <div class="list-group-item-title">Linux下将编译结果输出到文件</div>
     </a>
   
 </div>
@@ -336,60 +412,7 @@
     
 
     
-    
-<div id="banner_video_insert">
-</div>
-<script>
-				
-	var ua = navigator.userAgent;
-	var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
-		isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
-		isAndroid = ua.match(/(Android)\s+([\d.]+)/),
-		isMobile = isIphone || isAndroid;
-
-	function set_video_attr(id){
-		
-		var height = document.body.children[0].clientHeight
-
-		var width = document.body.children[0].clientWidth
-
-		var video_item = document.getElementById(id);
-
-		if (height / width < 0.56){
-			video_item.setAttribute('width', '100%');
-			video_item.setAttribute('height', 'auto');
-		} else {
-			video_item.setAttribute('height', '100%');
-			video_item.setAttribute('width', 'auto');
-		}
-	}
-
-	$.getJSON('/vvd_js/video_url.json', function(data){
-	$.getJSON('/vvd_js/video_url.json', function(data){
-		if (!isMobile){
-			var video_list_length = data.length
-			var seed = Math.random()
-			index = Math.floor(seed * video_list_length)
-			
-			video_url = data[index]
-			video_html_res = "<video id='video_item' style='position: absolute;' muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
-
-			document.getElementById("banner_video_insert").innerHTML = video_html_res;
-			set_video_attr('video_item')
-		}
-
-	});
-
-	if (!isMobile){
-		window.onresize = function(){
-			set_video_attr('video_item')
-			}
-		}
-</script>
-
-
   </main>
-
   <footer>
     <div class="footer-inner">
   
@@ -406,8 +429,8 @@
 
   <!-- Scripts -->
   
-  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
 
   <script>
     NProgress.configure({"showSpinner":false,"trickleSpeed":100})
@@ -418,8 +441,8 @@
   </script>
 
 
-<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
-<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 

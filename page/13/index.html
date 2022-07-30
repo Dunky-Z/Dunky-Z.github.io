@@ -1,9 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=dark>
-
-<script type="text/javascript" src="/vvd_js/jquery.js"></script>
+<html lang="zh-CN" data-default-color-scheme=auto>
 
 
 
@@ -32,7 +30,7 @@
   
   <title>如云泊</title>
 
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
 
 
@@ -45,7 +43,7 @@
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -77,7 +75,20 @@
 
 
 <body>
-  
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
 
   <header>
     
@@ -181,9 +192,9 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/img/bg/index_banner_pic04.jpg') no-repeat center center; background-size: cover;">
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
@@ -205,6 +216,71 @@
 
 </div>
 
+	<script type="text/javascript" src="../js/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+
+					function set_video_attr(id){
+
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+
+					$.getJSON('../js/video_url.json', function(data){
+						if (true){
+							var video_list_length = data.length
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							
+							video_url = data[index][0]
+							pre_show_image_url = data[index][1]
+							
+							banner_obj = document.getElementById("banner")
+							banner_obj.style.cssText = "background: url('" + pre_show_image_url + "') no-repeat; background-size: cover;"
+
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							vvd_banner_content = "<img id='banner_img_item' src='" + pre_show_image_url + "' style='height: 100%; position: fixed; z-index: -999'>"
+							vvd_banner_obj.innerHTML = vvd_banner_content
+							set_video_attr('banner_img_item')
+
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+						}
+					});
+
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							}
+						}
+				</script>
+			
+			</div>
+		</div>
+    </div>
   </header>
 
   <main>
@@ -218,6 +294,165 @@
               <div class="col-12 col-md-10 m-auto">
                 
 
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/07/21/Hexo%E6%90%AD%E5%BB%BAGitHub%E5%8D%9A%E5%AE%A2%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0README%E6%96%87%E4%BB%B6/" target="_self">
+          Hexo搭建GitHub博客如何添加README文件
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/07/21/Hexo%E6%90%AD%E5%BB%BAGitHub%E5%8D%9A%E5%AE%A2%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0README%E6%96%87%E4%BB%B6/" target="_self">
+        <div>
+          
+          刚开始搭建的时候并没有为仓库添加Readme文件，但是后期添加也不能直接在仓库里直接添加，因为每次部署都会被自动删除。添加方法：  在博客根目录的source文件夹下新建README.md文件 在根目录的_config.yml文件中搜索skip_render，并做如下更改1skip_render: README.md  因为在每次hexo g时候，README文件都会被自动渲染为HTML文件，所以
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-07-21 12:14" pubdate>
+              2021-07-21
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/05/18/Interlaken%E5%8D%8F%E8%AE%AE/" target="_self">
+          Interlaken协议
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/05/18/Interlaken%E5%8D%8F%E8%AE%AE/" target="_self">
+        <div>
+          
+          对Interlaken协议文档的翻译加了一些自己的理解；  8b&#x2F;10b编码：在串行通道上传输时，将 8bits数据编码为10bits数据，做一个转换，使各位数据之间有更多的 1到0 和 0到1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。64B&#x2F;67B 编码编码的原因也是类似的。这样，在串行通道上传输10位数据，实际上只传输了8位。 协议层（Protocol Layer）传输格式数据
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-05-18 22:40" pubdate>
+              2022-05-18
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" class="category-chain-item">通信协议</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">#通信协议</a>
+            
+              <a href="/tags/Interlaken/">#Interlaken</a>
+            
+              <a href="/tags/%E5%8D%8F%E8%AE%AE/">#协议</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/09/23/Git%E6%8A%8A%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%90%8C%E6%AD%A5%E5%88%B0GitHub/" target="_self">
+          Git-把本地仓库同步到GitHub
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2021/09/23/Git%E6%8A%8A%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%90%8C%E6%AD%A5%E5%88%B0GitHub/" target="_self">
+        <div>
+          
+          需求因为现在大部分情况下是先从远程Clone下来代码，所以这一功能用的不多。但是如果自己想把本地已有的代码同步到远程，本文就可以解决这一的需求。 方法 GitHub新建一个仓库，并复制SSH地址  1git@github.com:git201901&#x2F;git_learning.git git remote add 名称  1pc:git-learning suling$ git remote add
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-09-23 23:06" pubdate>
+              2021-09-23
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Git/">#Git</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
 
   <div class="row mx-auto index-card">
     
@@ -592,189 +827,6 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/11/22/Git%E4%BF%AE%E6%94%B9%E6%9C%80%E6%96%B0commit%E7%9A%84message/" target="_self">
-          Git修改最新commit的message
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/11/22/Git%E4%BF%AE%E6%94%B9%E6%9C%80%E6%96%B0commit%E7%9A%84message/" target="_self">
-        <div>
-          
-          commit提交后觉得描述信息不准确，想重新修改message内容，该如何操作？ 1git commit --amend  弹出页面就和git commit操作时的一样，将其改为新内容即可。
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-11-22 22:44" pubdate>
-              2021-11-22
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Git/">#Git</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/09/12/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E4%B8%8D%E5%90%8C%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
-          Git不同人修改了不同的文件该如何处理
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/09/12/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E4%B8%8D%E5%90%8C%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
-        <div>
-          
-          需求同一个项目，不同的开发者修改了不同的文件，如何解决同步冲突。 模拟用户一修改第一个用户新建一个分支， 以上命令就是新建一个分支feature&#x2F;add_git_commands 将其与远端分支origin&#x2F;feature&#x2F;add_git_commands相关联，并切换到该分支。  修改readme文件，并推送到远端。因为新建分支时已经做了与远端关联，所以可以直接git push。 用户二修改第二
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-09-12 23:19" pubdate>
-              2021-09-12
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Git/">#Git</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/11/23/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8D%E5%90%8C%E5%8C%BA%E5%9F%9F%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
-          Git不同人修改了同一文件的不同区域该如何处理
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/11/23/Git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8D%E5%90%8C%E5%8C%BA%E5%9F%9F%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/" target="_self">
-        <div>
-          
-          git fetch git merge或者 git pull
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-11-23 22:49" pubdate>
-              2021-11-23
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Git%E5%AE%9E%E6%88%98/" class="category-chain-item">Git实战</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Git/">#Git</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
@@ -823,60 +875,7 @@
     
 
     
-    
-<div id="banner_video_insert">
-</div>
-<script>
-				
-	var ua = navigator.userAgent;
-	var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
-		isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
-		isAndroid = ua.match(/(Android)\s+([\d.]+)/),
-		isMobile = isIphone || isAndroid;
-
-	function set_video_attr(id){
-		
-		var height = document.body.children[0].clientHeight
-
-		var width = document.body.children[0].clientWidth
-
-		var video_item = document.getElementById(id);
-
-		if (height / width < 0.56){
-			video_item.setAttribute('width', '100%');
-			video_item.setAttribute('height', 'auto');
-		} else {
-			video_item.setAttribute('height', '100%');
-			video_item.setAttribute('width', 'auto');
-		}
-	}
-
-	$.getJSON('/vvd_js/video_url.json', function(data){
-	$.getJSON('/vvd_js/video_url.json', function(data){
-		if (!isMobile){
-			var video_list_length = data.length
-			var seed = Math.random()
-			index = Math.floor(seed * video_list_length)
-			
-			video_url = data[index]
-			video_html_res = "<video id='video_item' style='position: absolute;' muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
-
-			document.getElementById("banner_video_insert").innerHTML = video_html_res;
-			set_video_attr('video_item')
-		}
-
-	});
-
-	if (!isMobile){
-		window.onresize = function(){
-			set_video_attr('video_item')
-			}
-		}
-</script>
-
-
   </main>
-
   <footer>
     <div class="footer-inner">
   
@@ -893,8 +892,8 @@
 
   <!-- Scripts -->
   
-  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
 
   <script>
     NProgress.configure({"showSpinner":false,"trickleSpeed":100})
@@ -905,13 +904,13 @@
   </script>
 
 
-<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
-<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
 
 
-  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
   <script>
     (function (window, document) {
       var typing = Fluid.plugins.typing;
