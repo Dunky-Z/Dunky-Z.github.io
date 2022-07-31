@@ -1,0 +1,943 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="简介FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。  帧缓冲主要结构 fb_info  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构只在内核中可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux帧缓冲">
+<meta property="og:url" content="http://example.com/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="简介FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。  帧缓冲主要结构 fb_info  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构只在内核中可以">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220117192106.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220120202118.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225141549.jpg">
+<meta property="article:published_time" content="2022-01-17T09:38:04.000Z">
+<meta property="article:modified_time" content="2022-07-23T09:48:17.786Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="FrameBuffer">
+<meta property="article:tag" content="LCD">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Linux帧缓冲 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/bg/banner_post03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Linux帧缓冲</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-01-17 17:38" pubdate>
+          2022年1月17日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          6.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          55 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					window.alert(1);
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					function set_video(){
+						window.alert(2);
+						if (true){
+							window.alert(3);
+							video_url = "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4"
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							window.alert(4);
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+								set_video_attr('banner_img_item')
+								window.alert(3);
+
+							}
+						}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video_attr('banner_img_item')
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Linux帧缓冲</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="帧缓冲主要结构"><a href="#帧缓冲主要结构" class="headerlink" title="帧缓冲主要结构"></a>帧缓冲主要结构</h2><ul>
+<li><p>fb_info<br>  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构只在内核中可以看到，对用户空间不可见。</p>
+</li>
+<li><p>fb_var_screeninfo<br>  该结构体记录指定的帧缓冲设备和显示模式中可以被修改的信息，其中包括显示器分辨率等信息。</p>
+</li>
+<li><p>fb_fix_screeninfo<br>  该结构体表示帧缓冲设备中一些不能修改的参数，包括特定的显示模式，屏幕缓冲区的物理地址，显示缓冲区的长度信息。</p>
+</li>
+<li><p>fb_ops<br>  LCD底层硬件操作接口集。比如<code>fb_open</code>、<code>fb_release</code>、<code>fb_read</code>、<code>fb_write</code>、<code>fb_ioctl</code>、<code>fb_mmap</code>等：</p>
+</li>
+</ul>
+<ul>
+<li>fb_cmap<br>  <code>fb_cmap</code>指定颜色映射，用于以内核可以理解的方式存储用户的颜色定义。</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220117192106.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="帧缓冲显示原理"><a href="#帧缓冲显示原理" class="headerlink" title="帧缓冲显示原理"></a>帧缓冲显示原理</h2><p>帧缓冲设备是一种显示抽象的设备，也可以被理解为它是一个内存区域，上面的应用程序可以直接对显示缓冲区进行读和写操作，就像访问文件的通用接口一样，用户可以认为帧缓冲是一块内存，能读取数据的内存块也可以向这个内存写入数据，因此显示器显示图形界面实际上根据根据的是指定的内存数据块内的数据。</p>
+<p>帧缓冲的显示缓冲区位于Linux内核地址空间，应用程序不能直接访问内核地址空间，在Linux中，只有一个内存的内核地址空间映射到用户地址空间才可以由用户访问，内存的映射是通过<code>MMAP</code>函数实现的在Linux中。对于帧缓冲，虚拟地址是通过内存映射的方法将显示缓冲区内核地址映射到用户空间的，然后用户可以通过读和写这部分的虚拟地址来访问显示缓冲区，在屏幕上绘图。</p>
+<h2 id="使用流程"><a href="#使用流程" class="headerlink" title="使用流程"></a>使用流程</h2><p>使用帧缓冲之前应该首先确定Linux系统上已安装了帧缓冲驱动，可以在目录<code>/dev/</code>下查找<code>fb*</code>如，<code>/dev/fb0, /dev/fb1</code>等设备来确定是否安装。如果没有需要安装一个帧缓冲驱动的模块到内核，或者重新编译内核生成一个带帧缓冲模块的镜像。</p>
+<p>使用帧缓冲需要进入控制台模式，即纯命令行的模式进行编程。一般可以通过快捷键<code>CTRL+ALT+F1</code>进入控制台模式，<code>CTRL+ALT+F7</code>切回图形窗口。如果控制台模式没有登录，可以<code>CTRL+ALT+F6</code>尝试登录。</p>
+<p>因硬件显示设备的物理显示区是通过帧缓存区操作，而帧缓存区是处于内核空间，应用程序不能随意操作，此时可以通过系统调用<code>mmap</code>把帧缓存映射到用户空间，在用户空间中创建出帧缓存映射区（用户图像数据缓存区），以后只需把用户图像数据写入到帧缓存映射区就可在硬件设备上显示图像。</p>
+<p>具体实现流程如下：</p>
+<h3 id="打开帧缓冲设备-dev-f0。"><a href="#打开帧缓冲设备-dev-f0。" class="headerlink" title="打开帧缓冲设备/dev/f0。"></a>打开帧缓冲设备<code>/dev/f0</code>。</h3><p>在Linux的/dev目录的寻找b*设备文件然后使用读写模式打开它， Linux系统将使用通用的<code>open</code>系统调用来完成功能， <code>open</code>的功能原型如下:</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">open</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *path, <span class="hljs-keyword">int</span> oflags)</span></span>;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>Path</code>是准备打开的文件或设备的路径参数；</li>
+<li><code>oflags</code>指定打开文件时使用的参数；</li>
+<li><code>flags</code>参数的指定，是通过组合文件访问模式和其他的可选模式一起的，可以支持多个模式或，参数必须是指定下列文件的访问模式。<ul>
+<li>只读：O_RDONLLY</li>
+<li>只写：O_WRONLY</li>
+<li>读写：O_RDWR</li>
+</ul>
+</li>
+</ul>
+<p>简而言之， <code>open</code>函数建立设备文件的访问路径。如果操作成功，它返回一个文件描述符，只是一个文件描述符，它将不使用其他任何正在运行的进程共享。如果两个程序同时打开相同的文件，将得到两个不同的文件描述符。如果他们执行文件写入操作，他们将操作每个文件描述符，不会发生冲突，写完之后退出。他们的数据不会互相交织在一起的，但会互相的彼此覆盖(后写完的内容覆盖前面写的内容)，两个程序来读取和写入的文件位置看似一样但是有各自不同拷贝所以不会发生交织。如果<code>open</code>调用未能返回<code>1</code>，则将全局变量<code>errno</code>设置为指示失败的原因。</p>
+<h3 id="通过系统调用ioctl函数获得帧设备相关信息"><a href="#通过系统调用ioctl函数获得帧设备相关信息" class="headerlink" title="通过系统调用ioctl函数获得帧设备相关信息"></a>通过系统调用<code>ioctl</code>函数获得帧设备相关信息</h3><p>通过顿缓冲文件描述符，屏幕的分辨率、颜色深度等信息可以被获得，帧缓冲驱动中存放了这些对应的信息，必须使用Linux系统调用<code>ioctl</code>首先将帧缓冲的文件描述符和<code>fb_var_screeninfo</code> 结构体对应起来。</p>
+<p>结构体<code>fb_var_screeninfo</code>包含以下三个重要数据结构:</p>
+<ul>
+<li>屏幕的x方向分辨率，像素作为单位。</li>
+<li>屏幕的Y方向分辨率，像素作为单位。</li>
+<li>屏幕的像素颜色深度，每个像素用多少比特数表示。</li>
+</ul>
+<p><code>ioctl</code>函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">ioctl</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> __fd, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> <span class="hljs-keyword">int</span> __request, ...)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+<p><code>ioctl</code>调用实现访问设备驱动各种各样的配置信息功能，它提供了一个控制设备的行为和配置底层服务接口的驱动函数，各种设备驱动程序，例如套接字和系统终端，还有磁带机都有<code>ioctl</code>命令可以支持。</p>
+<ul>
+<li><code>__fd</code>：<code>ioctl</code>命令中是该帧缓冲的文件描述符；</li>
+<li><code>__request</code>：<code>ioctl</code>函数将要执行的命令，实现参数给定的对象描述符中指定的函数操作，各种设备支持的功能是有差异的<ul>
+<li><code>FBIOGET_VSCREENINFO</code>命令字返回与Framebuffer有关的固定的信息；</li>
+<li><code>FBIOGET_VSCREENINFO</code>命令字返回与Framebuffer有关的可变的信息；</li>
+</ul>
+</li>
+<li>第三个参数是一个指针用来指向结构体<code>fb_var_screeninfo</code>。</li>
+</ul>
+<p>最后使用者可以通过结构体<code>fb_var_screeninfo</code>来获得屏幕的分辨率和颜色位深和其他重要的屏幕信息。根据这些信息可以计算屏幕缓冲区的大小:屏幕缓冲区大小(以字节为单位) = 屏幕宽度x高度x屏幕颜色深度/8</p>
+<h3 id="帧缓冲映射"><a href="#帧缓冲映射" class="headerlink" title="帧缓冲映射"></a>帧缓冲映射</h3><p>在进行帧缓冲的<code>MMAP</code>映射之前，要先得到帧缓冲文件描述符，才能像屏幕上面显示，必须首先将缓冲区的内核地址映射映射到用户地址空间。Linux系统将使用<code>MMAP</code>系统调用完成功能，<code>MMAP</code>函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">void</span> *<span class="hljs-title">mmap</span> <span class="hljs-params">(<span class="hljs-keyword">void</span> *__addr, <span class="hljs-keyword">size_t</span> __len, <span class="hljs-keyword">int</span> __prot,</span></span><br><span class="hljs-params"><span class="hljs-function">		   <span class="hljs-keyword">int</span> __flags, <span class="hljs-keyword">int</span> __fd, <span class="hljs-keyword">__off_t</span> __offset)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><p><code>__addr</code>：返回一个指向<code>mmap</code>函数的内存区域的指针，与内容相关的文件指针，通过指针可以访问帧缓冲区的内存区域。</p>
+</li>
+<li><p><code>__len</code>：可以请求使用特定内存地址，通过设置地址参数，如果值为<code>0</code>，将自动分配指针，这是推荐的做法，否则会降低程序的可移植性，因为不同的系统可用的地址范围是不一样的。</p>
+</li>
+<li><p><code>__prot</code>：设置内存访问的权限设定，通过端口相关的参数定义，位的定义值如下:</p>
+<ul>
+<li><code>PORT_EXEC</code>:允许内存段的执行。</li>
+<li><code>PORT_NONE</code>:无法访问内存段。</li>
+<li><code>PORT_READ</code>:允许读取内存段。</li>
+<li><code>PORT_WRITE</code>:允许编写内存段。</li>
+</ul>
+</li>
+<li><p><code>__flags</code>：改变控制参数标志，能够影响该内存段的作用域，如下所示:</p>
+<ul>
+<li><code>MAP_FIXED</code>:内存段必须位于addr中指定的地址。</li>
+<li><code>MAP_SHARED</code>:内存的修改保存到一个文件中。</li>
+<li><code>MAP_PRIVATE</code>:内存段是私人的，变化仅在本地范围内有效。</li>
+</ul>
+</li>
+<li><p> <code>__fd</code>：是通过一个<code>open</code>调用得到的访问文件的描述符。</p>
+</li>
+<li><p><code>offset</code>：用于指定访问数据的开始偏移量在内存段中，和访问普通文件使用方式是相同的，再指定文件描述符参数，以及访问的数据长度参数即可。</p>
+</li>
+</ul>
+<h3 id="读写帧缓冲"><a href="#读写帧缓冲" class="headerlink" title="读写帧缓冲"></a>读写帧缓冲</h3><p><code>MMAP</code>返回的指针，可以访问到帧缓冲内存区，可以定位到屏幕缓冲区具体为每个显示像素的位置，通过读函数调用读取对应的位置数据在帧缓冲内存中，相反写操作对应于内存的写入数据可以显示内容写到屏幕上。</p>
+<h3 id="解除帧缓冲映射"><a href="#解除帧缓冲映射" class="headerlink" title="解除帧缓冲映射"></a>解除帧缓冲映射</h3><p>在绘图完成后，帧缓冲文件描述符必须被释放之前，解除帧缓冲区的地址映射，使用Linux系统调用完成<code>mmap</code>函数的逆函数实现，即是<code>munmap</code>，函数的原型如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">munmap</span> <span class="hljs-params">(<span class="hljs-keyword">void</span> *__addr, <span class="hljs-keyword">size_t</span> __len)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>addr</code>参数应该与调用<code>MMAP</code>时指定的参数值一致， <code>len</code>参数也应该与之前调用<code>MMAP</code>时指定的<code>len</code>参数保持一致。</p>
+<p><code>mmap</code>调用返回<code>0</code>成功，失败则返回<code>1</code>，同时将全局变量<code>erno</code>设置为指示失败的原因。</p>
+<h3 id="调用close关闭设备。"><a href="#调用close关闭设备。" class="headerlink" title="调用close关闭设备。"></a>调用<code>close</code>关闭设备。</h3><p>使用帧缓冲设备后，应关闭相应的文件描述符，使用Linux系统标准的函数完成关闭功能，<code>close</code>函数的原型如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">close</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> __fd)</span></span>;<br></code></pre></td></tr></table></figure>
+<p><code>close</code>的参数和在开始调用<code>open</code>时指定的参数一致，文件描述符释放后可以重用，结束调用成功返回<code>0</code>，失败返回<code>1</code>。</p>
+<h2 id="帧缓冲实例"><a href="#帧缓冲实例" class="headerlink" title="帧缓冲实例"></a>帧缓冲实例</h2><p>以下代码摘自<a target="_blank" rel="noopener" href="https://github.com/xianjimli/linux-framebuffer-tools">xianjimli/linux-framebuffer-tools: linux framebuffer tool</a>，演示了帧缓冲设备的使用流程。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">fb_info_t</span> *<span class="hljs-title">linux_fb_open</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *filename)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">uint32_t</span>                 size = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">fb_info_t</span>               *fb   = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">fb_fix_screeninfo</span> <span class="hljs-title">fix</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">fb_var_screeninfo</span> <span class="hljs-title">var</span>;</span><br>    return_value_if_fail(filename != <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br><br>    fb = (<span class="hljs-keyword">fb_info_t</span> *)<span class="hljs-built_in">calloc</span>(<span class="hljs-number">1</span>, <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">fb_info_t</span>));<br>    return_value_if_fail(fb != <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br><br>    <span class="hljs-comment">// 打开帧缓冲设备，O_RDWR读写模式</span><br>    fb-&gt;fd = open(filename, O_RDWR);<br>    <span class="hljs-keyword">if</span> (fb-&gt;fd &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        log_debug(<span class="hljs-string">&quot;open %s failed(%d)\n&quot;</span>, filename, errno);<br>        <span class="hljs-built_in">free</span>(fb);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>    &#125;<br>    <span class="hljs-comment">// 通过系统调用ioctl函数获得帧设备相关信息</span><br>    <span class="hljs-comment">// FBIOGET_FSCREENINFO命令字返回与Framebuffer有关的固定的信息</span><br>    <span class="hljs-keyword">if</span> (ioctl(fb-&gt;fd, FBIOGET_FSCREENINFO, &amp;fix) &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> fail;<br>    <span class="hljs-comment">//命令字返回与Framebuffer有关的可变的信息</span><br>    <span class="hljs-keyword">if</span> (ioctl(fb-&gt;fd, FBIOGET_VSCREENINFO, &amp;var) &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> fail;<br><br>    var.xoffset = <span class="hljs-number">0</span>;<br>    var.yoffset = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// 显示</span><br>    ioctl(fb-&gt;fd, FBIOPAN_DISPLAY, &amp;(var));<br><br>    log_debug(<span class="hljs-string">&quot;fb_info_t: %s\n&quot;</span>, filename);<br>    log_debug(<span class="hljs-string">&quot;fb_info_t: xres=%d yres=%d bits_per_pixel=%d mem_size=%d\n&quot;</span>, var.xres, var.yres,<br>              var.bits_per_pixel, fb_size(fb));<br>    log_debug(<span class="hljs-string">&quot;fb_info_t: red(%d %d) green(%d %d) blue(%d %d)\n&quot;</span>, var.red.offset, var.red.length,<br>              var.green.offset, var.green.length, var.blue.offset, var.blue.length);<br><br>    fb-&gt;w           = var.xres;<br>    fb-&gt;h           = var.yres;<br>    fb-&gt;bpp         = var.bits_per_pixel / <span class="hljs-number">8</span>;<br>    fb-&gt;line_length = fix.line_length;<br><br>    size = fb_size(fb);<br>    <span class="hljs-comment">// 帧缓冲映射</span><br>    <span class="hljs-comment">// PROT_READ | PROT_WRITE:可读写</span><br>    <span class="hljs-comment">// MAP_SHARED：内存的修改保存到一个文件</span><br>    fb-&gt;data = (<span class="hljs-keyword">uint8_t</span> *)mmap(<span class="hljs-number">0</span>, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb-&gt;fd, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-keyword">if</span> (fb-&gt;data == MAP_FAILED)<br>    &#123;<br>        log_debug(<span class="hljs-string">&quot;map framebuffer failed.\n&quot;</span>);<br>        <span class="hljs-keyword">goto</span> fail;<br>    &#125;<br><br>    log_debug(<span class="hljs-string">&quot;line_length=%d mem_size=%d\n&quot;</span>, fix.line_length, fb_size(fb));<br>    log_debug(<span class="hljs-string">&quot;xres_virtual =%d yres_virtual=%d xpanstep=%d ywrapstep=%d\n&quot;</span>, var.xres_virtual,<br>              var.yres_virtual, fix.xpanstep, fix.ywrapstep);<br><br>    <span class="hljs-keyword">return</span> fb;<br>fail:<br>    log_debug(<span class="hljs-string">&quot;%s is not a framebuffer.\n&quot;</span>, filename);<br>    close(fb-&gt;fd);<br>    <span class="hljs-built_in">free</span>(fb);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>感兴趣可以下载源码编译运行，其中<code>/bin/fbshow</code>可以使用帧缓冲设备显示图片。图形界面下直接运行可能提示无法运行，需要<code>Chrtl+Alt+F1</code>切换到控制台模式。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220120202118.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="LCD与Framebuffer的关系"><a href="#LCD与Framebuffer的关系" class="headerlink" title="LCD与Framebuffer的关系"></a>LCD与Framebuffer的关系</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225141549.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>LCD控制器首先通过VDEN信号，使能。接下来根据VCLK时钟信号，在像素点上“喷涂”不同的颜色（打个比方），控制器有VD（video data）信号，传送不同颜色信息。每来一个时钟信号，就向右移动一个像素，根据行同步信号HSYNC，就从最右边移动到最左边。当移动到右下角时根据垂直同步信号VSYNC。</p>
+<p>那么问题来了，不同颜色的信息从哪里来？就是从上文介绍的Framebuffer中来的。</p>
+<p>很多人都会说操纵LCD显示就是操纵FrameBuffer，表面上来看是这样的。实际上是FrameBuffer就是linux内核驱动申请的一片内存空间，然后LCD内有一片sram，cpu内部有个LCD控制器，它有个单独的dma用来将FrameBuffer中的数据拷贝到LCD的sram中去 拷贝到LCD的sram中的数据就会显示在LCD上，LCD驱动和FrameBuffer驱动没有必然的联系，它只是驱动LCD正常工作的，比如有信号传过来，那么LCD驱动负责把信号转成显示屏上的内容，至于什么内容这就是应用层要处理的。</p>
+<blockquote>
+<p>静态随机存取存储器（Static Random-Access Memory，SRAM）是随机存取存储器的一种。所谓的“静态”，是指这种存储器只要保持通电，里面储存的数据就可以恒常保持。<br>DMA（Direct Memory Access），直接内存访问。使用DMA的好处就是它不需要CPU的干预而直接服务外设，这样CPU就可以去处理别的事务，从而提高系统的效率。</p>
+</blockquote>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a target="_blank" rel="noopener" href="https://carlyleliu.github.io/2021/Linux%E9%A9%B1%E5%8A%A8%E4%B9%8BFramebuffer%E5%AD%90%E7%B3%BB%E7%BB%9F/">Linux驱动之Framebuffer子系统 | 量子范式</a><br><a target="_blank" rel="noopener" href="https://www.codenong.com/cs106598190/">Linux驱动开发（9）——- framebuffer驱动详解 | 码农家园</a><br><a target="_blank" rel="noopener" href="https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=CMFD&dbname=CMFD201502&filename=1015587486.nh&uniplatform=NZKPT&v=KNvhApgKTzqH-mWxqP6f8BkbDR9mSjPHz8PfaxqDg2f1j30XqnHzSDsvwoqz-CbX">嵌入式系统中帧缓冲显示模块的设计与实现 - 中国知网</a><br><a target="_blank" rel="noopener" href="https://github.com/tsuibin/research/tree/master/framebuffer/fivechess/fivechess-0.1">research/framebuffer/fivechess/fivechess-0.1 at master · tsuibin/research</a><br><a target="_blank" rel="noopener" href="https://www.shangmayuan.com/a/f67d260756ce42258a9ed4ef.html">五子棋 framebuffer版 - 尚码园</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangwen123/article/details/12096483">FrameBuffer驱动程序分析_深入剖析Android系统-CSDN博客_framebuffer</a><br><a target="_blank" rel="noopener" href="https://github.com/xianjimli/linux-framebuffer-tools">xianjimli/linux-framebuffer-tools: linux framebuffer tool</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1HW411L76t?p=2">韦东山_嵌入式Linux_第2期_Linux高级驱动视频教程_免费试看版_哔哩哔哩_bilibili</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/356443723">Linux LCD Frambuffer 基础介绍和使用（1） - 知乎</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+        <a href="/tags/FrameBuffer/">#FrameBuffer</a>
+      
+        <a href="/tags/LCD/">#LCD</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux帧缓冲</div>
+      <div>http://example.com/2022/01/17/Linux帧缓冲/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年1月17日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/01/19/%E8%A7%A3%E5%86%B3VSCode%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%87%E7%A8%8B%E8%AF%95%E5%9B%BE%E5%86%99%E5%85%A5%E7%9A%84%E7%AE%A1%E9%81%93%E4%B8%8D%E5%AD%98%E5%9C%A8/" title="解决VSCode配置远程连接，过程试图写入的管道不存在">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">解决VSCode配置远程连接，过程试图写入的管道不存在</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/01/13/%E8%A7%A3%E5%86%B3Git%20ssh%20permission%20denied(publickey)/" title="解决ssh permission denied(publickey)">
+                        <span class="hidden-mobile">解决ssh permission denied(publickey)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'f15f0caa9a26cdb518b37bcd84d6efdb'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,927 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="对Interlaken协议文档的翻译加了一些自己的理解；  8b&#x2F;10b编码：在串行通道上传输时，将 8bits数据编码为10bits数据，做一个转换，使各位数据之间有更多的 1到0 和 0到1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。64B&#x2F;67B 编码编码的原因也是类似的。这样，在串行通道上传输10位数据，实际上只传输了8位。 协议层（Protocol Layer）传输格式数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Interlaken协议">
+<meta property="og:url" content="http://example.com/2022/05/18/Interlaken%E5%8D%8F%E8%AE%AE/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="对Interlaken协议文档的翻译加了一些自己的理解；  8b&#x2F;10b编码：在串行通道上传输时，将 8bits数据编码为10bits数据，做一个转换，使各位数据之间有更多的 1到0 和 0到1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。64B&#x2F;67B 编码编码的原因也是类似的。这样，在串行通道上传输10位数据，实际上只传输了8位。 协议层（Protocol Layer）传输格式数据">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517120049.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517120402.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517142438.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517182706.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517165148.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517165803.png">
+<meta property="article:published_time" content="2022-05-18T14:40:47.000Z">
+<meta property="article:modified_time" content="2022-07-23T09:48:17.784Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="通信协议">
+<meta property="article:tag" content="Interlaken">
+<meta property="article:tag" content="协议">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517120049.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Interlaken协议 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/bg/banner_post03.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Interlaken协议</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-05-18 22:40" pubdate>
+          2022年5月18日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          24 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					window.alert(1);
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					function set_video(){
+						window.alert(2);
+						if (true){
+							window.alert(3);
+							video_url = "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4"
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+
+							window.alert(4);
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+								set_video_attr('banner_img_item')
+								window.alert(3);
+
+							}
+						}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video_attr('banner_img_item')
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Interlaken协议</h1>
+            
+            <div class="markdown-body">
+              
+              <blockquote>
+<p>对Interlaken协议文档的翻译加了一些自己的理解；</p>
+</blockquote>
+<p><strong>8b/10b编码</strong>：在串行通道上传输时，将 8bits数据编码为10bits数据，做一个转换，使各位数据之间有更多的 1到0 和 0到1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。<strong>64B/67B 编码</strong>编码的原因也是类似的。这样，在串行通道上传输10位数据，实际上只传输了8位。</p>
+<h2 id="协议层（Protocol-Layer）"><a href="#协议层（Protocol-Layer）" class="headerlink" title="协议层（Protocol Layer）"></a>协议层（Protocol Layer）</h2><h3 id="传输格式"><a href="#传输格式" class="headerlink" title="传输格式"></a>传输格式</h3><p>数据通过可配置数量的 SerDes 通道（Lane），再由 Interlaken 接口传输。在本文档中，通道被定义为两个 IC 之间的单工串行链路（simplex serial link）。该协议旨在与任意数量的通道一起运行（1个或多个，没有上限）。实际实现时会固定一个数值，不会设计为可变值。</p>
+<p>接口发送数据的基本单位是一个 8 字节的字（Word）。用8字节是为了符合<strong>64B/67B 编码</strong>，用于描述突发（Burst）的控制字的大小也是8字节。通过使基本传输单元与控制字大小相等，可以<strong>很容易地调整接口的宽度</strong>。</p>
+<p>数据和控制字按顺序在通道上传输，从通道 0 开始，到通道 M 结束，并在下一个数据块中重复。图 4 说明了该过程</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517120049.png" srcset="/img/loading.gif" lazyload></p>
+<p>64B/67B编码在每个通道上独立进行。传输通过两种基本数据类型实现：数据字和控制字，他们通过64B/67B 帧位（framing bits）进行区分。这两种数据字类型的格式如下图所示：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517120402.png" srcset="/img/loading.gif" lazyload></p>
+<p>数据和控制信息都是以位66～0的顺序传输的，框架层引入了4个附加控制字，详细信息后面将描述。</p>
+<h3 id="Burst-结构（Burst-Structure）"><a href="#Burst-结构（Burst-Structure）" class="headerlink" title="Burst 结构（Burst Structure）"></a>Burst 结构（Burst Structure）</h3><h4 id="数据传输流程"><a href="#数据传输流程" class="headerlink" title="数据传输流程"></a>数据传输流程</h4><p>Interlaken接口的带宽在支持的通道上被划分为Bursts。数据包通过一个或多个Burst在接口上传输。Burst通过一个或多个控制字来描述。为了将任意大小的数据包分割成Burst，定义以下两个参数：</p>
+<ul>
+<li>BurstMax：Burst的最大大小（64Bytes的倍数）</li>
+<li>BurstShort：Burst的最小大小（最小32Bytes，增量为8Bytes）</li>
+</ul>
+<p>该接口通常通过发送一个 BurstMax 长度的数据突发来运行，然后是一个控制字。发送设备中的调度逻辑可以自由选择信道服务的顺序，<strong>受流控状态的约束</strong>。Burst在每个通道上传输，直到数据包完全传输，此时该通道上的新数据包传输才开始。</p>
+<p>因为接口是信道化的，数据包的结束可能会在几个信道上连续地出现，每个信道上的剩余数据量非常小。由于发射器和接收器的存储器可能被理想地设计成宽数据通路，它们需要以非常高的速率来处理这种情况。为了减少接收器和发射器的负担，BurstShort参数保证了连续的Burst控制字之间的最小间隔。最小的BurstShort间隔是32字节，更大的值可以以8字节为增量。</p>
+<blockquote>
+<p>如果没有最小Burst的限制，那么数据包太小的话，发送器或者接收器就会频繁收到end-of-packet，这就增加了处理负担。</p>
+</blockquote>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517142438.png" srcset="/img/loading.gif" lazyload alt="示意如何保证 BurstShort 最小间隔。 BurstShort 通过在下一个Burst控制字之前添加额外的空闲控制字来保证最小Burst的大小。图中，Idle Control Word 1 的 EOP_Format 指示 EOP 和Last Data Word的适当大小，Idle Control Word 1 的 CRC24 涵盖了Last Data Word和Idle Control Word 1 。插入Idle Control Word 2 和Idle Control Word 3 BurstShort来保证BurstShort为32字节，随后的 Burst 控制字属于下一轮发送的数据。"></p>
+<h4 id="控制字格式"><a href="#控制字格式" class="headerlink" title="控制字格式"></a>控制字格式</h4><p>突发通过一个 8 字节的控制字来描述。控制字在数据流中通过使用位 [66:64] 的“0x10”控制代码和位 [63] = ‘1’ 来标识突发和空闲控制字格式如第 16 页的图 7 所示： </p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517182706.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="流控（Flow-Control）"><a href="#流控（Flow-Control）" class="headerlink" title="流控（Flow Control）"></a>流控（Flow Control）</h3><p>Interlaken 的一个关键特性是能够传达每个通道背压（backpressure）。为了提供此功能，指定了两个选项：<strong>带外流控接口和带内通道</strong>。从语义上讲，流控制信息<strong>使用简单的开关机制来表示允许在特定通道上传输</strong>。</p>
+<p>开关流控制状态与每个通道的单个状态位进行通信。按照惯例，“1”标识“XON”状态，表示允许发送器在该通道上发送数据。 “0”标识“XOFF”状态，表示发送器不允许在该通道上发送数据。</p>
+<p>该协议没有Credits的概念；一旦通道被指示为 XON，发送器可以在该通道上发送尽可能多的数据，直到流控制状态更改为 XOFF。接收器选择在 XON 和 XOFF 状态之间切换的阈值是留给用户的可编程选项，取决于支持的通道数量、接收缓冲区的深度和给定环境的流控制延迟。</p>
+<p>流控制通道可以选择映射到calendar，从而流控制可以映射到任何一组calendar entry。例如，这些可以包括通道到calendar entry的一对一映射、一对多映射或插入空字段以匹配具有不同通道定义的设备。</p>
+<blockquote>
+<p>Channel Calendar 将通道映射到流控状态槽</p>
+</blockquote>
+<p>这个Calendar 结构也可以用来提供链路级的流控制，Calendar 中的一个bit代表了在整个接口上传输数据的权限。链路状态的极性将与通道状态的极性相同：“1”表示允许传输，“0”表示立即停止传输。要启用此功能，可以为每个Calendar entry配置通道信息或链接信息。为了促进低延迟链路状态，接口需要提供足够的Calendar entry，以便在每个突发/空闲控制字的相同位位置编程链路状态。例如，使用超过 16 个通道，这可以通过以下设置执行：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517165148.png" srcset="/img/loading.gif" lazyload></p>
+<p>使用此方法，link status将始终出现在突发/空闲控制字的位[55]中。</p>
+<h4 id="带外流控"><a href="#带外流控" class="headerlink" title="带外流控"></a>带外流控</h4><p>为了支持需要单工操作的系统，定义了带外流量控制选项。这是作为一个源同步接口实现的，并由以下信号指定:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>型号名称</td>
+<td>功能</td>
+</tr>
+<tr>
+<td>FC_CLK</td>
+<td>与流控数据同步的时钟</td>
+</tr>
+<tr>
+<td>FC_DATA</td>
+<td>流量控制状态信息(单比特)</td>
+</tr>
+<tr>
+<td>FC_SYNC</td>
+<td>一种同步信号，用于标识流控制calendar的开头</td>
+</tr>
+</tbody></table>
+<p>每个信号的pad技术可以是LVDS或LVCMOS。这些信号的逻辑时序关系如下图所示：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517165803.png" srcset="/img/loading.gif" lazyload></p>
+<p>带外流控制通道由4位CRC计算保护，该CRC计算覆盖了多达64位的流控制数据。根据^[P. Koopman and T. Chakravarty, Cyclic Redundancy Code (CRC) Polynomial Selection<br>for Embedded Networks, The International Conference on Dependable Networks and<br>Systems, DSN-2004.]中的建议，CRC4多项式为：</p>
+<p>$$<br>x^4+x+1<br>$$</p>
+<h4 id="带内流控"><a href="#带内流控" class="headerlink" title="带内流控"></a>带内流控</h4><p>当使用此选项时，接收器利用通过接口发送的控制字中的流控制状态，作为正常数据传输的一部分。提供此选项的目的是，需要最少数量的外部信号引脚的全双工实现。  </p>
+<p>如Figure 7所示，控制字的流控制字段为16位，位于bit[55:40]。控制字的位[31:24]也可以用于流控制的另外8位，总共24位。这些状态位表示每个Interlaken Calendar通道的ON-OFF流控制状态，当前Calendar Entry X在位[55]，Calendar Entry X + 1在位[54]，依此类推。为了同步calendar的开始，在空闲/突发控制字中提供了“reset calendar”位。当该位为“1”时，calendar entry 0的状态将出现在位[55]中。当“reset calendar”为“ 0”时，calendar将从上一个控制字中保留的位置开始继续。当所有通道的流控状态被传输完，发送器将重置复位calendar，然后重复上一轮顺序操作。Calendar最后一个控制字中不需要的bit（即，当通道数目不是状态数目的倍数时）被发送端置0，接收端忽略。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" class="category-chain-item">通信协议</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">#通信协议</a>
+      
+        <a href="/tags/Interlaken/">#Interlaken</a>
+      
+        <a href="/tags/%E5%8D%8F%E8%AE%AE/">#协议</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Interlaken协议</div>
+      <div>http://example.com/2022/05/18/Interlaken协议/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年5月18日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/05/21/SoC%E5%AD%98%E5%82%A8%E5%99%A8%E6%AF%94%E8%BE%83/" title="SoC存储器比较">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SoC存储器比较</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/" title="AMBA总线协议-AXI协议">
+                        <span class="hidden-mobile">AMBA总线协议-AXI协议</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '5eef687914efa667425691667913a680'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
