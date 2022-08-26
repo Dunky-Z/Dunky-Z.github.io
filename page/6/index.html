@@ -7,6 +7,9 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
   <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
   <link rel="icon" href="/img/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
@@ -314,15 +317,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/07/23/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-%E7%94%9F%E6%88%90%E6%8C%87%E5%AE%9A%E5%A4%A7%E5%B0%8F%E6%96%87%E4%BB%B6/" target="_self">
-          每天学命令-生成指定大小文件
+        <a href="/2022/01/25/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/" target="_self">
+          QEMU源码分析-内存虚拟化
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2022/07/23/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-%E7%94%9F%E6%88%90%E6%8C%87%E5%AE%9A%E5%A4%A7%E5%B0%8F%E6%96%87%E4%BB%B6/" target="_self">
+      <a class="index-excerpt" href="/2022/01/25/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%86%85%E5%AD%98%E8%99%9A%E6%8B%9F%E5%8C%96/" target="_self">
         <div>
           
-          使用背景在测试下载速度，或者测试加解密文件，亦或者制作文件系统时都需要一些指定大小的文件。Linux有一些命令可以快速完成这样的任务。接下来介绍几个好用的命令。 空洞文件在Unix文件操作中，操作文件的位移量可以大于文件的当前长度，在下一次写操作时，就会把文件撑大（Extend），在文件里创建空洞（Hole），没有被实际写入的部分都是0。空洞文件是否占用实际磁盘空间由文件系统觉得，Linux中空洞
+          1.大部分转载自QEMU 内存虚拟化源码分析 | Keep Coding | 苏易北2.原文源码为QEMU1.2.0，版本较旧，部分源码内容根据QEMU6.2版本修改3.部分内容根据自己理解补充添加  概述我们知道操作系统给每个进程分配虚拟内存，通过页表映射，变成物理内存进行访问。当有了虚拟机之后，情况会变得更加复杂。因为虚拟机对于物理机来讲是一个进程，但是虚拟机里面也有内核，也有虚拟机里面跑的
         </div>
       </a>
 
@@ -330,8 +333,260 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2022-07-23 16:14" pubdate>
-              2022-07-23
+            <time datetime="2022-01-25 13:42" pubdate>
+              2022-01-25
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" class="category-chain-item">QEMU源码分析</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+              <a href="/tags/QEMU/">#QEMU</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/19/%E8%A7%A3%E5%86%B3VSCode%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%87%E7%A8%8B%E8%AF%95%E5%9B%BE%E5%86%99%E5%85%A5%E7%9A%84%E7%AE%A1%E9%81%93%E4%B8%8D%E5%AD%98%E5%9C%A8/" target="_self">
+          解决VSCode配置远程连接，过程试图写入的管道不存在
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/19/%E8%A7%A3%E5%86%B3VSCode%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%87%E7%A8%8B%E8%AF%95%E5%9B%BE%E5%86%99%E5%85%A5%E7%9A%84%E7%AE%A1%E9%81%93%E4%B8%8D%E5%AD%98%E5%9C%A8/" target="_self">
+        <div>
+          
+          保留现场 探究原因本地记录的服务器信息和现有的产生了冲突 解决方法方法一：将known_hosts文件的内容全部删除。 C:\Users\user name\.ssh\known_hosts 方法二：搜遍全网几乎都是上述方法，应该绝大部分人通过上述方法都能解决。如果你也跟我一样不走运，不管是重新生成公私钥，还是删除hnow_hosts都不行，那么可以尝试修改VSCode使用的ssh.exe。win
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-19 23:07" pubdate>
+              2022-01-19
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/VSCode/">#VSCode</a>
+            
+              <a href="/tags/Bug/">#Bug</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/" target="_self">
+          Linux帧缓冲
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/" target="_self">
+        <div>
+          
+          简介FrameBuffer 是内核当中的一种驱动程序接口。Linux是工作在保护模式下，所以用户态进程是无法象DOS那样使用显卡BIOS里提供的中断调用来实现直接写屏，Linux抽象出 FrameBuffer这个设备来供用户态进程实现直接写屏。  帧缓冲主要结构 fb_info  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构只在内核中可以
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-17 17:38" pubdate>
+              2022-01-17
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+              <a href="/tags/FrameBuffer/">#FrameBuffer</a>
+            
+              <a href="/tags/LCD/">#LCD</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/13/%E8%A7%A3%E5%86%B3Git%20ssh%20permission%20denied(publickey)/" target="_self">
+          解决ssh permission denied(publickey)
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/13/%E8%A7%A3%E5%86%B3Git%20ssh%20permission%20denied(publickey)/" target="_self">
+        <div>
+          
+          保留现场12linux&gt; ssh -p 2221 xxx@gerrit.comxxx@gerrit.com: Permission denied(publickey)  探究原因本次出错是在测试是否能连接gerrit时。连接github也可能会出现。只要用到ssh功能的都有可能。 出错的原因：  网页（如gerrit,github）没有设置公钥，一般为id_rsa.pub内容； 本地生成了多
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-13 22:43" pubdate>
+              2022-01-13
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Bug%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/" class="category-chain-item">Bug踩坑记录</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Git/">#Git</a>
+            
+              <a href="/tags/Bug/">#Bug</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/10/Linux%E5%AE%89%E8%A3%85nodejs/" target="_self">
+          Linux安装nodejs以及hexo
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/10/Linux%E5%AE%89%E8%A3%85nodejs/" target="_self">
+        <div>
+          
+          安装nodejs过程进入该网站下载 | Node.js也可以进入该网站下载历史版本，Previous Releases | Node.js 进入download目录， 12cd downloadwget https:&#x2F;&#x2F;nodejs.org&#x2F;dist&#x2F;v10.16.3&#x2F;node-v10.16.3-linux-x64.tar.xz  -O nodejs.tar.xz 解压 1tar -xvf nod
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-10 11:51" pubdate>
+              2022-01-10
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">#Linux</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/08/C%E8%AF%AD%E8%A8%80-attribute-%E4%BD%BF%E7%94%A8/" target="_self">
+          C语言__attribute__使用
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/08/C%E8%AF%AD%E8%A8%80-attribute-%E4%BD%BF%E7%94%A8/" target="_self">
+        <div>
+          
+          简介__attribute__ 其实是个编译器指令，告诉编译器声明的特性，或者让编译器进行更多的错误检查和高级优化。 __attribute__ 可以设置函数属性（Function Attribute）、变量属性（Variable Attribute）和类型属性（Type Attribute）。每一类都包含数十种属性，本文不会逐一解释，只抛砖引玉，完整属性可以查看链接中的官方文档。 一个属性说明符
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-08 15:40" pubdate>
+              2022-01-08
             </time>
           </div>
         
@@ -347,15 +602,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2021/08/13/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-rename%E6%89%B9%E9%87%8F%E9%87%8D%E5%91%BD%E5%90%8D/" target="_self">
-          每天学命令-rename批量重命名
+        <a href="/2022/01/07/C%E8%AF%AD%E8%A8%80typedef%E7%94%A8%E6%B3%95/" target="_self">
+          C语言typedef用法
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2021/08/13/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-rename%E6%89%B9%E9%87%8F%E9%87%8D%E5%91%BD%E5%90%8D/" target="_self">
+      <a class="index-excerpt" href="/2022/01/07/C%E8%AF%AD%E8%A8%80typedef%E7%94%A8%E6%B3%95/" target="_self">
         <div>
           
-          Commands1rename [options] &quot;s&#x2F;oldname&#x2F;newname&#x2F;&quot; file 格式就很容易看出来怎么用的，就是&#x2F;不能丢。 12345-v 将重命名的内容都打印到标准输出，v 可以看成 verbose-n 测试会重命名的内容，将结果都打印，但是并不真正执行重命名的过程-f force 会覆盖本地已经存在的文件-h -m -V 分别为帮助，帮助，版本-e
+          简介typedef为C语言的关键字，作用是为一种数据类型定义一个新名字。这里的数据类型包括内部数据类型（int,char等）和自定义的数据类型（struct等）。在使用语法上类似与static，extern等。typedef 行为有点像 #define 宏，用其实际类型替代同义字。不同点是 typedef 在编译时被解释，因此让编译器来应付超越预处理器能力的文本替换。 基本使用方法示例1： 123
         </div>
       </a>
 
@@ -363,19 +618,71 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-13 18:40" pubdate>
-              2021-08-13
+            <time datetime="2022-01-07 11:51" pubdate>
+              2022-01-07
             </time>
           </div>
         
         
         
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2022/01/05/Windows%E6%89%B9%E5%A4%84%E7%90%86%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" target="_self">
+          Windows批处理定时任务
+        </a>
+      </h1>
+
+      <a class="index-excerpt" href="/2022/01/05/Windows%E6%89%B9%E5%A4%84%E7%90%86%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" target="_self">
+        <div>
+          
+          折腾背景一些常用的离线软件在重新安装，重装电脑或者更好环境时，调教好的配置总需要重新设置一遍，甚是麻烦。但是这些设置通常都保存在配置文件里，只要能备份好这些配置文件，下次重装后覆盖就可以恢复所需设置。 现在的问题就是如何备份这些配置文件，可以选择各类网盘，硬盘等等。但是这些多少都有点炮打蚊子，小题大做。而且定时备份也不是很方便。既然配置文件都很小，其实就是个文本文件，那有个万能免费存储地GitHu
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-01-05 22:39" pubdate>
+              2022-01-05
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/" class="category-chain-item">工欲善其事必先利其器</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
+              <a href="/tags/DOS/">#DOS</a>
             
           </div>
         
@@ -389,15 +696,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2022/06/09/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-watch%E5%91%A8%E6%9C%9F%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4/" target="_self">
-          每天学命令-watch周期执行命令
+        <a href="/2022/01/05/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/" target="_self">
+          解决unable to install libpng12.so.0
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2022/06/09/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-watch%E5%91%A8%E6%9C%9F%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4/" target="_self">
+      <a class="index-excerpt" href="/2022/01/05/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/" target="_self">
         <div>
           
-          功能  watch命令的功能如其名，可以监视命令的执行结果。它实现的原理就是每隔一段时间执行一次命令，然后显示结果。他的用途很广，具体怎么用就靠想象力了。 命令参数1234-n # 或--interval  watch默认每2秒运行一下程序，可以用-n或-interval来指定间隔的时间。-d # 或--differences  用-d或--differences 选项watch 会高亮显示变化的
+          保留现场apt工具损坏了，在修复时使用了sudo apt-get install -f命令，中途会提示需要安装 libpng12-0，但是始终无法安装，会提示如下错误。 1234567Unpacking libpng12-0:amd64 (1.2.50-2+deb8u3) ... dpkg: error processing archive libpng12-0_1.2.50-2+deb8u3_a
         </div>
       </a>
 
@@ -405,11 +712,32 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2022-06-09 22:50" pubdate>
-              2022-06-09
+            <time datetime="2022-01-05 13:01" pubdate>
+              2022-01-05
             </time>
           </div>
         
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Bug%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/" class="category-chain-item">Bug踩坑记录</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
         
         
           <div class="post-meta">
@@ -417,7 +745,7 @@
             
               <a href="/tags/Linux/">#Linux</a>
             
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
+              <a href="/tags/Bug/">#Bug</a>
             
           </div>
         
@@ -431,15 +759,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
-        <a href="/2021/08/06/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-scp%E8%BF%9C%E7%A8%8B%E6%8B%B7%E8%B4%9D%E6%96%87%E4%BB%B6/" target="_self">
-          每天学命令-scp远程拷贝文件
+        <a href="/2022/01/04/RISC-V%E5%85%A5%E9%97%A8-%E4%B8%AD%E6%96%AD/" target="_self">
+          RISC-V入门-中断
         </a>
       </h1>
 
-      <a class="index-excerpt" href="/2021/08/06/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-scp%E8%BF%9C%E7%A8%8B%E6%8B%B7%E8%B4%9D%E6%96%87%E4%BB%B6/" target="_self">
+      <a class="index-excerpt" href="/2022/01/04/RISC-V%E5%85%A5%E9%97%A8-%E4%B8%AD%E6%96%AD/" target="_self">
         <div>
           
-          看到同事要安装自己编译一天的库，本想传授一下“踩坑经验”，结果他用scp命令直接从已经安装好的电脑里复制了一份。心里一万只XXX在奔腾。 早知道先学学这个命令了。 可选参数   参数 功能    -1 强制scp命令使用协议ssh1   -2 强制scp命令使用协议ssh2   -4 强制scp命令使用协议ssh2   -6 强制scp命令只使用IPv6寻址   -B 使用批处理模式（传输过程中不
+          中断分类 本地（Local）中断 软中断software interrupt 定时器中断timer interrupt   全局（Global）中断 外部中断externel interrupt    RISC-V 中断编程中涉及的寄存器   寄存器 用途说明    mie  （Machine Interrupt Enable） 用于进一步控制（打开和关闭）software interrupt&#x2F;t
         </div>
       </a>
 
@@ -447,271 +775,38 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-06 20:05" pubdate>
-              2021-08-06
+            <time datetime="2022-01-04 19:42" pubdate>
+              2022-01-04
             </time>
           </div>
         
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/RISC-V%E5%85%A5%E9%97%A8/" class="category-chain-item">RISC-V入门</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
         
         
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/08/11/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-kill%E8%BF%99%E4%B8%AA%E8%BF%9B%E7%A8%8B/" target="_self">
-          每天学命令-kill这个进程
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/08/11/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-kill%E8%BF%99%E4%B8%AA%E8%BF%9B%E7%A8%8B/" target="_self">
-        <div>
-          
-          对于在前台运行的程序，我们可以用Ctrl+C来终止运行，但是在后台的程序就必须用kill命令来终止了。 Command12345-l  信号，若果不加信号的编号参数，则使用“-l”参数会列出全部的信号名称-a  当处理当前进程时，不限制命令名和进程号的对应关系-p  指定 kill 命令只打印相关进程的进程号，而不发送任何信号-s  指定发送信号-u  指定用户   Examples查看所有信号1
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-11 15:22" pubdate>
-              2021-08-11
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/08/03/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-ln%E8%BD%AF%E7%A1%AC%E9%93%BE%E6%8E%A5/" target="_self">
-          每天学命令-ln软硬链接
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/08/03/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-ln%E8%BD%AF%E7%A1%AC%E9%93%BE%E6%8E%A5/" target="_self">
-        <div>
-          
-          Linux ln（英文全拼：link files）命令是一个非常重要命令，它的功能是为某一个文件在另外一个位置建立一个同步的链接。这有点像Windows环境下的快捷方式。介绍命令前了解一下软链接，硬链接具体是什么。 硬链接 Hard Link在 Linux 系统中，每个文件对应一个 inode，文件的内容在存储在 inode 指向的 data block 中。要读取该文件的内容，需要通过文件所在的
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-03 11:57" pubdate>
-              2021-08-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/07/29/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-find%E6%9F%A5%E6%89%BE%E6%96%87%E4%BB%B6/" target="_self">
-          每天学命令-find查找文件
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/07/29/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-find%E6%9F%A5%E6%89%BE%E6%96%87%E4%BB%B6/" target="_self">
-        <div>
-          
-          命令格式1find [path] [expression] 在path下查找expression表示的文件 常用命令一般常见就是自己不知道写的某个文件或者文件夹放哪里了，又或者只记住部分文件名。以下几个命令就能帮到你。 按文件名查找12345find  -name filename(查找结果显示路径)或者 find filename(查找结果不显示路径)find hello.cpp
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-07-29 11:05" pubdate>
-              2021-07-29
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/08/05/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-grep%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2/" target="_self">
-          每天学命令-grep文本搜索
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/08/05/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-grep%E6%96%87%E6%9C%AC%E6%90%9C%E7%B4%A2/" target="_self">
-        <div>
-          
-          grep全称global search regular expression(RE) and print out the line，全面搜索正则表达式并把行打印出来。这名字就怪吓人，如果熟练掌握正则表达式，配上这命令Linux里可以横着走了。 这个命令参数实在太多，加上正则表达式估计一张纸不够。那就直接上实例吧。 使用实例在当前目录中，查找后缀带有cpp字样的文中包含test字符串的文件，并打印所
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-05 19:27" pubdate>
-              2021-08-05
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/08/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-cat%E5%8F%AF%E4%BB%A5%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E7%9A%84%E5%B0%8F%E7%8C%AB%E5%92%AA/" target="_self">
-          每天学命令-cat可以查看文件的小猫咪
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/08/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-cat%E5%8F%AF%E4%BB%A5%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E7%9A%84%E5%B0%8F%E7%8C%AB%E5%92%AA/" target="_self">
-        <div>
-          
-          cat 可以将文件的内容方便地输出到屏幕上。但是它的全称concatenate意为“连接”，连接文件也是它的重要功能之一，很多人可能都不常用。只记得输出文件内容了。 可选参数123456789-n 或 --number              #由 1 开始对所有输出的行数编号。-b 或 --number-nonblank     #和 -n 相似，只不过对于空白行不编号。-s 或 --sque
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-08-04 09:57" pubdate>
-              2021-08-04
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2021/07/28/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-df-du%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%89%A9%E4%BD%99%E7%A9%BA%E9%97%B4/" target="_self">
-          每天学命令-df/du查看磁盘剩余空间
-        </a>
-      </h1>
-
-      <a class="index-excerpt" href="/2021/07/28/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-df-du%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%89%A9%E4%BD%99%E7%A9%BA%E9%97%B4/" target="_self">
-        <div>
-          
-          df全称disk filesystem ，以磁盘分区为单位查看文件系统，可以查看磁盘文件占用空间，磁盘剩余空间等信息。 命令格式1df [] [] 可选参数1234567891011-a      全部文件系统列表-h      方便阅读方式显示-H      等于“-h”，但是计算式，1K&#x3D;1000，而不是 1K&#x3D;1024-i      显示 inode 信息-k      区块为 1024 字
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2021-07-28 10:13" pubdate>
-              2021-07-28
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Linux/">#Linux</a>
-            
-              <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">#每天学命令</a>
+              <a href="/tags/RISCV/">#RISCV</a>
             
           </div>
         
