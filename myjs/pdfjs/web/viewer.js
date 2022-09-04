@@ -16828,11 +16828,11 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 var DEFAULT_L10N_STRINGS = {
-  of_pages: "of ",
-  page_of_pages: "( of )",
-  document_properties_kb: " KB ( bytes)",
-  document_properties_mb: " MB ( bytes)",
-  document_properties_date_string: "1660987687112, ",
+  of_pages: "of {{pagesCount}}",
+  page_of_pages: "({{pageNumber}} of {{pagesCount}})",
+  document_properties_kb: "{{size_kb}} KB ({{size_b}} bytes)",
+  document_properties_mb: "{{size_mb}} MB ({{size_b}} bytes)",
+  document_properties_date_string: "{{date}}, {{time}}",
   document_properties_page_size_unit_inches: "in",
   document_properties_page_size_unit_millimeters: "mm",
   document_properties_page_size_orientation_portrait: "portrait",
@@ -16841,35 +16841,35 @@ var DEFAULT_L10N_STRINGS = {
   document_properties_page_size_name_a4: "A4",
   document_properties_page_size_name_letter: "Letter",
   document_properties_page_size_name_legal: "Legal",
-  document_properties_page_size_dimension_string: " ×   ()",
-  document_properties_page_size_dimension_name_string: " ×   (, )",
+  document_properties_page_size_dimension_string: "{{width}} × {{height}} {{unit}} ({{orientation}})",
+  document_properties_page_size_dimension_name_string: "{{width}} × {{height}} {{unit}} ({{name}}, {{orientation}})",
   document_properties_linearized_yes: "Yes",
   document_properties_linearized_no: "No",
-  print_progress_percent: "%",
+  print_progress_percent: "{{progress}}%",
   "toggle_sidebar.title": "Toggle Sidebar",
   "toggle_sidebar_notification2.title": "Toggle Sidebar (document contains outline/attachments/layers)",
   additional_layers: "Additional Layers",
-  page_landmark: "Page ",
-  thumb_page_title: "Page ",
-  thumb_page_canvas: "Thumbnail of Page ",
+  page_landmark: "Page {{page}}",
+  thumb_page_title: "Page {{page}}",
+  thumb_page_canvas: "Thumbnail of Page {{page}}",
   find_reached_top: "Reached top of document, continued from bottom",
   find_reached_bottom: "Reached end of document, continued from top",
-  "find_match_count[one]": " of  match",
-  "find_match_count[other]": " of  matches",
-  "find_match_count_limit[one]": "More than  match",
-  "find_match_count_limit[other]": "More than  matches",
+  "find_match_count[one]": "{{current}} of {{total}} match",
+  "find_match_count[other]": "{{current}} of {{total}} matches",
+  "find_match_count_limit[one]": "More than {{limit}} match",
+  "find_match_count_limit[other]": "More than {{limit}} matches",
   find_not_found: "Phrase not found",
-  error_version_info: "PDF.js v (build: )",
-  error_message: "Message: ",
-  error_stack: "Stack: ",
-  error_file: "File: ",
-  error_line: "Line: ",
+  error_version_info: "PDF.js v{{version}} (build: {{build}})",
+  error_message: "Message: {{message}}",
+  error_stack: "Stack: {{stack}}",
+  error_file: "File: {{file}}",
+  error_line: "Line: {{line}}",
   rendering_error: "An error occurred while rendering the page.",
   page_scale_width: "Page Width",
   page_scale_fit: "Page Fit",
   page_scale_auto: "Automatic Zoom",
   page_scale_actual: "Actual Size",
-  page_scale_percent: "%",
+  page_scale_percent: "{{scale}}%",
   loading: "Loading…",
   loading_error: "An error occurred while loading the PDF.",
   invalid_file_error: "Invalid or corrupted PDF file.",
@@ -16925,7 +16925,7 @@ function formatL10nValue(text, args) {
   }
 
   return text.replace(/\{\{\s*(\w+)\s*\}\}/g, function (all, name) {
-    return name in args ? args[name] : " + name + ";
+    return name in args ? args[name] : "{{" + name + "}}";
   });
 }
 
@@ -21709,7 +21709,7 @@ document.webL10n = function (window, document, undefined) {
         return gL10nData[arg];
       }
 
-      console.log('argument  + arg +  for #' + key + ' is undefined.');
+      console.log('argument {{' + arg + '}} for #' + key + ' is undefined.');
       return matched_text;
     });
   }
@@ -21809,7 +21809,7 @@ document.webL10n = function (window, document, undefined) {
         return data[prop];
       }
 
-      return ' + key + ';
+      return '{{' + key + '}}';
     },
     getData: function getData() {
       return gL10nData;
@@ -22652,4 +22652,4 @@ if (document.readyState === "interactive" || document.readyState === "complete")
 
 /******/ })()
 ;
-//# sourceMappingURL=viewer.js.map<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+//# sourceMappingURL=viewer.js.map

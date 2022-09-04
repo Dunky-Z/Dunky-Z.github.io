@@ -21933,7 +21933,7 @@ var TextAnnotationElement = /*#__PURE__*/function (_AnnotationElement2) {
       this.container.className = "textAnnotation";
       var image = document.createElement("img");
       image.src = this.imageResourcesPath + "annotation-" + this.data.name.toLowerCase() + ".svg";
-      image.alt = "[ Annotation]";
+      image.alt = "[{{type}} Annotation]";
       image.dataset.l10nId = "text_annotation_type";
       image.dataset.l10nArgs = JSON.stringify({
         type: this.data.name
@@ -23130,7 +23130,7 @@ var PopupElement = /*#__PURE__*/function () {
       if (dateObject) {
         var modificationDate = document.createElement("span");
         modificationDate.className = "popupDate";
-        modificationDate.textContent = "1660987637188, ";
+        modificationDate.textContent = "{{date}}, {{time}}";
         modificationDate.dataset.l10nId = "annotation_date_string";
         modificationDate.dataset.l10nArgs = JSON.stringify({
           date: dateObject.toLocaleDateString(),
@@ -29593,4 +29593,4 @@ var pdfjsBuild = 'b8aa9c622';
 /******/ })()
 ;
 });
-//# sourceMappingURL=pdf.js.map<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+//# sourceMappingURL=pdf.js.map
