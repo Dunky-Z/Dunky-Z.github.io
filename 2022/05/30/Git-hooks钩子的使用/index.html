@@ -19,18 +19,18 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Git huoksGit hooks简介 Git 能在特定的重要动作发生时触发自定义脚本。比如，commit之前检查commit message是否符合约定的格式，push之前检查代码格式是否正确，是否编译通过等等。Git就提供了hooks这样的机制。 我们在哪能找到hooks呢？在初始化代码仓库git init时，Git会自动为我们创建一个.git&#x2F;hooks目录，里面存放了所有的钩子。因为.g">
+    <meta name="description" content="Git hooks简介 Git 能在特定的重要动作发生时触发自定义脚本。比如，commit之前检查commit message是否符合约定的格式，push之前检查代码格式是否正确，是否编译通过等等。Git就提供了hooks这样的机制。 我们在哪能找到hooks呢？在初始化代码仓库git init时，Git会自动为我们创建一个.git&#x2F;hooks目录，里面存放了所有的钩子。因为.git是隐藏目录，显">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Git hooks钩子的使用">
 <meta property="og:url" content="http://example.com/2022/05/30/Git-hooks%E9%92%A9%E5%AD%90%E7%9A%84%E4%BD%BF%E7%94%A8/index.html">
 <meta property="og:site_name" content="如云泊">
-<meta property="og:description" content="Git huoksGit hooks简介 Git 能在特定的重要动作发生时触发自定义脚本。比如，commit之前检查commit message是否符合约定的格式，push之前检查代码格式是否正确，是否编译通过等等。Git就提供了hooks这样的机制。 我们在哪能找到hooks呢？在初始化代码仓库git init时，Git会自动为我们创建一个.git&#x2F;hooks目录，里面存放了所有的钩子。因为.g">
+<meta property="og:description" content="Git hooks简介 Git 能在特定的重要动作发生时触发自定义脚本。比如，commit之前检查commit message是否符合约定的格式，push之前检查代码格式是否正确，是否编译通过等等。Git就提供了hooks这样的机制。 我们在哪能找到hooks呢？在初始化代码仓库git init时，Git会自动为我们创建一个.git&#x2F;hooks目录，里面存放了所有的钩子。因为.git是隐藏目录，显">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220530134106.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220530154954.png">
 <meta property="article:published_time" content="2022-05-30T04:16:11.000Z">
-<meta property="article:modified_time" content="2022-08-27T05:30:27.279Z">
+<meta property="article:modified_time" content="2022-09-10T02:01:47.527Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="Git">
 <meta name="twitter:card" content="summary_large_image">
@@ -240,7 +240,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          2.6k 字
+          3k 字
         
       </span>
     
@@ -251,7 +251,7 @@
         
         
         
-          22 分钟
+          25 分钟
         
       </span>
     
@@ -383,7 +383,7 @@
             
             <div class="markdown-body">
               
-              <h1 id="Git-huoks"><a href="#Git-huoks" class="headerlink" title="Git huoks"></a>Git huoks</h1><h2 id="Git-hooks简介"><a href="#Git-hooks简介" class="headerlink" title="Git hooks简介"></a>Git hooks简介</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png" srcset="/img/loading.gif" lazyload></p>
+              <h2 id="Git-hooks简介"><a href="#Git-hooks简介" class="headerlink" title="Git hooks简介"></a>Git hooks简介</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png" srcset="/img/loading.gif" lazyload></p>
 <p>Git 能在特定的重要动作发生时触发自定义脚本。比如，<code>commit</code>之前检查<code>commit message</code>是否符合约定的格式，<code>push</code>之前检查代码格式是否正确，是否编译通过等等。Git就提供了<code>hooks</code>这样的机制。</p>
 <p>我们在哪能找到<code>hooks</code>呢？在初始化代码仓库<code>git init</code>时，Git会自动为我们创建一个<code>.git/hooks</code>目录，里面存放了所有的钩子。因为<code>.git</code>是隐藏目录，显示隐藏目录后就可以找到<code>hooks</code>这个目录。</p>
 <p>在VSCode里一般默认把<code>.git</code>目录排除显示，所以打开项目目录时不会显示该目录，我们可以收到在VSCode显示<code>.git</code>目录：打开设置界面，搜索<code>exclude</code>找到图中的设置，将<code>.git</code>目录从排除列表中移除，即可在VSCode中显示<code>.git</code>目录。</p>
@@ -414,7 +414,9 @@
 <p>安装pre-commit</p>
 <figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmake">pip <span class="hljs-keyword">install</span> pre-commit<br></code></pre></td></tr></table></figure>
 
-<p>添加配置文件 <code>.pre-commit-config.yaml</code> </p>
+<p>在项目目录下，添加配置文件 <code>.pre-commit-config.yaml</code> </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">touch .pre-commit-config.yaml<br></code></pre></td></tr></table></figure>
+
 <ul>
 <li><p>首先了解配置的格式</p>
 <ul>
@@ -424,16 +426,29 @@
 <li>每个任务里可理解为一个命令行指令，例如<code>flake8/yapf/black</code>。</li>
 </ul>
 </li>
-<li><p><code>pre_commit</code>官方提供了<a target="_blank" rel="noopener" href="https://pre-commit.com/hooks.html">各种配置</a>，我们可以根据需要选择一个合适的。比如我需要一个格式化C语言代码的配置，选择了<a target="_blank" rel="noopener" href="https://github.com/pocc/pre-commit-hooks">pocc/pre-commit-hooks</a></p>
-  <figure class="highlight qml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs qml"><span class="hljs-attribute">fail_fast</span>: <span class="hljs-literal">false</span><br><span class="hljs-attribute">repos</span>:<br>- <span class="hljs-attribute">repo</span>: <span class="hljs-attribute">https</span>:<span class="hljs-comment">//github.com/pocc/pre-commit-hooks</span><br>    <span class="hljs-attribute">rev</span>: master<br>    <span class="hljs-attribute">hooks</span>:<br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> clang</span>-format<br>        <span class="hljs-attribute">args</span>: [--style=Google]<br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> clang</span>-tidy<br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> oclint</span><br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> uncrustify</span><br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> cppcheck</span><br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> cpplint</span><br>    - <span class="hljs-attribute">id:</span><span class="hljs-string"> include</span>-what-you-use<br></code></pre></td></tr></table></figure>
-<p>  参数的含义可以参考<a target="_blank" rel="noopener" href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a>的文档。</p>
+<li><p><code>pre_commit</code>官方提供了<a target="_blank" rel="noopener" href="https://pre-commit.com/hooks.html">各种配置</a>，我们可以根据需要选择一个合适的。比如我需要一个格式化C语言代码的配置，选择了<a target="_blank" rel="noopener" href="https://github.com/pre-commit/mirrors-clang-format">mirrors-clang-format</a>，还选了一个用来删除行尾空格的。</p>
+  <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">repos:</span><br><span class="hljs-bullet">-</span>   <span class="hljs-attr">repo:</span> <span class="hljs-string">https://github.com/pre-commit/pre-commit-hooks</span><br>    <span class="hljs-attr">rev:</span> <span class="hljs-string">v4.3.0</span><br>    <span class="hljs-attr">hooks:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">trailing-whitespace</span><br><br><span class="hljs-bullet">-</span> <span class="hljs-attr">repo:</span> <span class="hljs-string">https://github.com/pre-commit/mirrors-clang-format</span><br>    <span class="hljs-attr">rev:</span> <span class="hljs-string">v14.0.6</span><br>    <span class="hljs-attr">hooks:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">clang-format</span><br>        <span class="hljs-attr">types_or:</span> [<span class="hljs-string">c</span>]<br></code></pre></td></tr></table></figure>
+<p>  参数的含义可以参考<a target="_blank" rel="noopener" href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a>的文档。每个id对应的其实都是一个程序，为了保证都能正常运行，还需要安装这些程序。一般在仓库的<code>README</code>中都会有提示如何安装。</p>
 </li>
 <li><p>根据配置文件安装<code>hooks</code><br>  在项目根目录下运行：</p>
   <figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cmake">pre-commit <span class="hljs-keyword">install</span><br></code></pre></td></tr></table></figure></li>
-<li><p>在执行<code>git commit</code>命令时将会自动检查。</p>
+<li><p>在执行<code>git commit</code>命令时将会自动检查。这个过程中，<code>pre-commit</code>会从仓库里下载代码，然后根据里面的配置执行相应的脚本。完成各种检查。</p>
 </li>
 </ul>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/irving512/article/details/124377109">C++ 项目中使用 Pre-commit 协助实现代码规范检查_清欢守护者的博客-CSDN博客</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7951ff907ccb">git push之前自动编译验证 - 简书</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/irving512/article/details/108701017">使用 pre-commit 实现代码检查_清欢守护者的博客-CSDN博客</a><br><a target="_blank" rel="noopener" href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1eZ4y1G7hh/?spm_id_from=333.788">Git基本原理介绍(32)——git hook和python_哔哩哔哩_bilibili</a></p>
+<h4 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 手动对所有的文件执行hooks，新增hook的时候可以执行，使得代码均符合规范。直接执行该指令则无需等到pre-commit阶段再触发hooks</span><br>pre-commit run --all-files<br><span class="hljs-comment"># 执行特定hooks</span><br>pre-commit run &lt;hook_id&gt;<br><span class="hljs-comment"># 将所有的hook更新到最新的版本/tag</span><br>pre-commit autoupdate<br><span class="hljs-comment"># 指定更新repo</span><br>pre-commit autoupdate --repo https://github.com/pre-commit/mirrors-clang-format<br></code></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/irving512/article/details/124377109">C++ 项目中使用 Pre-commit 协助实现代码规范检查_清欢守护者的博客-CSDN博客</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7951ff907ccb">git push之前自动编译验证 - 简书</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/irving512/article/details/108701017">使用 pre-commit 实现代码检查_清欢守护者的博客-CSDN博客</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1eZ4y1G7hh/?spm_id_from=333.788">Git基本原理介绍(32)——git hook和python_哔哩哔哩_bilibili</a></p>
+</li>
+</ol>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
               
             </div>

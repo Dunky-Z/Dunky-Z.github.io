@@ -1,0 +1,948 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。 自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。 准备阶段威联通的几款中意的 NAS 放购物车很久了，如果硬盘没有这么早坏掉，可能在双十一就买整机了，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从零开始搭建一台 NAS 存储服务器">
+<meta property="og:url" content="http://example.com/2022/09/10/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E4%B8%80%E5%8F%B0NAS%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。 自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。 准备阶段威联通的几款中意的 NAS 放购物车很久了，如果硬盘没有这么早坏掉，可能在双十一就买整机了，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-03-26-07978c9e6aae76e3d1a4ac48df0521f1-20220910190326-c46d16.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/17-03-20-6cc06a3d6fbf9247c002ff2aacbb89bd-20220910170319-1e2047.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-55-03-a846141c4a3997752a278ef1c604c554-20220910185502-99a3e2.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-58-15-eefc8207a6905d28a7b76e0a142f18d5-20220910185815-3b0c01.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-11-07-355ce9f2442639e47b0e24f9773b2e84-20220910161106-f6986f.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-09-53-5ceae123a355652ef1f45bb0e9b72dd9-20220910160952-9c6773.png">
+<meta property="article:published_time" content="2022-09-10T03:37:47.000Z">
+<meta property="article:modified_time" content="2022-09-10T11:11:09.835Z">
+<meta property="article:author" content="Dominic">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-03-26-07978c9e6aae76e3d1a4ac48df0521f1-20220910190326-c46d16.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>从零开始搭建一台 NAS 存储服务器 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">从零开始搭建一台 NAS 存储服务器</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-10 11:37" pubdate>
+          2022年9月10日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							"https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">从零开始搭建一台 NAS 存储服务器</h1>
+            
+            <div class="markdown-body">
+              
+              <p>技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。</p>
+<p>自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。</p>
+<h2 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h2><p>威联通的几款中意的 NAS 放购物车很久了，如果硬盘没有这么早坏掉，可能在双十一就买整机了，现在离双十一还早，硬件价格都不便宜，想来想去还是买二手硬件攒一台更划算。如果买整机，硬盘加 NAS 主机就得五千大洋，只是用来存文件，部署个 Jellyfin 看电影用，属实奢侈了。</p>
+<p>￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥</p>
+<p>买二手就得从零开始学。生命不休，折腾不止。经过一次完整的 NAS 攒机过程发现，其实 NAS 就是安装了专用系统的一台电脑而已。这个专用系统就是面向网络存储开发的，如群晖，威联通，开源的 OMV，FreeNAS 等等。</p>
+<p>既然是一台电脑，其实攒 NAS 就和攒电脑一样，选配好以下几大件即可。</p>
+<ul>
+<li>CPU</li>
+<li>主板</li>
+<li>散热器</li>
+<li>机箱</li>
+<li>内存</li>
+<li>电源</li>
+<li>机箱风扇</li>
+</ul>
+<p>下面分别介绍在攒机过程中遇到的一些概念，参数到底是什么意思。</p>
+<h3 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h3><h4 id="CPU-型号字母数字都是什么意思"><a href="#CPU-型号字母数字都是什么意思" class="headerlink" title="CPU 型号字母数字都是什么意思"></a>CPU 型号字母数字都是什么意思</h4><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-03-26-07978c9e6aae76e3d1a4ac48df0521f1-20220910190326-c46d16.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>Intel</strong> 是英特尔的英文名称，也是目前热门的 CPU 品牌；</li>
+<li>“酷睿”代表英特尔品牌下面向普通消费者的一个 CPU 系列，一般划分为 Core（酷睿）、Pentium（奔腾）、Celeron（赛扬）、Xeon（至强）、Atom（凌动）等；</li>
+<li><strong>i5</strong> 代表这款 CPU 定位中端，在其下面还有 i3，在其上面还有 i7 和 i9，同一代中，数字越大，性能越强；但是不同代 - 数之间，性能不能直接相比，比如 12 代的 i5 在理论性能上是强于 10 代 i7 的。</li>
+<li><strong>12</strong> 代表这款 CPU 的代数，说明其已经发展到第十二代了，数字越大越新；</li>
+<li><strong>600</strong> 这三位数字代表 Intel SKU 型号划分，一般来说 Core i7 有固定几个 SKU，比方说 700；Core i5有600/500/400；Core i3有300/100等等，一般来说数字越大说明隶属的Core系列越高级，同级别下比较，数字越大频率越高，换句话说性能就越强，比方说Core i5-8600 默认 3.1GHz，睿频 4.3GHz，比 Core i5-8500 默认 3.0GHz，睿频 4.1GHz 要强。</li>
+<li><strong>K</strong> 带 K 的表示不锁频，可以配合 Z 系列主板进行超频操作，适合会超频玩家使用，比方说 i7-12700K，i5-12600K 等</li>
+<li><strong>F</strong> 带 F 的表示不带集成显卡，<strong>你必须配合独立显卡使用</strong>；</li>
+</ul>
+<p>当然，除了例子中的这种情况，我们还会遇到其它 CPU 型号的后缀：</p>
+<ul>
+<li><strong>K</strong>：表示支持超频且内置核显的 CPU 型号，例如型号：i5-12600K、i7-12700K；</li>
+<li><strong>F</strong>：表示无内置核显，例如型号：i5-12400F、i7-12700F；</li>
+<li><strong>KF</strong>：表示支持超频且无内置核显的 CPU 型号，例如型号：i5-12600KF，i7-12700KF。</li>
+<li><strong>T</strong>：表示低功耗版，相同型号下功耗更低，性能也差一些，例如型号：i7-10700T；</li>
+<li><strong>X/XE</strong>：表示至尊旗舰级，例如型号：i9-10980XE。</li>
+<li><strong>KS</strong>：可以理解为官方超频版，提升了主频的版本，例如 i9-9900K 和 i9-9900KS，i9-9900KS 出厂的主频要高于 K，例如型号：i9-9900KS。</li>
+<li><strong>U</strong>：低电压，性能弱些但功耗低，通常出现在轻薄本中，举例型号：i7 10510U；</li>
+<li><strong>H</strong>：标压，性能强，通常出现在游戏本中，举例型号：i5-11300H</li>
+<li><strong>Y</strong>：超低电压，性能很弱功耗非常低，通常出现在轻薄本中，举例型号：i3-10110Y；</li>
+<li><strong>HK</strong>：一般使用在 intel 高端发烧级 CPU 上，可超频，举例型号：i9-11980HK；</li>
+<li><strong>G</strong>：G1、G4 以及 G7 等，G 后面的数字表示核显性能强弱，数字越大代表核显性能越强，通常数字小于 4 的是集成的普通超高清 (UHD) 核显，大于等于 4 的是集成的高性能锐炬 (Iris) 核显。intel 移动版 CPU 后缀，举例型号：i5-1155G7、i3-1115G4、i3-1005G1；</li>
+<li><strong>HQ</strong>：标准电压，Q 板载四核，早期的老后缀，举例型号：i7-7700HQ；</li>
+<li><strong>MQ</strong>：标准电压，Q 插拔四核，早期的老后缀，举例型号：i7-4810MQ；</li>
+<li><strong>M</strong>：早期后缀 M 就是移动端 CPU，只是为了与台式机区别开，举例型号：i7-2620M。</li>
+</ul>
+<h3 id="主板"><a href="#主板" class="headerlink" title="主板"></a>主板</h3><h4 id="ATX，Micro-ATX，Mini-ITX-区别"><a href="#ATX，Micro-ATX，Mini-ITX-区别" class="headerlink" title="ATX，Micro-ATX，Mini-ITX 区别"></a>ATX，Micro-ATX，Mini-ITX 区别</h4><p>在了解买啥主板时，不免会看到各种 TX，比如我买的这块七彩虹 B460iTX 主板，简称就是七彩虹 B460i，还有不带最后字母<code>i</code>的。他们有啥区别呢？其实这就是表示了主板的尺寸。主板尺寸常见的有三种尺寸：</p>
+<ul>
+<li><p>标准-ATX：30.5 厘米 x 24.4 厘米</p>
+</li>
+<li><p>Micro-ATX：24.4 cm x 24.4 cm</p>
+</li>
+<li><p>Mini-ITX：17 厘米 x 17 厘米</p>
+</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/17-03-20-6cc06a3d6fbf9247c002ff2aacbb89bd-20220910170319-1e2047.png" srcset="/img/loading.gif" lazyload></p>
+<p>一般攒机会用标准 ATX，或者 MATX 也很常用，而 ITX 就常被用来搭建低功耗的服务器，如我们要搭建的 NAS。因为它是 7*24 小时不间断工作的，功耗是需要多考虑的。</p>
+<h3 id="散热器"><a href="#散热器" class="headerlink" title="散热器"></a>散热器</h3><h3 id="机箱"><a href="#机箱" class="headerlink" title="机箱"></a>机箱</h3><h3 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h3><h3 id="电源"><a href="#电源" class="headerlink" title="电源"></a>电源</h3><h2 id="安装-OVM"><a href="#安装-OVM" class="headerlink" title="安装 OVM"></a>安装 OVM</h2><h3 id="一些程序的安装"><a href="#一些程序的安装" class="headerlink" title="一些程序的安装"></a>一些程序的安装</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo apt install net-tools<br></code></pre></td></tr></table></figure>
+
+<h2 id="Docker-配置"><a href="#Docker-配置" class="headerlink" title="Docker 配置"></a>Docker 配置</h2><h3 id="安装-Portainer-管理容器"><a href="#安装-Portainer-管理容器" class="headerlink" title="安装 Portainer 管理容器"></a>安装 Portainer 管理容器</h3><h3 id="更换国内镜像源"><a href="#更换国内镜像源" class="headerlink" title="更换国内镜像源"></a>更换国内镜像源</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-55-03-a846141c4a3997752a278ef1c604c554-20220910185502-99a3e2.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-58-15-eefc8207a6905d28a7b76e0a142f18d5-20220910185815-3b0c01.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>网易 <code>http://hub-mirror.c.163.com</code></li>
+<li>ustc <code>http://docker.mirrors.ustc.edu.cn</code></li>
+<li>阿里云 <code>http://&lt;你的 ID&gt;.mirror.aliyuncs.com</code> </li>
+<li>或者使用一位网友提供的    <code>http://1nj0zren.mirror.aliyuncs.com</code></li>
+</ul>
+<p>因为可能有朋友看了比较老的教程（比如我，:( ），可能会用到一些停止服务的进行，如：</p>
+<ul>
+<li><code>https://dockerhub.azk8s.cn</code></li>
+<li><code>https://reg-mirror.qiniu.com</code></li>
+<li><code>https://registry.docker-cn.com</code></li>
+</ul>
+<p>如果无法拉取镜像，检查是否用了这几个，如果用了请换镜像源。</p>
+<h3 id="安装-Jellyfin-部署影音服务器"><a href="#安装-Jellyfin-部署影音服务器" class="headerlink" title="安装 Jellyfin 部署影音服务器"></a>安装 Jellyfin 部署影音服务器</h3><h3 id="安装-Transmission-下载"><a href="#安装-Transmission-下载" class="headerlink" title="安装 Transmission 下载"></a>安装 Transmission 下载</h3><h3 id="安装-Jackett-搜索种子"><a href="#安装-Jackett-搜索种子" class="headerlink" title="安装 Jackett 搜索种子"></a>安装 Jackett 搜索种子</h3><h3 id="安装-qBittorrent-下载"><a href="#安装-qBittorrent-下载" class="headerlink" title="安装 qBittorrent 下载"></a>安装 qBittorrent 下载</h3><h2 id="踩坑记录"><a href="#踩坑记录" class="headerlink" title="踩坑记录"></a>踩坑记录</h2><h3 id="主板无法识别固态硬盘"><a href="#主板无法识别固态硬盘" class="headerlink" title="主板无法识别固态硬盘"></a>主板无法识别固态硬盘</h3><p>因为想利用上三年前从笔记本上拆下来的固态，但没注意接口的协议。主板现在大多默认支持 NEVe 协议，但是我的硬盘是很久之前的 SATA 协议。这块 B460i 主板默认支持 NVMe 协议的，但是也支持 SATA 协议，需要更改跳帽。</p>
+<p>找了半天图片没有找到一样的，官网的图片是和说明书上的一样是拨动开关形式的，但是我买的二手的是跳帽（哭），不会是买到假的了吧。开关全部拨到左边才支持 SATA 协议。用跳帽也是一样，必须都连接的是左边两个引脚。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-11-07-355ce9f2442639e47b0e24f9773b2e84-20220910161106-f6986f.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-09-53-5ceae123a355652ef1f45bb0e9b72dd9-20220910160952-9c6773.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="无法识别-U-盘启动盘"><a href="#无法识别-U-盘启动盘" class="headerlink" title="无法识别 U 盘启动盘"></a>无法识别 U 盘启动盘</h3><p>引导模式有两种 UEFI 和 Legacy，这个在做启动盘时就确定了。如果主板使用的 UEFI 模式，而启动盘制作的是 Legacy 模式，就无法识别，需要在 Bios 里找到启动模式选择的相关选项，配置可以使用 Legacy 模式或者 UEFI。（记录这些时已经不想再进 Bios 了所以也没有图片，总之要配置引导方式，避免过滤了一些引导方式导致 U 盘无法识别）</p>
+<h3 id="不同网段设备无法互通"><a href="#不同网段设备无法互通" class="headerlink" title="不同网段设备无法互通"></a>不同网段设备无法互通</h3><h3 id="OVM-无法挂载移动硬盘"><a href="#OVM-无法挂载移动硬盘" class="headerlink" title="OVM 无法挂载移动硬盘"></a>OVM 无法挂载移动硬盘</h3><p>报错：The filesystem label contains blanks. Please remove them by renaming the filesystem to be able to mount it.</p>
+<p>移动硬盘名里有空格，插到 Windows 上重命名一下即可。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/498113584">CPU 型号解读：教你 CPU 型号后缀怎么看？CPU 型号后面的字母和数字区别是什么？ - 知乎</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mahoon411/article/details/106963398">Intel CPU 型号解读以及如何粗略判断 Intel CPU 的性能 (i3、i5、i7 以及 CPU 的代数)_吮指原味张的博客-CSDN 博客_cpu 代数</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.zuiyu1818.cn/posts/NAS_qBittorrent.html">NAS | 群晖安装 qBittorrent 套件并优化设置、替换 UI（非 docker 安装） | 醉渔小站</a></li>
+</ol>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/" class="category-chain-item">工欲善其事必先利其器</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>从零开始搭建一台 NAS 存储服务器</div>
+      <div>http://example.com/2022/09/10/从零开始搭建一台NAS存储服务器/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年9月10日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/09/10/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-nohup%E5%90%8E%E5%8F%B0%E8%BF%90%E8%A1%8C/" title="每天学命令-nohup 后台运行">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">每天学命令-nohup 后台运行</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/10/Linux%E4%B8%8B%E4%BD%BF%E7%94%A8Clash%E4%BD%9C%E4%BB%A3%E7%90%86%E5%B9%B6%E9%85%8D%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/" title="Linux下使用Clash作代理并配置开机启动">
+                        <span class="hidden-mobile">Linux下使用Clash作代理并配置开机启动</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '4e2c962b28132dc36728cd155028c78f'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
