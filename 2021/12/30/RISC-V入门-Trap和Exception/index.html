@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png">
 <meta property="article:published_time" content="2021-12-30T05:42:34.000Z">
-<meta property="article:modified_time" content="2022-09-17T03:05:11.412Z">
+<meta property="article:modified_time" content="2022-09-24T06:58:23.456Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="RISCV">
 <meta name="twitter:card" content="summary_large_image">
@@ -471,13 +471,13 @@
 </ul>
 <p>采用<code>Vectored</code>方式效率更高。</p>
 <h3 id="mepc（Machine-Exception-Program-Counter）"><a href="#mepc（Machine-Exception-Program-Counter）" class="headerlink" title="mepc（Machine Exception Program Counter）"></a>mepc（Machine Exception Program Counter）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png" srcset="/img/loading.gif" lazyload></p>
-<p>当<code>trap</code>发生时，<code>pc</code>会被替换为 <code>mtvec </code>设定的地址，同时<code>hart</code> 会设置<code>mepc</code>为当前指令或者下一条指令的地址（处理异常时，mepc为当前指令的地址，处理中断时，mepc为下一条指令的地址）。</p>
-<p>当我们需要退出<code> trap</code> 时可以调用特殊的 <code>mret</code> 指令，该指令会将<code>mepc</code>中的值恢复到<code>pc</code>中（实现返回的效果）；</p>
+<p>当<code>trap</code>发生时，<code>pc</code>会被替换为 <code>mtvec</code>设定的地址，同时<code>hart</code> 会设置<code>mepc</code>为当前指令或者下一条指令的地址（处理异常时，mepc为当前指令的地址，处理中断时，mepc为下一条指令的地址）。</p>
+<p>当我们需要退出<code>trap</code> 时可以调用特殊的 <code>mret</code> 指令，该指令会将<code>mepc</code>中的值恢复到<code>pc</code>中（实现返回的效果）；</p>
 <p>在处理 <code>trap</code> 的程序中我们可以修改 <code>mepc</code> 的值达到改变<code>mret</code> 返回地址的目的。</p>
 <h3 id="mcause（Machine-Cause）"><a href="#mcause（Machine-Cause）" class="headerlink" title="mcause（Machine Cause）"></a>mcause（Machine Cause）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png" srcset="/img/loading.gif" lazyload></p>
 <p>当 <code>trap</code> 发生时，<code>hart</code> 会设置该寄存器通知我们 <code>trap</code> 发生的原因。</p>
-<p>最高位 <code>Interrupt</code> 为 1 时标识了当前 <code>trap</code> 为<code>interrupt</code>，否则是<code> exception</code>。</p>
-<p>剩余的 <code>Exception Code</code> 用于标识具体的<code>interrupt</code>或者<code>exception</code> 的种类。</p>
+<p>最高位 <code>Interrupt</code> 为 1 时标识了当前 <code>trap</code> 为<code>interrupt</code>，否则是<code>exception</code>。</p>
+<p>剩余的 <code>Exception Code</code> 用于标识具体的<code>interrupt </code>或者<code>exception</code> 的种类。</p>
 <p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png" srcset="/img/loading.gif" lazyload></p>
 <h3 id="mtval（Machine-Trap-Value）"><a href="#mtval（Machine-Trap-Value）" class="headerlink" title="mtval（Machine Trap Value）"></a>mtval（Machine Trap Value）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png" srcset="/img/loading.gif" lazyload></p>
 <p>当 <code>trap</code> 发生时，除了通过<code> mcause</code> 可以获取<code> exception</code>的种类 <code>code</code> 值外，<code>hart</code> 还提供了 <code>mtval</code> 来提供<code>exception</code> 的其他信息来辅助我们执行更进一步的操作。</p>
