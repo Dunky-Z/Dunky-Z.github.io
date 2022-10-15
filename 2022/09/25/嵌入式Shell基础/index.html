@@ -1,0 +1,969 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="脚本语言 常用的脚本语言有 sh、bash、csh、ksh、perl、python； 在 Linux 下常用的脚本语言其实就是 bash、sh； 脚本语言一般在嵌入式中应用，主要是用来做配置。（一个复杂的嵌入式程序都是可配置的，配置过程就是用脚本语言来实现的）自然不会使用过于复杂的脚本语言特性，因此只需要针对性的学习即可。  shell 脚本的运行机制 C&#x2F;C++ 语言这种编写过程是：编写出源代码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="嵌入式 Shell 基础">
+<meta property="og:url" content="http://example.com/2022/09/25/%E5%B5%8C%E5%85%A5%E5%BC%8FShell%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="脚本语言 常用的脚本语言有 sh、bash、csh、ksh、perl、python； 在 Linux 下常用的脚本语言其实就是 bash、sh； 脚本语言一般在嵌入式中应用，主要是用来做配置。（一个复杂的嵌入式程序都是可配置的，配置过程就是用脚本语言来实现的）自然不会使用过于复杂的脚本语言特性，因此只需要针对性的学习即可。  shell 脚本的运行机制 C&#x2F;C++ 语言这种编写过程是：编写出源代码">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-25T14:35:16.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.701Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Shell">
+<meta property="article:tag" content="嵌入式开发">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>嵌入式 Shell 基础 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">嵌入式 Shell 基础</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-25 22:35" pubdate>
+          2022年9月25日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">嵌入式 Shell 基础</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="脚本语言"><a href="#脚本语言" class="headerlink" title="脚本语言"></a>脚本语言</h2><ul>
+<li>常用的脚本语言有 sh、bash、csh、ksh、perl、python；</li>
+<li>在 Linux 下常用的脚本语言其实就是 bash、sh；</li>
+<li>脚本语言一般在嵌入式中应用，主要是用来做配置。（一个复杂的嵌入式程序都是可配置的，配置过程就是用脚本语言来实现的）自然不会使用过于复杂的脚本语言特性，因此只需要针对性的学习即可。</li>
+</ul>
+<h2 id="shell-脚本的运行机制"><a href="#shell-脚本的运行机制" class="headerlink" title="shell 脚本的运行机制"></a>shell 脚本的运行机制</h2><ul>
+<li>C/C++ 语言这种编写过程是：编写出源代码（源代码是不能直接运行的）然后编译链接形成可执行二进制程序，然后才能运行；而脚本程序不同，脚本程序编写好后源代码即可直接运行（没有编译链接过程）；</li>
+<li>shell 程序是解释运行的，所谓解释运行就是说当我们执行一个 shell 程序时，shell 解析器会逐行的解释 shell 程序代码，然后一行一行的去运行。（顺序结构）</li>
+<li>CPU 实际只认识二进制代码，根本不认识源代码。脚本程序源代码其实也不是二进制代码，CPU 也不认识，也不能直接执行。只不过脚本程序的编译链接过程不是以脚本程序源代码为单位进行的，而是在脚本运行过程中逐行的解释执行时才去完成脚本程序源代码转成二进制的过程（不一定是编译链接，因为这行脚本程序可能早就编译连接好了，这里我们只是调用它）。</li>
+</ul>
+<h2 id="动手写第一个-shell"><a href="#动手写第一个-shell" class="headerlink" title="动手写第一个 shell"></a>动手写第一个 shell</h2><h3 id="编辑器与编译器"><a href="#编辑器与编译器" class="headerlink" title="编辑器与编译器"></a>编辑器与编译器</h3><ul>
+<li>shell 程序是文本格式的，只要是文本编辑器都可以。但是因为我们的 shell 是要在 Linux 系统下运行的，所以换行符必须是<code>\n</code>，而 Windows 下的换行符是<code>\r\n</code>，因此 Windows 中的编辑器写的 shell 不能在 Linux 下运行。</li>
+<li>编译器不涉及，因为 shell 是解释性语言，直接编辑完就可以运行。</li>
+</ul>
+<h3 id="shell-程序运行的运行的三种方法"><a href="#shell-程序运行的运行的三种方法" class="headerlink" title="shell 程序运行的运行的三种方法"></a>shell 程序运行的运行的三种方法</h3><ul>
+<li><code>./xx.sh</code>，和运行二进制可执行程序方法一样。这样运行 shell 要求 shell 程序必须具有可执行权限。<code>chmod a+x xx.sh</code> 来添加可执行权限。</li>
+<li><code>source xx.sh</code>，<code>source</code> 是 Linux 的一个命令，这个命令就是用来执行脚本程序的。这样运行不需要脚本具有可执行权限。</li>
+<li><code>bash xx.sh</code>，<code>bash</code> 是一个脚本程序解释器，本质上是一个可执行程序。这样执行相当于我们执行了 <code>bash</code> 程序，然后把 <code>xx.sh</code> 作为 <code>argv[1]</code> 传给他运行。</li>
+</ul>
+<h3 id="hello-world-程序和解释"><a href="#hello-world-程序和解释" class="headerlink" title="hello world 程序和解释"></a>hello world 程序和解释</h3><ul>
+<li>shell 程序的第一行一般都是以<code>#!/bin/sh</code>开始，这行话的意思就是指定 shell 程序执行时被哪个解释器解释执行。所以我们这里写上<code>/bin/sh</code>意思就是这个<code>shell</code>将来被当前机器中<code>/bin</code>目录下的<code>sh</code>可执行程序执行。可以将第一行写为<code>#!/bin/bash</code>来指定使用<code>bash</code>执行该脚本。</li>
+<li>脚本中的注释使用<code>#</code>，<code>#</code>开头的行是注释行。如果有多行需要注释，每行前面都要加<code>#</code>。（<code>#</code>就相当于是 C 语言中的<code>//</code>）;</li>
+<li>shell 程序的正文，由很多行 shell 语句构成。</li>
+</ul>
+<h2 id="shell-语法"><a href="#shell-语法" class="headerlink" title="shell 语法"></a>shell 语法</h2><p>shell 就是把以前命令行中键入执行的命令写成了程序。shell 其实就是为了避免反复的在命令行下手工输入而发明的一种把手工输入步骤记录下来，然后通过执行 shell 脚本程序就能再次复述原来记录的手工输入过程的一种技术。</p>
+<h3 id="shell-中的变量定义和引用"><a href="#shell-中的变量定义和引用" class="headerlink" title="shell 中的变量定义和引用"></a>shell 中的变量定义和引用</h3><ul>
+<li>变量定义和初始化。shell 是弱类型语言（语言中的变量如果有明确的类型则属于强类型语言；变量没有明确类型就是弱类型语言），和 C 语言不同。在 shell 编程中定义变量不需要制定类型，也没有类型这个概念。</li>
+<li>变量定义时可以初始化，使用<code>=</code>进行初始化赋值。在 shell 中赋值的=两边是不能有空格的。<br>注意：shell 对语法非常在意，非常严格。很多地方空格都是必须没有或者必须有，而且不能随意有没有空格。</li>
+<li>变量赋值，变量定义后可以再次赋值，新的赋值会覆盖老的赋值。shell 中并不刻意区分变量的定义和赋值，反正每个变量就是一个符号，这个符号的值就是最后一个给他赋值时的值。</li>
+<li>变量引用。shell 中引用一个变量必须使用<code>$</code>符号，<code>$</code>符号就是变量解引用符号。</li>
+</ul>
+<p>注意：<code>$</code>符号后面跟一个字符串，这个字符串就会被当作变量去解析。如果这个字符串本身没有定义，执行时并不会报错，而是把这个变量解析为空。也就是说在 shell 中没有被定义的变量其实就相当于是一个定义并赋值为空的变量。</p>
+<p>注意：变量引用的时候可以<code>$var</code>，也可以<code>$&#123;var&#125;</code>。这两种的区别是在某些情况下只能用<code>$&#123;var&#125;</code>而不能简单的<code>$var</code>。</p>
+<h3 id="shell-中无引用、单引号和双引号的区别"><a href="#shell-中无引用、单引号和双引号的区别" class="headerlink" title="shell 中无引用、单引号和双引号的区别"></a>shell 中无引用、单引号和双引号的区别</h3><ul>
+<li>shell 中使用字符串可以不加双引号，直接使用。而且有空格时也可以，但是缺陷是不能输出<code>&quot;</code>或者其他转义字符。</li>
+<li>shell 中也可以使用单引号来表示字符串，也是直接使用的，不能输出转义字符。</li>
+<li>单引号中：完全字面替换（不可包含单引号本身）</li>
+<li>双引号中：<ul>
+<li><code>$</code>加变量名可以取变量的值</li>
+<li>反引号仍表示命令替换</li>
+<li><code>\$</code>表示<code>$</code>的字面值（输出$符号）</li>
+<li>`表示`的字面值</li>
+<li><code>\&quot;</code>表示<code>&quot;</code>的字面值</li>
+<li><code>\\</code>表示<code>\</code>的字面值</li>
+</ul>
+</li>
+</ul>
+<p>除以上情况之外，在其它字符前面的\无特殊含义，只表示字面值。</p>
+<p>单引号会原样输出，双引号可以调用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Bash">PATH_A=<span class="hljs-string">&quot;`pwd`/include&quot;</span><br>PATH_B=<span class="hljs-string">&#x27;`pwd`/include&#x27;</span><br><span class="hljs-built_in">echo</span> <span class="hljs-variable">$PATH_A</span><br><span class="hljs-comment"># /home/a/b/include</span><br><span class="hljs-built_in">echo</span> <span class="hljs-variable">$PATH_B</span><br><span class="hljs-comment"># `pwd`/include</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="shell-中调用-Linux-命令"><a href="#shell-中调用-Linux-命令" class="headerlink" title="shell 中调用 Linux 命令"></a>shell 中调用 Linux 命令</h3><ul>
+<li>直接执行</li>
+<li>反引号括起来执行。有时候我们在 shell 中调用 Linux 命令是为了得到这个命令的返回值（结果值），这时候就适合用一对反引号 (键盘上 ESC 按键下面的那个按键，和<code>~</code>在一个按键上) 来调用执行命令。</li>
+</ul>
+<h3 id="shell-中的选择分支结构"><a href="#shell-中的选择分支结构" class="headerlink" title="shell 中的选择分支结构"></a>shell 中的选择分支结构</h3><ul>
+<li>shell 的 <code>if</code> 语言用法很多，在此只介绍常用的，其他感兴趣可以自己去学</li>
+</ul>
+<p>典型<code>if</code>语言格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-keyword">if</span> [ 表达式 ]; <span class="hljs-keyword">then</span><br>  xxx<br>  yyy<br>  zzz<br><span class="hljs-keyword">else</span><br>  xxx<br>  ddd<br>  uuu<br><span class="hljs-keyword">fi</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="if-的典型应用"><a href="#if-的典型应用" class="headerlink" title="if 的典型应用"></a>if 的典型应用</h4><ul>
+<li><p><code>-f</code>判断文件是否存在，注意<code>[]</code>里面<strong>前后都有空格</strong>，不能省略</p>
+</li>
+<li><p><code>-d</code>判断目录是否存在</p>
+</li>
+<li><p><code>&quot;str1&quot; = &quot;str2&quot;</code>判断字符串是否相等，注意<strong>用一个等号而不是两个</strong></p>
+</li>
+<li><p>判断数字是否相等</p>
+<ul>
+<li><code>-eq</code>等于</li>
+<li><code>-gt</code>大于</li>
+<li><code>-lt</code>小于</li>
+<li><code>-ge</code>大于等于</li>
+<li><code>-le</code>小于等于</li>
+</ul>
+</li>
+<li><p><code>-z</code>判断字符串是否为空，注意<code>-z</code>判断时如果变量本身没定义也是不成立（也就是说-z 认为没定义不等于为空）</p>
+</li>
+<li><p><code>-o</code>表示逻辑或，连接两个表达式</p>
+<ul>
+<li><code>if [ 10 -eq 10 -o  ]; then</code></li>
+</ul>
+</li>
+<li><p><code>&amp;&amp;</code> <code>||</code>表示逻辑与和逻辑或</p>
+</li>
+</ul>
+<h3 id="shell-中的循环结构"><a href="#shell-中的循环结构" class="headerlink" title="shell 中的循环结构"></a>shell 中的循环结构</h3><p><code>for</code> 循环，要求能看懂、能改即可。不要求能够完全不参考写出来。因为毕竟嵌入式并不需要完全重新手写。</p>
+<p><code>while</code> 循环，和 C 语言的循环在逻辑上无差别，要注意很多格式要求，譬如：<code>while</code> 后面的 <code>[]</code> 两边都有空格，<code>[]</code> 后面有分号（如果 do 放在一行的话），<code>i++</code>的写法中有两层括号。</p>
+<h3 id="echo-的创建和追加输入文件"><a href="#echo-的创建和追加输入文件" class="headerlink" title="echo 的创建和追加输入文件"></a>echo 的创建和追加输入文件</h3><ul>
+<li>在 shell 中可以直接使用 <code>echo</code> 指令新建一个文件，并且将一些内容传入这个文件中。创建文件并输入内容的关键就是<code>&gt;</code>。</li>
+<li>还可以使用 <code>echo</code> 指令配合追加符号<code>&gt;&gt;</code> 向一个已经存在的文件末尾追加输入内容。</li>
+</ul>
+<h3 id="shell-中其他值得关注的知识点"><a href="#shell-中其他值得关注的知识点" class="headerlink" title="shell 中其他值得关注的知识点"></a>shell 中其他值得关注的知识点</h3><h4 id="case-语句"><a href="#case-语句" class="headerlink" title="case 语句"></a>case 语句</h4><ul>
+<li>shell 中的 case 语句和 C 语言中的 switch case 语句作用一样，格式有差异</li>
+<li>shell 中的 case 语句天生没有 <code>break</code>，也不需要<code>break</code>，和 C 语言中的 switch case 不同。shell 中的 case 默认就是匹配上哪个执行哪个，不会说执行完了还去执行后面的其他 case</li>
+</ul>
+<h4 id="调用-shell-程序的传参"><a href="#调用-shell-程序的传参" class="headerlink" title="调用 shell 程序的传参"></a>调用 shell 程序的传参</h4><ul>
+<li>C 语言中可以通过 <code>main</code> 函数的 <code>argc</code> 和 <code>argv</code> 给程序传参</li>
+<li>shell 程序本身也可以在调用时传参给他。在 shell 程序内部使用传参也是使用的一些特定符号来表示的，包括：<ul>
+<li><code>$#</code>表示调用该 shell 时传参的个数。（<code>$#</code>计数时只考虑真正的参数个数）</li>
+<li><code>$0、$1、$2·····</code>则依次表示传参的各个参数</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">./a.out aa bb cc     <br><br><span class="hljs-comment"># argc = 4</span><br><span class="hljs-comment"># argv[0] = ./a.out</span><br><span class="hljs-comment"># argv[1] 是第一个有效参数····</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">source</span> a.sh aa bb cc  <br><span class="hljs-comment"># $# = 3</span><br><span class="hljs-comment"># $0是执行这个 shell 程序的解析程序的名字</span><br><span class="hljs-comment"># $1是第一个有效参数的值</span><br><span class="hljs-comment"># $2是第 2 个有效参数的值·····</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="while-循环和-case-语言和传参结合"><a href="#while-循环和-case-语言和传参结合" class="headerlink" title="while 循环和 case 语言和传参结合"></a>while 循环和 case 语言和传参结合</h4><ul>
+<li>shell 中的 <code>break</code> 关键字和 <code>C</code> 语言中意义相同（都是跳出）但是用法不同。因为 shell 中 <code>case</code> 语句默认不用 <code>break</code> 的，因此在 <code>shell</code> 中 <code>break</code> 只用于循环跳出。所以当 <code>while</code> 中内嵌 <code>case</code> 语句时，<code>case</code> 中的 <code>break</code> 是跳出外层的 <code>while</code> 循环的，不是用来跳出 <code>case</code> 语句的。</li>
+<li>shell 中的<code>$# $1</code>等内置变量的值是可以被改变，被 <code>shift</code> 指令改变。<code>shift</code> 指令有点像左移运算符，把我们给 shell 程序的传参左移了一个移出去了，原来的<code>$2</code>变成了新的<code>$1</code>，原来的<code>$#</code>少了 1 个。</li>
+</ul>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+        <a href="/tags/Shell/">#Shell</a>
+      
+        <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">#嵌入式开发</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>嵌入式 Shell 基础</div>
+      <div>http://example.com/2022/09/25/嵌入式Shell基础/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年9月25日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/09/26/Makefile%E5%9F%BA%E7%A1%80/" title="Makefile 基础">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Makefile 基础</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/25/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-chattr%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E4%B8%8E%E7%9B%AE%E5%BD%95%E5%B1%9E%E6%80%A7%E9%98%B2%E6%AD%A2%E8%AF%AF%E5%88%A0%E9%99%A4/" title="每天学命令-chattr 修改文件与目录属性防止误删除">
+                        <span class="hidden-mobile">每天学命令-chattr 修改文件与目录属性防止误删除</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '3a5d19e742b8eaa718d954283d2df9d7'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

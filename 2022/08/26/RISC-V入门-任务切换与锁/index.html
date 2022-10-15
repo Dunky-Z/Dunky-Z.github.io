@@ -1,0 +1,983 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="任务切换任务简介多任务与上下文任务就是一个指令执行流。  如果有多个 HART，那就可以同时执行多个指令执行流。 协作式多任务 协作式环境下，下一个任务被调度的前提是当前任务主动放弃处理器。 抢占式多任务 抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其它任务。 协作式多任务上下文切换 切换过程需要完成：  保存上文（保存上一个任务的寄存器信息）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RISC-V 入门 - 任务切换与锁">
+<meta property="og:url" content="http://example.com/2022/08/26/RISC-V%E5%85%A5%E9%97%A8-%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2%E4%B8%8E%E9%94%81/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="任务切换任务简介多任务与上下文任务就是一个指令执行流。  如果有多个 HART，那就可以同时执行多个指令执行流。 协作式多任务 协作式环境下，下一个任务被调度的前提是当前任务主动放弃处理器。 抢占式多任务 抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其它任务。 协作式多任务上下文切换 切换过程需要完成：  保存上文（保存上一个任务的寄存器信息）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-09-51-b76ed5f4ea873bd1530963a096aaa8e3-20220828140950-e37c6b.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-18-23-20b781289e8722e343e09f63910e5991-20220828141822-f0be20.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-21-23-1c9725267e1afd49dcc75e21da78c2e4-20220828142122-246130.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-23-39-71d991190cae709f0135d994f9ccd7e2-20220828142338-67c814.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-24-41-47c1a159644584da7b435cbc5d7a2e56-20220828142440-398b0f.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-25-21-b5c57f4cd4d127e11679113987238f06-20220828142520-570733.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-28-34-62e744963f90c6a45930b7ec91c4960a-20220828142833-60e64d.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/16-43-26-148e18481402d4cbebda0b8cf437ea9a-20220828164325-f03e61.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/18-26-19-d09627e0016250e4dd00e93a6d816ccc-20220828182618-7b140d.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-20-57-50e42984517b60ca08ec0dff17bc634f-20220828202056-fdd4f5.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-22-25-783fb565f517c52bef12807070e8c0df-20220828202224-b7ec1e.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-28-29-39d640fb2c0f9ea420f9d8ceca38c8e2-20220828202828-bb9696.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-27-17-2a3d0048acc7b4a3d63b46b7fd67aa59-20220828212715-480a91.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-33-11-e1ad7600b03b294097a9fe9b52ac2cd6-20220828213310-65b79a.png">
+<meta property="article:published_time" content="2022-08-26T07:15:34.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.560Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="RISCV">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>RISC-V 入门 - 任务切换与锁 - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">RISC-V 入门 - 任务切换与锁</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-08-26 15:15" pubdate>
+          2022年8月26日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">RISC-V 入门 - 任务切换与锁</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="任务切换"><a href="#任务切换" class="headerlink" title="任务切换"></a>任务切换</h1><h2 id="任务简介"><a href="#任务简介" class="headerlink" title="任务简介"></a>任务简介</h2><h3 id="多任务与上下文"><a href="#多任务与上下文" class="headerlink" title="多任务与上下文"></a>多任务与上下文</h3><p>任务就是一个指令执行流。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png" srcset="/img/loading.gif" lazyload></p>
+<p>如果有多个 HART，那就可以同时执行多个指令执行流。</p>
+<p>协作式多任务</p>
+<p>协作式环境下，下一个任务被调度的前提是当前任务主动放弃处理器。</p>
+<p>抢占式多任务</p>
+<p>抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其它任务。</p>
+<h2 id="协作式多任务"><a href="#协作式多任务" class="headerlink" title="协作式多任务"></a>协作式多任务</h2><h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-09-51-b76ed5f4ea873bd1530963a096aaa8e3-20220828140950-e37c6b.png" srcset="/img/loading.gif" lazyload></p>
+<p>切换过程需要完成：</p>
+<ul>
+<li>保存上文（保存上一个任务的寄存器信息）</li>
+<li>恢复下文（恢复下一个任务的寄存器信息）</li>
+</ul>
+<p>CPU 中有 32 个寄存器，保存各种状态，在切换过程中我们主要关注两个寄存器：<code>ra(x1) 存放返回地址</code>，<code>mscratch 一个特权寄存器，指向当前处理的任务</code>。</p>
+<h3 id="切换过程"><a href="#切换过程" class="headerlink" title="切换过程"></a>切换过程</h3><p>初始化寄存器，<code>ra</code>都初始化为任务的第一条指令地址。<code>mscratch</code>开始指向 Task A。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-18-23-20b781289e8722e343e09f63910e5991-20220828141822-f0be20.png" srcset="/img/loading.gif" lazyload></p>
+<p>Task A 稳定执行，当他想要放弃 CPU 时，就会执行 <code>call swithc_to</code>指令。执行<code>call</code>的过程中，就会把当前指令的下一条指令的地址放到 CPU 的<code>ra</code>寄存器。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-21-23-1c9725267e1afd49dcc75e21da78c2e4-20220828142122-246130.png" srcset="/img/loading.gif" lazyload></p>
+<p>接下里跳转到<code>swithc_to</code>函数执行，该函数是切换上下文的核心函数。首先<strong>保存上文</strong>，将 CPU 中的寄存器信息全部保存：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-23-39-71d991190cae709f0135d994f9ccd7e2-20220828142338-67c814.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>切换</strong><code>mscratch</code>指针到下一个任务 Task B：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-24-41-47c1a159644584da7b435cbc5d7a2e56-20220828142440-398b0f.png" srcset="/img/loading.gif" lazyload></p>
+<p><strong>恢复下文</strong>：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-25-21-b5c57f4cd4d127e11679113987238f06-20220828142520-570733.png" srcset="/img/loading.gif" lazyload></p>
+<p>当<code>swithc_to</code>函数执行到<code>return</code>时，接下来执行的指令就是 CPU 中<code>ra</code>保存的那条指令，也就是地址为<code>j</code>指令，这就是 Task B 的第一条指令，这样就完成了任务的切换。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-28-34-62e744963f90c6a45930b7ec91c4960a-20220828142833-60e64d.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h3><h4 id="切换核心函数-switch-to"><a href="#切换核心函数-switch-to" class="headerlink" title="切换核心函数 switch_to"></a>切换核心函数 switch_to</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs asm">switch_to:<br> csrrw t6, mscratch, t6 # swap t6 and mscratch<br> beqz t6, 1f   # Notice: previous task may be NULL<br> reg_save t6   # save context of prev task<br>                        # 把CPU的信息保存到内存<br><br> # Save the actual t6 register, which we swapped into<br> # mscratch<br> mv t5, t6  # t5 points to the context of current task<br> csrr t6, mscratch # read t6 back from mscratch<br> sw t6, 120(t5) # save t6 with t5 as base<br><br>1:<br> # switch mscratch to point to the context of the next task<br> csrw mscratch, a0<br><br> # Restore all GP registers<br> # Use t6 to point to the context of the new task<br> mv t6, a0<br> reg_restore t6      # 把内存里的信息恢复到CPU<br><br> # Do actual context switching.<br> ret<br></code></pre></td></tr></table></figure>
+
+<h4 id="创建和初始化第一号任务"><a href="#创建和初始化第一号任务" class="headerlink" title="创建和初始化第一号任务"></a>创建和初始化第一号任务</h4><p>使用结构体<code>context</code>保存上下文中寄存器的信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">context</span> &#123;</span><br> <span class="hljs-comment">/* ignore x0 */</span><br> <span class="hljs-keyword">reg_t</span> ra;<br> <span class="hljs-keyword">reg_t</span> sp;<br> <span class="hljs-keyword">reg_t</span> gp;<br> <span class="hljs-keyword">reg_t</span> tp;<br> <span class="hljs-keyword">reg_t</span> t0;<br> <span class="hljs-keyword">reg_t</span> t1;<br> <span class="hljs-keyword">reg_t</span> t2;<br> <span class="hljs-keyword">reg_t</span> s0;<br> <span class="hljs-keyword">reg_t</span> s1;<br> <span class="hljs-keyword">reg_t</span> a0;<br> <span class="hljs-keyword">reg_t</span> a1;<br> <span class="hljs-keyword">reg_t</span> a2;<br> <span class="hljs-keyword">reg_t</span> a3;<br> <span class="hljs-keyword">reg_t</span> a4;<br> <span class="hljs-keyword">reg_t</span> a5;<br> <span class="hljs-keyword">reg_t</span> a6;<br> <span class="hljs-keyword">reg_t</span> a7;<br> <span class="hljs-keyword">reg_t</span> s2;<br> <span class="hljs-keyword">reg_t</span> s3;<br> <span class="hljs-keyword">reg_t</span> s4;<br> <span class="hljs-keyword">reg_t</span> s5;<br> <span class="hljs-keyword">reg_t</span> s6;<br> <span class="hljs-keyword">reg_t</span> s7;<br> <span class="hljs-keyword">reg_t</span> s8;<br> <span class="hljs-keyword">reg_t</span> s9;<br> <span class="hljs-keyword">reg_t</span> s10;<br> <span class="hljs-keyword">reg_t</span> s11;<br> <span class="hljs-keyword">reg_t</span> t3;<br> <span class="hljs-keyword">reg_t</span> t4;<br> <span class="hljs-keyword">reg_t</span> t5;<br> <span class="hljs-keyword">reg_t</span> t6;<br>&#125;;<br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> STACK_SIZE 1024</span><br><span class="hljs-keyword">uint8_t</span> task_stack[STACK_SIZE];<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">context</span> <span class="hljs-title">ctx_task</span>;</span><br></code></pre></td></tr></table></figure>
+
+<p>写一个任务函数，功能就是每隔<code>1000</code> 滴答打印一句话。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">user_task0</span><span class="hljs-params">(<span class="hljs-keyword">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br> uart_puts(<span class="hljs-string">&quot;Task 0: Created!\n&quot;</span>);<br> <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>  uart_puts(<span class="hljs-string">&quot;Task 0: Running...\n&quot;</span>);<br>  task_delay(<span class="hljs-number">1000</span>);<br> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>初始化任务，需要初始化栈，并把任务的首地址保存到<code>context</code>的<code>ra</code>寄存器。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">sched_init</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> w_mscratch(<span class="hljs-number">0</span>);<br><br> ctx_task.sp = (<span class="hljs-keyword">reg_t</span>) &amp;task_stack[STACK_SIZE - <span class="hljs-number">1</span>];<br> ctx_task.ra = (<span class="hljs-keyword">reg_t</span>) user_task0;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="切换到第一个用户任务"><a href="#切换到第一个用户任务" class="headerlink" title="切换到第一个用户任务"></a>切换到第一个用户任务</h4><p><code>switch_to</code>函数的参数就是上下文，当执行到<code>ret</code>时也就切换到了<code>user_task0</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">schedule</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">context</span> *<span class="hljs-title">next</span> =</span> &amp;ctx_task;<br> switch_to(next);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>以上是单任务的情况，如果是多任务时，就用数组保存多个<code>context</code>，最大支持 10 个任务。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> MAX_TASKS 10</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> STACK_SIZE 1024</span><br><span class="hljs-keyword">uint8_t</span> task_stack[MAX_TASKS][STACK_SIZE];<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">context</span> <span class="hljs-title">ctx_tasks</span>[<span class="hljs-title">MAX_TASKS</span>];</span><br></code></pre></td></tr></table></figure>
+
+<p>使用简单的求模取余的方式确定下一个任务是哪一个：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * _top is used to mark the max available position of ctx_tasks</span><br><span class="hljs-comment"> * _current is used to point to the context of current task</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> _top = <span class="hljs-number">0</span>;<br><span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> _current = <span class="hljs-number">-1</span>;<br><br><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * implment a simple cycle FIFO schedular</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">schedule</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-keyword">if</span> (_top &lt;= <span class="hljs-number">0</span>) &#123;<br>  panic(<span class="hljs-string">&quot;Num of task should be greater than zero!&quot;</span>);<br>  <span class="hljs-keyword">return</span>;<br> &#125;<br><br> _current = (_current + <span class="hljs-number">1</span>) % _top;<br> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">context</span> *<span class="hljs-title">next</span> =</span> &amp;(ctx_tasks[_current]);<br> switch_to(next);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>因为多个任务协作，需要一个函数来表示主动放弃 CPU：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * DESCRIPTION</span><br><span class="hljs-comment"> *  task_yield()  causes the calling task to relinquish the CPU and a new </span><br><span class="hljs-comment"> *  task gets to run.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">task_yield</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> schedule();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="调用关系"><a href="#调用关系" class="headerlink" title="调用关系"></a>调用关系</h4><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/16-43-26-148e18481402d4cbebda0b8cf437ea9a-20220828164325-f03e61.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="抢占式多任务"><a href="#抢占式多任务" class="headerlink" title="抢占式多任务"></a>抢占式多任务</h2><p>抢占式多任务：抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其他任务。</p>
+<h2 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/18-26-19-d09627e0016250e4dd00e93a6d816ccc-20220828182618-7b140d.png" srcset="/img/loading.gif" lazyload></p>
+<p>对 MSIP 写入 1 时触发 软中断，写入 0 时表示对中断进行应答，也就是处理完了软中断。</p>
+<h1 id="任务同步与锁"><a href="#任务同步与锁" class="headerlink" title="任务同步与锁"></a>任务同步与锁</h1><h2 id="并发与同步"><a href="#并发与同步" class="headerlink" title="并发与同步"></a>并发与同步</h2><p>并发：多个控制流同时执行</p>
+<ul>
+<li>多处理器多任务</li>
+<li>单处理器多任务</li>
+<li>单处理器任务 + 中断</li>
+</ul>
+<p>同步：为了保证在并发执行的环境中各个控制流可以有效执行而采用的一种编程技术</p>
+<h2 id="临界区、锁与死锁"><a href="#临界区、锁与死锁" class="headerlink" title="临界区、锁与死锁"></a>临界区、锁与死锁</h2><p>临界区：在并发的程序执行环境中，所谓临界区指的是一个会访问<strong>共享资源</strong>的<strong>指令片段</strong>，而且当这样的多个指令片段同时访问某个共享资源时可能会引发问题。</p>
+<p>在并发环境下为了有效控制临界区的执行（同步），我们要做的是当有一个控制流进入临界区时，其他相关控制流必须等待。</p>
+<p>锁：一种常见的用来实现同步的技术</p>
+<ul>
+<li>不可睡眠锁</li>
+<li>可睡眠锁</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-20-57-50e42984517b60ca08ec0dff17bc634f-20220828202056-fdd4f5.png" srcset="/img/loading.gif" lazyload></p>
+<p>当发生中断时，右边的任务获取 CPU 资源，开始执行，但是获取锁时发现当前已经处于锁定状态，所以就处于等待状态。</p>
+<p>当下一个中断发生，左侧任务回去 CPU 后会继续执行，实际上左侧任务也不必等待，他可以一直执行，因为右侧任务一直无法获取锁。</p>
+<p>当然，右侧任务也可以一直触发中断，让左侧任务让出 CPU。也就是左侧任务逻辑上可以一直运行，但是实际还是会被打断。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-22-25-783fb565f517c52bef12807070e8c0df-20220828202224-b7ec1e.png" srcset="/img/loading.gif" lazyload></p>
+<p>当左侧任务执行完释放锁，右侧任务就可以获取锁，并正常执行下去。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-28-29-39d640fb2c0f9ea420f9d8ceca38c8e2-20220828202828-bb9696.png" srcset="/img/loading.gif" lazyload></p>
+<p>死锁：当控制流执行路径中会涉及多个锁，并且这些控制流执行路径获取的顺序不同时就可能发送死锁。</p>
+<p>解决死锁：</p>
+<ul>
+<li>调整获取锁的顺序，比如保持一致</li>
+<li>尽可能防止任务在持有一把锁同时申请其他锁</li>
+</ul>
+<h2 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-27-17-2a3d0048acc7b4a3d63b46b7fd67aa59-20220828212715-480a91.png" srcset="/img/loading.gif" lazyload></p>
+<p>不能从 C 语言的层面去理解锁，应该要从指令级别去理解。上面的这种上锁方式是有问题的。</p>
+<p>如果两个控制流同时加锁，就可能同时获取了锁，因为在汇编指令级别，每条指令执行也是需要时间的：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-33-11-e1ad7600b03b294097a9fe9b52ac2cd6-20220828213310-65b79a.png" srcset="/img/loading.gif" lazyload></p>
+<p>AMOSWAP</p>
+<pre><code class="asm">loop:
+    lw a4, -20(s0)  # 参数1
+    li a5, 1        # 参数 2
+    amoswap.w.aq a5, a5, (a4)   # 将a5与a4指向的内存的值进行交换
+                                # 将 1 与 a4 交换，表示如果原来上锁（1）那就什么都没做
+                                # 如果原来没上锁（0）那就立即上锁 
+    mv a3, a5
+    bnez a3,loop
+
+![](https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-38-57-b7cece2166dba14bd128970cefdd2702-20220828213857-b116cd.png)
+</code></pre>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/RISC-V-%E5%85%A5%E9%97%A8/" class="category-chain-item">RISC-V 入门</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/RISCV/">#RISCV</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>RISC-V 入门 - 任务切换与锁</div>
+      <div>http://example.com/2022/08/26/RISC-V入门-任务切换与锁/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年8月26日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/08/26/VSCode%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C-%E5%8C%B9%E9%85%8D%E9%AB%98%E4%BA%AE/" title="VSCode搜索结果/匹配高亮">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">VSCode搜索结果/匹配高亮</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/08/23/RISC-V%E5%85%A5%E9%97%A8-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="RISC-V 入门 - 内存管理">
+                        <span class="hidden-mobile">RISC-V 入门 - 内存管理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'f0a31ac4343757718766b43994d58199'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

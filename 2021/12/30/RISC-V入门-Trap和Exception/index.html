@@ -1,0 +1,1123 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Trap 简介控制流（Control Flow）和 Trap 控制流（Control Flow）从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列$$a_0,a_1,\dotsb,a_{n-1}$$每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。 异常控制流（Exceptional Control Flo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RISC-V 入门-Trap">
+<meta property="og:url" content="http://example.com/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="Trap 简介控制流（Control Flow）和 Trap 控制流（Control Flow）从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列$$a_0,a_1,\dotsb,a_{n-1}$$每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。 异常控制流（Exceptional Control Flo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png">
+<meta property="article:published_time" content="2021-12-30T05:42:34.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.553Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="RISCV">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>RISC-V 入门-Trap - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">RISC-V 入门-Trap</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-12-30 13:42" pubdate>
+          2021年12月30日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          8.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          70 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">RISC-V 入门-Trap</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="Trap-简介"><a href="#Trap-简介" class="headerlink" title="Trap 简介"></a>Trap 简介</h1><h2 id="控制流（Control-Flow）和-Trap"><a href="#控制流（Control-Flow）和-Trap" class="headerlink" title="控制流（Control Flow）和 Trap"></a>控制流（Control Flow）和 Trap</h2><ul>
+<li>控制流（Control Flow）<br>从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列<br>$$a_0,a_1,\dotsb,a_{n-1}$$<br>每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。</li>
+<li>异常控制流（Exceptional Control Flow, ECF）<br>系统也必须能够对系统状态的变化做出反应，这些系统状态不是被内部程序变量捕获的，而且也不一定要和程序的执行相关。比如，一个硬件定时器定期产生信号，这个事件必须得到处理。包到达网络适配器后，必须存放在内存中。程序向磁盘请求数据，然后休眠，直到被通知说数据已就绪。现代系统通过使控制流发生突变来对这些情况做出反应。我们把这些突变称为异常控制流。<ul>
+<li>exception</li>
+<li>interrupt</li>
+</ul>
+</li>
+</ul>
+<p>RISC-V 把 <code>ECF</code> 统称为 <code>Trap</code>。</p>
+<h2 id="RISC-V-Trap-处理中涉及的寄存器"><a href="#RISC-V-Trap-处理中涉及的寄存器" class="headerlink" title="RISC-V Trap 处理中涉及的寄存器"></a>RISC-V Trap 处理中涉及的寄存器</h2><table>
+<thead>
+<tr>
+<th align="center">寄存器</th>
+<th align="center">全称</th>
+<th align="left">用途说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">mtvec</td>
+<td align="center">Machine Trap-Vector Base-Address</td>
+<td align="left">它保存发生异常时处理器需要跳转到的地址。</td>
+</tr>
+<tr>
+<td align="center">mepc</td>
+<td align="center">Machine Exception Program Counter</td>
+<td align="left">当 trap 发生时，hart 会将发生 trap 所对应的指令的地址值（pc）保存在 mepc 中。</td>
+</tr>
+<tr>
+<td align="center">mcause</td>
+<td align="center">Machine Cause</td>
+<td align="left">当 trap 发生时，hart 会设置该寄存器通知我们 trap 发生的原因。</td>
+</tr>
+<tr>
+<td align="center">mtval</td>
+<td align="center">Machine Trap Value</td>
+<td align="left">它保存了 exception 发生时的附加信息：譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身，对于其他异常，它的值为 0。</td>
+</tr>
+<tr>
+<td align="center">mstatus</td>
+<td align="center">Machine Status</td>
+<td align="left">用于跟踪和控制 hart 的当前操作状态（特别地，包括关闭和打开全局中断）。</td>
+</tr>
+<tr>
+<td align="center">mscratch</td>
+<td align="center">Machine Scratch</td>
+<td align="left">Machine 模式下专用寄存器，我们可以自己定义其用法，譬如用该寄存器保存当前在 hart 上运行的 task 的上下文（context）的地址。</td>
+</tr>
+</tbody></table>
+<h3 id="mtvec（Machine-Trap-Vector-Base-Address）"><a href="#mtvec（Machine-Trap-Vector-Base-Address）" class="headerlink" title="mtvec（Machine Trap-Vector Base-Address）"></a>mtvec（Machine Trap-Vector Base-Address）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>WARL: Write Any Values, Read Legal Values</p>
+</blockquote>
+<ul>
+<li><p>BASE：trap 入口函数的基地址，必须保证四字节对齐；</p>
+</li>
+<li><p>MODE：进一步用于控制入口函数的地址配置方式：</p>
+<ul>
+<li><p>Direct，所有异常和中断发生后，PC都跳转到BASE指定的地址处；</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png" srcset="/img/loading.gif" lazyload></p>
+<p>通常中断处理函数内部会有<code>switch case</code>条件语句，通过不同的中断采用不同的处理方式。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">reg_t</span> <span class="hljs-title">trap_handler</span><span class="hljs-params">(<span class="hljs-keyword">reg_t</span> epc, <span class="hljs-keyword">reg_t</span> cause)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">reg_t</span> return_pc = epc;<br>    <span class="hljs-keyword">reg_t</span> cause_code = cause &amp; <span class="hljs-number">0xfff</span>;<br>    <br>    <span class="hljs-keyword">if</span> (cause &amp; <span class="hljs-number">0x80000000</span>) &#123;<br>        <span class="hljs-comment">/* Asynchronous trap - interrupt */</span><br>        <span class="hljs-keyword">switch</span> (cause_code) &#123;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:<br>            uart_puts(<span class="hljs-string">&quot;software interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>:<br>            uart_puts(<span class="hljs-string">&quot;timer interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>:<br>            uart_puts(<span class="hljs-string">&quot;external interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">default</span>:<br>            uart_puts(<span class="hljs-string">&quot;unknown async exception!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">/* Synchronous trap - exception */</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Sync exceptions!, code = %d\n&quot;</span>, cause_code);<br>        panic(<span class="hljs-string">&quot;OOPS! What can I do!&quot;</span>);<br>        <span class="hljs-comment">//return_pc += 4;</span><br>    &#125;<br><br>    <span class="hljs-keyword">return</span> return_pc;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>Vectored，异常的处理方式同上，但是中断的入口地址以数组方式排列；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs asm">trap_vector:<br>    # save context(registers).<br>    csrrw t6, mscratch, t6 # swap t6 and mscratch<br>    reg_save t6<br><br>    # Save the actual t6 register, which we swapped into<br>    # mscratch<br>    mv t5, t6  # t5 points to the context of current task<br>    csrr t6, mscratch # read t6 back from mscratch<br>    sw t6, 120(t5) # save t6 with t5 as base<br><br>    # Restore the context pointer into mscratch<br>    csrw mscratch, t5<br><br>    # call the C trap handler in trap.c<br>    csrr a0, mepc<br>    csrr a1, mcause<br>    call trap_handler<br><br>    # trap_handler will return the return address via a0.<br>    csrw mepc, a0<br><br>    # restore context(registers).<br>    csrr t6, mscratch<br>    reg_restore t6<br><br>    # return to whatever we were doing before trap.<br>    mret<br></code></pre></td></tr></table></figure>
+
+<p>MODE可取值如下：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>采用<code>Vectored</code>方式效率更高。</p>
+<h3 id="mepc（Machine-Exception-Program-Counter）"><a href="#mepc（Machine-Exception-Program-Counter）" class="headerlink" title="mepc（Machine Exception Program Counter）"></a>mepc（Machine Exception Program Counter）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png" srcset="/img/loading.gif" lazyload></p>
+<p>当<code>trap</code>发生时，<code>pc</code>会被替换为 <code>mtvec</code>设定的地址，同时<code>hart</code> 会设置<code>mepc</code>为当前指令或者下一条指令的地址（处理异常时，mepc 为当前指令的地址，处理中断时，mepc 为下一条指令的地址）。</p>
+<p>当我们需要退出<code>trap</code> 时可以调用特殊的 <code>mret</code> 指令，该指令会将<code>mepc</code>中的值恢复到<code>pc</code>中（实现返回的效果）；</p>
+<p>在处理 <code>trap</code> 的程序中我们可以修改 <code>mepc</code> 的值达到改变<code>mret</code> 返回地址的目的。</p>
+<h3 id="mcause（Machine-Cause）"><a href="#mcause（Machine-Cause）" class="headerlink" title="mcause（Machine Cause）"></a>mcause（Machine Cause）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png" srcset="/img/loading.gif" lazyload></p>
+<p>当 <code>trap</code> 发生时，<code>hart</code> 会设置该寄存器通知我们 <code>trap</code> 发生的原因。</p>
+<p>最高位 <code>Interrupt</code> 为 1 时标识了当前 <code>trap</code> 为<code>interrupt</code>，否则是<code>exception</code>。</p>
+<p>剩余的 <code>Exception Code</code> 用于标识具体的<code>interrupt</code>或者<code>exception</code> 的种类。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="mtval（Machine-Trap-Value）"><a href="#mtval（Machine-Trap-Value）" class="headerlink" title="mtval（Machine Trap Value）"></a>mtval（Machine Trap Value）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png" srcset="/img/loading.gif" lazyload></p>
+<p>当 <code>trap</code> 发生时，除了通过<code>mcause</code> 可以获取<code>exception</code>的种类 <code>code</code> 值外，<code>hart</code> 还提供了 <code>mtval</code> 来提供<code>exception</code> 的其他信息来辅助我们执行更进一步的操作。</p>
+<p>具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。</p>
+<h3 id="mstatus（Machine-Status）"><a href="#mstatus（Machine-Status）" class="headerlink" title="mstatus（Machine Status）"></a>mstatus（Machine Status）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png" srcset="/img/loading.gif" lazyload></p>
+<p>寄存器各个位可以大致分为以下三类，其中<code>x</code>可以为<code>U,S,M</code>。表示用户模式以及两种特权模式。</p>
+<ul>
+<li><p><code>xIE</code>（x=M/S/U）: 分别用于打开（1）或者关闭（0）M/S/U 模式下的全局中断。当 <code>trap</code> 发生时，<code>hart</code>会自动将 <code>xIE</code> 设置为 0。</p>
+</li>
+<li><p><code>xPIE</code>（x=M/S/U）:当 <code>trap</code> 发生时用于保存 <code>trap</code> 发生之前的 <code>xIE</code> 值。</p>
+</li>
+<li><p><code>xPP</code>（x=M/S）:当 <code>trap</code> 发生时用于保存 <code>trap</code> 发生之前的权限级别值。注意没有 <code>UPP</code>。因为异常只会从低权限向高权限跳转，通常低权限如<code>user</code>模式，会被置于上方，高权限如内核一般都会画在下方，这也解释了异常，中断处理为什么叫<code>trap</code>，因为是向下陷入的过程。</p>
+</li>
+<li><p>其他标志位涉及内存访问权限、虚拟内存控制等，暂不考虑。</p>
+</li>
+</ul>
+<h2 id="Trap-处理流程"><a href="#Trap-处理流程" class="headerlink" title="Trap 处理流程"></a>Trap 处理流程</h2><blockquote>
+<p>主要为 Exception，下一章详解 Interrupt。</p>
+</blockquote>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>将<code>trap</code>的基地址写入寄存器，</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="Top-Half"><a href="#Top-Half" class="headerlink" title="Top Half"></a>Top Half</h3><ol>
+<li>把 <code>mstatus</code> 的 <code>MIE</code> 值复制到 <code>MPIE</code> 中，清除 <code>mstatus</code>中的 <code>MIE</code> 标志位，效果是中断被禁止。</li>
+<li>设置<code>mepc</code>，同时<code>PC</code>被设置为 <code>mtvec</code>。（需要注意的是，对于<code>exception</code>， <code>mepc</code>指向导致异常的指令；对于 <code>interrupt</code>，它指向被中断的指令的下一条指令的位置。）</li>
+<li>根据 <code>trap</code> 的种类设置 <code>mcause</code>，并根据需要为<code>mtval</code>设置附加信息。</li>
+<li>将 <code>trap</code> 发生之前的权限模式保存在 <code>mstatus</code> 的 <code>MPP</code> 域中，再把<code>hart</code> 权限模式更改为 <code>M</code>（也就是说无论在任何 <code>Level</code> 下触发<code>trap</code>，<code>hart</code> 首先切换到 <code>Machine</code> 模式）。</li>
+</ol>
+<h3 id="Bottom-Half"><a href="#Bottom-Half" class="headerlink" title="Bottom Half"></a>Bottom Half</h3><ol>
+<li>保存（save）当前控制流的上下文信息（利用 <code>mscratch</code>）；</li>
+<li>调用 C 语言的 <code>trap handler</code>;</li>
+<li>从 <code>trap handler</code> 函数返回，<code>mepc</code>的值有可能需要调整；</li>
+<li>恢复（restore）上下文的信息；</li>
+<li>执行<code>MRET</code>指令返回到 <code>trap</code>之前的状态。</li>
+</ol>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">trap_vector</span>:<br> <span class="hljs-comment"># save context(registers).</span><br> <span class="hljs-attribute">csrrw</span> t<span class="hljs-number">6</span>, mscratch, t<span class="hljs-number">6</span> # swap t<span class="hljs-number">6</span> and mscratch<br> <span class="hljs-attribute">reg_save</span> t<span class="hljs-number">6</span><br><br> <span class="hljs-comment"># Save the actual t6 register, which we swapped into</span><br> <span class="hljs-comment"># mscratch</span><br> <span class="hljs-attribute">mv</span> t<span class="hljs-number">5</span>, t<span class="hljs-number">6</span>  # t<span class="hljs-number">5</span> points to the context of current task<br> <span class="hljs-attribute">csrr</span> t<span class="hljs-number">6</span>, mscratch # read t<span class="hljs-number">6</span> back from mscratch<br> <span class="hljs-attribute">sw</span> t<span class="hljs-number">6</span>, <span class="hljs-number">120</span>(t<span class="hljs-number">5</span>) # save t<span class="hljs-number">6</span> with t<span class="hljs-number">5</span> as base<br><br> <span class="hljs-comment"># Restore the context pointer into mscratch</span><br> <span class="hljs-attribute">csrw</span> mscratch, t<span class="hljs-number">5</span><br><br> <span class="hljs-comment"># call the C trap handler in trap.c</span><br> <span class="hljs-attribute">csrr</span> a<span class="hljs-number">0</span>, mepc<br> <span class="hljs-attribute">csrr</span> a<span class="hljs-number">1</span>, mcause<br> <span class="hljs-attribute">call</span> trap_handler<br><br> <span class="hljs-comment"># trap_handler will return the return address via a0.</span><br> <span class="hljs-attribute">csrw</span> mepc, a<span class="hljs-number">0</span><br><br> <span class="hljs-comment"># restore context(registers).</span><br> <span class="hljs-attribute">csrr</span> t<span class="hljs-number">6</span>, mscratch<br> <span class="hljs-attribute">reg_restore</span> t<span class="hljs-number">6</span><br><br> <span class="hljs-comment"># return to whatever we were doing before trap.</span><br> <span class="hljs-attribute">mret</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="退出-trap：编程调用-MRET-指令"><a href="#退出-trap：编程调用-MRET-指令" class="headerlink" title="退出 trap：编程调用 MRET 指令"></a>退出 trap：编程调用 MRET 指令</h3><p>针对不同权限级别下如何退出 trap 有各自的返回指令<code>xRET</code>（x = M/S/U）。以在 <code>M</code> 模式下执行<code>mret</code> 指令为例，会执行如下操作：</p>
+<ul>
+<li>当前 <code>Hart 的权限级别 = mstatus.MPP</code>；<code>mstatus.MPP = U</code>（如果 hart 不支持 U 则为 M）</li>
+<li><code>mstatus.MIE = mstatus.MPIE</code>; <code>mstatus.MPIE = 1</code></li>
+<li><code>pc = mepc</code></li>
+</ul>
+<h1 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h1><h2 id="中断分类"><a href="#中断分类" class="headerlink" title="中断分类"></a>中断分类</h2><ul>
+<li><p>本地（Local）中断</p>
+<ul>
+<li>软中断software interrupt</li>
+<li>定时器中断 timer interrupt</li>
+</ul>
+</li>
+<li><p>全局（Global）中断</p>
+<ul>
+<li>外部中断 externel interrupt</li>
+</ul>
+</li>
+</ul>
+<h2 id="RISC-V-中断编程中涉及的寄存器"><a href="#RISC-V-中断编程中涉及的寄存器" class="headerlink" title="RISC-V 中断编程中涉及的寄存器"></a>RISC-V 中断编程中涉及的寄存器</h2><table>
+<thead>
+<tr>
+<th align="center">寄存器</th>
+<th align="center">全称</th>
+<th align="left">用途说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">mie</td>
+<td align="center">Machine Interrupt Enable</td>
+<td align="left">用于进一步控制（打开和关闭）software interrupt/timer interrupt/external interrupt</td>
+</tr>
+<tr>
+<td align="center">mip</td>
+<td align="center">Machine Interrupt Pending</td>
+<td align="left">它列出目前已发生等待处理的中断。</td>
+</tr>
+</tbody></table>
+<h3 id="mie-Machine-Interrupt-Enable"><a href="#mie-Machine-Interrupt-Enable" class="headerlink" title="mie(Machine Interrupt Enable)"></a>mie(Machine Interrupt Enable)</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png" srcset="/img/loading.gif" lazyload></p>
+<p>打开（1）或者关闭（0）M/S/U 模式下对应的 External/Timer/Software 中断。</p>
+<h3 id="mip-Machine-Interrupt-Pending"><a href="#mip-Machine-Interrupt-Pending" class="headerlink" title="mip(Machine Interrupt Pending)"></a>mip(Machine Interrupt Pending)</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png" srcset="/img/loading.gif" lazyload></p>
+<p>获取当前 M/S/U 模式下对应的 External/Timer/Software 中断是否发生。</p>
+<h2 id="中断处理流程"><a href="#中断处理流程" class="headerlink" title="中断处理流程"></a>中断处理流程</h2><h3 id="中断处理"><a href="#中断处理" class="headerlink" title="中断处理"></a>中断处理</h3><ol>
+<li>把 <code>mstatus</code> 的 <code>MIE</code> 值复制到 <code>MPIE</code> 中，清除 <code>mstatus</code> 中的 MIE 标志位，效果是中断被禁止。</li>
+<li>当前的 <code>PC</code> 的下一条指令地址被复制到 <code>mepc</code> 中，同时 <code>PC</code> 被设置为<code>mtvec</code>。注意如果我们设置 <code>mtvec.MODE = vetcored</code>，<code>PC =mtvec.BASE + 4 × exception-code</code>。</li>
+<li>根据 <code>interrupt</code> 的种类设置 <code>mcause</code>，并根据需要为 <code>mtval</code> 设置附加信息。</li>
+<li>将 <code>trap</code> 发生之前的权限模式保存在 <code>mstatus</code> 的 <code>MPP</code> 域中，再把<code>hart</code> 权限模式更改为 <code>M</code>。</li>
+</ol>
+<h3 id="退出中断"><a href="#退出中断" class="headerlink" title="退出中断"></a>退出中断</h3><p>以在 M 模式下执行 mret 指令为例，会执行如下操作：</p>
+<ul>
+<li>当前 Hart 的权限级别 = mstatus.MPP; mstatus.MPP= U（如果 hart 不支持 U 则为 M）</li>
+<li>mstatus.MIE = mstatus.MPIE; mstatus.MPIE = 1</li>
+<li>pc = mepc</li>
+</ul>
+<h1 id="PLIC（Platform-Level-Interrupt-Controller）"><a href="#PLIC（Platform-Level-Interrupt-Controller）" class="headerlink" title="PLIC（Platform-Level Interrupt Controller）"></a>PLIC（Platform-Level Interrupt Controller）</h1><h2 id="PLIC-简介"><a href="#PLIC-简介" class="headerlink" title="PLIC 简介"></a>PLIC 简介</h2><p>HART 只能处理一个中断，PLIC 相当于一个控制中心，它通过中断类型，优先级等等来选出一个需要处理的中断。协调多个中断，服务一个 HART。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">enum</span> &#123;</span><br>    UART0_IRQ = <span class="hljs-number">10</span>, <span class="hljs-comment">//Interrupt Source ID</span><br>    RTC_IRQ = <span class="hljs-number">11</span>,<br>    VIRTIO_IRQ = <span class="hljs-number">1</span>, <span class="hljs-comment">/* 1 to 8 */</span><br>    VIRTIO_COUNT = <span class="hljs-number">8</span>, <br>    PCIE_IRQ = <span class="hljs-number">0x20</span>, <span class="hljs-comment">/* 32 to 35 */</span><br>    VIRTIO_NDEV = <span class="hljs-number">0x35</span> <span class="hljs-comment">/* Arbitrary maximum number of interrupts */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>Interrupt Source ID 范围：1 ~ 53（0x35）</li>
+<li>0 预留不用</li>
+</ul>
+<p><code>PLIC</code>本身也是一个外设，RISC-V 规范规定，<code>PLIC</code> 的寄存器编址采用内存映射（memory map）方式。每个寄存器的宽度为 32-bit。</p>
+<p>具体寄存器编址采用 <code>base + offset</code> 的格式，且 <code>base</code> 由各个特定<code>platform</code> 自己定义。针对 <code>QEMU-virt</code>，其 <code>PLIC</code> 的设计参考了<code>FU540-C000</code>，<code>base</code> 为 <code>0x0c000000</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> MemMapEntry virt_memmap[] = &#123;<br>    [VIRT_DEBUG] =       &#123;        <span class="hljs-number">0x0</span>,         <span class="hljs-number">0x100</span> &#125;,<br>    [VIRT_MROM] =        &#123;     <span class="hljs-number">0x1000</span>,        <span class="hljs-number">0xf000</span> &#125;,<br>    [VIRT_TEST] =        &#123;   <span class="hljs-number">0x100000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_RTC] =         &#123;   <span class="hljs-number">0x101000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_CLINT] =       &#123;  <span class="hljs-number">0x2000000</span>,       <span class="hljs-number">0x10000</span> &#125;,<br>    [VIRT_ACLINT_SSWI] = &#123;  <span class="hljs-number">0x2F00000</span>,        <span class="hljs-number">0x4000</span> &#125;,<br>    [VIRT_PCIE_PIO] =    &#123;  <span class="hljs-number">0x3000000</span>,       <span class="hljs-number">0x10000</span> &#125;,<br>    [VIRT_PLIC] =        &#123;  <span class="hljs-number">0xc000000</span>, VIRT_PLIC_SIZE(VIRT_CPUS_MAX * <span class="hljs-number">2</span>) &#125;,<br>    [VIRT_UART0] =       &#123; <span class="hljs-number">0x10000000</span>,         <span class="hljs-number">0x100</span> &#125;,<br>    [VIRT_VIRTIO] =      &#123; <span class="hljs-number">0x10001000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_FW_CFG] =      &#123; <span class="hljs-number">0x10100000</span>,          <span class="hljs-number">0x18</span> &#125;,<br>    [VIRT_FLASH] =       &#123; <span class="hljs-number">0x20000000</span>,     <span class="hljs-number">0x4000000</span> &#125;,<br>    [VIRT_PCIE_ECAM] =   &#123; <span class="hljs-number">0x30000000</span>,    <span class="hljs-number">0x10000000</span> &#125;,<br>    [VIRT_PCIE_MMIO] =   &#123; <span class="hljs-number">0x40000000</span>,    <span class="hljs-number">0x40000000</span> &#125;,<br>    [VIRT_DRAM] =        &#123; <span class="hljs-number">0x80000000</span>,           <span class="hljs-number">0x0</span> &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="PLIC-编程接口-寄存器"><a href="#PLIC-编程接口-寄存器" class="headerlink" title="PLIC 编程接口 - 寄存器"></a>PLIC 编程接口 - 寄存器</h2><h3 id="Priority"><a href="#Priority" class="headerlink" title="Priority"></a>Priority</h3><p>功能：设置某一路中断源的优先级<br>内存映射地址：<code>BASE + (interrupt-id) * 4</code></p>
+<ul>
+<li>每个 <code>PLIC</code> 中断源对应一个寄存器，用于配置该中断源的优先级。</li>
+<li><code>QEMU-virt</code> 支持 7 个优先级。0 表示对该中断源禁用中断。其余优先级，1 最低，7 最高。</li>
+<li>如果两个中断源优先级相同，则根据中断源的 ID 值进一步区分优先级，ID 值越小的优先级越高。</li>
+</ul>
+<h3 id="Pending"><a href="#Pending" class="headerlink" title="Pending"></a>Pending</h3><p>功能：用于指示某一路中断源是否发生<br>内存映射地址：<code>BASE + 0x1000 + ((interrupt-id) / 32) * 4</code></p>
+<ul>
+<li>每个 <code>PLIC</code> 包含 2 个 32 位的 <code>Pending</code> 寄存器，因为总共有 54 个中断源，每一个 <code>bit</code> 对应一个中断源，如果为 1 表示该中断源上发生了中断（进入<code>Pending</code> 状态），有待 <code>hart</code> 处理，否则表示该中断源上当前无中断发生。</li>
+<li><code>Pending</code> 寄存器中断的 <code>Pending</code> 状态可以通过<code>claim</code> 方式清除。</li>
+<li>第一个 <code>Pending</code> 寄存器的第 0 位对应不存在的 0 号中断源，其值永远为 0。</li>
+</ul>
+<h3 id="Enable"><a href="#Enable" class="headerlink" title="Enable"></a>Enable</h3><p>功能：针对某个 <code>hart</code> 开启或者关闭某一路中断源<br>内存映射地址：<code>BASE + 0x2000 + (hart) * 0x80</code></p>
+<ul>
+<li>每个 <code>Hart</code> 有 2 个 <code>Enable</code> 寄存器（<code>Enable1</code> 和 <code>Enable2</code>）用于针对该<code>Hart</code> 启动或者关闭某路中断源。</li>
+<li>每个中断源对应 <code>Enable</code> 寄存器的一个 <code>bit</code>，其中<code>Enable1</code> 负责控制 1 ~ 31 号中断源；<code>Enable2</code> 负责控制 <code>32 ~ 53</code> 号中断源。将对应的 <code>bit</code> 位设置为 1 表示使能该中断源，否则表示关闭该中断源。</li>
+</ul>
+<h3 id="Threshold"><a href="#Threshold" class="headerlink" title="Threshold"></a>Threshold</h3><p>功能：针对某个 hart 设置中断源优先级的阈值<br>内存映射地址：<code>BASE + 0x200000 + (hart) * 0x1000</code></p>
+<ul>
+<li>每个 <code>Hart</code> 有 1 个 <code>Threshold</code> 寄存器用于设置中断优先级的阈值。</li>
+<li>所有小于或者等于（&lt;=）该阈值的中断源即使发生了也会被 <code>PLIC</code> 丢弃。特别地，当阈值为 0 时允许所有中断源上发生的中断；当阈值为 7 时丢弃所有中断源上发生的中断。</li>
+</ul>
+<h3 id="Claim-Complete"><a href="#Claim-Complete" class="headerlink" title="Claim/Complete"></a>Claim/Complete</h3><p>功能：如下<br>内存映射地址：<code>BASE + 0x200004 + (hart) * 0x1000</code></p>
+<ul>
+<li><code>Claim</code> 和 <code>Complete</code> 是同一个寄存器，每个 <code>Hart</code> 一个。</li>
+<li>对该寄存器执行读操作称之为 <code>Claim</code>，即获取当前发生的最高优先级的中断源<code>ID</code>。<code>Claim</code> 成功后会清除对应的 <code>Pending</code> 位。</li>
+<li>对该寄存器执行写操作称之为 <code>Complete</code>。所谓 <code>Complete</code>指的是通知<code>PLIC</code> 对该路中断的处理已经结束。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">external_interrupt_handler</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-keyword">int</span> irq = plic_claim(); <span class="hljs-comment">//</span><br><br> <span class="hljs-keyword">if</span> (irq == UART0_IRQ)&#123;<br>        uart_isr();<br> &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (irq) &#123;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;unexpected interrupt irq = %d\n&quot;</span>, irq);<br> &#125;<br> <br> <span class="hljs-keyword">if</span> (irq) &#123;<br>  plic_complete(irq); <span class="hljs-comment">//</span><br> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="CLINT-（Core-Local-INTerruptor）"><a href="#CLINT-（Core-Local-INTerruptor）" class="headerlink" title="CLINT （Core Local INTerruptor）"></a>CLINT （Core Local INTerruptor）</h1><p>定时器中断，属于本地中断的一种，由芯片内部<code>CLINT</code>设备产生的中断。</p>
+<ul>
+<li>RISC-V 规范规定，CLINT 的寄存器编址采用内存映射（memory map）方式。</li>
+<li>具体寄存器编址采用<code>base + offset</code>的格式，且 <code>base</code> 由各个特定 <code>platform</code> 自己定义。针对 <code>QEMU-virt</code>，其 CLINT 的设计参考了 <code>SFIVE</code>，<code>base</code> 为 <code>0x2000000</code>。</li>
+</ul>
+<h2 id="CLINT-编程接口-寄存器-Timer-部分"><a href="#CLINT-编程接口-寄存器-Timer-部分" class="headerlink" title="CLINT 编程接口 - 寄存器 (Timer 部分)"></a>CLINT 编程接口 - 寄存器 (Timer 部分)</h2><h3 id="mtime"><a href="#mtime" class="headerlink" title="mtime"></a>mtime</h3><p>功能：<code>real-time</code> 计数器（counter）<br>内存映射地址：<code>BASE + 0xbff8</code></p>
+<ul>
+<li>由晶振产生，系统全局唯一，在 <code>RV32</code> 和 <code>RV64</code> 上都是 64-bit。系统必须保证该计数器的值始终按照一个固定的频率递增。</li>
+<li>上电复位时，硬件负责将 <code>mtime</code> 的值恢复为 0。</li>
+</ul>
+<h3 id="mtimecmp"><a href="#mtimecmp" class="headerlink" title="mtimecmp"></a>mtimecmp</h3><p>功能：定时器比较寄存器<br>内存映射地址：<code>BASE + 0x4000 + (hart) * 8)</code></p>
+<ul>
+<li><p>每个 <code>hart</code> 一个 <code>mtimecmp</code> 寄存器，64-bit。</p>
+</li>
+<li><p>上电复位时，系统不负责设置 mt`imecmp 的初值。</p>
+</li>
+<li><p>当<code>mtime &gt;= mtimecmp</code> 时，<code>CLINT</code> 会产生一个 <code>timer</code> 中断。如果要使能该中断需要保证全局中断打开并且<code>mie.MTIE</code> 标志位置 <code>1</code>。</p>
+</li>
+<li><p>当 <code>timer</code> 中断发生时，<code>hart</code> 会设置 <code>mip.MTIP</code>，程序可以在 <code>mtimecmp</code> 中写入新的值清除<code>mip.MTIP</code>。</p>
+</li>
+</ul>
+<h2 id="时钟节拍-tick"><a href="#时钟节拍-tick" class="headerlink" title="时钟节拍 tick"></a>时钟节拍 tick</h2><ul>
+<li>操作系统中最小的时间单位；</li>
+<li><code>Tick</code> 的单位（周期）由硬件定时器的周期决定<br>（通常为 1 ~ 100ms）；</li>
+<li><code>Tick</code> 周期越小，也就是<code>1s</code>内产生的中断越多，系统的精度越高，但开销越大。</li>
+</ul>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/RISC-V-%E5%85%A5%E9%97%A8/" class="category-chain-item">RISC-V 入门</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/RISCV/">#RISCV</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>RISC-V 入门-Trap</div>
+      <div>http://example.com/2021/12/30/RISC-V入门-Trap和Exception/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年12月30日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/01/05/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/" title="解决 unable to install libpng12.so.0">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">解决 unable to install libpng12.so.0</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/24/VSCode%E4%BD%BF%E7%94%A8sftp%E6%8F%92%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E8%87%B3%E5%B1%80%E5%9F%9F%E7%BD%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="VSCode 使用 sftp 插件上传本地文件至局域网服务器">
+                        <span class="hidden-mobile">VSCode 使用 sftp 插件上传本地文件至局域网服务器</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'bb476931a0f70d2f129b32a4e86d123b'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
