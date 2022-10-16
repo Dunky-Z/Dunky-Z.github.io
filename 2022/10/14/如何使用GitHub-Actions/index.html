@@ -1,0 +1,943 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="简介GitHub Actions 是 GitHub 在 2018 年推出的持续集成服务。它可以自动完成一些开发周期内的任务，如 Push 代码时自动编译，Pull 代码时自动执行测试脚本等等。 我了解 GitHub Actions 的契机是，我在 GitHub 上保存了一些 Markdown 文档，我希望每次更新文档后自动使用 Pandoc 转换成 PDF 文档。接下来我们一起学习如何通过 Git">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用 GitHub Actions">
+<meta property="og:url" content="http://example.com/2022/10/14/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8GitHub-Actions/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="简介GitHub Actions 是 GitHub 在 2018 年推出的持续集成服务。它可以自动完成一些开发周期内的任务，如 Push 代码时自动编译，Pull 代码时自动执行测试脚本等等。 我了解 GitHub Actions 的契机是，我在 GitHub 上保存了一些 Markdown 文档，我希望每次更新文档后自动使用 Pandoc 转换成 PDF 文档。接下来我们一起学习如何通过 Git">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/f6baead7ab50e1db5ce3611a0525f833.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/0a24d8bcecc9d210b4e6b75b2fccae0b.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/69370e917f9c35963a2343176ecf0eea.png">
+<meta property="article:published_time" content="2022-10-14T14:08:54.000Z">
+<meta property="article:modified_time" content="2022-10-16T11:55:53.964Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Efficiency">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="Github">
+<meta property="article:tag" content="CI">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>如何使用 GitHub Actions - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">如何使用 GitHub Actions</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-10-14 22:08" pubdate>
+          2022年10月14日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          4.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">如何使用 GitHub Actions</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>GitHub Actions 是 GitHub 在 2018 年推出的<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html">持续集成服务</a>。它可以自动完成一些开发周期内的任务，如 Push 代码时自动编译，Pull 代码时自动执行测试脚本等等。</p>
+<p>我了解 GitHub Actions 的契机是，我在 GitHub 上保存了一些 Markdown 文档，我希望每次更新文档后自动使用 Pandoc 转换成 PDF 文档。接下来我们一起学习如何通过 GitHub Actions 实现这样的需求。</p>
+<p>首先我们先直观的了解一下它在 GitHub 的位置，如果打开一个仓库，它有图中绿色对号√，或者红色叉号×，说明这个项目配置了 GitHub Actions，绿色表示自动化的流程运行成功了，红色表示失败了。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们点开<code>Actions</code>按钮就可以查看具体的任务详情。下面我们先学习如何配置一个简单的 GitHub Actions。</p>
+<h1 id="配置-GitHub-Actions"><a href="#配置-GitHub-Actions" class="headerlink" title="配置 GitHub Actions"></a>配置 GitHub Actions</h1><p>GitHub Actions 可以简单理解为一些自动化脚本，工具，目的就是为了减少重复工作，所以这些工具都可以做成普适性的工具。而 GitHub 官方就开放了一个这类工具的<a target="_blank" rel="noopener" href="https://github.com/marketplace">市场</a>，我们可以在上面搜索自己想要的工具。因为初学 GitHub Actions 所以也不知道怎么写配置文件，我们可以直接搜索一个并应用它，看看别人是怎么写的。</p>
+<p>我们进入一个自己的仓库，点击<code>Actions</code>，搜索框中搜索<code>PDF</code>，在搜索结果中找到<a target="_blank" rel="noopener" href="https://github.com/marketplace/actions/create-pdf">Create PDF · Actions</a>这个工具。如果搜索到点击<code>Configure</code>。如果显示未找到，则点击<code>set up a workflow yourself</code>，同样搜索<code>PDF</code>。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/f6baead7ab50e1db5ce3611a0525f833.png" srcset="/img/loading.gif" lazyload></p>
+<p>打开<a target="_blank" rel="noopener" href="https://github.com/marketplace/actions/create-pdf">详情页面</a>，拉到底，将<code>Example usage</code>。里的内容复制到编辑框中。点击右上角<code>Start commit</code>将会把我们新建的<code>main.yml</code>提交到仓库中。这就相当于创建了一个生成 PDF 的 GitHub Actions。当然每个 Actions 都有一些使用要求，比如这里还要根据介绍，创建几个文件夹，比如从哪个文件夹获取源文件，生成后的 PDF 又会放到哪个文件夹等。这里就不再介绍，我们先了解如何创建一个 Actions。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/0a24d8bcecc9d210b4e6b75b2fccae0b.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/69370e917f9c35963a2343176ecf0eea.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="Workflow-配置"><a href="#Workflow-配置" class="headerlink" title="Workflow 配置"></a>Workflow 配置</h1><p>GitHub Actions 的配置文件叫做 workflow 文件，存放在代码仓库的.github/workflows 目录。</p>
+<p>workflow 文件采用 YAML 格式，文件名可以任意取，但是后缀名统一为.yml or .yaml，比如 foo.yml or foo.yaml。一个库可以有多个 workflow 文件。GitHub 只要发现.github/workflows 目录里面有.yml or .yaml 文件，就会自动运行该文件（并行）。</p>
+<p>接下来我们逐个参数来解释都有哪些功能。</p>
+<h2 id="on"><a href="#on" class="headerlink" title="on"></a>on</h2><p>触发 workflow 的 GitHub 事件的名称。比如<code>push</code>代码时触发，其他人<code>fork</code>代码仓时触发等等。</p>
+<p>可以只有一个事件触发，</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">on:</span> <span class="hljs-string">push</span><br></code></pre></td></tr></table></figure>
+
+<p>也可有多个事件触发，使用列表列举，</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">on:</span> [<span class="hljs-string">push</span>, <span class="hljs-string">fork</span>]<br></code></pre></td></tr></table></figure>
+
+<p>所有支持的事件列表，请查看<a target="_blank" rel="noopener" href="https://docs.github.com/cn/actions/using-workflows/events-that-trigger-workflows">官方文档</a>。</p>
+<h3 id="on-lt-push-fork-gt-lt-tags-branches-gt"><a href="#on-lt-push-fork-gt-lt-tags-branches-gt" class="headerlink" title="on.&lt;push|fork&gt;.&lt;tags|branches&gt;"></a>on.&lt;push|fork&gt;.&lt;tags|branches&gt;</h3><p><strong>注意</strong>：从这里开始就会出现一个字段下有子字段，每个点号<code>.</code>分割一个子字段。如<code>push</code>或者<code>fork</code>可以作为<code>on</code>的子字段，<code>tags</code>或者<code>branches</code>可以作为<code>push</code>或者<code>fork</code>的子字段。在<code>yaml</code>文件中，缩进很重要，每个缩进都表示是从属关系，表示是该字段的子字段。千万要注意缩进关系，如果缩进出错，那么将无法解析<code>yaml</code>文件。</p>
+<p>指定触发事件时，可以限定分支或标签。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">on:</span><br>  <span class="hljs-attr">push:</span><br>    <span class="hljs-attr">branches:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">master</span><br></code></pre></td></tr></table></figure>
+
+
+<p>上面代码指定，只有 master 分支发生 push 事件时，才会触发 workflow。</p>
+<h2 id="name"><a href="#name" class="headerlink" title="name"></a>name</h2><p>工作流程的名称。GitHub 在仓库的操作页面上显示工作流程的名称。如果省略 name，GitHub 将其设置为相对于仓库根目录的工作流程文件路径。</p>
+<h2 id="jobs"><a href="#jobs" class="headerlink" title="jobs"></a>jobs</h2><p>workflow 运行包括一项或多项 jobs。jobs 默认是并行运行。要按顺序运行作业，可以使用 <code>&lt;job_id&gt;.needs</code> 关键词在其他 job 上定义依赖项。</p>
+<p>每个作业在 <code>runs-on</code> 指定的运行器环境中运行。</p>
+<h3 id="jobs-1"><a href="#jobs-1" class="headerlink" title="jobs."></a>jobs.<job_id></h3><p>jobs 中的每个任务都有一个<code>&lt;job_id&gt;</code> ，且其必须为 jobs 对象中<strong>唯一的字符串键值</strong>。<code>&lt;job_id&gt;</code>必须以字母或<code>_</code>开头，并且只能包含字母数字字符、<code>-</code>或<code>_</code>。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">first_job:</span>  <span class="hljs-comment"># &lt;job_id&gt;，任务 id</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">My</span> <span class="hljs-string">first</span> <span class="hljs-string">job</span><br>  <span class="hljs-attr">second_job:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">My</span> <span class="hljs-string">second</span> <span class="hljs-string">job</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="jobs-runs-on"><a href="#jobs-runs-on" class="headerlink" title="jobs..runs-on"></a>jobs.<job_id>.runs-on</h3><p><code>runs-on</code> 字段指定运行所需要的虚拟机环境。它是必填字段。目前可用的虚拟机如下。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-string">ubuntu-latest，ubuntu-18.04或ubuntu-16.04</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">windows-latest，windows-2019或windows-2016</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">macOS-latest或macOS-10.14</span><br></code></pre></td></tr></table></figure>
+
+<p>下面代码指定虚拟机环境为 ubuntu-18.04。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-18.04</span><br></code></pre></td></tr></table></figure>
+
+
+<h3 id="jobs-name"><a href="#jobs-name" class="headerlink" title="jobs..name"></a>jobs.<job_id>.name</h3><p>workflow 文件的主体是 jobs 字段，表示要执行的一项或多项任务。</p>
+<p><code>job_id</code> 里面的 <code>name</code> 字段是任务的说明。它可以在网页端的 UI 上显示。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">first_job:</span>  <br>    <span class="hljs-attr">name:</span> <span class="hljs-string">My</span> <span class="hljs-string">first</span> <span class="hljs-string">job</span>  <span class="hljs-comment"># &lt;job_name&gt;，任务名称</span><br>  <span class="hljs-attr">second_job:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">My</span> <span class="hljs-string">second</span> <span class="hljs-string">job</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="jobs-needs"><a href="#jobs-needs" class="headerlink" title="jobs..needs"></a>jobs.<job_id>.needs</h3><p>needs 字段指定当前任务的依赖关系，即运行顺序。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">job1:</span><br>  <span class="hljs-attr">job2:</span><br>    <span class="hljs-attr">needs:</span> <span class="hljs-string">job1</span><br>  <span class="hljs-attr">job3:</span><br>    <span class="hljs-attr">needs:</span> [<span class="hljs-string">job1</span>, <span class="hljs-string">job2</span>]<br></code></pre></td></tr></table></figure>
+
+<p>上面代码中，job1 必须先于 job2 完成，而 job3 等待 job1 和 job2 的完成才能运行。因此，这个 workflow 的运行顺序依次为：job1、job2、job3。</p>
+<h3 id="jobs-steps"><a href="#jobs-steps" class="headerlink" title="jobs..steps"></a>jobs.<job_id>.steps</h3><p><code>steps</code> 字段指定每个 Job 的运行步骤，可以包含一个或多个步骤。每个步骤都可以指定以下三个字段。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-string">jobs.&lt;job_id&gt;.steps.name：步骤名称。</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">jobs.&lt;job_id&gt;.steps.run：该步骤运行的命令或者</span> <span class="hljs-string">action。</span><br><span class="hljs-bullet">-</span> <span class="hljs-string">jobs.&lt;job_id&gt;.steps.env：该步骤所需的环境变量。</span><br></code></pre></td></tr></table></figure>
+
+<p>下面是一个完整的 workflow 文件的范例。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">Greeting</span> <span class="hljs-string">from</span> <span class="hljs-string">Mona</span><br><span class="hljs-attr">on:</span> <span class="hljs-string">push</span><br><br><span class="hljs-attr">jobs:</span><br>  <span class="hljs-attr">my-job:</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">My</span> <span class="hljs-string">Job</span><br>    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-latest</span><br>    <span class="hljs-attr">steps:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Print</span> <span class="hljs-string">a</span> <span class="hljs-string">greeting</span><br>        <span class="hljs-attr">env:</span><br>          <span class="hljs-attr">MY_VAR:</span> <span class="hljs-string">Hi</span> <span class="hljs-string">there!</span> <span class="hljs-string">My</span> <span class="hljs-string">name</span> <span class="hljs-string">is</span><br>          <span class="hljs-attr">FIRST_NAME:</span> <span class="hljs-string">Mona</span><br>          <span class="hljs-attr">MIDDLE_NAME:</span> <span class="hljs-string">The</span><br>          <span class="hljs-attr">LAST_NAME:</span> <span class="hljs-string">Octocat</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br>          <span class="hljs-string">echo</span> <span class="hljs-string">$MY_VAR</span> <span class="hljs-string">$FIRST_NAME</span> <span class="hljs-string">$MIDDLE_NAME</span> <span class="hljs-string">$LAST_NAME.</span><br></code></pre></td></tr></table></figure>
+
+<p>上面代码中，steps 字段只包括一个步骤。该步骤先注入四个环境变量，然后执行一条 Bash 命令。</p>
+<h3 id="jobs-steps-uses"><a href="#jobs-steps-uses" class="headerlink" title="jobs..steps[*].uses"></a>jobs.<job_id>.steps[*].uses</h3><p>选择一个 action，可以理解为若干 steps.run，有利于代码复用。这也是 github action 最主要的功能。</p>
+<p>比如最常用的，下载本仓库的代码到工作区，就是使用的一个 action 完成的：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">steps:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Check</span> <span class="hljs-string">out</span> <span class="hljs-string">Git</span> <span class="hljs-string">repository</span><br>    <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：<code>@v2</code> 什么意思？<br>表示 Action 的版本。我们如果不带版本号的话，就是默认使用最新版本。Github 官方强烈要求我们带上版本号。这样子的话，我们就不会出现：写好一个 Workflow，但是由于某个 Action 的作者一更新，我们的 Workflow 就崩了的问题</p>
+</blockquote>
+<h3 id="jobs-steps-run"><a href="#jobs-steps-run" class="headerlink" title="jobs..steps.run"></a>jobs.<job_id>.steps.run</h3><p>在 shell 中执行的命令：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">steps:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">create</span> <span class="hljs-string">dir</span><br>        <span class="hljs-attr">id:</span> <span class="hljs-string">dir</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br>            <span class="hljs-string">mkdir</span> <span class="hljs-string">output</span>  <span class="hljs-comment"># create output dir</span><br></code></pre></td></tr></table></figure>
+
+<p>以上配置是在下载完本仓库的代码后，在仓库根目录新建一个<code>output</code>文件夹。注意<code>run:</code>后的<code>|</code>表示可以多行命令。如果没有<code>|</code>表示只能执行一条命令。</p>
+<h3 id="jobs-steps-working-directory"><a href="#jobs-steps-working-directory" class="headerlink" title="jobs..steps.working-directory"></a>jobs.<job_id>.steps.working-directory</h3><p>用来指定在<code>run</code>命令在哪执行。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Create</span> <span class="hljs-string">dir</span><br>  <span class="hljs-attr">run:</span> <span class="hljs-string">mkdir</span> <span class="hljs-string">output</span><br>  <span class="hljs-attr">working-directory:</span> <span class="hljs-string">./build</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="jobs-steps-shell"><a href="#jobs-steps-shell" class="headerlink" title="jobs..steps.shell"></a>jobs.<job_id>.steps.shell</h3><p>用来指定 shell 类型，如 Python，bash，powershell 等。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">steps:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Display</span> <span class="hljs-string">the</span> <span class="hljs-string">path</span><br>    <span class="hljs-attr">run:</span> <span class="hljs-string">echo</span> <span class="hljs-string">$PATH</span><br>    <span class="hljs-attr">shell:</span> <span class="hljs-string">bash</span><br></code></pre></td></tr></table></figure>
+
+<p>所有支持的类型请查看<a target="_blank" rel="noopener" href="https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell">官方文档</a>。</p>
+<h3 id="如何跳过-GitHub-Actions"><a href="#如何跳过-GitHub-Actions" class="headerlink" title="如何跳过 GitHub Actions"></a>如何跳过 GitHub Actions</h3><p>在 commit message 中只要包含了下面几个关键词就会跳过 Github Actions。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml">[<span class="hljs-string">skip</span> <span class="hljs-string">ci</span>]<br>[<span class="hljs-string">ci</span> <span class="hljs-string">skip</span>]<br>[<span class="hljs-literal">no</span> <span class="hljs-string">ci</span>]<br>[<span class="hljs-string">skip</span> <span class="hljs-string">actions</span>]<br>[<span class="hljs-string">actions</span> <span class="hljs-string">skip</span>]<br></code></pre></td></tr></table></figure>
+
+<h1 id="实例：自动使用-Pandoc-将-Markdown-文件转换为-PDF"><a href="#实例：自动使用-Pandoc-将-Markdown-文件转换为-PDF" class="headerlink" title="实例：自动使用 Pandoc 将 Markdown 文件转换为 PDF"></a>实例：自动使用 Pandoc 将 Markdown 文件转换为 PDF</h1><p>以<a target="_blank" rel="noopener" href="https://github.com/Dunky-Z/uefi-spec-zh">Dunky-Z/uefi-spec-zh</a>项目中使用的 GitHub Actions 为例，解释如何实现将 Markdown 文件转换为 PDF。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># CI 名为 MPPL</span><br><span class="hljs-attr">name:</span> <span class="hljs-string">MPPL</span><br><br><span class="hljs-comment"># 在 Push 代码时触发 CI</span><br><span class="hljs-attr">on:</span> <span class="hljs-string">push</span><br><br><span class="hljs-attr">jobs:</span><br>  <span class="hljs-comment"># 任务名称为 convert_via_pandoc</span><br>  <span class="hljs-attr">convert_via_pandoc:</span><br>    <span class="hljs-comment"># 在 ubuntu-latest 系统上运行</span><br>    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-latest</span><br>    <span class="hljs-attr">steps:</span><br>      <span class="hljs-comment"># 步骤一：下载最新代码</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span><br>      <span class="hljs-comment"># 步骤二：在项目根目录建立 output 文件夹放生成的 PDF 文件</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">create</span> <span class="hljs-string">file</span> <span class="hljs-string">list</span><br>        <span class="hljs-attr">id:</span> <span class="hljs-string">files_list</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          mkdir output  # create output dir</span><br><span class="hljs-string"></span>      <span class="hljs-comment"># 步骤三：更新项目的子模块</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Git</span> <span class="hljs-string">Sumbodule</span> <span class="hljs-string">Update</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          git submodule update --init --remote --recursive</span><br><span class="hljs-string"></span>      <span class="hljs-comment"># 步骤四：为运行的系统中安装需要的字体，因为原系统没有需要的中文字体</span><br>      <span class="hljs-comment"># 字体来源为项目目录的MPPL/fonts</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">add</span> <span class="hljs-string">fonts</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          sudo apt-get install ttf-mscorefonts-installer</span><br><span class="hljs-string">          sudo apt-get install fontconfig</span><br><span class="hljs-string">          fc-list :lang=zh</span><br><span class="hljs-string">          ls -lh /usr/share/fonts/</span><br><span class="hljs-string">          cp -rf ./MPPL/fonts/* /usr/share/fonts/</span><br><span class="hljs-string">          mkfontscale</span><br><span class="hljs-string">          mkfontdir</span><br><span class="hljs-string">          fc-cache</span><br><span class="hljs-string">          fc-list</span><br><span class="hljs-string"></span>      <span class="hljs-comment"># 步骤五：安装 pandoc 和 texlive</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">install</span> <span class="hljs-string">pandoc</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          sudo apt-get update</span><br><span class="hljs-string">          sudo apt-get install texlive-full</span><br><span class="hljs-string">          sudo apt-get install pandoc</span><br><span class="hljs-string">          sudo apt-get clean</span><br><span class="hljs-string"></span>      <span class="hljs-comment"># 步骤六：使用 pandoc 命令生成 pdf</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">build</span> <span class="hljs-string">pdf</span><br>        <span class="hljs-attr">run:</span> <span class="hljs-string">|</span><br><span class="hljs-string">          cd src</span><br><span class="hljs-string">          pandoc -f  markdown-auto_identifiers  --listings --pdf-engine=xelatex --template=../MPPL/templates/mppl.tex  --output=../output/UEFI规范-中文.pdf *.md</span><br><span class="hljs-string"></span>      <span class="hljs-comment"># 步骤七：将生成的结果上传到 GitHub</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/upload-artifact@master</span><br>        <span class="hljs-attr">with:</span><br>          <span class="hljs-attr">name:</span> <span class="hljs-string">output</span><br>          <span class="hljs-attr">path:</span> <span class="hljs-string">output</span><br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Efficiency/">#Efficiency</a>
+      
+        <a href="/tags/Git/">#Git</a>
+      
+        <a href="/tags/Github/">#Github</a>
+      
+        <a href="/tags/CI/">#CI</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>如何使用 GitHub Actions</div>
+      <div>http://example.com/2022/10/14/如何使用GitHub-Actions/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年10月14日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/10/15/%E8%A7%A3%E5%86%B3VSCode%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5Error-WebSocket-close-with-status-code-1006/" title="解决 VSCode 远程登录失败 Error: WebSocket close with status code 1006">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">解决 VSCode 远程登录失败 Error: WebSocket close with status code 1006</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/10/10/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/" title="加密算法总结">
+                        <span class="hidden-mobile">加密算法总结</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: 'b4d6c5a7c3f42b16b0d53336bdbee6a1'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
