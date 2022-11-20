@@ -19,27 +19,24 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta name="description" content="QEMU 模拟外设的原理QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。QEMU 的模拟外设的原理很简单：硬件即内存。要在 QEMU 上模拟某个外设，思路就是：  CPU 读某个地址时，QEMU 模拟外设的行为，把数据返回给 CPU CPU 写某个地址时，QEMU 获得数据，用来模拟外设的行为。即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。  以 GPIO 为例：">
+    <meta name="description" content="转载自huth (Thomas Huth)的一篇文章，原文已经 404，从网页快照中找回的文章。 Note that this is a blog post for (new) QEMU developers. If you are just interested in using QEMU, you can certainly skip this text. Otherwise, in case">
 <meta property="og:type" content="article">
-<meta property="og:title" content="QEMU 源码分析-外设模拟（以 GPIO 为例）">
-<meta property="og:url" content="http://example.com/2021/11/11/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%A4%96%E8%AE%BE%E6%A8%A1%E6%8B%9F%EF%BC%88%E4%BB%A5GPIO%E4%B8%BA%E4%BE%8B%EF%BC%89/index.html">
+<meta property="og:title" content="QEMU&#39;s instance_init() vs. realize()">
+<meta property="og:url" content="http://example.com/2022/11/01/QEMU-s-instance-init-vs-realize/index.html">
 <meta property="og:site_name" content="如云泊">
-<meta property="og:description" content="QEMU 模拟外设的原理QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。QEMU 的模拟外设的原理很简单：硬件即内存。要在 QEMU 上模拟某个外设，思路就是：  CPU 读某个地址时，QEMU 模拟外设的行为，把数据返回给 CPU CPU 写某个地址时，QEMU 获得数据，用来模拟外设的行为。即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。  以 GPIO 为例：">
+<meta property="og:description" content="转载自huth (Thomas Huth)的一篇文章，原文已经 404，从网页快照中找回的文章。 Note that this is a blog post for (new) QEMU developers. If you are just interested in using QEMU, you can certainly skip this text. Otherwise, in case">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png">
-<meta property="article:published_time" content="2021-11-11T02:11:32.000Z">
-<meta property="article:modified_time" content="2022-10-15T03:14:29.437Z">
+<meta property="article:published_time" content="2022-11-01T01:51:28.000Z">
+<meta property="article:modified_time" content="2022-11-20T07:03:29.699Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="QEMU">
-<meta property="article:tag" content="GPIO">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>QEMU 源码分析-外设模拟（以 GPIO 为例） - 如云泊</title>
+  <title>QEMU&#39;s instance_init() vs. realize() - 如云泊</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -215,7 +212,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">QEMU 源码分析-外设模拟（以 GPIO 为例）</span>
+            <span id="subtitle">QEMU's instance_init() vs. realize()</span>
           
         </div>
 
@@ -231,8 +228,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2021-11-11 10:11" pubdate>
-          2021年11月11日 上午
+        <time datetime="2022-11-01 09:51" pubdate>
+          2022年11月1日 上午
         </time>
       </span>
     
@@ -244,7 +241,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          1.2k 字
+          5.8k 字
         
       </span>
     
@@ -255,7 +252,7 @@
         
         
         
-          11 分钟
+          49 分钟
         
       </span>
     
@@ -383,32 +380,25 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">QEMU 源码分析-外设模拟（以 GPIO 为例）</h1>
+            <h1 style="display: none">QEMU&#39;s instance_init() vs. realize()</h1>
             
             <div class="markdown-body">
               
-              <h2 id="QEMU-模拟外设的原理"><a href="#QEMU-模拟外设的原理" class="headerlink" title="QEMU 模拟外设的原理"></a>QEMU 模拟外设的原理</h2><p>QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。<br>QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。<br>要在 QEMU 上模拟某个外设，思路就是：</p>
+              <p>转载自<a target="_blank" rel="noopener" href="https://github.com/huth">huth (Thomas Huth)</a>的一篇文章，原文已经 404，从网页快照中找回的文章。</p>
+<p>Note that this is a blog post for (new) QEMU developers. If you are just interested in using QEMU, you can certainly skip this text. Otherwise, in case you have ever been in touch with the QEMU device model (“qdev”), you are likely aware of the basic qdev code boilerplate already:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_realize</span><span class="hljs-params">(DeviceState *dev, Error **errp)</span></span><br><span class="hljs-function"></span>&#123;<br>    <br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_instance_init</span><span class="hljs-params">(Object *obj)</span></span><br><span class="hljs-function"></span>&#123;<br>    <br>&#125;<br><br><span class="hljs-keyword">static</span> Property mydev_properties[] = &#123;<br>    DEFINE_PROP_xxx(<span class="hljs-string">&quot;myprop&quot;</span>, MyDevState, field, ...),<br>    <br>    DEFINE_PROP_END_OF_LIST(),<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_class_init</span><span class="hljs-params">(ObjectClass *oc, <span class="hljs-keyword">void</span> *data)</span></span><br><span class="hljs-function"></span>&#123;<br>    DeviceClass *dc = DEVICE_CLASS(oc);<br><br>    dc-&gt;realize = mydev_realize;<br>    dc-&gt;desc = <span class="hljs-string">&quot;My cool device&quot;</span>;<br>    dc-&gt;props = mydev_properties;<br>    <br>&#125;<br><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo mydev_info = &#123;<br>    .name          = TYPE_MYDEV,<br>    .parent        = TYPE_SYS_BUS_DEVICE,  <br>    .instance_size = <span class="hljs-keyword">sizeof</span>(mydev_state),<br>    .instance_init = mydev_instance_init,<br>    .class_init    = mydev_class_init,<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_register_types</span><span class="hljs-params">(<span class="hljs-keyword">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    type_register_static(&amp;mydev_info);<br>&#125;<br><br>type_init(mydev_register_types)<br></code></pre></td></tr></table></figure>
+
+<p>There are three different initialization functions involved here, the <strong>class_init</strong>, the <strong>instance_init</strong> and the <strong>realize</strong> function. While it is quite obvious to distinguish the <em>class_init</em> function from the two others (it is used for initializing the class data, not the data that is used for an instance … this is similar to the object model with classes and instances in C++), I initially always wondered about the difference between the <em>instance_init()</em> and the <em>realize()</em> functions. Having fixed quite a lot of related bugs in the past months in the QEMU code base, I now know that a lot of other people are also not properly aware of the difference here, so I think it is now time to write down some information that I’m now aware of, to make sure that I don’t forget about this again, and maybe help others to avoid related bugs in the future ;-)</p>
+<p>First it is of course always a good idea to have a look at the documentation. While the <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l427">documentation of </a><a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l427"><em>TypeInfo</em></a> (where <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l434"><em>instance_init()</em></a> is defined) is not very helpful to understand the differences, the <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l40">documentation of </a><a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l40"><em>DeviceClass</em></a> (where <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l43"><em>realize()</em></a> is defined) has some more useful information: You can learn here that the object instantiation is done first, before the device is realized, i.e. the <em>instance_init()</em> function is called first, and the <em>realize()</em> function is called afterwards. The former must not fail, while the latter can return an error to its caller via a pointer to an <em>“Error”</em> object pointer.</p>
+<p>So the basic idea here is that device objects are first instantiated, then these objects can be inspected for their interfaces and their creators can set up their properties to configure their settings and wire them up with other devices, before the device finally becomes “active” by being <em>realized</em>. It is important here to notice that <strong>devices can be instantiated (and also finalized) <em><strong><strong>without</strong></strong></em> being realized</strong>! This happens for example if the device is introspected: If you enter for example <code>device_add xyz,help</code> at the HMP monitor, or if you send the <code>device-list-properties</code> QOM command to QEMU to retrieve the device’s properties, QEMU creates a temporary instance of the device to query the properties of the object, without realizing it. The object gets destroyed (“finalized”) immediately afterwards.</p>
+<p>Knowing this, you can avoid a set of bugs which could be found with a couple of devices in the past:</p>
 <ul>
-<li>CPU 读某个地址时，QEMU 模拟外设的行为，把数据返回给 CPU</li>
-<li>CPU 写某个地址时，QEMU 获得数据，用来模拟外设的行为。<br>即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。</li>
+<li>If you want your device to provide properties for other parts of the QEMU code or for the users, and you want to add those properties via one of the many object_property_add*() functions of QEMU (instead of using the <em>“props”</em> field of the <em>DeviceClass</em>), then you should do this in the <em>instance_init()</em> and not in the <em>realize()</em> function. Otherwise the properties won’t show up when the user runs <code>--device xyz,help</code> or the <code>device-list-properties</code> QOM command to get some information about your device.</li>
+<li><em>instance_init()</em> functions must really never fail, i.e. also not call <em>abort()</em> or <em>exit()</em>. Otherwise QEMU can terminate unexpectedly when a user simply wanted to have a look at the list of device properties with <code>device_add xyz,help</code> or the <code>device-list-properties</code> QOM command. If your device cannot work in certain circumstances, check for the error condition in the <em>realize()</em> function instead and return with an appropriate error there.</li>
+<li>Never assume that your device is always instantiated only with the machine that it was designed for. It’s of course a good idea to set the <em>“user_creatable = false”</em> flag in the <em>DeviceClass</em> of your device if your device cannot be plugged in arbitrary machines. But device introspection can still happen at any time, with any machine. So if you wrote a device called “mydev-a” that only works with <code>--machine A</code>, the user still can start QEMU with the option <code>--machine B</code> instead and then run <code>device_add mydev-a,help</code> or the <code>device-list-properties</code> QOM command. The <em>instance_init()</em> function of your device will be called to create a temporary instance of your device, even though the base machine is B and not A here. So you especially should take care to not depend on the availability of certain buses or other devices in the <em>instance_init()</em> function, nor use things like <em>serial_hd()</em> or <em>nd_table[]</em> in your <em>instance_init()</em> function, since these might (and should) have been used by the machine init function already. If your device needs to be wired up, provide properties as interfaces to the outside and let the creator of your device (e.g. the machine init code) wire your device between the device instantiation and the realize phase instead.</li>
+<li>Make sure that your device leaves a clean state after a temporary instance is destroyed again, i.e. don’t assume that there will be only one instance of your device which is created at the beginning right after QEMU has been started and is destroyed at the very end before QEMU terminates. Thus do not assume that the things that you do in your <em>instance_init()</em> don’t need explicit clean-up since the device instance will only be destroyed when QEMU terminates. Device instances can be created and destroyed at any time, so when the device is finalized, you must not leave any dangling pointers or references to your device behind you, e.g. in the QOM tree. When you create other objects in your <em>instance_init()</em> function, make sure to set proper parents of these objects or use an <em>instance_finalize()</em> function, so that the created objects get cleaned up correctly again when your device is destroyed.</li>
 </ul>
-<p>以 GPIO 为例：</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png" srcset="/img/loading.gif" lazyload></p>
-<p>QEMU 为<code>GPIO</code>内存地址提供读写回调函数，</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">sifive_gpio_write</span><span class="hljs-params">(<span class="hljs-keyword">void</span> *opaque, hwaddr offset, <span class="hljs-keyword">uint64_t</span> value, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span> size)</span></span><br><span class="hljs-function"></span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">uint64_t</span> <span class="hljs-title">sifive_gpio_read</span><span class="hljs-params">(<span class="hljs-keyword">void</span> *opaque, hwaddr offset, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span> size)</span></span><br></code></pre></td></tr></table></figure>
-
-<h2 id="给外设地址提供读写函数"><a href="#给外设地址提供读写函数" class="headerlink" title="给外设地址提供读写函数"></a>给外设地址提供读写函数</h2><p>怎么描述某段地址：基地址、大小？如何给这段地址提供读写函数呢？这段地址设置好后，如何添加进<code>system_memory</code>去？有 2 种方法。</p>
-<p><strong>法 1：memory_region_init_io/memory_region_add_subregion</strong><br>以<code>SIFIVE_UART</code>为例，</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">memory_region_init_io(&amp;s-&gt;mmio, <span class="hljs-literal">NULL</span>, &amp;uart_ops, s,<br>                        TYPE_SIFIVE_UART, <span class="hljs-number">0x2000</span>);<br>memory_region_add_subregion(address_space, base, &amp;s-&gt;mmio);<br></code></pre></td></tr></table></figure>
-
-<p><code>memory_region_init_io</code>函数初始化<code>iomem</code>，读写函数，大小。<br><code>memory_region_add_subregion</code>函数<code>s-&gt;iomem</code>指定了基地址，并添加进<code>system_memory</code>中。<br>以后，客户机上的程序读写这块地址时，就会导致对应的读写函数被调用。</p>
-<p><strong>法 2：memory_region_init_io/sysbus_init_mmio/sysbus_mmio_map</strong><br>以<code>SIFIVE_GPIO</code>为例，</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c">memory_region_init_io(&amp;s-&gt;mmio, OBJECT(dev), &amp;gpio_ops, s, TYPE_SIFIVE_GPIO, SIFIVE_GPIO_SIZE);<br><br>sysbus_init_mmio(SYS_BUS_DEVICE(dev), &amp;s-&gt;mmio);<br></code></pre></td></tr></table></figure>
-
-<p><code>memory_region_init_io</code>函数初始化<code>iomem</code>，读写函数，大小。<br><code>sysbus_init_mmio</code>将<code>mmin</code>传给设备；</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">sysbus_mmio_map(SYS_BUS_DEVICE(&amp;s-&gt;gpio), <span class="hljs-number">0</span>, memmap[SIFIVE_E_DEV_GPIO0].base);<br></code></pre></td></tr></table></figure>
-
-<p><code>sysbus_mmio_map</code>从设备中吧<code>mmio</code>添加进<code>system_memory</code>并指定基地址。</p>
+<p>All in all, if you write code for a new QEMU device, it is likely a good idea to use the <em>instance_init()</em> function only for e.g. creating properties and other things that are required before device realization, and then do the main work in the <em>realize()</em> function instead.</p>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
               
             </div>
@@ -443,8 +433,6 @@
       
         <a href="/tags/QEMU/">#QEMU</a>
       
-        <a href="/tags/GPIO/">#GPIO</a>
-      
     </div>
   
 </div>
@@ -455,8 +443,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>QEMU 源码分析-外设模拟（以 GPIO 为例）</div>
-      <div>http://example.com/2021/11/11/QEMU源码分析-外设模拟（以GPIO为例）/</div>
+      <div>QEMU&#39;s instance_init() vs. realize()</div>
+      <div>http://example.com/2022/11/01/QEMU-s-instance-init-vs-realize/</div>
     </div>
     <div class="license-meta">
       
@@ -468,7 +456,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2021年11月11日</div>
+          <div>2022年11月1日</div>
         </div>
       
       
@@ -498,9 +486,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2021/11/12/%E8%A7%A3%E5%86%B3expected-identifier-before-%E2%80%98-%E2%80%99-token/" title="解决 expected identifier before‘(’token">
+                      <a href="/2022/11/05/Linux%E6%9B%B4%E6%8D%A2Debian%E8%BD%AF%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%BA%90/" title="更换 Debian 软件更新源">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">解决 expected identifier before‘(’token</span>
+                        <span class="hidden-mobile">更换 Debian 软件更新源</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -508,8 +496,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/" title="QEMU 源码分析 - 虚拟外设创建">
-                        <span class="hidden-mobile">QEMU 源码分析 - 虚拟外设创建</span>
+                      <a href="/2022/10/18/ZH-UEFI%E8%A7%84%E8%8C%83-1-%E5%BC%95%E8%A8%80/" title="ZH-UEFI 规范 -1-引言">
+                        <span class="hidden-mobile">ZH-UEFI 规范 -1-引言</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -530,7 +518,7 @@
         var options = Object.assign(
           {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
           {
-            id: '4b6e45b5eaf586072e62774e806c71c4'
+            id: '9fa04b89740bac4fc4d8376e9ad0b6b0'
           }
         )
         var gitalk = new Gitalk(options);

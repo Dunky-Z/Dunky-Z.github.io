@@ -19,21 +19,22 @@
   <meta name="author" content="Dominic">
   <meta name="keywords" content="">
   
-    <meta name="description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。 QOM 中的面向对象继承在 QEMU 中通过 TypeInfo 来定义一个类。 例如 x86_base_cpu_ty">
+    <meta name="description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
 <meta property="og:type" content="article">
 <meta property="og:title" content="QEMU 源码分析-QOM">
 <meta property="og:url" content="http://example.com/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/index.html">
 <meta property="og:site_name" content="如云泊">
-<meta property="og:description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。 QOM 中的面向对象继承在 QEMU 中通过 TypeInfo 来定义一个类。 例如 x86_base_cpu_ty">
+<meta property="og:description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg">
 <meta property="article:published_time" content="2022-03-09T08:02:19.000Z">
-<meta property="article:modified_time" content="2022-10-15T03:14:29.413Z">
+<meta property="article:modified_time" content="2022-11-20T07:03:29.699Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="QEMU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -244,7 +245,7 @@
         <i class="iconfont icon-chart"></i>
         
           <!-- compatible with older versions-->
-          8.5k 字
+          8.8k 字
         
       </span>
     
@@ -255,7 +256,7 @@
         
         
         
-          71 分钟
+          74 分钟
         
       </span>
     
@@ -387,7 +388,22 @@
             
             <div class="markdown-body">
               
-              <h2 id="QOM-简介"><a href="#QOM-简介" class="headerlink" title="QOM 简介"></a>QOM 简介</h2><p>QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。</p>
+              <h2 id="QOM-简介"><a href="#QOM-简介" class="headerlink" title="QOM 简介"></a>QOM 简介</h2><p>QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。</p>
+<p>这个模型主要包含四个结构体：</p>
+<ul>
+<li>Object: 是所有对象的 基类 Base Object</li>
+<li>ObjectClass: 是所有类对象的基类</li>
+<li>TypeInfo：是用户用来定义一个 Type 的工具型的数据结构</li>
+<li>TypeImpl：TypeInfo 抽象数据结构，TypeInfo 的属性与 TypeImpl 的属性对应</li>
+</ul>
+<p>在 QEMU 里要初始化一个对象需要完成四步：</p>
+<ul>
+<li>将 TypeInfo 注册 TypeImpl</li>
+<li>实例化 Class（ObjectClass）</li>
+<li>实例化 Object</li>
+<li>添加 Property</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" srcset="/img/loading.gif" lazyload></p>
 <h2 id="QOM-中的面向对象"><a href="#QOM-中的面向对象" class="headerlink" title="QOM 中的面向对象"></a>QOM 中的面向对象</h2><h3 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h3><p>在 QEMU 中通过 <strong>TypeInfo</strong> 来定义一个类。</p>
 <p>例如 <code>x86_base_cpu_type_info</code> 就是一个 <code>class</code>，</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo x86_base_cpu_type_info = &#123;<br>        .name = X86_CPU_TYPE_NAME(<span class="hljs-string">&quot;base&quot;</span>),<br>        .parent = TYPE_X86_CPU,<br>        .class_init = x86_cpu_base_class_init,<br>&#125;;<br></code></pre></td></tr></table></figure>
@@ -442,7 +458,7 @@
 <li>创建了<code>X86CPU</code>和<code>X86CPUClass</code>的<code>typedef</code></li>
 <li>用<code>G_DEFINE_AUTOPTR_CLEANUP_FUNC</code>注册类型</li>
 <li>创建了三个类型转换函数<ul>
-<li><code>X86_CPU</code> : 将任何一个 <code>object</code> 指针 转换为 <code>X86CPU</code>（Object转子对象）</li>
+<li><code>X86_CPU</code> : 将任何一个 <code>object</code> 指针 转换为 <code>X86CPU</code>（Object 转子对象）</li>
 <li><code>X86_CPU_GET_CLASS</code> : 根据 <code>object</code> 指针获取到 <code>X86CPUClass</code></li>
 <li><code>X86_CPU_CLASS</code> : 根据 <code>ObjectClass</code> 指针转换到 <code>X86CPUClass</code>（基类转子类）</li>
 </ul>
