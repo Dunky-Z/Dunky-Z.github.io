@@ -1,0 +1,1047 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。  环境准备下载 OpenSBI 仓库12git clone https:&#x2F;&#x2F;github.com&#x2F;riscv-software-s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手把手教你向开源社区提 Patch">
+<meta property="og:url" content="http://example.com/2022/11/20/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90Patch/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。  环境准备下载 OpenSBI 仓库12git clone https:&#x2F;&#x2F;github.com&#x2F;riscv-software-s">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png">
+<meta property="article:published_time" content="2022-11-20T07:11:57.000Z">
+<meta property="article:modified_time" content="2022-11-20T07:19:08.946Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="OpenSBI">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>手把手教你向开源社区提 Patch - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">手把手教你向开源社区提 Patch</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-11-20 15:11" pubdate>
+          2022年11月20日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          115 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">手把手教你向开源社区提 Patch</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="提交补丁的最佳实践"><a href="#提交补丁的最佳实践" class="headerlink" title="提交补丁的最佳实践"></a>提交补丁的最佳实践</h1><blockquote>
+<p>本文翻译自官方教程<a target="_blank" rel="noopener" href="https://git-scm.com/docs/MyFirstContribution">Git - MyFirstContribution</a>，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。</p>
+</blockquote>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><h3 id="下载-OpenSBI-仓库"><a href="#下载-OpenSBI-仓库" class="headerlink" title="下载 OpenSBI 仓库"></a>下载 OpenSBI 仓库</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/riscv-software-src/opensbi.git<br><span class="hljs-built_in">cd</span> opensbi<br></code></pre></td></tr></table></figure>
+
+<h3 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h3><p>要从源代码构建 OpenSBI：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">make<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：OpenSBI 的构建是可并行的。上面的命令可以添加<code>-j#</code>参数，如<code>-j12</code>。</p>
+</blockquote>
+<h3 id="确认要解决的问题"><a href="#确认要解决的问题" class="headerlink" title="确认要解决的问题"></a>确认要解决的问题</h3><p>在本文档中，我们将模拟提交一个简单的 Patch，<code>.gitignore</code>文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成<code>.vscode</code>目录，但是这些文件不该被推送至远程，原仓库中的<code>.gitignore</code>文件中没有过滤该文件，我们给他加上。</p>
+<p>为了能够模拟一次发送多个<code>commit</code>的场景，我们将再添加一个<code>.so</code>用来过滤编译过程中生成的<code>.so</code>文件。</p>
+<h3 id="建立工作空间"><a href="#建立工作空间" class="headerlink" title="建立工作空间"></a>建立工作空间</h3><p>让我们先建立一个开发分支来进行我们的修改。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git checkout -b update_gitignore origin/master<br></code></pre></td></tr></table></figure>
+
+<p>我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。</p>
+<h2 id="实现代码"><a href="#实现代码" class="headerlink" title="实现代码"></a>实现代码</h2><h3 id="过滤-vscode"><a href="#过滤-vscode" class="headerlink" title="过滤 .vscode"></a>过滤 .vscode</h3><p>打开文件<code>.gitignore</code>，为该文件添加<code>/.vscode/</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># Object files</span><br>*.o<br>*.a<br>*.dep<br><br><span class="hljs-comment">#Build &amp; install directories</span><br>build/<br>install/<br><br><span class="hljs-comment"># Development friendly files</span><br>tags<br>cscope*<br><br>/.vscode/<br></code></pre></td></tr></table></figure>
+
+<p>为以上修改做一次提交：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git status<br>On branch update_gitignore<br>Your branch is up to date with <span class="hljs-string">&#x27;origin/master&#x27;</span>.<br><br>Changes not staged <span class="hljs-keyword">for</span> commit:<br>  (use <span class="hljs-string">&quot;git add &lt;file&gt;...&quot;</span> to update what will be committed)<br>  (use <span class="hljs-string">&quot;git checkout -- &lt;file&gt;...&quot;</span> to discard changes <span class="hljs-keyword">in</span> working directory)<br><br>        modified:   .gitignore<br>$ git add .gitignore<br>$ git commit -s<br></code></pre></td></tr></table></figure>
+
+<p>执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 <code>Signed-off-by</code> 添加的 trailer。（由上面命令<code>-s</code>参数生成）。</p>
+<p>其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 <code>lib:</code>， <code>platform:</code>, <code>firmware:</code>, <code>docs:</code>, <code>utils:</code> 或者 <code>top:</code>为前缀，修改<code>.gitignore</code>属于<code>top</code>范畴，所以我们需要将其加在主题行上。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json">top: filter .vscode folder<br><br>Filter the workspace&#x27;s &#x27;.vscode&#x27; directory by adding &#x27;/.vscode/&#x27; to the.gitignore file.<br><br>Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br></code></pre></td></tr></table></figure>
+
+<p>继续用 <code>git show</code> 检查您的新提交。尤其不要出现不需要在本次提交的内容。通常使用不同的 IDE 都可能会无意间生成一些配置文件等，请注意将其剔除。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs text">commit 5dc340c29979d4c5d8c4d5a6e881348239714434 (HEAD -&gt; update_gitignore)<br>Author: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date:   Fri Nov 18 16:06:21 2022 +0800<br><br>    top: filter .vscode folder<br>    <br>    Filter the workspace&#x27;s &#x27;.vscode&#x27; directory by adding &#x27;/.vscode/&#x27; to the.gitignore file.<br>    <br>    Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br><br>diff --git a/.gitignore b/.gitignore<br>index 95692bb..90cf552 100644<br>--- a/.gitignore<br>+++ b/.gitignore<br>@@ -10,3 +10,5 @@ install/<br> # Development friendly files<br> tags<br> cscope*<br>+<br>+/.vscode/<br></code></pre></td></tr></table></figure>
+
+<h3 id="过滤-cache"><a href="#过滤-cache" class="headerlink" title="过滤 .cache"></a>过滤 .cache</h3><p>与上一节步骤类似，我们在<code>.gitignore</code>文件中再添加一个<code>/.cache/</code>字段用来过滤<code>.cache</code>文件夹。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># Object files</span><br>*.o<br>*.a<br>*.dep<br><br><span class="hljs-comment">#Build &amp; install directories</span><br>build/<br>install/<br><br><span class="hljs-comment"># Development friendly files</span><br>tags<br>cscope*<br><br>/.vscode/<br>/.cache/<br></code></pre></td></tr></table></figure>
+
+<p>添加完我们就即使保存工作进度，新生成一个<code>commit</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git add .gitignore<br>$ git commit -s<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">top: filter .cache folder<br><br>Filter the workspace&#x27;s &#x27;.cache&#x27; directory by adding &#x27;/.cache/&#x27; to the.gitignore file.<br><br>Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br></code></pre></td></tr></table></figure>
+
+<p>以上我们就已经准备好所有的代码了，在大部分场景下可能修改的是<code>.c</code>或者<code>.h</code>等源文件，这就需要我们能够使代码编译、运行并且测试通过后再提交。</p>
+<p>这里为了演示提交流程，就没有涉及这些步骤。接下来我们就要准备提交的补丁文件了。</p>
+<h2 id="准备提交补丁"><a href="#准备提交补丁" class="headerlink" title="准备提交补丁"></a>准备提交补丁</h2><p>OpenSBI 项目是通过电子邮件发送补丁来进行代码审查的，当补丁准备好并得到社区认可后，维护者就会应用（Apply）这些补丁。OpenSBI 项目不接受来自 Pull Request 的贡献，而且通过电子邮件发送的补丁需要以指定的方式进行审核。</p>
+<p>在研究如何将你的提交转化为电子邮件的补丁之前，让我们先分析一下最终的结果，即<strong>补丁系列</strong>（Patch Series）是什么样子。下面是 OpenSBI 邮件列表存档的网页界面上的补丁系列的摘要视图的一个例子。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们可以注意几点：</p>
+<ul>
+<li>每次提交都是以单独的邮件形式发送，提交信息的标题为主题，前缀为<code>[PATCH i/n]</code>，代表<code>n</code>个提交系列中的第 <code>i</code> 个提交。</li>
+<li>每个补丁都是作为对<code>cover letter</code>的回复，<code>cover letter</code>的前缀为<code>[PATCH 0/n]</code>，序号为 0 的标题。</li>
+<li>补丁系列的后续迭代被标记为 <code>PATCH v2</code>、<code>PATCH v3</code>，等等，以代替 <code>PATCH</code>。例如，<code>[PATCH v2 1/3]</code>将是第二次迭代中三个补丁的第一个补丁。每次迭代都有一个新的<code>cover letter</code>（如上面的<code>[PATCH v2 0/3]</code>），本身就是对前一次迭代的<code>cover letter</code>的回复（下面会有更多介绍）。</li>
+</ul>
+<blockquote>
+<p>注：单一补丁的主题是以<code>[PATCH]</code>、<code>[PATCH v2]</code>等发送的，没有 <code>i/n</code> 编号。如上图中的第四个 Patch，就是一个单一补丁。</p>
+</blockquote>
+<h3 id="什么是-cover-letter"><a href="#什么是-cover-letter" class="headerlink" title="什么是 cover letter"></a>什么是 cover letter</h3><p>除了给每个补丁发一封邮件外，OpenSBI 社区还希望你的补丁能附带一封 cover letter。这是修改提交的一个重要组成部分，因为它概括了你想要做什么，以及为什么要这样做，比仅仅看你的补丁更明显。</p>
+<p>你的 cover letter 的标题应该是能简洁地涵盖你整个主题分支的目的。就像我们的提交信息标题一样。下面是我们的系列标题。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Update gitignore ---<br></code></pre></td></tr></table></figure>
+
+<p>cover letter 的正文是用来给评审员提供额外的背景。一定要解释任何你的补丁自己没有说清楚的东西，但要记住，由于 cover letter 没有记录在提交历史中，任何可能对未来版本库历史的读者有用的东西也应该在你的提交信息中出现。</p>
+<p>下文我们将介绍如何生成 cover letter 以及如何填写 cover letter。</p>
+<h3 id="用-git-send-email-发送补丁"><a href="#用-git-send-email-发送补丁" class="headerlink" title="用 git send-email 发送补丁"></a>用 git send-email 发送补丁</h3><h4 id="前提条件-设置-git-send-email"><a href="#前提条件-设置-git-send-email" class="headerlink" title="前提条件 - 设置 git send-email"></a>前提条件 - 设置 git send-email</h4><p>对 <code>send-email</code> 的配置会根据你的操作系统和电子邮件供应商而有所不同，配置可以参考文档<a target="_blank" rel="noopener" href="http://lifeislife.cn/2022/09/28/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8git-send-mail%E7%BB%99%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90%E4%BA%A4Patch/">如何使用 git-send-mail 给开源社区提交 Patch - 如云泊</a>。</p>
+<h4 id="准备初始补丁集"><a href="#准备初始补丁集" class="headerlink" title="准备初始补丁集"></a>准备初始补丁集</h4><p>在准备邮件本身之前，你需要准备补丁。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git format-patch --cover-letter -o update_gitignore/ --base=auto  update_gitignore@&#123;u&#125;..update_gitignore<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>--cover-letter</code> 选项告诉 <code>format-patch</code> 为你创建一个 <code>cover letter</code> 模板。在你准备发送之前，你将需要填写该模板。</li>
+<li><code>-o update_gitignore/</code> 选项告诉 <code>format-patch</code> 把补丁文件放到目录<code>update_gitignore</code>中。这样发送多个<code>commit</code>时就可以使用命令一次性发送，因为 <code>git send-email</code> 可以接收一个目录并从那里发送所有补丁。</li>
+<li><code>--base=auto</code> 选项告诉命令记录”基本提交”，接收者将在此基础上应用补丁系列。自动值将使 <code>format-patch</code> 自动计算基本提交，即远程跟踪分支的最新提交和指定修订范围的合并基数。</li>
+<li><code>update_gitignore@&#123;u&#125;..update_gitignore</code> 选项告诉 <code>format-patch</code> 为你在 <code>update_gitignore</code> 分支上创建的提交生成补丁，因为它是从上游分叉出来的。<code>@&#123;u&#125;</code>的意思就是从分叉开始到最新的提交。</li>
+</ul>
+<p>执行完该命令我们看看生成了哪些内容。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git status<br>On branch update_gitignore<br>Your branch is ahead of <span class="hljs-string">&#x27;origin/master&#x27;</span> by 2 commits.<br>  (use <span class="hljs-string">&quot;git push&quot;</span> to publish your <span class="hljs-built_in">local</span> commits)<br><br>Untracked files:<br>  (use <span class="hljs-string">&quot;git add &lt;file&gt;...&quot;</span> to include <span class="hljs-keyword">in</span> what will be committed)<br><br>        update_gitignore/<br><br>$ ls update_gitignore <br>0000-cover-letter.patch  0001-top-filter-.vscode-folder.patch  0002-top-filter-.cache-folder.patch<br></code></pre></td></tr></table></figure>
+
+<p>该命令将为每次提交制作一个补丁文件。运行后，您可以用您喜欢的文本编辑器看一下每个补丁，确保一切正常。可以看到创建了一个<code>-o</code>参数中的<code>update_gitignore</code>文件夹，该文件夹下有三个文件，分别是 cover letter 和上文我们做的两次提交对应的补丁文件。</p>
+<p>分别打开他们，结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs text">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 16:41:32 +0800<br>Subject: [PATCH 0/2] *** SUBJECT HERE ***<br><br>*** BLURB HERE ***<br><br>Dominic Zhang (2):<br>  top: filter .vscode folder<br>  top: filter .cache folder<br><br> .gitignore | 3 +++<br> 1 file changed, 3 insertions(+)<br><br><br>base-commit: 880685586dcee950d209088a461443449a1693ce<br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs text">From 5dc340c29979d4c5d8c4d5a6e881348239714434 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 16:06:21 +0800<br>Subject: [PATCH 1/2] top: filter .vscode folder<br><br>Filter the workspace&#x27;s &#x27;.vscode&#x27; directory by adding &#x27;/.vscode/&#x27; to the.gitignore file.<br><br>Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>---<br> .gitignore | 2 ++<br> 1 file changed, 2 insertions(+)<br><br>diff --git a/.gitignore b/.gitignore<br>index 95692bb..90cf552 100644<br>--- a/.gitignore<br>+++ b/.gitignore<br>@@ -10,3 +10,5 @@ install/<br> # Development friendly files<br> tags<br> cscope*<br>+<br>+/.vscode/<br>\ No newline at end of file<br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs text">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 16:20:37 +0800<br>Subject: [PATCH 2/2] top: filter .cache folder<br><br>Filter the workspace&#x27;s &#x27;.cache&#x27; directory by adding &#x27;/.cache/&#x27; to the.gitignore file.<br><br>Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>---<br> .gitignore | 3 ++-<br> 1 file changed, 2 insertions(+), 1 deletion(-)<br><br>diff --git a/.gitignore b/.gitignore<br>index 90cf552..bf9d716 100644<br>--- a/.gitignore<br>+++ b/.gitignore<br>@@ -11,4 +11,5 @@ install/<br> tags<br> cscope*<br> <br>-/.vscode/<br>\ No newline at end of file<br>+/.vscode/<br>+/.cache/<br>\ No newline at end of file<br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：另外，你也可以使用 <code>--rfc</code> 参数，在你的补丁主题前加上<code>[RFC PATCH]</code>，而不是<code>[PATCH]</code>。RFC 是”请求评论”的意思，表示虽然你的代码还没有准备好提交，但你想开始代码审查过程。你也可能在列表中看到标有”WIP”的补丁，这意味着他们还没有完成，但希望审查者能看看他们目前的成果。你可以用<code>--subject-prefix=WIP</code>来添加这个标志。</p>
+</blockquote>
+<p>检查并确保你的补丁和 cover letter 模板存在于你指定的目录中，这就完成所有准备了。</p>
+<h4 id="准备邮件"><a href="#准备邮件" class="headerlink" title="准备邮件"></a>准备邮件</h4><p>由于你在调用 <code>format-patch</code> 时使用了<code>--cover-letter</code>，你已经准备好了一个 cover letter 模板。在你喜欢的编辑器中打开它。</p>
+<p>你应该看到已经有一些标题存在。检查你的<code>From:</code>标题是否正确。然后修改你的<code>Subject:</code>。</p>
+<p>确保保留<code>[PATCH 0/X]</code>的部分；这是向 Git 社区表明这封邮件是一个补丁系列的开始，许多审查者会根据这种类型的标记过滤他们的邮件。</p>
+<p>接下来，你必须填写你的 cover letter 的正文。同样，关于应包括哪些内容，见上文。</p>
+<p>最后，信中会包括用于生成补丁的 Git 的版本。你可以不用管这个字符串。</p>
+<p>完善后的 cover letter 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs text">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 16:41:32 +0800<br>Subject: [PATCH 0/2] Update gitignore<br><br>vscode is a very popular IDE, and it often needs to generate a.vscode. cache directory to hold workspace configuration files that should not be committed to a remote repository, so we made some modifications to the gitignore file to filter such directories.<br><br>Dominic Zhang (2):<br>  top: filter .vscode folder<br>  top: filter .cache folder<br><br> .gitignore | 3 +++<br> 1 file changed, 3 insertions(+)<br><br><br>base-commit: 880685586dcee950d209088a461443449a1693ce<br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<h4 id="发送邮件"><a href="#发送邮件" class="headerlink" title="发送邮件"></a>发送邮件</h4><p>到这里，你应该有一个目录 <code>update_gitignore/</code>，里面包含你的补丁和一封 cover letter。是时候把它发出去了！你可以像这样发送。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git send-email --to=target@example.com update_gitignore/*.patch<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：请查看 <code>git help send-email</code> 中的一些其他选项，你可能会发现这些选项很有价值，比如改变回复地址或添加更多的抄送地址或密送地址。</p>
+</blockquote>
+<blockquote>
+<p>注：当你发送一个真正的补丁时，它将被发送到 <code>opensbi@lists.infradead.org</code> - 但请不要把你的补丁集从教程中发送到真正的邮件列表中！现在你可以把它发送给你自己，以确保你了解它的形式。</p>
+</blockquote>
+<p>在你运行上面的命令后，你会为每个即将发出的补丁看到一个交互提示。这给了你最后一次机会来编辑或放弃发送一些东西（但还是那句话，不要用这种方式编辑代码）。一旦你在这些提示下按下 <code>y</code> 或 <code>a</code>，你的邮件就会被发送出去！Congratulation!</p>
+<h4 id="发送补丁的更新版本"><a href="#发送补丁的更新版本" class="headerlink" title="发送补丁的更新版本"></a>发送补丁的更新版本</h4><p>本节将重点介绍如何发送你的补丁集的 v2 版。我们将在 v2 版中重新使用我们的 <code>update_gitignore</code> 分支。在我们做任何改动之前，我们先新建一个名为<code>update_gitignore-v1</code>的分支，这个分支是我们没有做新的改动的分支。这样在后面我们就可以方便的进行对比差异。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">git checkout update_gitignore<br>git branch update_gitignore-v1<br></code></pre></td></tr></table></figure>
+
+<p>在更新补丁时，我们可能会遇到两种情况，一种是社区的意见只让修改最新的一个提交，一种是修改历史记录中的 commit。我们分别来处理这两种情况。</p>
+<h5 id="如何修改最新的提交"><a href="#如何修改最新的提交" class="headerlink" title="如何修改最新的提交"></a>如何修改最新的提交</h5><p>比如只需要修改<code>top: filter .cache folder</code>这个 commit。因为它在我们的修改中是最新的 commit，所以我们可以直接对代码修改。比如我们做一个简单的修改，给修改的内容<code>/.cache</code>加个注释。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text"># Object files<br>*.o<br>*.a<br>*.dep<br><br>#Build &amp; install directories<br>build/<br>install/<br><br># Development friendly files<br>tags<br>cscope*<br><br>/.vscode/<br><br># Cache file<br>/.cache/<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git add .gitignore<br>$ git commit --amend<br></code></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>！我们不需要生成新的<code>commit</code>，所以使用 <code>--amend</code>参数修改最新的<code>commit message</code>即可。执行这条命令会弹出编辑窗口，因为修改内容已经很明确，我们不需要在<code>commit message</code>里再做额外说明，直接保存退出即可。如果修改内容比较大，需要重新编写<code>commit message</code>。</p>
+<p>以上我们就完成了一次更新。</p>
+<h5 id="如何修改历史记录中的提交"><a href="#如何修改历史记录中的提交" class="headerlink" title="如何修改历史记录中的提交"></a>如何修改历史记录中的提交</h5><p>如果很不巧，社区要求修改的是<code>top: filter .vscode folder</code>这个提交的内容，那怎么办，因为它不是最新的提交，而是上一个提交，我们无法使用<code>git commit --amend</code>来直接对他修改，好在 Git 十分强大，不需要我们<code>reset</code>就可以完成这样的工作。</p>
+<p>同样我们也做一个简单的修改，为<code>/.vscode/</code>也添加一个注释。首先我们需要使用到<code>git rebase</code>这个强大的命令。本文只介绍使用到的功能，其他功能需要大家自行摸索。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git rebase -i<br></code></pre></td></tr></table></figure>
+
+<p>这条命令会弹出编辑窗口，<code>-i</code>参数表示以交互式方式进行变基（rebase）操作。弹出窗口内容如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs bash">pick 7175772 top: filter .vscode folder<br>pick 52b63f3 top: filter .cache folder<br><br><span class="hljs-comment"># Rebase 8806855..52b63f3 onto 8806855 (2 commands)</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># Commands:</span><br><span class="hljs-comment"># p, pick = use commit</span><br><span class="hljs-comment"># r, reword = use commit, but edit the commit message</span><br><span class="hljs-comment"># e, edit = use commit, but stop for amending</span><br><span class="hljs-comment"># s, squash = use commit, but meld into previous commit</span><br><span class="hljs-comment"># f, fixup = like &quot;squash&quot;, but discard this commit&#x27;s log message</span><br><span class="hljs-comment"># x, exec = run command (the rest of the line) using shell</span><br><span class="hljs-comment"># d, drop = remove commit</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># These lines can be re-ordered; they are executed from top to bottom.</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># If you remove a line here THAT COMMIT WILL BE LOST.</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># However, if you remove everything, the rebase will be aborted.</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># Note that empty commits are commented out</span><br></code></pre></td></tr></table></figure>
+
+<p>窗口会显示所有未提交到远程的 commit，下面的注释也告诉了我们该如何使用。我们找到<code>edit</code>的行，可以看到解释为使用当前的 commit，但是在变基过程中会停下来让我们修改。这正是我们想要的。我们编辑当前的内容如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">edit 7175772 top: filter .vscode folder<br>pick 52b63f3 top: filter .cache folder<br></code></pre></td></tr></table></figure>
+
+<p>表示我们需要编辑历史记录中的<code>top: filter .vscode folder</code>提交，但是另一个 commit 我们不做改变。保存并退出当前窗口后，会有如下提示。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">Stopped at 7175772...  top: filter .vscode folder<br>You can amend the commit now, with<br><br>  git commit --amend <br><br>Once you are satisfied with your changes, run<br><br>  git rebase --<span class="hljs-built_in">continue</span><br></code></pre></td></tr></table></figure>
+
+<p>根据提示，我们可以进行一系列修改了，修改完使用<code>git commit --amend</code>保存，如果一切符合自己要求了，再使用<code>git rebase --continue</code>完成变基操作。</p>
+<p>我们先修改代码，可以看到代码已经回到了没有<code>/.cache/</code>的状态，我们添加一行注释：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs text"># Object files<br>*.o<br>*.a<br>*.dep<br><br>#Build &amp; install directories<br>build/<br>install/<br><br># Development friendly files<br>tags<br>cscope*<br><br># VSCode config file<br>/.vscode/<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git add .gitignore<br>$ git commit --amend<br></code></pre></td></tr></table></figure>
+
+<p>同样弹出窗口后我们直接保存退出，如果修改幅度较大，可以进一步补充说明。然后使用以下命令继续完成变基。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git rebase --<span class="hljs-built_in">continue</span><br></code></pre></td></tr></table></figure>
+
+<p>此时我们可以看到我们不仅修改了历史记录中的 commit，还保证了最新的 commit 没有丢失或者更改。</p>
+<h5 id="准备更新版本的补丁集"><a href="#准备更新版本的补丁集" class="headerlink" title="准备更新版本的补丁集"></a>准备更新版本的补丁集</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"> $ git format-patch -v2 --cover-letter -o update_gitignore/   master..update_gitignore-v1<br>update_gitignore/v2-0000-cover-letter.patch<br>update_gitignore/v2-0001-top-filter-.vscode-folder.patch<br>update_gitignore/v2-0002-top-filter-.cache-folder.patch<br></code></pre></td></tr></table></figure>
+
+<p><code>--range-diff  master..update_gitignore-v1</code> 参数告诉 <code>format-patch</code> 在 cover letter 中包括 <code>update_gitignore-v1</code> 和 <code>update_gitignore</code> 两个分支之间的差异。这有助于告诉评审人你的 v1 和 v2 补丁之间的差异。</p>
+<p><code>-v2</code> 参数告诉 <code>format-patch</code> 将你的补丁输出为 <code>v2</code> 版本。例如，你可能注意到你的 v2 版补丁都被命名为 <code>v2-000n-my-commit-subject.patch</code>。<code>-v2</code> 也会将你的补丁格式化，在前面加上<code>[PATCH v2]</code>，而不是<code>[PATCH]</code>。</p>
+<p>运行此命令后，<code>format-patch</code> 会将补丁输出到 <code>update_gitignore/</code> 目录，与 v1 版的补丁一起。使用一个目录可以方便在校对 v2 补丁时参考旧的 v1 补丁，但你需要注意只发送 v2 补丁。我们将使用 <code>update_gitignore/v2-.patch</code>这样的模式（而不是 <code>update_gitignore/.patch</code>，这将匹配 v1 和 v2 补丁）。</p>
+<p>再次编辑你的 cover letter。现在是一个很好的时间来提及你的上一个版本和现在有什么不同，如果它是重要的东西。你不需要在你的第二封 cover letter 中使用完全相同的内容；重点是向审查人员解释你所做的可能不那么明显的变化。</p>
+<p>我们就简单的写一下添加了注释。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs text">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 19:35:06 +0800<br>Subject: [PATCH v2 0/2] Update gitignore<br><br>Add a comment for the folder name.<br><br>Dominic Zhang (2):<br>  top: filter .vscode folder<br>  top: filter .cache folder<br><br> .gitignore | 3 +++<br> 1 file changed, 3 insertions(+)<br><br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<p>发送更新版本时你需要将新版本抄送给提出建议的人，你可以在你的 cover letter 中直接添加这些抄送行，在 Subject 行上面写上这样一行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">CC: Name &lt;name@example.com&gt;<br></code></pre></td></tr></table></figure>
+<p>例如，把更新的邮件抄送给我自己：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs text">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001<br>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>CC: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;<br>Date: Fri, 18 Nov 2022 19:35:06 +0800<br>Subject: [PATCH v2 0/2] Update gitignore<br><br>Add a comment for the folder name.<br><br>Dominic Zhang (2):<br>  top: filter .vscode folder<br>  top: filter .cache folder<br><br> .gitignore | 3 +++<br> 1 file changed, 3 insertions(+)<br><br>-- <br>2.17.1<br></code></pre></td></tr></table></figure>
+
+<p>现在再次发送电子邮件，注意你传入的参数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">$ git send-email --to target@example.com update_gitignore/v2-*.patch<br></code></pre></td></tr></table></figure>
+
+<p>恭喜你完成了一次补丁版本更新。</p>
+<hr>
+<p>对于一些社区，要求更新的版本需要在同一个 thread 上进行。如下示例这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">[PATCH 0/2] Here is what I did...<br>  [PATCH 1/2] Clean up and tests<br>  [PATCH 2/2] Implementation<br>  [PATCH v2 0/3] Here is a reroll<br>    [PATCH v2 1/3] Clean up<br>    [PATCH v2 2/3] New tests<br>    [PATCH v2 3/3] Implementation<br></code></pre></td></tr></table></figure>
+
+<p>就是更新的版本需要关联到之前的版本，而不能作为单独的一个列表。</p>
+<p>你还需要去找到你之前的 cover letter 的 Message-Id。你可以在发送第一个补丁系列时，从 <code>git send-email</code> 的输出中记下它。<br>例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git send-email --to Dominic Zhang@gmail.com update_gitignore/v2-*.patch <br><br>update_gitignore/v2-0000-cover-letter.patch<br>update_gitignore/v2-0001-top-filter-.vscode-folder.patch<br>update_gitignore/v2-0002-top-filter-.cache-folder.patch<br>(mbox) Adding cc: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt; from line <span class="hljs-string">&#x27;From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;&#x27;</span><br>(mbox) Adding cc: Dominic Zhang &lt;254758318@qq.com&gt; from line <span class="hljs-string">&#x27;CC: Dominic Zhang &lt;254758318@qq.com&gt;&#x27;</span><br><br>From: Dominic Zhang@gmail.com<br>To: Dominic Zhang@gmail.com<br>Cc: Dominic Zhang &lt;254758318@qq.com&gt;<br>Subject: [PATCH v2 0/2] Update gitignore<br>Date: Fri, 18 Nov 2022 19:54:54 +0800<br>Message-Id: &lt;20221118115456.2242-1-Dominic Zhang@gmail.com&gt;<br>X-Mailer: git-send-email 2.17.1<br></code></pre></td></tr></table></figure>
+
+<p>你也可以从社区的邮箱列表中找到 Message ID，因为 OpenSBI 不要求在同一个 thread 回复，所以没有相关信息，这里以<a target="_blank" rel="noopener" href="https://lore.kernel.org/git/cover-00.12-00000000000-20221118T112205Z-avarab@gmail.com/T/#t">Git 社区</a>的邮箱列表为例。随便点击一个补丁主题，在页面中找到<code>permalink</code>或者<code>raw</code>，点击打开即可找到 Message ID 信息。</p>
+<p>它的格式一般如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Message-Id: &lt;foo.12345.author@example.com&gt;<br></code></pre></td></tr></table></figure>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png" srcset="/img/loading.gif" lazyload></p>
+<p>如果要发送更新版本，那么我们就需要找到上一版本的 Message ID。如发送的是 V3 版本，那么我们需要找到 V2 版本的 Message ID。并且在发送邮件时添加如下参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ git send-email --to Dominic Zhang@gmail.com <br>                 --in-reply-to=<span class="hljs-string">&quot;&lt;foo.12345.author@example.com&gt;&quot;</span> <br>                 update_gitignore/v2-*.patch <br></code></pre></td></tr></table></figure>
+
+<h4 id="只有一个-Patch-的更改"><a href="#只有一个-Patch-的更改" class="headerlink" title="只有一个 Patch 的更改"></a>只有一个 Patch 的更改</h4><p>在某些情况下，你的非常小的变化可能只包括一个补丁。这时，你只需要发送一封邮件。你的提交信息应该已经很有意义了，你只需要生成补丁文件就可以发送了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git format-patch -o update_gitignore/  HEAD^<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>HEAD^</code>参数表示生成与上一个提交之间的差异。</li>
+</ul>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Git-%E5%AE%9E%E6%88%98/" class="category-chain-item">Git 实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Git/">#Git</a>
+      
+        <a href="/tags/OpenSBI/">#OpenSBI</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>手把手教你向开源社区提 Patch</div>
+      <div>http://example.com/2022/11/20/手把手教你向开源社区提Patch/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年11月20日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/05/Linux%E6%9B%B4%E6%8D%A2Debian%E8%BD%AF%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%BA%90/" title="更换 Debian 软件更新源">
+                        <span class="hidden-mobile">更换 Debian 软件更新源</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '09d840545837b99ee4fbd5c00d141f94'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
