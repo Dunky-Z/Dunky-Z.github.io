@@ -4,6 +4,81 @@
   
   
   <entry>
+    <title>Ubuntu 18.04 安装Clang/LLVM 11</title>
+    <link href="/2022/12/24/Ubuntu-18-04-%E5%AE%89%E8%A3%85Clang-LLVM-11/"/>
+    <url>/2022/12/24/Ubuntu-18-04-%E5%AE%89%E8%A3%85Clang-LLVM-11/</url>
+    
+    <content type="html"><![CDATA[<h2 id="从-APT-安装"><a href="#从-APT-安装" class="headerlink" title="从 APT 安装"></a>从 APT 安装</h2><p>Install the GPG Key for <code>https://apt.llvm.org/</code></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -<br></code></pre></td></tr></table></figure><p>Add the repo for Clang 11 <code>stable-old</code> for Ubuntu 18.04 Bionic</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main&quot;</span> | sudo tee -a /etc/apt/sources.list<br>sudo apt-get update<br></code></pre></td></tr></table></figure><p>Install practically everything (except <code>python-clang-11</code> which for some reason doesn’t work)</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo apt-get install libllvm-11-ocaml-dev libllvm11 llvm-11 llvm-11-dev llvm-11-doc llvm-11-examples llvm-11-runtime \<br>clang-11 clang-tools-11 clang-11-doc libclang-common-11-dev libclang-11-dev libclang1-11 clang-format-11 clangd-11 \<br>libfuzzer-11-dev lldb-11 lld-11 libc++-11-dev libc++abi-11-dev libomp-11-dev -y<br></code></pre></td></tr></table></figure><p>Make Clang 11 and everything related to it defaults</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo update-alternatives \<br>  --install /usr/lib/llvm              llvm             /usr/lib/llvm-11         50 \<br>  --slave   /usr/bin/llvm-config       llvm-config      /usr/bin/llvm-config-11  \<br>  --slave   /usr/bin/llvm-ar           llvm-ar          /usr/bin/llvm-ar-11 \<br>  --slave   /usr/bin/llvm-as           llvm-as          /usr/bin/llvm-as-11 \<br>  --slave   /usr/bin/llvm-bcanalyzer   llvm-bcanalyzer  /usr/bin/llvm-bcanalyzer-11 \<br>  --slave   /usr/bin/llvm-cov          llvm-cov         /usr/bin/llvm-cov-11 \<br>  --slave   /usr/bin/llvm-diff         llvm-diff        /usr/bin/llvm-diff-11 \<br>  --slave   /usr/bin/llvm-dis          llvm-dis         /usr/bin/llvm-dis-11 \<br>  --slave   /usr/bin/llvm-dwarfdump    llvm-dwarfdump   /usr/bin/llvm-dwarfdump-11 \<br>  --slave   /usr/bin/llvm-extract      llvm-extract     /usr/bin/llvm-extract-11 \<br>  --slave   /usr/bin/llvm-link         llvm-link        /usr/bin/llvm-link-11 \<br>  --slave   /usr/bin/llvm-mc           llvm-mc          /usr/bin/llvm-mc-11 \<br>  --slave   /usr/bin/llvm-mcmarkup     llvm-mcmarkup    /usr/bin/llvm-mcmarkup-11 \<br>  --slave   /usr/bin/llvm-nm           llvm-nm          /usr/bin/llvm-nm-11 \<br>  --slave   /usr/bin/llvm-objdump      llvm-objdump     /usr/bin/llvm-objdump-11 \<br>  --slave   /usr/bin/llvm-ranlib       llvm-ranlib      /usr/bin/llvm-ranlib-11 \<br>  --slave   /usr/bin/llvm-readobj      llvm-readobj     /usr/bin/llvm-readobj-11 \<br>  --slave   /usr/bin/llvm-rtdyld       llvm-rtdyld      /usr/bin/llvm-rtdyld-11 \<br>  --slave   /usr/bin/llvm-size         llvm-size        /usr/bin/llvm-size-11 \<br>  --slave   /usr/bin/llvm-stress       llvm-stress      /usr/bin/llvm-stress-11 \<br>  --slave   /usr/bin/llvm-symbolizer   llvm-symbolizer  /usr/bin/llvm-symbolizer-11 \<br>  --slave   /usr/bin/llvm-tblgen       llvm-tblgen      /usr/bin/llvm-tblgen-11<br><br>sudo update-alternatives \<br>  --install /usr/bin/clang                 clang                  /usr/bin/clang-11    50 \<br>  --slave   /usr/bin/clang++               clang++                /usr/bin/clang++-11 \<br>  --slave   /usr/bin/lld                   lld                    /usr/bin/lld-11 \<br>  --slave   /usr/bin/clang-format          clang-format           /usr/bin/clang-format-11  \<br>  --slave   /usr/bin/clang-tidy            clang-tidy             /usr/bin/clang-tidy-11  \<br>  --slave   /usr/bin/clang-tidy-diff.py    clang-tidy-diff.py     /usr/bin/clang-tidy-diff-11.py \<br>  --slave   /usr/bin/clang-include-fixer   clang-include-fixer    /usr/bin/clang-include-fixer-11 \<br>  --slave   /usr/bin/clang-offload-bundler clang-offload-bundler  /usr/bin/clang-offload-bundler-11 \<br>  --slave   /usr/bin/clangd                clangd                 /usr/bin/clangd-11 \<br>  --slave   /usr/bin/clang-check           clang-check            /usr/bin/clang-check-11 \<br>  --slave   /usr/bin/scan-view             scan-view              /usr/bin/scan-view-11 \<br>  --slave   /usr/bin/clang-apply-replacements clang-apply-replacements /usr/bin/clang-apply-replacements-11 \<br>  --slave   /usr/bin/clang-query           clang-query            /usr/bin/clang-query-11 \<br>  --slave   /usr/bin/modularize            modularize             /usr/bin/modularize-11 \<br>  --slave   /usr/bin/sancov                sancov                 /usr/bin/sancov-11 \<br>  --slave   /usr/bin/c-index-test          c-index-test           /usr/bin/c-index-test-11 \<br>  --slave   /usr/bin/clang-reorder-fields  clang-reorder-fields   /usr/bin/clang-reorder-fields-11 \<br>  --slave   /usr/bin/clang-change-namespace clang-change-namespace  /usr/bin/clang-change-namespace-11 \<br>  --slave   /usr/bin/clang-import-test     clang-import-test      /usr/bin/clang-import-test-11 \<br>  --slave   /usr/bin/scan-build            scan-build             /usr/bin/scan-build-11 \<br>  --slave   /usr/bin/scan-build-py         scan-build-py          /usr/bin/scan-build-py-11 \<br>  --slave   /usr/bin/clang-cl              clang-cl               /usr/bin/clang-cl-11 \<br>  --slave   /usr/bin/clang-rename          clang-rename           /usr/bin/clang-rename-11 \<br>  --slave   /usr/bin/find-all-symbols      find-all-symbols       /usr/bin/find-all-symbols-11 \<br>  --slave   /usr/bin/lldb                  lldb                   /usr/bin/lldb-11 \<br>  --slave   /usr/bin/lldb-server           lldb-server            /usr/bin/lldb-server-11<br></code></pre></td></tr></table></figure><h2 id="Installing-CMake"><a href="#Installing-CMake" class="headerlink" title="Installing CMake"></a>Installing CMake</h2><p>Install Kitware’s GPG Key</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2&gt;/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg &gt;/dev/null<br></code></pre></td></tr></table></figure><p>Add repository</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;deb https://apt.kitware.com/ubuntu/ bionic main&quot;</span> | sudo tee -a /etc/apt/sources.list<br>sudo apt-get update<br></code></pre></td></tr></table></figure><p>Install this optional package so you don’t have to mess with GPG keys anymore</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo apt-get install kitware-archive-keyring<br>sudo rm /etc/apt/trusted.gpg.d/kitware.gpg<br></code></pre></td></tr></table></figure><p>Now upgrade <code>cmake</code> if you already have it installed with <code>sudo apt-get upgrade -y</code> or just install it using <code>sudo apt-get install cmake -y</code> </p><h2 id="使用源码安装"><a href="#使用源码安装" class="headerlink" title="使用源码安装"></a>使用源码安装</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-comment"># 更新软件包列表</span><br>sudo apt update<br><br><span class="hljs-comment"># 安装必要的依赖包</span><br>sudo apt install build-essential cmake python3-dev<br><br><span class="hljs-comment"># 下载 Clang/LLVM 11 的源代码</span><br>wget https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/llvm-11.0.0.src.tar.xz<br><br><span class="hljs-comment"># 解压源代码文件</span><br>tar xvf llvm-11.0.0.src.tar.xz<br><br><span class="hljs-comment"># 进入解压后的目录</span><br><span class="hljs-built_in">cd</span> llvm-11.0.0.src<br><br><span class="hljs-comment"># 创建一个新的目录，用于存放 Clang/LLVM 编译的结果</span><br>mkdir build<br><span class="hljs-built_in">cd</span> build<br><br><span class="hljs-comment"># 使用 cmake 编译 Clang/LLVM</span><br>cmake ..<br><br><span class="hljs-comment"># 编译 Clang/LLVM</span><br>make<br><br><span class="hljs-comment"># 安装 Clang/LLVM</span><br>sudo make install<br><br></code></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+      <tag>安装教程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>每天学命令-chown 修改文件拥有者</title>
+    <link href="/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-chown%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E6%8B%A5%E6%9C%89%E8%80%85/"/>
+    <url>/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-chown%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E6%8B%A5%E6%9C%89%E8%80%85/</url>
+    
+    <content type="html"><![CDATA[<p>chown 命令用来变更文件或目录的拥有者或所属群组，通过 chown 改变文件的拥有者和群组。用户可以是用户名或者用户 ID；组可以是组名或者组 ID；文件是以空格分开的文件列表，文件名也支持通配符。</p><h2 id="命令格式"><a href="#命令格式" class="headerlink" title="命令格式"></a>命令格式</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown [选项] [用户或组] [文件或目录]<br>-c或--changes           <span class="hljs-comment">#效果类似“-v”参数，但仅回报更改的部分；</span><br>-f或--quite或—-silent    <span class="hljs-comment">#不显示错误信息；</span><br>-h或--no-dereference    <span class="hljs-comment">#只对符号连接的文件作修改，而不更改其他任何相关文件；</span><br>-R或--recursive         <span class="hljs-comment">#递归处理，将指定目录下的所有文件及子目录一并处理；</span><br>-v或--version           <span class="hljs-comment">#显示指令执行过程；</span><br>--dereference          <span class="hljs-comment">#效果和“-h”参数相同；</span><br>--<span class="hljs-built_in">help</span>                 <span class="hljs-comment">#在线帮助</span><br>--reference=&lt;参考文件或目录&gt;   <span class="hljs-comment">#把指定文件或目录的拥有者与所属群组全部设成和参考文件或目录的拥有者与所属群组相同；</span><br>--version    <span class="hljs-comment">#显示版本信息。</span><br></code></pre></td></tr></table></figure><h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>将文件<code>test.md</code>拥有者改为<code>nic</code></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown nic test.md<br></code></pre></td></tr></table></figure><p>将目录<code>/home/nic/develop</code>及其下面的所有文件、子目录的文件拥有者改为<code>nic</code></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown -R nic /home/nic/develop<br><br></code></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+    <categories>
+      
+      <category>每天学命令</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+      <tag>每天学命令</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>每天学命令-tree 显示目录结构</title>
+    <link href="/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-tree%E6%98%BE%E7%A4%BA%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/"/>
+    <url>/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-tree%E6%98%BE%E7%A4%BA%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/</url>
+    
+    <content type="html"><![CDATA[<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs Bash">-a   <span class="hljs-comment">#显示所有文件</span><br>-d   <span class="hljs-comment">#只显示目录（名称）</span><br>-l   <span class="hljs-comment">#显示链接文件的原始文件</span><br>-f   <span class="hljs-comment">#显示所列出的文件或目录的完整目录路径</span><br>-i   <span class="hljs-comment">#不以阶梯的形式显示文件或目录名称</span><br>-q   <span class="hljs-comment">#将控制字符以?字符代替，显示文件和目录名称</span><br>-N   <span class="hljs-comment">#直接显示文件或目录的名称</span><br>-p   <span class="hljs-comment">#显示每个文件的权限信息</span><br>-u   <span class="hljs-comment">#显示文件所有者或者uid</span><br>-g   <span class="hljs-comment">#显示文件所属组或者gid</span><br>-s   <span class="hljs-comment">#显示每个文件的大小信息</span><br>-h   <span class="hljs-comment">#以可读的方式显示文件的大小信息</span><br>-D   <span class="hljs-comment">#显示最后修改日期</span><br>-v   <span class="hljs-comment">#按字母数字正序显示文件</span><br>-r   <span class="hljs-comment">#按字母数字倒序显示文件</span><br>-t   <span class="hljs-comment">#按最后时间排序显示文件</span><br>-C   <span class="hljs-comment">#在文件和目录列表上加上色彩，便于区分文件类型</span><br>-P pattern    <span class="hljs-comment">#只显示匹配正则表式的文件或目录名称</span><br>-I pattern    <span class="hljs-comment">#与上结果相反</span><br><br></code></pre></td></tr></table></figure><h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>显示当前目录及其子目录下的文件及目录名称</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs Bash">$ tree                 <br>.<br>├── CODE_OF_CONDUCT.md<br>├── CONTRIBUTING.md<br>├── Fedora-35<br>│   ├── Dockerfile<br>│   └── Readme.md<br>├── LICENSE<br>├── README.md<br>├── Ubuntu-20<br>│   ├── Dockerfile<br>│   ├── Readme.md<br>│   ├── init_edkrepo_conf.sh<br>│   └── ubuntu20_dev_entrypoint.sh<br>└── Windows-2022<br>    ├── Dockerfile<br>    └── Readme.md<br><br>3 directories, 12 files<br></code></pre></td></tr></table></figure><p>只显示一层目录结构</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs Bash">$ tree -L 1              <br>.<br>├── CODE_OF_CONDUCT.md<br>├── CONTRIBUTING.md<br>├── Fedora-35<br>├── LICENSE<br>├── README.md<br>├── Ubuntu-20<br>└── Windows-2022<br><br>3 directories, 4 files<br></code></pre></td></tr></table></figure><p>只显示目录不显示文件</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs Bash">$ tree -d           <br>.<br>├── Fedora-35<br>├── Ubuntu-20<br>└── Windows-2022<br><br>3 directories<br></code></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+    <categories>
+      
+      <category>每天学命令</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+      <tag>每天学命令</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>CodeReview 中常见缩写</title>
     <link href="/2022/12/03/CodeReview%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%BC%A9%E5%86%99/"/>
     <url>/2022/12/03/CodeReview%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%BC%A9%E5%86%99/</url>
@@ -192,9 +267,9 @@
     
     <tags>
       
-      <tag>Efficiency</tag>
-      
       <tag>Git</tag>
+      
+      <tag>Efficiency</tag>
       
       <tag>Github</tag>
       
@@ -342,9 +417,9 @@
       
       <tag>LaTeX</tag>
       
-      <tag>Pandoc</tag>
-      
       <tag>Markdown</tag>
+      
+      <tag>Pandoc</tag>
       
     </tags>
     
@@ -917,9 +992,9 @@
       
       <tag>Bug</tag>
       
-      <tag>Pandoc</tag>
-      
       <tag>Markdown</tag>
+      
+      <tag>Pandoc</tag>
       
       <tag>PDF</tag>
       
@@ -1050,9 +1125,9 @@
       
       <tag>LaTeX</tag>
       
-      <tag>Pandoc</tag>
-      
       <tag>Markdown</tag>
+      
+      <tag>Pandoc</tag>
       
       <tag>PDF</tag>
       
@@ -1499,9 +1574,9 @@
     
     <tags>
       
-      <tag>Linux</tag>
-      
       <tag>Cache</tag>
+      
+      <tag>Linux</tag>
       
       <tag>CSAPP</tag>
       
@@ -1555,9 +1630,9 @@
       
       <tag>推荐</tag>
       
-      <tag>工具</tag>
-      
       <tag>KeePass</tag>
+      
+      <tag>工具</tag>
       
       <tag>密码管理</tag>
       
@@ -1907,9 +1982,9 @@
     
     <tags>
       
-      <tag>计算机组成原理</tag>
-      
       <tag>Cache</tag>
+      
+      <tag>计算机组成原理</tag>
       
       <tag>页表</tag>
       
