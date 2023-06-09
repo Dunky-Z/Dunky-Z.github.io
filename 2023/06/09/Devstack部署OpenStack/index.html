@@ -1,0 +1,913 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Dominic">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Devstack 部署 OpenStack试验发现在 Host 为 Ubuntu20.04 和 22.04 上无法顺利安装 VirtualBox，请在 Ubuntu18.04 上安装 VirtualBox。虚拟机镜像版本为 Ubuntu20.04，以下步骤可以稳定复现，OpenStack master（c424a7a299e37004d318107648bb18e157344985）版本。 总而言">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Devstack 部署 OpenStack">
+<meta property="og:url" content="http://example.com/2023/06/09/Devstack%E9%83%A8%E7%BD%B2OpenStack/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="Devstack 部署 OpenStack试验发现在 Host 为 Ubuntu20.04 和 22.04 上无法顺利安装 VirtualBox，请在 Ubuntu18.04 上安装 VirtualBox。虚拟机镜像版本为 Ubuntu20.04，以下步骤可以稳定复现，OpenStack master（c424a7a299e37004d318107648bb18e157344985）版本。 总而言">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-06-09T13:38:34.000Z">
+<meta property="article:modified_time" content="2023-06-09T13:40:27.539Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="OpenStack，云计算，Devstack">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Devstack 部署 OpenStack - 如云泊</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":": )","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":"§"},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"C"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"6d6218480fd6147a7bc43664e2689169","google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div>
+	<div class='real_mask' style="
+		background-color: rgba(0,0,0,0.3);
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		z-index: -777;
+	"></div>
+	<div id="banner_video_insert_here">
+	</div>	
+	<div id='vvd_banner_img'>
+	</div>
+</div>
+<div id="banner"></div>
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>如云泊</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://101.43.39.125/HexoFiles/new/bg-trans.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Devstack 部署 OpenStack</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Dominic
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-09 21:38" pubdate>
+          2023年6月9日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          <!-- compatible with older versions-->
+          7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          59 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+	<script type="text/javascript" src="/myjs/jquery.js"></script>
+
+	<div class="banner" id='banner' >
+
+		<div class="full-bg-img" >
+
+			
+				<script>
+					var ua = navigator.userAgent;
+					var ipad = ua.match(/(iPad).*OS\s([\d_]+)/),
+						isIphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/),
+						isAndroid = ua.match(/(Android)\s+([\d.]+)/),
+						isMobile = isIphone || isAndroid;
+					function set_video_attr(id){
+						var height = document.body.clientHeight
+						var width = document.body.clientWidth
+						var video_item = document.getElementById(id);
+						if (height / width < 0.56){
+							video_item.setAttribute('width', '100%');
+							video_item.setAttribute('height', 'auto');
+						} else {
+							video_item.setAttribute('height', '100%');
+							video_item.setAttribute('width', 'auto');
+						}
+					}
+					var data = [
+                            "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/The-Universe-And-Space_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/Starry-Night.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Static-background_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Joker_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Ofatedian-v2_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/RetroLake-Performance-Version-Legacy_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Samurai-Cheems_nosound_Trim.mp4",
+
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Sunset-Drive-Animated-4k-60fps_trim.mp4",
+							// "https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/wallpaper/Your-Name-Night_trim.mp4"
+					];
+
+					function set_video(){
+							var video_list_length = data.length;
+							var seed = Math.random()
+							index = Math.floor(seed * video_list_length)
+							video_url = data[index]
+							banner_obj = document.getElementById("banner")
+							vvd_banner_obj = document.getElementById("vvd_banner_img")
+							if (!isMobile) {
+								video_html_res = "<video id='video_item' style='position: fixed; z-index: -888;'  muted='muted' src=" + video_url + " autoplay='autoplay' loop='loop'></video>"
+								document.getElementById("banner_video_insert_here").innerHTML = video_html_res;
+								set_video_attr('video_item')
+							}
+					};
+					set_video();
+					if (!isMobile){
+						window.onresize = function(){
+							set_video_attr('video_item')
+							set_video();
+							}
+						}
+				</script>
+			
+
+			<div class="mask flex-center">
+			  <div class="page-header text-center fade-in-up">
+				<span class="h2" id="subtitle" title="">
+				  
+				</span>
+
+
+			  </div>
+
+			  
+				<div class="scroll-down-bar">
+				  <i class="iconfont icon-arrowdown"></i>
+				</div>
+			  
+			</div>
+		</div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Devstack 部署 OpenStack</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="Devstack-部署-OpenStack"><a href="#Devstack-部署-OpenStack" class="headerlink" title="Devstack 部署 OpenStack"></a>Devstack 部署 OpenStack</h1><p>试验发现在 Host 为 Ubuntu20.04 和 22.04 上无法顺利安装 VirtualBox，请在 Ubuntu18.04 上安装 VirtualBox。虚拟机镜像版本为 Ubuntu20.04，以下步骤可以稳定复现，OpenStack master（c424a7a299e37004d318107648bb18e157344985）版本。</p>
+<p>总而言之，在 18.04 版本上安装 VirtualBox，在 20.04 版本上安装 OpenStack。</p>
+<p>因为安装 OpenStack 容易破话系统包依赖，如果为了学习建议在虚拟机中安装。</p>
+<p>安装过程中需要下载镜像，请确认机器可以访问外网。</p>
+<h2 id="安装-VirtualBox"><a href="#安装-VirtualBox" class="headerlink" title="安装 VirtualBox"></a>安装 VirtualBox</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo apt update<br>sudo apt install virtualbox virtualbox-ext-pack<br></code></pre></td></tr></table></figure>
+
+<h2 id="确认-VirtualBox-配置"><a href="#确认-VirtualBox-配置" class="headerlink" title="确认 VirtualBox 配置"></a>确认 VirtualBox 配置</h2><p>请确认 VirtualBox 配置如下，VirtualBox 默认配置硬盘为 10G，远远不够用，为了避免后续的麻烦，请确认如下配置：</p>
+<p>磁盘大于 100G</p>
+<p>内存大于 16G</p>
+<p>CPU 大于 4 个</p>
+<h2 id="下载镜像并安装"><a href="#下载镜像并安装" class="headerlink" title="下载镜像并安装"></a>下载镜像并安装</h2><p>镜像可以去<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/">清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a>下载。</p>
+<h2 id="更新源"><a href="#更新源" class="headerlink" title="更新源"></a>更新源</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk &amp;&amp; sudo bash -c <span class="hljs-string">&quot;cat &lt;&lt; EOF &gt; /etc/apt/sources.list</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restrcdicted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restrcd &amp;&amp; mkdir .pip &amp;&amp; cd .pipicted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="hljs-string">EOF&quot;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="备用源-以备不时之需"><a href="#备用源-以备不时之需" class="headerlink" title="备用源 (以备不时之需)"></a>备用源 (以备不时之需)</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk &amp;&amp; sudo bash -c <span class="hljs-string">&quot;cat &lt;&lt; EOF &gt; /etc/apt/sources.list</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restrcdicted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restrcd &amp;&amp; mkdir .pip &amp;&amp; cd .pipicted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="hljs-string">EOF&quot;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk &amp;&amp; sudo bash -c <span class="hljs-string">&quot;cat &lt;&lt; EOF &gt; /etc/apt/sources.list</span><br><span class="hljs-string">deb https://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse</span><br><span class="hljs-string">deb-src https://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse</span><br><span class="hljs-string">deb https://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse</span><br><span class="hljs-string">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse</span><br><span class="hljs-string"></span><br><span class="hljs-string">deb https://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse</span><br><span class="hljs-string">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse</span><br><span class="hljs-string"></span><br><span class="hljs-string">deb https://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse</span><br><span class="hljs-string">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse</span><br><span class="hljs-string">EOF&quot;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk &amp;&amp; sudo bash -c <span class="hljs-string">&quot;cat &lt;&lt; EOF &gt; /etc/apt/sources.list</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse</span><br><span class="hljs-string">deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse</span><br><span class="hljs-string">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse</span><br><span class="hljs-string">EOF&quot;</span><br><br></code></pre></td></tr></table></figure>
+
+<h2 id="安装基础包"><a href="#安装基础包" class="headerlink" title="安装基础包"></a>安装基础包</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo apt update<br>sudo apt install git<br>sudo apt install aptitude<br></code></pre></td></tr></table></figure>
+
+<p>aptitude 用于解决包依赖冲突。</p>
+<h2 id="添加用户"><a href="#添加用户" class="headerlink" title="添加用户"></a>添加用户</h2><p>添加 stack 用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo useradd -s /bin/bash -d /opt/stack -m stack<br></code></pre></td></tr></table></figure>
+
+<p>授予 sudo 权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;stack ALL=(ALL) NOPASSWD: ALL&quot;</span> | sudo tee /etc/sudoers.d/stack<br></code></pre></td></tr></table></figure>
+
+<p>切换到 stack 用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo su -  stack<br></code></pre></td></tr></table></figure>
+
+<h2 id="PIP-配置"><a href="#PIP-配置" class="headerlink" title="PIP 配置"></a>PIP 配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">cd &amp;&amp; mkdir -p  .pip &amp;&amp; cd .pip &amp;&amp; bash -c &quot;cat &lt;&lt; EOF &gt; ~/.pip/pip.conf<br>[global]<br>timeout = 6000<br>index-url = http://mirrors.aliyun.com/pypi/simple/<br>trusted-host = mirrors.aliyun.com<br>EOF&quot;<br></code></pre></td></tr></table></figure>
+
+<h2 id="仓库下载"><a href="#仓库下载" class="headerlink" title="仓库下载"></a>仓库下载</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">git <span class="hljs-built_in">clone</span> https://github.com/openstack/devstack --depth 1<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置-local-conf"><a href="#配置-local-conf" class="headerlink" title="配置 local.conf"></a>配置 local.conf</h3><p>只需要修改 HOST_IP，其他的可以不用修改，HOST_IP 为本机 IP 地址，可以使用 ifconfig 查看。如果是虚拟机就是虚拟机的 IP，virtualbox 创建的虚拟机默认为 10.0.2.15。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-built_in">cd</span> devstack &amp;&amp; touch local.conf &amp;&amp; bash -c <span class="hljs-string">&quot;cat &lt;&lt; EOF &gt; /opt/stack/devstack/local.conf</span><br><span class="hljs-string">[[local|localrc]]</span><br><span class="hljs-string">HOST_IP=10.0.2.15</span><br><span class="hljs-string">GIT_BASE=http://git.trystack.cn</span><br><span class="hljs-string"></span><br><span class="hljs-string">ADMIN_PASSWORD=user</span><br><span class="hljs-string">DATABASE_PASSWORD=<span class="hljs-variable">$ADMIN_PASSWORD</span></span><br><span class="hljs-string">RABBIT_PASSWORD=<span class="hljs-variable">$ADMIN_PASSWORD</span></span><br><span class="hljs-string">SERVICE_PASSWORD=<span class="hljs-variable">$ADMIN_PASSWORD</span></span><br><span class="hljs-string">EOF&quot;</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">FORCE=yes ./stack.sh<br></code></pre></td></tr></table></figure>
+
+<h1 id="BUG-解决"><a href="#BUG-解决" class="headerlink" title="BUG 解决"></a>BUG 解决</h1><h2 id="systemd-包依赖冲突"><a href="#systemd-包依赖冲突" class="headerlink" title="systemd 包依赖冲突"></a>systemd 包依赖冲突</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo aptitude install systemd<br>选择N<br>再选择Y<br></code></pre></td></tr></table></figure>
+
+<h2 id="ModuleNotFoundError-No-module-named-‘distutils-cmd’"><a href="#ModuleNotFoundError-No-module-named-‘distutils-cmd’" class="headerlink" title="ModuleNotFoundError: No module named ‘distutils.cmd’"></a>ModuleNotFoundError: No module named ‘distutils.cmd’</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">sudo apt-get install python3.10-distutils<br># 根据自己的 Python 版本决定，可以 python3.7-distutils python3.8-distutils   ....都试一遍<br></code></pre></td></tr></table></figure>
+
+<h2 id="apparmor-invalid-capability-bpf"><a href="#apparmor-invalid-capability-bpf" class="headerlink" title="apparmor invalid capability bpf"></a>apparmor invalid capability bpf</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo apt install apparmor<br></code></pre></td></tr></table></figure>
+
+<h2 id="No-tenant-network-is-available-for-allocation"><a href="#No-tenant-network-is-available-for-allocation" class="headerlink" title="No tenant network is available for allocation"></a>No tenant network is available for allocation</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs Bash">vim /etc/neutron/plugins/ml2/ml2_conf.ini<br><br>[ml2]<br>type_drivers = flat,vlan,vxlan<br>tenant_network_types = vxlan<br><br>[ml2_type_vxlan]<br>vni_ranges = 1:1000<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="unix-var-run-openvswitch-db-sock-database-connection-failed-Connection-refused"><a href="#unix-var-run-openvswitch-db-sock-database-connection-failed-Connection-refused" class="headerlink" title="unix:/var/run/openvswitch/db.sock: database connection failed (Connection refused)"></a>unix:/var/run/openvswitch/db.sock: database connection failed (Connection refused)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Bash"><span class="hljs-built_in">cd</span>  /opt/stack/devstack/lib/neutron_plugin <br>vi ovn_agent <br>116G  跳转到116行<br>OVS_RUNDIR=<span class="hljs-variable">$OVS_PREFIX</span>/var/run/openvswitch 修改为OVS_RUNDIR=<span class="hljs-variable">$OVS_PREFIX</span>/var/run/ovn <br>sudo rm -rf /var/run/ovn<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="VirtualBox-启动报错-Failed-to-send-host-log-message"><a href="#VirtualBox-启动报错-Failed-to-send-host-log-message" class="headerlink" title="VirtualBox 启动报错 : Failed to send host log message"></a>VirtualBox 启动报错 : Failed to send host log message</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">Ctrl+F2进入另一个终端<br>输入：startx进入桌面<br></code></pre></td></tr></table></figure>
+
+<h2 id="AttributeError-module-‘collections‘-has-no-attribute-‘MutableMapping‘"><a href="#AttributeError-module-‘collections‘-has-no-attribute-‘MutableMapping‘" class="headerlink" title="AttributeError: module ‘collections‘ has no attribute ‘MutableMapping‘"></a>AttributeError: module ‘collections‘ has no attribute ‘MutableMapping‘</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">collections.MutableMapping<br>collections.abc.MutableMapping<br></code></pre></td></tr></table></figure>
+
+<h2 id="ModuleNotFoundError-No-module-named-‘distutils-core’"><a href="#ModuleNotFoundError-No-module-named-‘distutils-core’" class="headerlink" title="ModuleNotFoundError: No module named ‘distutils.core’"></a>ModuleNotFoundError: No module named ‘distutils.core’</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">sudo apt install python3-pip<br></code></pre></td></tr></table></figure>
+
+<h2 id="ERROR-Cannot-uninstall-‘simplejson’-It-is-a-distutils-installed-project-and-thus-we-cannot"><a href="#ERROR-Cannot-uninstall-‘simplejson’-It-is-a-distutils-installed-project-and-thus-we-cannot" class="headerlink" title="ERROR: Cannot uninstall ‘simplejson’. It is a distutils installed project and thus we cannot"></a>ERROR: Cannot uninstall ‘simplejson’. It is a distutils installed project and thus we cannot</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">sudo pip install --ignore-installed wrapt enum34 simplejson netaddr<br></code></pre></td></tr></table></figure>
+
+<h2 id="server-certificate-verification-failed-CAfile-none-CRLfile-none"><a href="#server-certificate-verification-failed-CAfile-none-CRLfile-none" class="headerlink" title="server certificate verification failed. CAfile: none CRLfile: none"></a>server certificate verification failed. CAfile: none CRLfile: none</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">git config --global http.sslverify <span class="hljs-literal">false</span><br>git config --global https.sslverify <span class="hljs-literal">false</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Ubuntu-登录页面验证出错"><a href="#Ubuntu-登录页面验证出错" class="headerlink" title="Ubuntu:登录页面验证出错"></a>Ubuntu:登录页面验证出错</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo loginctl unlock-sessions<br></code></pre></td></tr></table></figure>
+
+<h2 id="Ubuntu-重装桌面"><a href="#Ubuntu-重装桌面" class="headerlink" title="Ubuntu:重装桌面"></a>Ubuntu:重装桌面</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo apt install ubuntu-desktop<br></code></pre></td></tr></table></figure>
+
+<h2 id="Ubuntu-登录界面-Authentication-Error"><a href="#Ubuntu-登录界面-Authentication-Error" class="headerlink" title="Ubuntu 登录界面 Authentication Error"></a>Ubuntu 登录界面 Authentication Error</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo loginctl unlock-sessions<br>sudo <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;fs.inotify.max_user_watches=524288&quot;</span> &gt;&gt; /etc/sysctl.conf<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="Ubuntu-无法进入桌面系统，但是可以-SSH-链接"><a href="#Ubuntu-无法进入桌面系统，但是可以-SSH-链接" class="headerlink" title="Ubuntu 无法进入桌面系统，但是可以 SSH 链接"></a>Ubuntu 无法进入桌面系统，但是可以 SSH 链接</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Bash">sudo rm -rf /var/lib/apt/lists/*<br>sudo apt-get clean<br>sudo apt-get update<br>sudo apt-get install --reinstall appstream<br></code></pre></td></tr></table></figure>
+
+<h2 id="gsettings-desktop-schemas-破坏：mutter-＜-3-31-4-但是-3-28-4-0ubuntu18-04-2-正要被安装解决方案"><a href="#gsettings-desktop-schemas-破坏：mutter-＜-3-31-4-但是-3-28-4-0ubuntu18-04-2-正要被安装解决方案" class="headerlink" title="gsettings-desktop-schemas : 破坏：mutter (＜ 3.31.4) 但是 3.28.4-0ubuntu18.04.2 正要被安装解决方案"></a>gsettings-desktop-schemas : 破坏：mutter (＜ 3.31.4) 但是 3.28.4-0ubuntu18.04.2 正要被安装解决方案</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Java">sudo apt install gsettings-desktop-schemas<br>sudo apt-get install build-essential<br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/">#OpenStack，云计算，Devstack</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Devstack 部署 OpenStack</div>
+      <div>http://example.com/2023/06/09/Devstack部署OpenStack/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Dominic</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月9日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/03/24/VSCode%20%E6%8F%92%E4%BB%B6%20REST%20Client%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/" title="VSCode 插件 REST Client 使用文档">
+                        <span class="hidden-mobile">VSCode 插件 REST Client 使用文档</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="gitalk-container"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#gitalk-container', function() {
+      Fluid.utils.createCssLink('/css/gitalk.css')
+      Fluid.utils.createScript('https://lib.baomitu.com/gitalk/1.7.2/gitalk.min.js', function() {
+        var options = Object.assign(
+          {"clientID":"e510bad926f1c41a279f","clientSecret":"91ece699b2546ec2b3d5215e5ca55ee8634b9421","repo":"comment","owner":"Dunky-Z","admin":["Dunky-Z"],"language":"zh-CN","labels":["Gitalk"],"perPage":10,"pagerDirection":"last","distractionFreeMode":false,"createIssueManually":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"},
+          {
+            id: '2dc1d32d12fcb1e525bdb75959c562f3'
+          }
+        )
+        var gitalk = new Gitalk(options);
+        gitalk.render('gitalk-container');
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-love"></i> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?6d6218480fd6147a7bc43664e2689169";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
