@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>QEMU 源码分析 - 虚拟外设创建 | 夜云泊个人博客</title>
+  <meta name="description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU 源码分析 - 虚拟外设创建">
+<meta property="og:url" content="http://example.com/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-03-53-4d2fcf4deb7a9ed9c13a22a7fe3111be-20221107160352-084c2a.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-11-19-19d9b8686c2a5758a0231181b0fb4dfa-qemu-%E6%B3%A8%E5%86%8C%E8%AE%BE%E5%A4%87.drawio-8a4c5c.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-31-54-b5c189903fc73c76057f57a95a10310d-qemu-module%20init%20%E9%93%BE%E8%A1%A8.drawio-1309c1.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-34-25-ad40a288b1376c0f9136c609b7d7ee0c-20221107183424-6d1641.png">
+<meta property="article:published_time" content="2021-11-09T09:39:38.000Z">
+<meta property="article:modified_time" content="2022-11-20T07:07:38.480Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="QEMU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">29</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.15px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/17/Virtual-Box%E7%9A%84%E4%B8%8D%E5%90%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" class="title">Virtual Box 的不同虚拟机网络模式</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-17T08:48:02.000Z" itemprop="datePublished">2023-06-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82/" class="title">计算机网络 - 数据链路层</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:26:10.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/ubuntu-22-04-%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85%E6%B0%B4%E6%98%9F-wifi-%E9%A9%B1%E5%8A%A8Mercury-MW310UH/" class="title">Ubuntu 22.04 系统安装水星 wifi 驱动 Mercury MW310UH</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:00:02.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF%E6%B1%87%E6%80%BB/" class="title">云计算基础技术汇总</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:42:59.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/Devstack%E9%83%A8%E7%BD%B2OpenStack/" class="title">Devstack 部署 OpenStack</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:38:34.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-QEMU源码分析-虚拟外设创建" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      QEMU 源码分析 - 虚拟外设创建
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/" class="article-date">
+	  <time datetime="2021-11-09T09:39:38.000Z" itemprop="datePublished">2021-11-09</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/QEMU/" rel="tag">QEMU</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="QOM-简介"><a href="#QOM-简介" class="headerlink" title="QOM 简介"></a>QOM 简介</h1><p>QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。</p>
+<p>这个模型主要包含四个结构体：</p>
+<ul>
+<li>Object: 是所有对象的 基类 Base Object</li>
+<li>ObjectClass: 是所有类对象的基类</li>
+<li>TypeInfo：是用户用来定义一个 <code>Type</code> 的工具型的数据结构</li>
+<li>TypeImpl：TypeInfo 抽象数据结构，<code>TypeInfo</code> 的属性与 <code>TypeImpl</code> 的属性对应</li>
+</ul>
+<p>在 QEMU 里要初始化一个对象需要完成四步：</p>
+<ul>
+<li>将 <code>TypeInfo</code> 注册 <code>TypeImpl</code></li>
+<li>实例化 <code>Class</code>（ObjectClass）</li>
+<li>实例化 <code>Object</code></li>
+<li>添加 <code>Property</code></li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png"></p>
+<h1 id="如何描述硬件"><a href="#如何描述硬件" class="headerlink" title="如何描述硬件"></a>如何描述硬件</h1><p>一个板子上有很多硬件：芯片，LED、按键、LCD、触摸屏、网卡等等。芯片里面也有很多部件，比如 CPU、GPIO、SD 控制器、中断控制器等等。</p>
+<p>这些硬件，或是部件，各有不同。怎么描述它们？</p>
+<p>每一个都使用一个 <code>TypeInfo</code> 结构体来描述，<code>TypeInfo</code> 是用户用来定义一个 Type 的工具型的数据结构。它包含了很多成员变量，这些成员合在一起描述了一个设备类型。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// include/qom/object.h</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">TypeInfo</span></span><br><span class="hljs-class">&#123;</span><br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *name;<br>    <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *parent;<br>    <span class="hljs-keyword">size_t</span> instance_size;<br>    <span class="hljs-keyword">size_t</span> instance_align;<br>    <span class="hljs-keyword">void</span> (*instance_init)(Object *obj);<br>    <span class="hljs-keyword">void</span> (*instance_post_init)(Object *obj);<br>    <span class="hljs-keyword">void</span> (*instance_finalize)(Object *obj);<br>    <span class="hljs-keyword">bool</span> abstract;<br>    <span class="hljs-keyword">size_t</span> class_size;    <span class="hljs-keyword">void</span> (*class_init)(ObjectClass *klass, <span class="hljs-keyword">void</span> *data);<br>    <span class="hljs-keyword">void</span> (*class_base_init)(ObjectClass *klass, <span class="hljs-keyword">void</span> *data);<br>    <span class="hljs-keyword">void</span> *class_data;    InterfaceInfo *interfaces;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这个结构体我们在刚刚也提到，他在图里是独立的，在注册的时候会将它的信息都传给 Typeimpl 结构体。</p>
+<p>我们以 Timer 为例，我们要添加一个 Timer 外设，首先就要定义一个 Typeinfo 结构体。他在代码中像这样。我们只看 name，这里用一个宏赋值，这个宏是个我们定义的字符串，它唯一标识了这个硬件。这些结构体在运行时会被注册进程序里，保存在一个链表中备用，为什么是备用，因为不是每一个硬件都会被用到。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// hw/timer/dw_timer.c</span><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo dw_timer_info = &#123;<br>    .name          = TYPE_DW_TIMER,<br>    .parent        = TYPE_SYS_BUS_DEVICE,<br>    .instance_size = <span class="hljs-keyword">sizeof</span>(DWTimerState),<br>    .instance_init = dw_timer_init,<br>    .class_init    = dw_timer_class_init,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这些结构体在运行时会被注册进程序里，保存在一个链表中备用，为什么是备用，因为不是每一个硬件都会被用到。</p>
+<h1 id="如何注册硬件"><a href="#如何注册硬件" class="headerlink" title="如何注册硬件"></a>如何注册硬件</h1><p>什么是注册，说白了就是将一些可能需要的信息添加到系统中，在系统运行时能够随时调用到。就拿 Timer 来说，现在将一些信息添加到了列表，系统运行起来时我可以随时从链表中取出 Timer 这个设备的信息，用来实例化一个 Timer，但是我没有注册 Timer，也就是没有将其加入到链表，那我后期就无法找到它。</p>
+<p>怎么注册这些<code>TypeInfo</code>结构体呢？在实现的源码中有这个函数 <code>dw_timer_register_types()</code>，他是用来注册 Timer 这个设备的。</p>
+<p>我们追根溯源，调用过程如下，</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-03-53-4d2fcf4deb7a9ed9c13a22a7fe3111be-20221107160352-084c2a.png"></p>
+<ul>
+<li>分配一个 <code>TypeImpl</code> 结构体，使用 <code>Typeinfo</code> 来设置它</li>
+<li>把 <code>TypeImpl</code> 加入链表：<code>type_table</code></li>
+</ul>
+<p>在 QEMU 里面，有一个全局的哈希表 <code>type_table</code>，用来存放所有定义的类。在 <code>type_new</code> 里面，我们先从全局表里面根据名字 <code>type_table_lookup</code> 查找找这个类。</p>
+<ul>
+<li>如果找到，说明这个类曾经被注册过，就报错；</li>
+<li>如果没有找到，说明这是一个新的类，则将 <code>Typeinfo</code> 里面信息填到 <code>TypeImpl</code> 里面。<code>type_table_add</code> 会将这个类注册到全局的表里面。</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-11-19-19d9b8686c2a5758a0231181b0fb4dfa-qemu-%E6%B3%A8%E5%86%8C%E8%AE%BE%E5%A4%87.drawio-8a4c5c.png"></p>
+<p>以上的过程可以用上图来表示。<code>Typeinfo</code> 通过 <code>type_new()</code> 生成一个对应的 <code>TypeImpl</code> 类型，并以 <code>name</code> 为关键字添加到名为 <code>type_table</code> 的一个 hash table 中。</p>
+<p>什么时候注册这些设备呢？不需要我们去调用注册函数，以 Timer 为例，在 <code>hw/timer/dw_timer.c</code> 中有如下代码，一般在最后一行：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">type_init(dw_timer_register_types)<br></code></pre></td></tr></table></figure>
+
+<p><code>F12</code>找到这个宏定义，我们追根溯源，调用过程如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c">type_init()<br>    -&gt; module_init()<br>        -&gt; register_module_init()<br><br>type_init(dw_timer_register_types)<br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> type_init(function) module_init(function, MODULE_INIT_QOM)</span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> module_init(function, type)                                         \</span><br><span class="hljs-meta">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \</span><br><span class="hljs-meta">&#123;                                                                           \</span><br><span class="hljs-meta">    register_module_init(function, type);                                   \</span><br><span class="hljs-meta">&#125;</span><br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">register_module_init</span><span class="hljs-params">(<span class="hljs-keyword">void</span> (*fn)(<span class="hljs-keyword">void</span>), module_init_type type)</span></span><br><span class="hljs-function"></span>&#123;<br>    ModuleEntry *e;     <span class="hljs-comment">//构造 ModuleEntry</span><br>    ModuleTypeList *l;  <span class="hljs-comment">//构造链表</span><br><br>    e = g_malloc0(<span class="hljs-keyword">sizeof</span>(*e));<br>    e-&gt;init = fn;       <span class="hljs-comment">//设置初始化函数，fn 即 sifive_gpio_register_types</span><br>    e-&gt;type = type;<br><br>    l = find_type(type);<br><br>    QTAILQ_INSERT_TAIL(l, e, node);<span class="hljs-comment">//将 ModuleEntry 插入链表尾</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>type_init</code>是个宏定义，调用了<code>__attribute__((constructor))</code>函数，我们知道这个 C 语言中位数不多的在<code>main</code>函数执行前，执行的函数。函数中调用了<code>register_module_init</code>注册函数，说明在<code>main</code>函数执行前，已经注册好硬件了。该函数将一个新的<code>ModuleEntry</code>加到链表里。</p>
+<p>注意，注册的只是个函数，并不是注册了设备。也就是已上过程，只是把一个 <code>ModuleEntry</code> 放到了一个链表里，这个 <code>ModuleEntry</code> 带了两个信息，一个是函数，一个是类型。这个函数就是我们真正的注册注册函数。</p>
+<p>已上过程大概是如下所示：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-31-54-b5c189903fc73c76057f57a95a10310d-qemu-module%20init%20%E9%93%BE%E8%A1%A8.drawio-1309c1.png"></p>
+<p>那什么时候还真正注册设备呢，我们就得回到主函数，它有以下调用流程，在 <code>module_call_init</code> 中，我们会找到 <code>MODULE_INIT_QOM</code> 这种类型对应的 <code>ModuleTypeList</code><br>找出列表中所有的 <code>ModuleEntry</code>，然后调用每个 <code>ModuleEntry</code> 的 <code>init</code> 函数。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-34-25-ad40a288b1376c0f9136c609b7d7ee0c-20221107183424-6d1641.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// softmmu/runstate.c</span><br>module_call_init(MODULE_INIT_QOM);<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// utils/module.csoftmmu/runstate.c</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">module_call_init</span><span class="hljs-params">(module_init_type type)</span></span><br><span class="hljs-function"></span>&#123;<br>    ModuleTypeList *l;<br>    ModuleEntry *e;<br>    <span class="hljs-comment">// 找到 MODULE_INIT_QOM 这种类型对应的 ModuleTypeList</span><br>    l = find_type(type);<br>    QTAILQ_FOREACH(e, l, node) &#123;<br>        e-&gt;init();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="初始化设备"><a href="#初始化设备" class="headerlink" title="初始化设备"></a>初始化设备</h1><p>到这里我们需要注意，我们在注册设备的时候虽然将设备从 <code>Typeinfo</code> 变成了 <code>TypeImpl</code>，把 <code>Typeinfo</code> 里的信息都复制到了 <code>TypeImpl</code>，但是 <code>class_init</code> 还没有被调用，也即这个类现在还处于纸面的状态。</p>
+<p>什么时候才真正初始化这个类呢，这得等在用到它的时候。我们在一块板子上才会用到一个设备。我们使用的是 Sifive-e 这个板子，准确来说我们用的不是这个板子，我们只是在原先的代码上做了修改。</p>
+<p>为了方便描述，就当是用的 sifive-e 这个板子。在实现的源码里，有 <code>object_initialize_child</code>函数，跟踪一下调用流程可以看到最后在 <code>type_initialize</code> 函数中初始化了类。同时我们也看到在 <code>object_init_with_type</code> 函数中实例化了类。这个稍后再讲。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// hw/riscv/sifive_e.cstatic void sifive_e_soc_init(Object *obj)</span><br>&#123;<br>    MachineState *ms = MACHINE(qdev_get_machine());<br>    SiFiveESoCState *s = RISCV_E_SOC(obj);<br>	.<br>	.<br>	.    object_initialize_child(obj, <span class="hljs-string">&quot;timer&quot;</span>, &amp;s-&gt;timer,<br>                            TYPE_DW_TIMER);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs C">object_initialize_child(obj, name, &amp;s-&gt;timer, TYPE_DW_TIMER);<br>    object_initialize_child_internal()<br>        object_initialize_child_with_props()<br>            object_initialize_child_with_propsv()<br>                object_initialize()<br>                    object_initialize_with_type()<br>                        type_initialize()<br>                        &#123;<br>                            <span class="hljs-keyword">if</span> (ti-&gt;class_init) &#123;<br>                                ti-&gt;class_init(ti-&gt;class, ti-&gt;class_data);<br>                            &#125;<br>                        &#125;<br>                        object_init_with_type()<br>                        &#123;       <br>                            <span class="hljs-keyword">if</span> (ti-&gt;instance_init) &#123;<br>                                ti-&gt;instance_init(obj);<br>                            &#125;<br>                        &#125;<br></code></pre></td></tr></table></figure>
+
+<p>在调用 <code>class_init</code> 函数时，其实就是调用的设备模块下的 <code>dw_timer_class_init</code>，这个函数中又是一些配置，尤其是 <code>realize</code> 函数的配置。还有一些属性的配置，如 Timer 的频率。</p>
+<p>到这里，我们才有有了一个真正意义上的设备类。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C">hw/timer/dw_timer.<span class="hljs-function">c </span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">dw_timer_class_init</span><span class="hljs-params">(ObjectClass *klass, <span class="hljs-keyword">void</span> *data)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// 这里又是一些配置，尤其是回调函数的配置</span><br>    DeviceClass *dc = DEVICE_CLASS(klass);<br>    dc-&gt;reset = dw_timer_reset;<br>    <span class="hljs-comment">// 设置 Timer 基本属性如频率等</span><br>    device_class_set_props(dc, dw_timer_properties);<br>    dc-&gt;vmsd = &amp;vmstate_dw_timer;<br>    dc-&gt;realize = dw_timer_realize;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<h1 id="实例化设备"><a href="#实例化设备" class="headerlink" title="实例化设备"></a>实例化设备</h1><p>说白了初始化过程就是在配置各种结构体成员的过程，比如刚刚的初始化过程就是在配置 <code>DeviceClass</code> 这个类的各个成员。实际上我们还没有真正实例化 Timer，我们还不能使用它。</p>
+<p>我们只有在实例化后才能使用它，也就是之前提到的 <code>instance_init()</code>。但是在 QEMU 中要实例化一个设备，不仅仅需要调用 <code>instance_init</code>，还需要调用刚刚初始化时设置的 <code>realize</code> 函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo dw_timer_info = &#123;<br>    .name          = TYPE_DW_TIMER,<br>    .parent        = TYPE_SYS_BUS_DEVICE,<br>    .instance_size = <span class="hljs-keyword">sizeof</span>(DWTimerState),<br>    .instance_init = dw_timer_init,<br>    .class_init    = dw_timer_class_init,<br>&#125;;<br><span class="hljs-comment">// hw/timer/dw_timer.c</span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">dw_timer_init</span><span class="hljs-params">(Object *obj)</span></span><br><span class="hljs-function"></span>&#123;<br>    DWTimerState *s = DWTIMER(obj);<br>    <span class="hljs-comment">// 为这段内存注册回调函数</span><br>    memory_region_init_io(&amp;s-&gt;iomem, obj, &amp;dw_timer_ops, s,<br>                          <span class="hljs-string">&quot;dw_timer&quot;</span>, <span class="hljs-number">0x2000</span>);<br>    sysbus_init_mmio(SYS_BUS_DEVICE(obj), &amp;s-&gt;iomem);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这两个函数的功能很像，具体细节差异我也还没弄明白，但是需要注意的是 <code>instance_init</code> 一定要在 <code>realize</code> 之前完成，并且没有错误。否则将无法完成实例化。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// hw/timer/dw_timer.c</span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">dw_timer_realize</span><span class="hljs-params">(DeviceState *dev, Error **errp)</span></span><br><span class="hljs-function"></span>&#123;<br>    DWTimerState *s = DWTIMER(dev);<br>    sysbus_init_irq(SYS_BUS_DEVICE(dev), &amp;s-&gt;irq);<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) &#123;<br>        s-&gt;timer[i] = timer_new_ns(QEMU_CLOCK_VIRTUAL, dw_timer_interrupt, s);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>instance_init</code> 这个函数主要完成的工作就是为一段内存绑定了读写函数，为什么要这么做，我们再往下看。</p>
+<h1 id="如何操作设备"><a href="#如何操作设备" class="headerlink" title="如何操作设备"></a>如何操作设备</h1><p>设备创建完成了，那 QEMU 是如何模拟设备的行为的？这也是 QEMU 驱动开发最重要的一步，因为以上的部分是实现设备所必须的，我们只需要参考其他已经实现的模块，修改成我们的信息即可。</p>
+<p>但是每个 IP 的寄存器不同，他们的功能也就不同，这是我们真正需要实现的内容。我们知道写驱动其实就是操作各个 IP 的寄存器，以实现想要的功能。对应到 QEMU 中，就成了在操作各个寄存器时，我们要在 QEMU 中将驱动寄存器的功能先模拟出来，再返回给驱动程序。</p>
+<p>以 Timer 为例我想要获取 <code>TimerNLoadCount</code> 的值，真实硬件有这个寄存器保存了值，但是 QEMU 上我们就得维护一个变量去保存这个值。在需要的时候能读取到。比如代码里比较重要的参数是 <code>offset</code>，这个参数是基于外设基地址的偏移，其实就是寄存器的偏移量。比如我们查看 Timer 的手册，<code>TimerNLoadCount</code> 偏移量为 0，所以当我们在驱动中读取地址为 <code>0x2000000</code> 时，代码就会走到这里，因为我们维护了一个 <code>timer_n_load_count</code> 变量，所以我直接将这个变量当前值返回即可，这就是这个寄存器的值。我们要写这个寄存器也同理，我们需要更新 <code>timer_n_load_count</code> 这个变量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// hw/timer/dw_timer.c</span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">uint64_t</span> <span class="hljs-title">dw_timer_read</span><span class="hljs-params">(<span class="hljs-keyword">void</span> *opaque, hwaddr offset,</span></span><br><span class="hljs-params"><span class="hljs-function">                           <span class="hljs-keyword">unsigned</span> size)</span></span><br><span class="hljs-function"></span>&#123;<br>    DWTimerState *s = opaque;<br>    <span class="hljs-keyword">int</span> index = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">switch</span> (offset) &#123;<br>    <span class="hljs-keyword">case</span> TimerNLoadCount:<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>*<span class="hljs-number">0x14</span>:<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>*<span class="hljs-number">0x14</span>:<br>        index = offset / <span class="hljs-number">0x14</span>;<br>        <span class="hljs-keyword">return</span> s-&gt;timer_n_load_count[index];<br>.<br>.<br>.<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">dw_timer_write</span><span class="hljs-params">(<span class="hljs-keyword">void</span> *opaque, hwaddr offset,</span></span><br><span class="hljs-params"><span class="hljs-function">                        <span class="hljs-keyword">uint64_t</span> val64, <span class="hljs-keyword">unsigned</span> size)</span></span><br><span class="hljs-function"></span>&#123;<br>    DWTimerState *s = opaque;<br>    <span class="hljs-keyword">uint32_t</span> value = val64;<br>    <span class="hljs-keyword">int</span> index = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">int</span> change = <span class="hljs-number">0</span>;    <span class="hljs-keyword">switch</span> (offset) &#123;<br>    <span class="hljs-keyword">case</span> TimerNLoadCount:<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>*<span class="hljs-number">0x14</span>:<br>    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>*<span class="hljs-number">0x14</span>:<br>        index = (offset) / <span class="hljs-number">0x14</span>;<br>        s-&gt;timer_n_load_count[index] = value;<br>        set_alarm_time(s,index);<br>        <span class="hljs-keyword">return</span>;<br>.<br>.<br>.<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>读写函数写好了，需要给谁调用呢。我们刚刚提到了，这是个回调函数，我们需要给一段内存注册这个回调函数。如代码所示。我们给 Timer iomem 绑定了读写函数。具体哪一段地址还没定，但是我们定了 <code>0x2000</code> 这么长一段。我觉得这里应该是最高位的一个寄存器偏移量。因为再高就没啥用了，或者就是 SoC 里定的寄存器空间大小 <code>0x1000</code>。这里应该是为了图省事写的一个值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// hw/timer/dw_timer.c</span><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> MemoryRegionOps dw_timer_ops = &#123;<br>    .read = dw_timer_read,<br>    .write = dw_timer_write,<br>    .endianness = DEVICE_NATIVE_ENDIAN,<br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">dw_timer_init</span><span class="hljs-params">(Object *obj)</span></span><br><span class="hljs-function"></span>&#123;<br>    DWTimerState *s = DWTIMER(obj);<br>    <span class="hljs-comment">// 为这段内存注册回调函数</span><br>    memory_region_init_io(&amp;s-&gt;iomem, obj, &amp;dw_timer_ops, s,<br>                          <span class="hljs-string">&quot;dw_timer&quot;</span>, <span class="hljs-number">0x2000</span>);<br>    sysbus_init_mmio(SYS_BUS_DEVICE(obj), &amp;s-&gt;iomem);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>下面在<code>hw/riscv/sifive_e.c</code>里会映射寄存器空间到 QEMU 的内存空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// hw/riscv/sifive_e.c</span><br>sysbus_mmio_map(SYS_BUS_DEVICE(&amp;s-&gt;timer), <span class="hljs-number">0</span>, memmap[SIFIVE_E_DEV_TIMER].base);<br></code></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/haiyonghao/p/14440761.html">QEMU 中基于 QOM 的 VFIO 类的定义 - EwanHai - 博客园</a></li>
+</ol>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2021/11/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9F%E5%A4%96%E8%AE%BE%E5%88%9B%E5%BB%BA/" title="QEMU 源码分析 - 虚拟外设创建" target="_blank" rel="external">http://example.com/2021/11/09/QEMU源码分析-虚拟外设创建/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/11/11/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%A4%96%E8%AE%BE%E6%A8%A1%E6%8B%9F%EF%BC%88%E4%BB%A5GPIO%E4%B8%BA%E4%BE%8B%EF%BC%89/" title="QEMU 源码分析-外设模拟（以 GPIO 为例）"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/10/30/%E8%A7%A3%E5%86%B3%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E9%85%8D%E7%BD%AE%E4%B8%A4%E4%B8%AAGIT%E8%B4%A6%E6%88%B7/" title="解决一台电脑配置两个 GIT 账户"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

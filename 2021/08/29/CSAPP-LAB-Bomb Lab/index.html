@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>CSAPPLAB-Bomb Lab | 夜云泊个人博客</title>
+  <meta name="description" content="Tips缩写注释CSAPP：Computer Systems A Programmer’s Perspective（深入理解计算机操作系统）。CSAPP（C：P166，O：P278）表示书本的中文版第 166 页，英文原版第 278 页。 寄存器信息了解寄存器的基本用途，看到一个汇编代码，可以大概了解这个寄存器是在栈中使用的，还是保存参数的，是调用者保存，还是被调用者保存。   GDB调试过程用到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSAPPLAB-Bomb Lab">
+<meta property="og:url" content="http://example.com/2021/08/29/CSAPP-LAB-Bomb%20Lab/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="Tips缩写注释CSAPP：Computer Systems A Programmer’s Perspective（深入理解计算机操作系统）。CSAPP（C：P166，O：P278）表示书本的中文版第 166 页，英文原版第 278 页。 寄存器信息了解寄存器的基本用途，看到一个汇编代码，可以大概了解这个寄存器是在栈中使用的，还是保存参数的，是调用者保存，还是被调用者保存。   GDB调试过程用到">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830160500.png">
+<meta property="article:published_time" content="2021-08-29T10:40:16.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.112Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="GDB">
+<meta property="article:tag" content="CSAPP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830160500.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2021/08/29/CSAPP-LAB-Bomb%20Lab/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">29</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.15px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/17/Virtual-Box%E7%9A%84%E4%B8%8D%E5%90%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" class="title">Virtual Box 的不同虚拟机网络模式</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-17T08:48:02.000Z" itemprop="datePublished">2023-06-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82/" class="title">计算机网络 - 数据链路层</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:26:10.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/ubuntu-22-04-%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85%E6%B0%B4%E6%98%9F-wifi-%E9%A9%B1%E5%8A%A8Mercury-MW310UH/" class="title">Ubuntu 22.04 系统安装水星 wifi 驱动 Mercury MW310UH</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:00:02.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF%E6%B1%87%E6%80%BB/" class="title">云计算基础技术汇总</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:42:59.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/Devstack%E9%83%A8%E7%BD%B2OpenStack/" class="title">Devstack 部署 OpenStack</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:38:34.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-CSAPP-LAB-Bomb Lab" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CSAPPLAB-Bomb Lab
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/08/29/CSAPP-LAB-Bomb%20Lab/" class="article-date">
+	  <time datetime="2021-08-29T10:40:16.000Z" itemprop="datePublished">2021-08-29</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/CSAPP/" rel="tag">CSAPP</a>, <a class="article-tag-link-link" href="/tags/GDB/" rel="tag">GDB</a>, <a class="article-tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/08/29/CSAPP-LAB-Bomb%20Lab/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h2><h3 id="缩写注释"><a href="#缩写注释" class="headerlink" title="缩写注释"></a>缩写注释</h3><p>CSAPP：Computer Systems A Programmer’s Perspective（深入理解计算机操作系统）。CSAPP（C：P166，O：P278）表示书本的中文版第 166 页，英文原版第 278 页。</p>
+<h3 id="寄存器信息"><a href="#寄存器信息" class="headerlink" title="寄存器信息"></a>寄存器信息</h3><p>了解寄存器的基本用途，看到一个汇编代码，可以大概了解这个寄存器是在栈中使用的，还是保存参数的，是调用者保存，还是被调用者保存。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210830160500.png"></p>
+<div STYLE="page-break-after: always;"></div>
+
+<h3 id="GDB"><a href="#GDB" class="headerlink" title="GDB"></a>GDB</h3><p>调试过程用到的 GDB 命令可以先参考<a target="_blank" rel="noopener" href="https://dunky-z.github.io/2021/08/29/GDB%E8%B0%83%E8%AF%95%E5%85%A5%E9%97%A8/">GDB 调试入门</a>这篇文章。文中所用例子也是摘自与 BombLab 的源码，更容易理解如何使用。还有一定比较重要的是，如何使用 gdb 带参数调试。为了不用每次运行<code>bomb</code>程序都需要重新输入答案，<code>bomb</code>程序可以读取文本信息，在文本文件中写入答案即可免去手动输入。</p>
+<h2 id="phase-1"><a href="#phase-1" class="headerlink" title="phase_1"></a>phase_1</h2><p>拆弹专家已上线，开干！！！！！！！！！！！！！</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;"><br>(gdb) b phase_1<br>(gdb) b explode_bomb<br>(gdb) disas phase_1<br>Dump of assembler code for function phase_1:&#x27;<br>   0x0000000000400ee0 &lt;+0&gt;: sub    $0x8,%rsp<br>   0x0000000000400ee4 &lt;+4&gt;: mov    $0x402400,%esi<br>   0x0000000000400ee9 &lt;+9&gt;: callq  0x401338 &lt;strings_not_equal&gt;<br>   0x0000000000400eee &lt;+14&gt;: test   %eax,%eax<br>   0x0000000000400ef0 &lt;+16&gt;: je     0x400ef7 &lt;phase_1+23&gt;<br>   0x0000000000400ef2 &lt;+18&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x0000000000400ef7 &lt;+23&gt;: add    $0x8,%rsp<br>   0x0000000000400efb &lt;+27&gt;: retq   <br>End of assembler dump.<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>3：将栈指针<code>rsp</code>减去 8 个字节，也就是申请 8 个字节的栈空间</li>
+<li>4：将一个立即数存到寄存器<code>esi</code>中</li>
+<li>5：调用函数<code>strings_not_equal</code>，该函数第一条语句的地址为<code>0x401338</code>。<code>callq</code>指令的执行过程可参考书本 CSAPP（C：P166，O：P278）</li>
+<li>6：使用<code>test</code>命令（同<code>and</code>命令，不修改目标对象的值）来测试<code>eax</code>中的值是否为<code>0</code>，如果为<code>0</code>则跳过引爆炸弹的函数</li>
+<li>7：这一句和上一句是一个整体，如果<code>eax==0</code>,就跳转到<code>0x400ef7</code>，这个地址也就是第 9 行的地址，成功跳过了引爆炸弹函数。意思就是我们输入的某个字符串成功匹配，也就是<code>strings_not_equal</code>函数返回值为 0。</li>
+<li>8：调用函数<code>explode_bomb</code>，引爆炸弹</li>
+<li>9：将栈指针<code>rsp</code>加上 8 个字节，也就是恢复 8 个字节的栈空间</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) disas strings_not_equal <br>Dump of assembler code for function strings_not_equal:<br>=&gt; 0x0000000000401338 &lt;+0&gt;: push   %r12<br>   0x000000000040133a &lt;+2&gt;: push   %rbp<br>   0x000000000040133b &lt;+3&gt;: push   %rbx<br>   0x000000000040133c &lt;+4&gt;: mov    %rdi,%rbx<br>   0x000000000040133f &lt;+7&gt;: mov    %rsi,%rbp<br>   0x0000000000401342 &lt;+10&gt;: callq  0x40131b &lt;string_length&gt;<br>   0x0000000000401347 &lt;+15&gt;: mov    %eax,%r12d<br>   0x000000000040134a &lt;+18&gt;: mov    %rbp,%rdi<br>   0x000000000040134d &lt;+21&gt;: callq  0x40131b &lt;string_length&gt;<br>   0x0000000000401352 &lt;+26&gt;: mov    $0x1,%edx<br>   0x0000000000401357 &lt;+31&gt;: cmp    %eax,%r12d<br>   0x000000000040135a &lt;+34&gt;: jne    0x40139b &lt;strings_not_equal+99&gt;<br>   0x000000000040135c &lt;+36&gt;: movzbl (%rbx),%eax<br>   0x000000000040135f &lt;+39&gt;: test   %al,%al<br>   0x0000000000401361 &lt;+41&gt;: je     0x401388 &lt;strings_not_equal+80&gt;<br>   0x0000000000401363 &lt;+43&gt;: cmp    0x0(%rbp),%al<br>   0x0000000000401366 &lt;+46&gt;: je     0x401372 &lt;strings_not_equal+58&gt;<br>   0x0000000000401368 &lt;+48&gt;: jmp    0x40138f &lt;strings_not_equal+87&gt;<br>   0x000000000040136a &lt;+50&gt;: cmp    0x0(%rbp),%al<br>   0x000000000040136d &lt;+53&gt;: nopl   (%rax)<br>   0x0000000000401370 &lt;+56&gt;: jne    0x401396 &lt;strings_not_equal+94&gt;<br>   0x0000000000401372 &lt;+58&gt;: add    $0x1,%rbx<br>   0x0000000000401376 &lt;+62&gt;: add    $0x1,%rbp<br>   0x000000000040137a &lt;+66&gt;: movzbl (%rbx),%eax<br>   0x000000000040137d &lt;+69&gt;: test   %al,%al<br>   0x000000000040137f &lt;+71&gt;: jne    0x40136a &lt;strings_not_equal+50&gt;<br>   0x0000000000401381 &lt;+73&gt;: mov    $0x0,%edx<br>   0x0000000000401386 &lt;+78&gt;: jmp    0x40139b &lt;strings_not_equal+99&gt;<br>   0x0000000000401388 &lt;+80&gt;: mov    $0x0,%edx<br>   0x000000000040138d &lt;+85&gt;: jmp    0x40139b &lt;strings_not_equal+99&gt;<br>   0x000000000040138f &lt;+87&gt;: mov    $0x1,%edx<br>   0x0000000000401394 &lt;+92&gt;: jmp    0x40139b &lt;strings_not_equal+99&gt;<br>   0x0000000000401396 &lt;+94&gt;: mov    $0x1,%edx<br>   0x000000000040139b &lt;+99&gt;: mov    %edx,%eax<br>   0x000000000040139d &lt;+101&gt;: pop    %rbx<br>   0x000000000040139e &lt;+102&gt;: pop    %rbp<br>   0x000000000040139f &lt;+103&gt;: pop    %r12<br>   0x00000000004013a1 &lt;+105&gt;: retq   <br>End of assembler dump.<br>       <br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>3-5：在函数调用时先保存相关寄存器值，<code>rbp</code>和<code>rbx</code>就是用来保存两个参数的寄存器</li>
+<li>6：将寄存器<code>rdi</code>的值复制到寄存器<code>rbp</code></li>
+<li>7：将寄存器<code>rsi</code>的值复制到寄存器<code>rbx</code></li>
+</ul>
+<p>其实看到这里就一直能够猜到答案是什么了。我们通过之前的<code>phase_1</code>函数能够大概知道需要输入一个值进行比较，如果比较正确就能解除炸弹。现在我们又进入到了这个比较函数，比较函数有两个参数，分别保存在两个寄存器里。我们正常的思维如果写一个比较函数，肯定一个参数是我们输入的值，一个参数是正确的值。</p>
+<p>这里看到了<code>rsi</code>寄存器，我们还记得在<code>phase_1</code>函数中第 4 行的<code>esi</code>寄存器吗？这两个寄存器是同一个寄存器，只不过<code>esi</code>是寄存器的低 32 位，既然<code>esi</code>已经赋值了，那剩下的一个参数保存我们输入的内容。所以<code>esi</code>内存的内容就是我们需要的正确答案。我们只要把寄存器<code>esi</code>中的值打印出来，或者内存地址为<code>0x402400</code>的内容打印出来即可。可以通过以下三条命令查看。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) p (char*)($esi)<br>$5 = 0x402400 &quot;Border relations with Canada have never been better.&quot;<br>(gdb) x/s 0x402400<br>0x402400: &quot;Border relations with Canada have never been better.&quot;<br>(gdb) x/s $esi<br>0x402400: &quot;Border relations with Canada have never been better.&quot;<br></code></pre></td></tr></table></figure>
+
+<p>将答案复制，然后继续运行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">The program being debugged has been started already.<br>Start it from the beginning? (y or n) y<br>Starting program: /home/dominic/learning-linux/bomb/bomb <br>Welcome to my fiendish little bomb. You have 6 phases with<br>which to blow yourself up. Have a nice day!<br>Border relations with Canada have never been better.<br><br>Breakpoint 2, 0x0000000000400ee0 in phase_1 ()<br>(gdb) s<br>Single stepping until exit from function phase_1,<br>which has no line number information.<br>main (argc=&lt;optimized out&gt;, argv=&lt;optimized out&gt;) at bomb.c:75<br>75     phase_defused();                 /* Drat!  They figured it out!<br>(gdb) s<br>77     printf(&quot;Phase 1 defused. How about the next one?\n&quot;);<br></code></pre></td></tr></table></figure>
+
+<p>从 13 行<code>phase_defused()</code>可以知道我们已经解除了炸弹，从 15 行<code>printf</code>函数也可以看到，需要进行下一个炸弹的拆除。过来人的建议，在这里就开始分析<code>phase_2</code>，寻找答案，因为继续执行就要开始输入内容了，将无法调试。</p>
+<h2 id="phase-2"><a href="#phase-2" class="headerlink" title="phase_2"></a>phase_2</h2><p>继续分析第二个炸弹，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) disas phase_2<br>Dump of assembler code for function phase_2:<br>   0x0000000000400efc &lt;+0&gt;: push   %rbp<br>   0x0000000000400efd &lt;+1&gt;: push   %rbx<br>   0x0000000000400efe &lt;+2&gt;: sub    $0x28,%rsp<br>   0x0000000000400f02 &lt;+6&gt;: mov    %rsp,%rsi<br>   0x0000000000400f05 &lt;+9&gt;: callq  0x40145c &lt;read_six_numbers&gt;<br>   0x0000000000400f0a &lt;+14&gt;: cmpl   $0x1,(%rsp)<br>   0x0000000000400f0e &lt;+18&gt;: je     0x400f30 &lt;phase_2+52&gt;<br>   0x0000000000400f10 &lt;+20&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x0000000000400f15 &lt;+25&gt;: jmp    0x400f30 &lt;phase_2+52&gt;<br>   0x0000000000400f17 &lt;+27&gt;: mov    -0x4(%rbx),%eax<br>   0x0000000000400f1a &lt;+30&gt;: add    %eax,%eax<br>   0x0000000000400f1c &lt;+32&gt;: cmp    %eax,(%rbx)<br>   0x0000000000400f1e &lt;+34&gt;: je     0x400f25 &lt;phase_2+41&gt;<br>   0x0000000000400f20 &lt;+36&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x0000000000400f25 &lt;+41&gt;: add    $0x4,%rbx<br>   0x0000000000400f29 &lt;+45&gt;: cmp    %rbp,%rbx<br>   0x0000000000400f2c &lt;+48&gt;: jne    0x400f17 &lt;phase_2+27&gt;<br>   0x0000000000400f2e &lt;+50&gt;: jmp    0x400f3c &lt;phase_2+64&gt;<br>   0x0000000000400f30 &lt;+52&gt;: lea    0x4(%rsp),%rbx<br>   0x0000000000400f35 &lt;+57&gt;: lea    0x18(%rsp),%rbp<br>   0x0000000000400f3a &lt;+62&gt;: jmp    0x400f17 &lt;phase_2+27&gt;<br>   0x0000000000400f3c &lt;+64&gt;: add    $0x28,%rsp<br>   0x0000000000400f40 &lt;+68&gt;: pop    %rbx<br>   0x0000000000400f41 &lt;+69&gt;: pop    %rbp<br>   0x0000000000400f42 &lt;+70&gt;: retq   <br>End of assembler dump.<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>3-6：保存程序入口地址，变量等内容，就不再赘述了</li>
+<li>7: 调用<code>read_six_numbers</code>函数，根据函数名我们可以猜测这个函数需要读入六个数字</li>
+<li>8-9：比较寄存器<code>rsp</code>存的第一个数字是否等于<code>0x1</code>，如果等于就跳转到<code>phase_2+52</code>处继续执行，如果不等于就执行<code>explode_bomb</code>。栈中保存了六个输入的数字，保存顺序是从右往左，假如输入<code>1,2,3,4,5,6</code>。那么入栈的顺序就是<code>6,5,4,3,2,1</code>，寄存器<code>rsp</code>指向栈顶，也就是数字<code>1</code>的地址。</li>
+<li>21:假设第一个数字正确，我们跳转到<code>&lt;+52&gt;</code>位置，也就是第 21 行，将<code>rsp+0x4</code>写入寄存器<code>rbx</code>，栈指针向上移动四个字节，也就是取第二个输入的参数，将它赋给寄存器<code>rbx</code></li>
+<li>22：将<code>rsp+0x18</code>写入寄存器<code>rbp</code>，十六进制<code>0x18=24</code>，4 个字节一个数，刚好 6 个数，就是将输入参数的最后一个位置赋给寄存器<code>rbp</code></li>
+<li>23：跳到<code>phase_2+27</code>继续执行</li>
+<li>12：<code>rbx-0x4</code>赋给寄存器<code>eax</code>。第 21 行我们知道，<code>rbx</code>此时已经到第二个参数了，这一句就是说把第一个参数的值写入寄存器<code>eax</code></li>
+<li>13：将<code>eax</code>翻一倍，第 8 行知道第一个参数值为<code>1</code>，所以此时<code>eax</code>值为<code>2</code></li>
+<li>14-15：比较<code>eax</code>是否等于<code>rbx</code>。<code>rbx</code>此时保存的是第二个参数，这里也就是比较第二个参数是否等于<code>2</code>。如果等于跳转到<code>phase_2+41</code>位置，如果不等于就调用爆炸函数</li>
+<li>17-18：假设第二个参数就是 2，我们跳过了炸弹来到第 17 行，将<code>rbx</code>继续上移，然后比较<code>rbp</code>是否等于<code>rbx</code>，我们知道<code>rbp</code>保存了最后一个参数的地址，所以这里的意思就是看看参数有没有到最后一个参数。</li>
+<li>19：如果<code>rbx&lt;rbp</code>，意思就是还没到最后一个参数，就跳转到<code>phase_2+27</code></li>
+<li>12：再次回到第 12 行，这里就是相当于一个循环了，让<code>rbx</code>一直向上移动，分别存入第 2，3，4，5，6 个参数，在移动到下一个参数时先保存当前参数到寄存器<code>eax</code>让其翻一倍，然后<code>rbx</code>再移动到下一个参数，比较<code>eax==rbx</code>。直到<code>rbx</code>越过了<code>rbp</code>。程序跳转到<code>phase_2+64</code>，将栈空间恢复。</li>
+</ul>
+<p>以上分析也可以得出答案了，我们只要输入一个以<code>1</code>为初值，公比为<code>2</code>，个数为<code>6</code>的等比数列就是答案，也就是<code>1 2 4 8 16 32</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell&#123;.line-numbers&#125;">(gdb) c<br>Continuing.<br>Phase 1 defused. How about the next one?<br>1 2 4 8 16 32<br><br>Breakpoint 6, 0x00000000004015c4 in phase_defused ()<br>(gdb) s<br>Single stepping until exit from function phase_defused,<br>which has no line number information.<br>main (argc=&lt;optimized out&gt;, argv=&lt;optimized out&gt;) at bomb.c:84<br>84     printf(&quot;That&#x27;s number 2.  Keep going!\n&quot;);<br>(gdb) s<br></code></pre></td></tr></table></figure>
+
+<p>这个炸弹的作者应该再心狠手辣一点，把函数名换成<code>read_some_numbers</code>，这样我们就不得不看这个函数的内容了，因为这个函数里还有一个坑，这个坑在函数名字上一句被填了。那就是这个函数会对参数个数做判断，如果小于 5 就爆炸。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) disas read_six_numbers<br>Dump of assembler code for function read_six_numbers:<br>   0x000000000040145c &lt;+0&gt;: sub    $0x18,%rsp<br>   0x0000000000401460 &lt;+4&gt;: mov    %rsi,%rdx<br>   0x0000000000401463 &lt;+7&gt;: lea    0x4(%rsi),%rcx<br>   0x0000000000401467 &lt;+11&gt;: lea    0x14(%rsi),%rax<br>   0x000000000040146b &lt;+15&gt;: mov    %rax,0x8(%rsp)<br>   0x0000000000401470 &lt;+20&gt;: lea    0x10(%rsi),%rax<br>   0x0000000000401474 &lt;+24&gt;: mov    %rax,(%rsp)<br>   0x0000000000401478 &lt;+28&gt;: lea    0xc(%rsi),%r9<br>   0x000000000040147c &lt;+32&gt;: lea    0x8(%rsi),%r8<br>   0x0000000000401480 &lt;+36&gt;: mov    $0x4025c3,%esi<br>   0x0000000000401485 &lt;+41&gt;: mov    $0x0,%eax<br>   0x000000000040148a &lt;+46&gt;: callq  0x400bf0 &lt;__isoc99_sscanf@plt&gt;<br>   0x000000000040148f &lt;+51&gt;: cmp    $0x5,%eax<br>   0x0000000000401492 &lt;+54&gt;: jg     0x401499 &lt;read_six_numbers+61&gt;<br>   0x0000000000401494 &lt;+56&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x0000000000401499 &lt;+61&gt;: add    $0x18,%rsp<br>   0x000000000040149d &lt;+65&gt;: retq   <br>End of assembler dump.<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>3：申请 24 个字节栈空间</li>
+<li>4：<code>rdx=rsi</code>，将输入参数的第一个参数放到寄存器<code>rdx</code>中，为啥是第一个参数，因为<code>rsi</code>现在保存的地址是栈顶位置，栈顶目前保存就是第一个参数。</li>
+<li>5：<code>rcx = rsi + 4</code>，把第二个参数的地址传给寄存器<code>rcx</code></li>
+<li>6：<code>rax = rsi + 20</code>，把第六个参数的地址传给寄存器<code>rax</code></li>
+<li>7：<code>rsp + 8 = rax</code>第八个参数</li>
+<li>8：<code>rax = rsi + 16</code>，把第五个参数传给</li>
+<li>9：<code>rsp = rax</code>第七个参数</li>
+<li>10：<code>r9 = rsi + 12</code>把第四个参数传给寄存器<code>r9</code></li>
+<li>11：<code>r8 = rsi + 8</code>把第三个参数传给寄存器<code>r8</code></li>
+<li>12：</li>
+<li>13：<code>eax = 0</code></li>
+<li>14：调用输入函数<code>sscanf</code></li>
+<li>15-17：函数返回值个数与 5 比较，如果小于 5 就爆炸，否则返回</li>
+</ul>
+<h2 id="phase-3"><a href="#phase-3" class="headerlink" title="phase_3"></a>phase_3</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">0x0000000000400f43 &lt;+0&gt;: sub    $0x18,%rsp<br>0x0000000000400f47 &lt;+4&gt;: lea    0xc(%rsp),%rcx<br>0x0000000000400f4c &lt;+9&gt;: lea    0x8(%rsp),%rdx<br>0x0000000000400f51 &lt;+14&gt;: mov    $0x4025cf,%esi<br>0x0000000000400f56 &lt;+19&gt;: mov    $0x0,%eax<br>0x0000000000400f5b &lt;+24&gt;: callq  0x400bf0 &lt;__isoc99_sscanf@plt&gt;<br>0x0000000000400f60 &lt;+29&gt;: cmp    $0x1,%eax<br>0x0000000000400f63 &lt;+32&gt;: jg     0x400f6a &lt;phase_3+39&gt;<br>0x0000000000400f65 &lt;+34&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>0x0000000000400f6a &lt;+39&gt;: cmpl   $0x7,0x8(%rsp)<br>0x0000000000400f6f &lt;+44&gt;: ja     0x400fad &lt;phase_3+106&gt;<br>0x0000000000400f71 &lt;+46&gt;: mov    0x8(%rsp),%eax<br>0x0000000000400f75 &lt;+50&gt;: jmpq   *0x402470(,%rax,8)<br>0x0000000000400f7c &lt;+57&gt;: mov    $0xcf,%eax<br>0x0000000000400f81 &lt;+62&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400f83 &lt;+64&gt;: mov    $0x2c3,%eax<br>0x0000000000400f88 &lt;+69&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400f8a &lt;+71&gt;: mov    $0x100,%eax<br>0x0000000000400f8f &lt;+76&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400f91 &lt;+78&gt;: mov    $0x185,%eax<br>0x0000000000400f96 &lt;+83&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400f98 &lt;+85&gt;: mov    $0xce,%eax<br>0x0000000000400f9d &lt;+90&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400f9f &lt;+92&gt;: mov    $0x2aa,%eax<br>0x0000000000400fa4 &lt;+97&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400fa6 &lt;+99&gt;: mov    $0x147,%eax<br>0x0000000000400fab &lt;+104&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400fad &lt;+106&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>0x0000000000400fb2 &lt;+111&gt;: mov    $0x0,%eax<br>0x0000000000400fb7 &lt;+116&gt;: jmp    0x400fbe &lt;phase_3+123&gt;<br>0x0000000000400fb9 &lt;+118&gt;: mov    $0x137,%eax<br>0x0000000000400fbe &lt;+123&gt;: cmp    0xc(%rsp),%eax<br>0x0000000000400fc2 &lt;+127&gt;: je     0x400fc9 &lt;phase_3+134&gt;<br>0x0000000000400fc4 &lt;+129&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>0x0000000000400fc9 &lt;+134&gt;: add    $0x18,%rsp<br>0x0000000000400fcd &lt;+138&gt;: retq   <br><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>1：开辟 24 字节的栈空间</li>
+<li>2：<code>rcx = rsp + 12</code>第二个参数</li>
+<li>3：<code>rdx = rsp + 8</code>第一个参数</li>
+<li>4-8：和<code>phase_2</code>里<code>read_six_numbers</code>函数中的第 13 行开始一样，输入数据，判断一下输入参数的个数，只不过这里是返回值个数大于 1，如果参数个数正确就跳到<code>phase_3+39</code>也就是第 10 行，否则引爆炸弹。</li>
+<li>10-11：如果<code>7 &lt; rsp + 8 等价于 7 &lt; rdx 等价于 7 &lt; 第一个参数</code>就跳转到<code>phase_3+106</code>，爆炸。这里确定第一个数必须小于 7</li>
+<li>12：<code>eax = rsp + 8 等价于 eax = 第一个参数</code></li>
+<li>13：跳转至<code>0x402470 + 8 * rax</code>处，具体跳转到哪里根据第一个值做判断</li>
+<li>14：<code>eax = 207</code></li>
+<li>15：跳转至<code>phase_3+123</code>,即 32 行</li>
+<li>16：<code>eax = 707</code></li>
+<li>17：跳转到 32 行</li>
+<li>18：<code>eax = 256</code></li>
+<li>19：跳转到 32 行</li>
+<li>20：<code>eax = 389</code></li>
+<li>21-27：以此类推</li>
+<li>29：<code>eax = 0</code></li>
+<li>30：</li>
+<li>31：<code>eax = 311</code></li>
+<li>32-34：比较<code>eax</code>和<code>rsp + 12</code> 等价于 比较 第二个参数和<code>eax</code>。如果相等就返回，如果不等就引爆。</li>
+</ul>
+<p>分析至此，我们也就知道了程序的大概流程，输入两个值，第一个值必须小于等于 7，第二个值根据第一个值来确定，具体等于多少，根据跳转表确定，因为第一个值有八个数，也就对应着汇编中八段寄存器<code>eax</code>赋值的过程，我们只要输入第一个合法的数值，然后再打印出寄存器<code>eax</code>的值，即可确定答案。</p>
+<p>比如我们先测试一下第一个值为 0 时，对应的第二个值为多少，我们输入<code>0  10</code>，因为只是测试，第二个值任意。</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs stata">That&#x27;s number 2.  <span class="hljs-keyword">Keep</span> going! <span class="hljs-comment">//接上个炸弹后面</span><br>88     <span class="hljs-keyword">input</span> = read_line();<br>(gdb) <span class="hljs-keyword">n</span><br>0 10              <span class="hljs-comment">//输入测试答案</span><br>89     phase_3(<span class="hljs-keyword">input</span>);<br>(gdb) <span class="hljs-keyword">n</span><br>Breakpoint 4, 0x0000000000400f43 <span class="hljs-keyword">in</span> phase_3 ()<br>(gdb) <span class="hljs-keyword">n</span><br>Single stepping until <span class="hljs-keyword">exit</span> from function phase_3,<br><span class="hljs-keyword">which</span> has <span class="hljs-keyword">no</span> <span class="hljs-keyword">line</span> number information.<br>Breakpoint 2, 0x000000000040143a <span class="hljs-keyword">in</span> explode_bomb ()<br>(gdb) p <span class="hljs-variable">$eax</span><br><span class="hljs-variable">$14</span> = 207         <span class="hljs-comment">//207即是答案</span><br></code></pre></td></tr></table></figure>
+
+<p>输入真正答案测试，</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs awk">(gdb) n<br><span class="hljs-number">0</span> <span class="hljs-number">207</span>                         <span class="hljs-regexp">//</span>输入答案<br><span class="hljs-number">89</span>     phase_3(input);<br>(gdb) n<br>Breakpoint <span class="hljs-number">4</span>, <span class="hljs-number">0</span>x0000000000400f43 <span class="hljs-keyword">in</span> phase_3 ()<br>(gdb) n<br>Single stepping until <span class="hljs-keyword">exit</span> from <span class="hljs-keyword">function</span> phase_3,<br>which has no line number information.<br>main (argc=&lt;optimized out&gt;, argv=&lt;optimized out&gt;) at bomb.c:<span class="hljs-number">90</span><br><span class="hljs-number">90</span>     phase_defused();    <span class="hljs-regexp">//</span>炸弹拆除<br>(gdb) <br><span class="hljs-number">91</span>     printf(<span class="hljs-string">&quot;Halfway there!\n&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>我们上面说过，第一个值有八种可能，所以这题答案也有八个，我们只要挨个测试<code>0-7</code>，分别打印出寄存器<code>eax</code>的值就可以得到所有答案。他们分别是</p>
+<figure class="highlight basic"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs basic"><span class="hljs-symbol">0 </span><span class="hljs-number">207</span><br><span class="hljs-symbol">1 </span><span class="hljs-number">311</span><br><span class="hljs-symbol">2 </span><span class="hljs-number">707</span><br><span class="hljs-symbol">3 </span><span class="hljs-number">256</span><br><span class="hljs-symbol">4 </span><span class="hljs-number">389</span><br><span class="hljs-symbol">5 </span><span class="hljs-number">206</span><br><span class="hljs-symbol">6 </span><span class="hljs-number">682</span><br><span class="hljs-symbol">7 </span><span class="hljs-number">327</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="phase-4"><a href="#phase-4" class="headerlink" title="phase_4"></a>phase_4</h2><p>行百里者半九十，NO</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) disas phase_4<br>Dump of assembler code for function phase_4:<br>   0x000000000040100c &lt;+0&gt;: sub    $0x18,%rsp<br>   0x0000000000401010 &lt;+4&gt;: lea    0xc(%rsp),%rcx<br>   0x0000000000401015 &lt;+9&gt;: lea    0x8(%rsp),%rdx<br>   0x000000000040101a &lt;+14&gt;: mov    $0x4025cf,%esi<br>   0x000000000040101f &lt;+19&gt;: mov    $0x0,%eax<br>   0x0000000000401024 &lt;+24&gt;: callq  0x400bf0 &lt;__isoc99_sscanf@plt&gt;<br>   0x0000000000401029 &lt;+29&gt;: cmp    $0x2,%eax<br>   0x000000000040102c &lt;+32&gt;: jne    0x401035 &lt;phase_4+41&gt;<br>   0x000000000040102e &lt;+34&gt;: cmpl   $0xe,0x8(%rsp)<br>   0x0000000000401033 &lt;+39&gt;: jbe    0x40103a &lt;phase_4+46&gt;<br>   0x0000000000401035 &lt;+41&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x000000000040103a &lt;+46&gt;: mov    $0xe,%edx<br>   0x000000000040103f &lt;+51&gt;: mov    $0x0,%esi<br>   0x0000000000401044 &lt;+56&gt;: mov    0x8(%rsp),%edi<br>   0x0000000000401048 &lt;+60&gt;: callq  0x400fce &lt;func4&gt;<br>   0x000000000040104d &lt;+65&gt;: test   %eax,%eax<br>   0x000000000040104f &lt;+67&gt;: jne    0x401058 &lt;phase_4+76&gt;<br>   0x0000000000401051 &lt;+69&gt;: cmpl   $0x0,0xc(%rsp)<br>   0x0000000000401056 &lt;+74&gt;: je     0x40105d &lt;phase_4+81&gt;<br>   0x0000000000401058 &lt;+76&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>   0x000000000040105d &lt;+81&gt;: add    $0x18,%rsp<br>   0x0000000000401061 &lt;+85&gt;: retq   <br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>1-8：开辟空间，保存参数信息，调用输入函数，和上面的分析重复，不再赘述。注意的是第 6 行，<code>x/s 0x4025cf</code>可知两个参数是整型数值。</li>
+<li>9-10：参数个数必须等于 2，否则引爆</li>
+<li>11-12：<code>14</code>与<code>rsp + 8</code>比较，等价于<code>14</code>与第一个参数比较。表示第一个参数必须小于等于 14，否则引爆。</li>
+<li>14：<code>edx = 14</code></li>
+<li>15：<code>esi = 0</code></li>
+<li>16：<code>edi = rsp + 8</code>即<code>edi = 第一个参数</code></li>
+<li>17：调用函数<code>fun4</code>，参数分别为<code>edi 0 14</code></li>
+<li>18：测试返回值是否为 0，如果不为 0，引爆</li>
+<li>20-22：比较<code>0</code>和<code>rsp + 12</code>，如果不等，引爆，否则返回</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">(gdb) disas func4<br>Dump of assembler code for function func4:<br>   0x0000000000400fce &lt;+0&gt;: sub    $0x8,%rsp<br>   0x0000000000400fd2 &lt;+4&gt;: mov    %edx,%eax<br>   0x0000000000400fd4 &lt;+6&gt;: sub    %esi,%eax<br>   0x0000000000400fd6 &lt;+8&gt;: mov    %eax,%ecx<br>   0x0000000000400fd8 &lt;+10&gt;: shr    $0x1f,%ecx<br>   0x0000000000400fdb &lt;+13&gt;: add    %ecx,%eax<br>   0x0000000000400fdd &lt;+15&gt;: sar    %eax<br>   0x0000000000400fdf &lt;+17&gt;: lea    (%rax,%rsi,1),%ecx<br>   0x0000000000400fe2 &lt;+20&gt;: cmp    %edi,%ecx<br>   0x0000000000400fe4 &lt;+22&gt;: jle    0x400ff2 &lt;func4+36&gt;<br>   0x0000000000400fe6 &lt;+24&gt;: lea    -0x1(%rcx),%edx<br>   0x0000000000400fe9 &lt;+27&gt;: callq  0x400fce &lt;func4&gt;<br>   0x0000000000400fee &lt;+32&gt;: add    %eax,%eax<br>   0x0000000000400ff0 &lt;+34&gt;: jmp    0x401007 &lt;func4+57&gt;<br>   0x0000000000400ff2 &lt;+36&gt;: mov    $0x0,%eax<br>   0x0000000000400ff7 &lt;+41&gt;: cmp    %edi,%ecx<br>   0x0000000000400ff9 &lt;+43&gt;: jge    0x401007 &lt;func4+57&gt;<br>   0x0000000000400ffb &lt;+45&gt;: lea    0x1(%rcx),%esi<br>   0x0000000000400ffe &lt;+48&gt;: callq  0x400fce &lt;func4&gt;<br>   0x0000000000401003 &lt;+53&gt;: lea    0x1(%rax,%rax,1),%eax<br>   0x0000000000401007 &lt;+57&gt;: add    $0x8,%rsp<br>   0x000000000040100b &lt;+61&gt;: retq   <br></code></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs C">func (edi, esi, edx)<br>&#123;<br>   <span class="hljs-comment">// edi = 第一个参数, esi = 0, edx = 14</span><br>   eax = edx            <span class="hljs-comment">// 4:mov %edx, %eax</span><br>   eax = eax -esi       <span class="hljs-comment">// 5:sub esi, %eax</span><br>   eax = edx -esi<br>   ecx = eax            <span class="hljs-comment">// 6:mov %eax, %ecx</span><br>   ecx = edx - esi<br>   eсx = ecx &gt;&gt; <span class="hljs-number">31</span>      <span class="hljs-comment">// 7:shr  $0x1f, %ecx</span><br>   ecx = (edx - esi) &gt;&gt; <span class="hljs-number">31</span><br>   eax = eax + ecx      <span class="hljs-comment">// 8:add %ecx, %eax</span><br>   eax = (edx - esi) + ((edx - esi) &gt;&gt; <span class="hljs-number">31</span>)<span class="hljs-comment">//替换eax和ecx</span><br>   eax = eax &gt; <span class="hljs-number">1</span>;       <span class="hljs-comment">// 9:sar %eax</span><br>   eax = ((edx - esi) +((edx -esi) &gt;&gt; <span class="hljs-number">31</span>)) / <span class="hljs-number">2</span><br>   ecx = eax + esi * <span class="hljs-number">1</span>   <span class="hljs-comment">// 10:lea (rax,ersi,1), %ecx</span><br>   ecx = ((edx - esi) +((edx -esi) &gt;&gt; <span class="hljs-number">31</span>)) / <span class="hljs-number">2</span> + esi * <span class="hljs-number">1</span><br><br>   ecx = ((<span class="hljs-number">14</span> - <span class="hljs-number">0</span>) + ((<span class="hljs-number">14</span> - <span class="hljs-number">0</span>) &gt;&gt; <span class="hljs-number">31</span>)) / <span class="hljs-number">2</span> + <span class="hljs-number">0</span><br>   ecx = <span class="hljs-number">7</span><br><br>   <span class="hljs-comment">// 11:cmp %edi, %ecx</span><br>   <span class="hljs-keyword">if</span> (ecx &lt;= edi)<br>   &#123;<br>      <span class="hljs-comment">// 12:jle 400ff2</span><br>      eax = <span class="hljs-number">0</span>    <span class="hljs-comment">// mov $0x0,%eax</span><br>      <span class="hljs-comment">// 18:cmp %edi, %ecx</span><br>      <span class="hljs-keyword">if</span>(ecx &gt;= edi)<br>      &#123;<br>         <span class="hljs-comment">// 19:jge    0x401007 &lt;func4+57&gt;</span><br>         <span class="hljs-keyword">return</span>;<br>         <span class="hljs-comment">//由此可以得知道 edx == edi</span><br>      &#125;<br>   &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="phase-5"><a href="#phase-5" class="headerlink" title="phase_5"></a>phase_5</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs &#123;.line-numbers&#125;">0x0000000000401062 &lt;+0&gt;: push   %rbx<br>0x0000000000401063 &lt;+1&gt;: sub    $0x20,%rsp<br>0x0000000000401067 &lt;+5&gt;: mov    %rdi,%rbx<br>0x000000000040106a &lt;+8&gt;: mov    %fs:0x28,%rax<br>0x0000000000401073 &lt;+17&gt;: mov    %rax,0x18(%rsp)<br>0x0000000000401078 &lt;+22&gt;: xor    %eax,%eax<br>0x000000000040107a &lt;+24&gt;: callq  0x40131b &lt;string_length&gt;<br>0x000000000040107f &lt;+29&gt;: cmp    $0x6,%eax<br>0x0000000000401082 &lt;+32&gt;: je     0x4010d2 &lt;phase_5+112&gt;<br>0x0000000000401084 &lt;+34&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>0x0000000000401089 &lt;+39&gt;: jmp    0x4010d2 &lt;phase_5+112&gt;<br>0x000000000040108b &lt;+41&gt;: movzbl (%rbx,%rax,1),%ecx<br>0x000000000040108f &lt;+45&gt;: mov    %cl,(%rsp)<br>0x0000000000401092 &lt;+48&gt;: mov    (%rsp),%rdx<br>0x0000000000401096 &lt;+52&gt;: and    $0xf,%edx<br>0x0000000000401099 &lt;+55&gt;: movzbl 0x4024b0(%rdx),%edx<br>0x00000000004010a0 &lt;+62&gt;: mov    %dl,0x10(%rsp,%rax,1)<br>0x00000000004010a4 &lt;+66&gt;: add    $0x1,%rax<br>0x00000000004010a8 &lt;+70&gt;: cmp    $0x6,%rax<br>0x00000000004010ac &lt;+74&gt;: jne    0x40108b &lt;phase_5+41&gt;<br>0x00000000004010ae &lt;+76&gt;: movb   $0x0,0x16(%rsp)<br>0x00000000004010b3 &lt;+81&gt;: mov    $0x40245e,%esi<br>   0x00000000004010b8 &lt;+86&gt;: lea    0x10(%rsp),%rdi<br>0x00000000004010bd &lt;+91&gt;: callq  0x401338 &lt;strings_not_equal&gt;<br>0x00000000004010c2 &lt;+96&gt;: test   %eax,%eax<br>0x00000000004010c4 &lt;+98&gt;: je     0x4010d9 &lt;phase_5+119&gt;<br>0x00000000004010c6 &lt;+100&gt;: callq  0x40143a &lt;explode_bomb&gt;<br>0x00000000004010cb &lt;+105&gt;: nopl   0x0(%rax,%rax,1)<br>0x00000000004010d0 &lt;+110&gt;: jmp    0x4010d9 &lt;phase_5+119&gt;<br>0x00000000004010d2 &lt;+112&gt;: mov    $0x0,%eax<br>0x00000000004010d7 &lt;+117&gt;: jmp    0x40108b &lt;phase_5+41&gt;<br>0x00000000004010d9 &lt;+119&gt;: mov    0x18(%rsp),%rax<br>0x00000000004010de &lt;+124&gt;: xor    %fs:0x28,%rax<br>0x00000000004010e7 &lt;+133&gt;: je     0x4010ee &lt;phase_5+140&gt;<br>0x00000000004010e9 &lt;+135&gt;: callq  0x400b30 &lt;__stack_chk_fail@plt&gt;<br>0x00000000004010ee &lt;+140&gt;: add    $0x20,%rsp<br>0x00000000004010f2 &lt;+144&gt;: pop    %rbx<br>0x00000000004010f3 &lt;+145&gt;: retq   <br><br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2021/08/29/CSAPP-LAB-Bomb%20Lab/" title="CSAPPLAB-Bomb Lab" target="_blank" rel="external">http://example.com/2021/08/29/CSAPP-LAB-Bomb Lab/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/08/30/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" title="Linux 操作系统-进程管理"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/08/29/GDB%E8%B0%83%E8%AF%95%E5%85%A5%E9%97%A8/" title="GDB 调试入门"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

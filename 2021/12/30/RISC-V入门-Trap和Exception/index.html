@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>RISC-V 入门-Trap | 夜云泊个人博客</title>
+  <meta name="description" content="Trap 简介控制流（Control Flow）和 Trap 控制流（Control Flow）从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列$$a_0,a_1,\dotsb,a_{n-1}$$每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。 异常控制流（Exceptional Control Flo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RISC-V 入门-Trap">
+<meta property="og:url" content="http://example.com/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="Trap 简介控制流（Control Flow）和 Trap 控制流（Control Flow）从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列$$a_0,a_1,\dotsb,a_{n-1}$$每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。 异常控制流（Exceptional Control Flo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png">
+<meta property="article:published_time" content="2021-12-30T05:42:34.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.553Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="RISCV">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">29</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.15px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/17/Virtual-Box%E7%9A%84%E4%B8%8D%E5%90%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" class="title">Virtual Box 的不同虚拟机网络模式</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-17T08:48:02.000Z" itemprop="datePublished">2023-06-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82/" class="title">计算机网络 - 数据链路层</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:26:10.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/11/ubuntu-22-04-%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85%E6%B0%B4%E6%98%9F-wifi-%E9%A9%B1%E5%8A%A8Mercury-MW310UH/" class="title">Ubuntu 22.04 系统安装水星 wifi 驱动 Mercury MW310UH</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-11T02:00:02.000Z" itemprop="datePublished">2023-06-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF%E6%B1%87%E6%80%BB/" class="title">云计算基础技术汇总</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:42:59.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/09/Devstack%E9%83%A8%E7%BD%B2OpenStack/" class="title">Devstack 部署 OpenStack</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-09T13:38:34.000Z" itemprop="datePublished">2023-06-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-RISC-V入门-Trap和Exception" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      RISC-V 入门-Trap
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/" class="article-date">
+	  <time datetime="2021-12-30T05:42:34.000Z" itemprop="datePublished">2021-12-30</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/RISCV/" rel="tag">RISCV</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="Trap-简介"><a href="#Trap-简介" class="headerlink" title="Trap 简介"></a>Trap 简介</h1><h2 id="控制流（Control-Flow）和-Trap"><a href="#控制流（Control-Flow）和-Trap" class="headerlink" title="控制流（Control Flow）和 Trap"></a>控制流（Control Flow）和 Trap</h2><ul>
+<li>控制流（Control Flow）<br>从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列<br>$$a_0,a_1,\dotsb,a_{n-1}$$<br>每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。</li>
+<li>异常控制流（Exceptional Control Flow, ECF）<br>系统也必须能够对系统状态的变化做出反应，这些系统状态不是被内部程序变量捕获的，而且也不一定要和程序的执行相关。比如，一个硬件定时器定期产生信号，这个事件必须得到处理。包到达网络适配器后，必须存放在内存中。程序向磁盘请求数据，然后休眠，直到被通知说数据已就绪。现代系统通过使控制流发生突变来对这些情况做出反应。我们把这些突变称为异常控制流。<ul>
+<li>exception</li>
+<li>interrupt</li>
+</ul>
+</li>
+</ul>
+<p>RISC-V 把 <code>ECF</code> 统称为 <code>Trap</code>。</p>
+<h2 id="RISC-V-Trap-处理中涉及的寄存器"><a href="#RISC-V-Trap-处理中涉及的寄存器" class="headerlink" title="RISC-V Trap 处理中涉及的寄存器"></a>RISC-V Trap 处理中涉及的寄存器</h2><table>
+<thead>
+<tr>
+<th align="center">寄存器</th>
+<th align="center">全称</th>
+<th align="left">用途说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">mtvec</td>
+<td align="center">Machine Trap-Vector Base-Address</td>
+<td align="left">它保存发生异常时处理器需要跳转到的地址。</td>
+</tr>
+<tr>
+<td align="center">mepc</td>
+<td align="center">Machine Exception Program Counter</td>
+<td align="left">当 trap 发生时，hart 会将发生 trap 所对应的指令的地址值（pc）保存在 mepc 中。</td>
+</tr>
+<tr>
+<td align="center">mcause</td>
+<td align="center">Machine Cause</td>
+<td align="left">当 trap 发生时，hart 会设置该寄存器通知我们 trap 发生的原因。</td>
+</tr>
+<tr>
+<td align="center">mtval</td>
+<td align="center">Machine Trap Value</td>
+<td align="left">它保存了 exception 发生时的附加信息：譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身，对于其他异常，它的值为 0。</td>
+</tr>
+<tr>
+<td align="center">mstatus</td>
+<td align="center">Machine Status</td>
+<td align="left">用于跟踪和控制 hart 的当前操作状态（特别地，包括关闭和打开全局中断）。</td>
+</tr>
+<tr>
+<td align="center">mscratch</td>
+<td align="center">Machine Scratch</td>
+<td align="left">Machine 模式下专用寄存器，我们可以自己定义其用法，譬如用该寄存器保存当前在 hart 上运行的 task 的上下文（context）的地址。</td>
+</tr>
+</tbody></table>
+<h3 id="mtvec（Machine-Trap-Vector-Base-Address）"><a href="#mtvec（Machine-Trap-Vector-Base-Address）" class="headerlink" title="mtvec（Machine Trap-Vector Base-Address）"></a>mtvec（Machine Trap-Vector Base-Address）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png"></p>
+<blockquote>
+<p>WARL: Write Any Values, Read Legal Values</p>
+</blockquote>
+<ul>
+<li><p>BASE：trap 入口函数的基地址，必须保证四字节对齐；</p>
+</li>
+<li><p>MODE：进一步用于控制入口函数的地址配置方式：</p>
+<ul>
+<li><p>Direct，所有异常和中断发生后，PC都跳转到BASE指定的地址处；</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png"></p>
+<p>通常中断处理函数内部会有<code>switch case</code>条件语句，通过不同的中断采用不同的处理方式。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">reg_t</span> <span class="hljs-title">trap_handler</span><span class="hljs-params">(<span class="hljs-keyword">reg_t</span> epc, <span class="hljs-keyword">reg_t</span> cause)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">reg_t</span> return_pc = epc;<br>    <span class="hljs-keyword">reg_t</span> cause_code = cause &amp; <span class="hljs-number">0xfff</span>;<br>    <br>    <span class="hljs-keyword">if</span> (cause &amp; <span class="hljs-number">0x80000000</span>) &#123;<br>        <span class="hljs-comment">/* Asynchronous trap - interrupt */</span><br>        <span class="hljs-keyword">switch</span> (cause_code) &#123;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:<br>            uart_puts(<span class="hljs-string">&quot;software interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">7</span>:<br>            uart_puts(<span class="hljs-string">&quot;timer interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">11</span>:<br>            uart_puts(<span class="hljs-string">&quot;external interruption!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">default</span>:<br>            uart_puts(<span class="hljs-string">&quot;unknown async exception!\n&quot;</span>);<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">/* Synchronous trap - exception */</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Sync exceptions!, code = %d\n&quot;</span>, cause_code);<br>        panic(<span class="hljs-string">&quot;OOPS! What can I do!&quot;</span>);<br>        <span class="hljs-comment">//return_pc += 4;</span><br>    &#125;<br><br>    <span class="hljs-keyword">return</span> return_pc;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>Vectored，异常的处理方式同上，但是中断的入口地址以数组方式排列；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs asm">trap_vector:<br>    # save context(registers).<br>    csrrw t6, mscratch, t6 # swap t6 and mscratch<br>    reg_save t6<br><br>    # Save the actual t6 register, which we swapped into<br>    # mscratch<br>    mv t5, t6  # t5 points to the context of current task<br>    csrr t6, mscratch # read t6 back from mscratch<br>    sw t6, 120(t5) # save t6 with t5 as base<br><br>    # Restore the context pointer into mscratch<br>    csrw mscratch, t5<br><br>    # call the C trap handler in trap.c<br>    csrr a0, mepc<br>    csrr a1, mcause<br>    call trap_handler<br><br>    # trap_handler will return the return address via a0.<br>    csrw mepc, a0<br><br>    # restore context(registers).<br>    csrr t6, mscratch<br>    reg_restore t6<br><br>    # return to whatever we were doing before trap.<br>    mret<br></code></pre></td></tr></table></figure>
+
+<p>MODE可取值如下：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png"></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>采用<code>Vectored</code>方式效率更高。</p>
+<h3 id="mepc（Machine-Exception-Program-Counter）"><a href="#mepc（Machine-Exception-Program-Counter）" class="headerlink" title="mepc（Machine Exception Program Counter）"></a>mepc（Machine Exception Program Counter）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png"></p>
+<p>当<code>trap</code>发生时，<code>pc</code>会被替换为 <code>mtvec</code>设定的地址，同时<code>hart</code> 会设置<code>mepc</code>为当前指令或者下一条指令的地址（处理异常时，mepc 为当前指令的地址，处理中断时，mepc 为下一条指令的地址）。</p>
+<p>当我们需要退出<code>trap</code> 时可以调用特殊的 <code>mret</code> 指令，该指令会将<code>mepc</code>中的值恢复到<code>pc</code>中（实现返回的效果）；</p>
+<p>在处理 <code>trap</code> 的程序中我们可以修改 <code>mepc</code> 的值达到改变<code>mret</code> 返回地址的目的。</p>
+<h3 id="mcause（Machine-Cause）"><a href="#mcause（Machine-Cause）" class="headerlink" title="mcause（Machine Cause）"></a>mcause（Machine Cause）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png"></p>
+<p>当 <code>trap</code> 发生时，<code>hart</code> 会设置该寄存器通知我们 <code>trap</code> 发生的原因。</p>
+<p>最高位 <code>Interrupt</code> 为 1 时标识了当前 <code>trap</code> 为<code>interrupt</code>，否则是<code>exception</code>。</p>
+<p>剩余的 <code>Exception Code</code> 用于标识具体的<code>interrupt</code>或者<code>exception</code> 的种类。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png"></p>
+<h3 id="mtval（Machine-Trap-Value）"><a href="#mtval（Machine-Trap-Value）" class="headerlink" title="mtval（Machine Trap Value）"></a>mtval（Machine Trap Value）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png"></p>
+<p>当 <code>trap</code> 发生时，除了通过<code>mcause</code> 可以获取<code>exception</code>的种类 <code>code</code> 值外，<code>hart</code> 还提供了 <code>mtval</code> 来提供<code>exception</code> 的其他信息来辅助我们执行更进一步的操作。</p>
+<p>具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。</p>
+<h3 id="mstatus（Machine-Status）"><a href="#mstatus（Machine-Status）" class="headerlink" title="mstatus（Machine Status）"></a>mstatus（Machine Status）</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png"></p>
+<p>寄存器各个位可以大致分为以下三类，其中<code>x</code>可以为<code>U,S,M</code>。表示用户模式以及两种特权模式。</p>
+<ul>
+<li><p><code>xIE</code>（x=M/S/U）: 分别用于打开（1）或者关闭（0）M/S/U 模式下的全局中断。当 <code>trap</code> 发生时，<code>hart</code>会自动将 <code>xIE</code> 设置为 0。</p>
+</li>
+<li><p><code>xPIE</code>（x=M/S/U）:当 <code>trap</code> 发生时用于保存 <code>trap</code> 发生之前的 <code>xIE</code> 值。</p>
+</li>
+<li><p><code>xPP</code>（x=M/S）:当 <code>trap</code> 发生时用于保存 <code>trap</code> 发生之前的权限级别值。注意没有 <code>UPP</code>。因为异常只会从低权限向高权限跳转，通常低权限如<code>user</code>模式，会被置于上方，高权限如内核一般都会画在下方，这也解释了异常，中断处理为什么叫<code>trap</code>，因为是向下陷入的过程。</p>
+</li>
+<li><p>其他标志位涉及内存访问权限、虚拟内存控制等，暂不考虑。</p>
+</li>
+</ul>
+<h2 id="Trap-处理流程"><a href="#Trap-处理流程" class="headerlink" title="Trap 处理流程"></a>Trap 处理流程</h2><blockquote>
+<p>主要为 Exception，下一章详解 Interrupt。</p>
+</blockquote>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>将<code>trap</code>的基地址写入寄存器，</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png"></p>
+<h3 id="Top-Half"><a href="#Top-Half" class="headerlink" title="Top Half"></a>Top Half</h3><ol>
+<li>把 <code>mstatus</code> 的 <code>MIE</code> 值复制到 <code>MPIE</code> 中，清除 <code>mstatus</code>中的 <code>MIE</code> 标志位，效果是中断被禁止。</li>
+<li>设置<code>mepc</code>，同时<code>PC</code>被设置为 <code>mtvec</code>。（需要注意的是，对于<code>exception</code>， <code>mepc</code>指向导致异常的指令；对于 <code>interrupt</code>，它指向被中断的指令的下一条指令的位置。）</li>
+<li>根据 <code>trap</code> 的种类设置 <code>mcause</code>，并根据需要为<code>mtval</code>设置附加信息。</li>
+<li>将 <code>trap</code> 发生之前的权限模式保存在 <code>mstatus</code> 的 <code>MPP</code> 域中，再把<code>hart</code> 权限模式更改为 <code>M</code>（也就是说无论在任何 <code>Level</code> 下触发<code>trap</code>，<code>hart</code> 首先切换到 <code>Machine</code> 模式）。</li>
+</ol>
+<h3 id="Bottom-Half"><a href="#Bottom-Half" class="headerlink" title="Bottom Half"></a>Bottom Half</h3><ol>
+<li>保存（save）当前控制流的上下文信息（利用 <code>mscratch</code>）；</li>
+<li>调用 C 语言的 <code>trap handler</code>;</li>
+<li>从 <code>trap handler</code> 函数返回，<code>mepc</code>的值有可能需要调整；</li>
+<li>恢复（restore）上下文的信息；</li>
+<li>执行<code>MRET</code>指令返回到 <code>trap</code>之前的状态。</li>
+</ol>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">trap_vector</span>:<br> <span class="hljs-comment"># save context(registers).</span><br> <span class="hljs-attribute">csrrw</span> t<span class="hljs-number">6</span>, mscratch, t<span class="hljs-number">6</span> # swap t<span class="hljs-number">6</span> and mscratch<br> <span class="hljs-attribute">reg_save</span> t<span class="hljs-number">6</span><br><br> <span class="hljs-comment"># Save the actual t6 register, which we swapped into</span><br> <span class="hljs-comment"># mscratch</span><br> <span class="hljs-attribute">mv</span> t<span class="hljs-number">5</span>, t<span class="hljs-number">6</span>  # t<span class="hljs-number">5</span> points to the context of current task<br> <span class="hljs-attribute">csrr</span> t<span class="hljs-number">6</span>, mscratch # read t<span class="hljs-number">6</span> back from mscratch<br> <span class="hljs-attribute">sw</span> t<span class="hljs-number">6</span>, <span class="hljs-number">120</span>(t<span class="hljs-number">5</span>) # save t<span class="hljs-number">6</span> with t<span class="hljs-number">5</span> as base<br><br> <span class="hljs-comment"># Restore the context pointer into mscratch</span><br> <span class="hljs-attribute">csrw</span> mscratch, t<span class="hljs-number">5</span><br><br> <span class="hljs-comment"># call the C trap handler in trap.c</span><br> <span class="hljs-attribute">csrr</span> a<span class="hljs-number">0</span>, mepc<br> <span class="hljs-attribute">csrr</span> a<span class="hljs-number">1</span>, mcause<br> <span class="hljs-attribute">call</span> trap_handler<br><br> <span class="hljs-comment"># trap_handler will return the return address via a0.</span><br> <span class="hljs-attribute">csrw</span> mepc, a<span class="hljs-number">0</span><br><br> <span class="hljs-comment"># restore context(registers).</span><br> <span class="hljs-attribute">csrr</span> t<span class="hljs-number">6</span>, mscratch<br> <span class="hljs-attribute">reg_restore</span> t<span class="hljs-number">6</span><br><br> <span class="hljs-comment"># return to whatever we were doing before trap.</span><br> <span class="hljs-attribute">mret</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="退出-trap：编程调用-MRET-指令"><a href="#退出-trap：编程调用-MRET-指令" class="headerlink" title="退出 trap：编程调用 MRET 指令"></a>退出 trap：编程调用 MRET 指令</h3><p>针对不同权限级别下如何退出 trap 有各自的返回指令<code>xRET</code>（x = M/S/U）。以在 <code>M</code> 模式下执行<code>mret</code> 指令为例，会执行如下操作：</p>
+<ul>
+<li>当前 <code>Hart 的权限级别 = mstatus.MPP</code>；<code>mstatus.MPP = U</code>（如果 hart 不支持 U 则为 M）</li>
+<li><code>mstatus.MIE = mstatus.MPIE</code>; <code>mstatus.MPIE = 1</code></li>
+<li><code>pc = mepc</code></li>
+</ul>
+<h1 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h1><h2 id="中断分类"><a href="#中断分类" class="headerlink" title="中断分类"></a>中断分类</h2><ul>
+<li><p>本地（Local）中断</p>
+<ul>
+<li>软中断software interrupt</li>
+<li>定时器中断 timer interrupt</li>
+</ul>
+</li>
+<li><p>全局（Global）中断</p>
+<ul>
+<li>外部中断 externel interrupt</li>
+</ul>
+</li>
+</ul>
+<h2 id="RISC-V-中断编程中涉及的寄存器"><a href="#RISC-V-中断编程中涉及的寄存器" class="headerlink" title="RISC-V 中断编程中涉及的寄存器"></a>RISC-V 中断编程中涉及的寄存器</h2><table>
+<thead>
+<tr>
+<th align="center">寄存器</th>
+<th align="center">全称</th>
+<th align="left">用途说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">mie</td>
+<td align="center">Machine Interrupt Enable</td>
+<td align="left">用于进一步控制（打开和关闭）software interrupt/timer interrupt/external interrupt</td>
+</tr>
+<tr>
+<td align="center">mip</td>
+<td align="center">Machine Interrupt Pending</td>
+<td align="left">它列出目前已发生等待处理的中断。</td>
+</tr>
+</tbody></table>
+<h3 id="mie-Machine-Interrupt-Enable"><a href="#mie-Machine-Interrupt-Enable" class="headerlink" title="mie(Machine Interrupt Enable)"></a>mie(Machine Interrupt Enable)</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png"></p>
+<p>打开（1）或者关闭（0）M/S/U 模式下对应的 External/Timer/Software 中断。</p>
+<h3 id="mip-Machine-Interrupt-Pending"><a href="#mip-Machine-Interrupt-Pending" class="headerlink" title="mip(Machine Interrupt Pending)"></a>mip(Machine Interrupt Pending)</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png"></p>
+<p>获取当前 M/S/U 模式下对应的 External/Timer/Software 中断是否发生。</p>
+<h2 id="中断处理流程"><a href="#中断处理流程" class="headerlink" title="中断处理流程"></a>中断处理流程</h2><h3 id="中断处理"><a href="#中断处理" class="headerlink" title="中断处理"></a>中断处理</h3><ol>
+<li>把 <code>mstatus</code> 的 <code>MIE</code> 值复制到 <code>MPIE</code> 中，清除 <code>mstatus</code> 中的 MIE 标志位，效果是中断被禁止。</li>
+<li>当前的 <code>PC</code> 的下一条指令地址被复制到 <code>mepc</code> 中，同时 <code>PC</code> 被设置为<code>mtvec</code>。注意如果我们设置 <code>mtvec.MODE = vetcored</code>，<code>PC =mtvec.BASE + 4 × exception-code</code>。</li>
+<li>根据 <code>interrupt</code> 的种类设置 <code>mcause</code>，并根据需要为 <code>mtval</code> 设置附加信息。</li>
+<li>将 <code>trap</code> 发生之前的权限模式保存在 <code>mstatus</code> 的 <code>MPP</code> 域中，再把<code>hart</code> 权限模式更改为 <code>M</code>。</li>
+</ol>
+<h3 id="退出中断"><a href="#退出中断" class="headerlink" title="退出中断"></a>退出中断</h3><p>以在 M 模式下执行 mret 指令为例，会执行如下操作：</p>
+<ul>
+<li>当前 Hart 的权限级别 = mstatus.MPP; mstatus.MPP= U（如果 hart 不支持 U 则为 M）</li>
+<li>mstatus.MIE = mstatus.MPIE; mstatus.MPIE = 1</li>
+<li>pc = mepc</li>
+</ul>
+<h1 id="PLIC（Platform-Level-Interrupt-Controller）"><a href="#PLIC（Platform-Level-Interrupt-Controller）" class="headerlink" title="PLIC（Platform-Level Interrupt Controller）"></a>PLIC（Platform-Level Interrupt Controller）</h1><h2 id="PLIC-简介"><a href="#PLIC-简介" class="headerlink" title="PLIC 简介"></a>PLIC 简介</h2><p>HART 只能处理一个中断，PLIC 相当于一个控制中心，它通过中断类型，优先级等等来选出一个需要处理的中断。协调多个中断，服务一个 HART。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">enum</span> &#123;</span><br>    UART0_IRQ = <span class="hljs-number">10</span>, <span class="hljs-comment">//Interrupt Source ID</span><br>    RTC_IRQ = <span class="hljs-number">11</span>,<br>    VIRTIO_IRQ = <span class="hljs-number">1</span>, <span class="hljs-comment">/* 1 to 8 */</span><br>    VIRTIO_COUNT = <span class="hljs-number">8</span>, <br>    PCIE_IRQ = <span class="hljs-number">0x20</span>, <span class="hljs-comment">/* 32 to 35 */</span><br>    VIRTIO_NDEV = <span class="hljs-number">0x35</span> <span class="hljs-comment">/* Arbitrary maximum number of interrupts */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>Interrupt Source ID 范围：1 ~ 53（0x35）</li>
+<li>0 预留不用</li>
+</ul>
+<p><code>PLIC</code>本身也是一个外设，RISC-V 规范规定，<code>PLIC</code> 的寄存器编址采用内存映射（memory map）方式。每个寄存器的宽度为 32-bit。</p>
+<p>具体寄存器编址采用 <code>base + offset</code> 的格式，且 <code>base</code> 由各个特定<code>platform</code> 自己定义。针对 <code>QEMU-virt</code>，其 <code>PLIC</code> 的设计参考了<code>FU540-C000</code>，<code>base</code> 为 <code>0x0c000000</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> MemMapEntry virt_memmap[] = &#123;<br>    [VIRT_DEBUG] =       &#123;        <span class="hljs-number">0x0</span>,         <span class="hljs-number">0x100</span> &#125;,<br>    [VIRT_MROM] =        &#123;     <span class="hljs-number">0x1000</span>,        <span class="hljs-number">0xf000</span> &#125;,<br>    [VIRT_TEST] =        &#123;   <span class="hljs-number">0x100000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_RTC] =         &#123;   <span class="hljs-number">0x101000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_CLINT] =       &#123;  <span class="hljs-number">0x2000000</span>,       <span class="hljs-number">0x10000</span> &#125;,<br>    [VIRT_ACLINT_SSWI] = &#123;  <span class="hljs-number">0x2F00000</span>,        <span class="hljs-number">0x4000</span> &#125;,<br>    [VIRT_PCIE_PIO] =    &#123;  <span class="hljs-number">0x3000000</span>,       <span class="hljs-number">0x10000</span> &#125;,<br>    [VIRT_PLIC] =        &#123;  <span class="hljs-number">0xc000000</span>, VIRT_PLIC_SIZE(VIRT_CPUS_MAX * <span class="hljs-number">2</span>) &#125;,<br>    [VIRT_UART0] =       &#123; <span class="hljs-number">0x10000000</span>,         <span class="hljs-number">0x100</span> &#125;,<br>    [VIRT_VIRTIO] =      &#123; <span class="hljs-number">0x10001000</span>,        <span class="hljs-number">0x1000</span> &#125;,<br>    [VIRT_FW_CFG] =      &#123; <span class="hljs-number">0x10100000</span>,          <span class="hljs-number">0x18</span> &#125;,<br>    [VIRT_FLASH] =       &#123; <span class="hljs-number">0x20000000</span>,     <span class="hljs-number">0x4000000</span> &#125;,<br>    [VIRT_PCIE_ECAM] =   &#123; <span class="hljs-number">0x30000000</span>,    <span class="hljs-number">0x10000000</span> &#125;,<br>    [VIRT_PCIE_MMIO] =   &#123; <span class="hljs-number">0x40000000</span>,    <span class="hljs-number">0x40000000</span> &#125;,<br>    [VIRT_DRAM] =        &#123; <span class="hljs-number">0x80000000</span>,           <span class="hljs-number">0x0</span> &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="PLIC-编程接口-寄存器"><a href="#PLIC-编程接口-寄存器" class="headerlink" title="PLIC 编程接口 - 寄存器"></a>PLIC 编程接口 - 寄存器</h2><h3 id="Priority"><a href="#Priority" class="headerlink" title="Priority"></a>Priority</h3><p>功能：设置某一路中断源的优先级<br>内存映射地址：<code>BASE + (interrupt-id) * 4</code></p>
+<ul>
+<li>每个 <code>PLIC</code> 中断源对应一个寄存器，用于配置该中断源的优先级。</li>
+<li><code>QEMU-virt</code> 支持 7 个优先级。0 表示对该中断源禁用中断。其余优先级，1 最低，7 最高。</li>
+<li>如果两个中断源优先级相同，则根据中断源的 ID 值进一步区分优先级，ID 值越小的优先级越高。</li>
+</ul>
+<h3 id="Pending"><a href="#Pending" class="headerlink" title="Pending"></a>Pending</h3><p>功能：用于指示某一路中断源是否发生<br>内存映射地址：<code>BASE + 0x1000 + ((interrupt-id) / 32) * 4</code></p>
+<ul>
+<li>每个 <code>PLIC</code> 包含 2 个 32 位的 <code>Pending</code> 寄存器，因为总共有 54 个中断源，每一个 <code>bit</code> 对应一个中断源，如果为 1 表示该中断源上发生了中断（进入<code>Pending</code> 状态），有待 <code>hart</code> 处理，否则表示该中断源上当前无中断发生。</li>
+<li><code>Pending</code> 寄存器中断的 <code>Pending</code> 状态可以通过<code>claim</code> 方式清除。</li>
+<li>第一个 <code>Pending</code> 寄存器的第 0 位对应不存在的 0 号中断源，其值永远为 0。</li>
+</ul>
+<h3 id="Enable"><a href="#Enable" class="headerlink" title="Enable"></a>Enable</h3><p>功能：针对某个 <code>hart</code> 开启或者关闭某一路中断源<br>内存映射地址：<code>BASE + 0x2000 + (hart) * 0x80</code></p>
+<ul>
+<li>每个 <code>Hart</code> 有 2 个 <code>Enable</code> 寄存器（<code>Enable1</code> 和 <code>Enable2</code>）用于针对该<code>Hart</code> 启动或者关闭某路中断源。</li>
+<li>每个中断源对应 <code>Enable</code> 寄存器的一个 <code>bit</code>，其中<code>Enable1</code> 负责控制 1 ~ 31 号中断源；<code>Enable2</code> 负责控制 <code>32 ~ 53</code> 号中断源。将对应的 <code>bit</code> 位设置为 1 表示使能该中断源，否则表示关闭该中断源。</li>
+</ul>
+<h3 id="Threshold"><a href="#Threshold" class="headerlink" title="Threshold"></a>Threshold</h3><p>功能：针对某个 hart 设置中断源优先级的阈值<br>内存映射地址：<code>BASE + 0x200000 + (hart) * 0x1000</code></p>
+<ul>
+<li>每个 <code>Hart</code> 有 1 个 <code>Threshold</code> 寄存器用于设置中断优先级的阈值。</li>
+<li>所有小于或者等于（&lt;=）该阈值的中断源即使发生了也会被 <code>PLIC</code> 丢弃。特别地，当阈值为 0 时允许所有中断源上发生的中断；当阈值为 7 时丢弃所有中断源上发生的中断。</li>
+</ul>
+<h3 id="Claim-Complete"><a href="#Claim-Complete" class="headerlink" title="Claim/Complete"></a>Claim/Complete</h3><p>功能：如下<br>内存映射地址：<code>BASE + 0x200004 + (hart) * 0x1000</code></p>
+<ul>
+<li><code>Claim</code> 和 <code>Complete</code> 是同一个寄存器，每个 <code>Hart</code> 一个。</li>
+<li>对该寄存器执行读操作称之为 <code>Claim</code>，即获取当前发生的最高优先级的中断源<code>ID</code>。<code>Claim</code> 成功后会清除对应的 <code>Pending</code> 位。</li>
+<li>对该寄存器执行写操作称之为 <code>Complete</code>。所谓 <code>Complete</code>指的是通知<code>PLIC</code> 对该路中断的处理已经结束。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">external_interrupt_handler</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-keyword">int</span> irq = plic_claim(); <span class="hljs-comment">//</span><br><br> <span class="hljs-keyword">if</span> (irq == UART0_IRQ)&#123;<br>        uart_isr();<br> &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (irq) &#123;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;unexpected interrupt irq = %d\n&quot;</span>, irq);<br> &#125;<br> <br> <span class="hljs-keyword">if</span> (irq) &#123;<br>  plic_complete(irq); <span class="hljs-comment">//</span><br> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png"></p>
+<h1 id="CLINT-（Core-Local-INTerruptor）"><a href="#CLINT-（Core-Local-INTerruptor）" class="headerlink" title="CLINT （Core Local INTerruptor）"></a>CLINT （Core Local INTerruptor）</h1><p>定时器中断，属于本地中断的一种，由芯片内部<code>CLINT</code>设备产生的中断。</p>
+<ul>
+<li>RISC-V 规范规定，CLINT 的寄存器编址采用内存映射（memory map）方式。</li>
+<li>具体寄存器编址采用<code>base + offset</code>的格式，且 <code>base</code> 由各个特定 <code>platform</code> 自己定义。针对 <code>QEMU-virt</code>，其 CLINT 的设计参考了 <code>SFIVE</code>，<code>base</code> 为 <code>0x2000000</code>。</li>
+</ul>
+<h2 id="CLINT-编程接口-寄存器-Timer-部分"><a href="#CLINT-编程接口-寄存器-Timer-部分" class="headerlink" title="CLINT 编程接口 - 寄存器 (Timer 部分)"></a>CLINT 编程接口 - 寄存器 (Timer 部分)</h2><h3 id="mtime"><a href="#mtime" class="headerlink" title="mtime"></a>mtime</h3><p>功能：<code>real-time</code> 计数器（counter）<br>内存映射地址：<code>BASE + 0xbff8</code></p>
+<ul>
+<li>由晶振产生，系统全局唯一，在 <code>RV32</code> 和 <code>RV64</code> 上都是 64-bit。系统必须保证该计数器的值始终按照一个固定的频率递增。</li>
+<li>上电复位时，硬件负责将 <code>mtime</code> 的值恢复为 0。</li>
+</ul>
+<h3 id="mtimecmp"><a href="#mtimecmp" class="headerlink" title="mtimecmp"></a>mtimecmp</h3><p>功能：定时器比较寄存器<br>内存映射地址：<code>BASE + 0x4000 + (hart) * 8)</code></p>
+<ul>
+<li><p>每个 <code>hart</code> 一个 <code>mtimecmp</code> 寄存器，64-bit。</p>
+</li>
+<li><p>上电复位时，系统不负责设置 mt`imecmp 的初值。</p>
+</li>
+<li><p>当<code>mtime &gt;= mtimecmp</code> 时，<code>CLINT</code> 会产生一个 <code>timer</code> 中断。如果要使能该中断需要保证全局中断打开并且<code>mie.MTIE</code> 标志位置 <code>1</code>。</p>
+</li>
+<li><p>当 <code>timer</code> 中断发生时，<code>hart</code> 会设置 <code>mip.MTIP</code>，程序可以在 <code>mtimecmp</code> 中写入新的值清除<code>mip.MTIP</code>。</p>
+</li>
+</ul>
+<h2 id="时钟节拍-tick"><a href="#时钟节拍-tick" class="headerlink" title="时钟节拍 tick"></a>时钟节拍 tick</h2><ul>
+<li>操作系统中最小的时间单位；</li>
+<li><code>Tick</code> 的单位（周期）由硬件定时器的周期决定<br>（通常为 1 ~ 100ms）；</li>
+<li><code>Tick</code> 周期越小，也就是<code>1s</code>内产生的中断越多，系统的精度越高，但开销越大。</li>
+</ul>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2021/12/30/RISC-V%E5%85%A5%E9%97%A8-Trap%E5%92%8CException/" title="RISC-V 入门-Trap" target="_blank" rel="external">http://example.com/2021/12/30/RISC-V入门-Trap和Exception/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2022/01/05/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/" title="解决 unable to install libpng12.so.0"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/12/24/VSCode%E4%BD%BF%E7%94%A8sftp%E6%8F%92%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E8%87%B3%E5%B1%80%E5%9F%9F%E7%BD%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="VSCode 使用 sftp 插件上传本地文件至局域网服务器"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>
