@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>QEMU 源码分析-QOM | 夜云泊个人博客</title>
+  <meta name="description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU 源码分析-QOM">
+<meta property="og:url" content="http://example.com/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="QOM 简介QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。 这个模型主要包含四个结构体：  Object:">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg">
+<meta property="article:published_time" content="2022-03-09T08:02:19.000Z">
+<meta property="article:modified_time" content="2022-11-20T07:03:29.699Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="QEMU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">30</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenStack/">OpenStack</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">34</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">72</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">Linux, 网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenEuler/" rel="tag">OpenEuler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack/" rel="tag">OpenStack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">QEMU，虚拟机，网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" rel="tag">工具推荐</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">Linux, 网络配置</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenEuler/" style="font-size: 13px;">OpenEuler</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack/" style="font-size: 13px;">OpenStack</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">QEMU，虚拟机，网络配置</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.23px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" style="font-size: 13px;">工具推荐</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="title">Linux 网络配置常用命令</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T07:29:58.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/QEMU%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="title">QEMU 虚拟机网络配置</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T06:47:54.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/30/%E4%BD%BF%E7%94%A8Yadm%E7%AE%A1%E7%90%86%E5%B9%B6%E5%90%8C%E6%AD%A5%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6Dotfile/" class="title">使用 Yadm 管理并同步配置文件 Dotfile</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-30T05:39:04.000Z" itemprop="datePublished">2023-07-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/23/QEMU%E5%90%AF%E5%8A%A8RISC-V%E6%9E%B6%E6%9E%84OpenEuler%E5%B9%B6%E9%85%8D%E7%BD%AEOSC%E7%8E%AF%E5%A2%83/" class="title">QEMU启动RISC-V架构OpenEuler并配置OSC环境</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-23T11:28:29.000Z" itemprop="datePublished">2023-07-23</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/OpenStack/">OpenStack</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/28/SSH-%E7%99%BB%E5%BD%95-OpenStack-%E5%AE%9E%E4%BE%8B/" class="title">SSH 登录 OpenStack 实例</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-28T14:20:05.000Z" itemprop="datePublished">2023-06-28</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-QEMU源码分析-QOM" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      QEMU 源码分析-QOM
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/" class="article-date">
+	  <time datetime="2022-03-09T08:02:19.000Z" itemprop="datePublished">2022-03-09</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>, <a class="article-tag-link-link" href="/tags/QEMU/" rel="tag">QEMU</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.9k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 9(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="QOM-简介"><a href="#QOM-简介" class="headerlink" title="QOM 简介"></a>QOM 简介</h2><p>QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。</p>
+<p>这个模型主要包含四个结构体：</p>
+<ul>
+<li>Object: 是所有对象的 基类 Base Object</li>
+<li>ObjectClass: 是所有类对象的基类</li>
+<li>TypeInfo：是用户用来定义一个 Type 的工具型的数据结构</li>
+<li>TypeImpl：TypeInfo 抽象数据结构，TypeInfo 的属性与 TypeImpl 的属性对应</li>
+</ul>
+<p>在 QEMU 里要初始化一个对象需要完成四步：</p>
+<ul>
+<li>将 TypeInfo 注册 TypeImpl</li>
+<li>实例化 Class（ObjectClass）</li>
+<li>实例化 Object</li>
+<li>添加 Property</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png"></p>
+<h2 id="QOM-中的面向对象"><a href="#QOM-中的面向对象" class="headerlink" title="QOM 中的面向对象"></a>QOM 中的面向对象</h2><h3 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h3><p>在 QEMU 中通过 <strong>TypeInfo</strong> 来定义一个类。</p>
+<p>例如 <code>x86_base_cpu_type_info</code> 就是一个 <code>class</code>，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo x86_base_cpu_type_info = &#123;<br>        .name = X86_CPU_TYPE_NAME(<span class="hljs-string">&quot;base&quot;</span>),<br>        .parent = TYPE_X86_CPU,<br>        .class_init = x86_cpu_base_class_init,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>利用结构体包含来实现继承</strong>。这应该是所有的语言实现继承的方法，在 C++ 中，结构体包含的操作被语言内部实现了，而 C 语言需要自己实现。</p>
+<p>例如 <code>x86_cpu_type_info</code> 的 <code>parent</code> 是 <code>cpu_type_info</code>, 他们的结构体分别是 <code>X86CPU</code> 和 <code>CPUState</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo x86_cpu_type_info = &#123;<br>    .name = TYPE_X86_CPU,<br>    .parent = TYPE_CPU,<br>  <span class="hljs-comment">// ...</span><br>    .instance_size = <span class="hljs-keyword">sizeof</span>(X86CPU),<br>&#125;;<br><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo cpu_type_info = &#123;<br>    .name = TYPE_CPU,<br>    .parent = TYPE_DEVICE,<br>  <span class="hljs-comment">// ...</span><br>    .instance_size = <span class="hljs-keyword">sizeof</span>(CPUState),<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在 <code>X86CPU</code> 中包含一个 <code>CPUState</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">X86CPU</span> &#123;</span><br>    <span class="hljs-comment">/*&lt; private &gt;*/</span><br>    CPUState parent_obj;<br>    <span class="hljs-comment">/*&lt; public &gt;*/</span><br><br>    CPUNegativeOffsetState neg;<br></code></pre></td></tr></table></figure>
+
+<h3 id="静态成员"><a href="#静态成员" class="headerlink" title="静态成员"></a>静态成员</h3><p>静态成员变量可以在类的多个对象中访问，但是要在类外声明。<strong>不同对象访问的其实是同一个实体，静态成员变量被多个对象共享</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo x86_cpu_type_info = &#123;<br>    .name = TYPE_X86_CPU,<br>    .parent = TYPE_CPU,<br>    .instance_size = <span class="hljs-keyword">sizeof</span>(X86CPU),<br>    .instance_init = x86_cpu_initfn,<br>    .instance_post_init = x86_cpu_post_initfn,<br><br>    .abstract = <span class="hljs-literal">true</span>,<br>    .class_size = <span class="hljs-keyword">sizeof</span>(X86CPUClass),<br>    .class_init = x86_cpu_common_class_init,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>其中 <code>X86CPU</code> 描述的是非静态成员，而 <code>X86CPUClass</code> 描述的是静态的成员。也就是说<code>class_init</code>初始化静态成员，<code>instance_init</code>初始化非静态成员。</p>
+<p>那么何时初始化静态成员呢？首先得告诉系统，咱有<code>class_init</code>这个初始化函数，等需要的时候随时可以调用它初始化，所有先解决如何将这个初始化函数注册到系统中？</p>
+<p>在<code>target/i386/cpu.c</code>最后使用了<code>type_init</code>。在<code>qemu/include/qemu/module.h</code>中有一个<code>type_init</code>宏定义，除了<code>type_init</code>还有其他宏，比如<code>block_init</code>，<code>opts_init</code>等。每个宏都表示一类<code>module</code>，通过<code>module_init</code>构造出来。我们展开这个宏，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> __attribute__((constructor))<br>do_qemu_init_x86_cpu_register_types(<span class="hljs-keyword">void</span>) &#123;<br>  register_module_init(x86_cpu_register_types, MODULE_INIT_QOM);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过 <code>gcc</code> 扩展属性<code>__attribute__((constructor))</code>可以让 <code>do_qemu_init_x86_cpu_register_types</code> 在运行 <code>main</code> 函数之前运行。 <code>register_module_init</code> 会让 <code>x86_cpu_register_types</code> 这个函数挂载到 <code>init_type_list[MODULE_INIT_QOM]</code> 这个链表上。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg"></p>
+<p>到底，所有的 <code>TypeInfo</code> 通过 <code>type_init</code> 都被放到 <code>type_table</code> 上了，之后通过 <code>Typeinfo</code> 的名称调用 <code>type_table_lookup</code> 获取到 <code>TypeImpl</code> 了。</p>
+<p>到这里，将<code>TYPE_X86_CPU</code>注册进类系统，包括其初始化函数，这部分也就是 QEMU 中类型的构造。那么何时调用静态成员初始化函数呢？也就是类型的初始化。</p>
+<p>静态成员是所有的对象公用的，其初始化显然要发生在所有的对象初始化之前。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs C">main<br>    qemu_init <br>        select_machine <br>            object_class_get_list <br>                object_class_foreach <br>                    g_hash_table_foreach <br>                        object_class_foreach_tramp <br>                            type_initialize <br>                                type_initialize <br>                                    x86_cpu_common_class_init <br></code></pre></td></tr></table></figure>
+
+<p><code>select_machine</code> 需要获取所有的 <code>TYPE_MACHINE</code> 的 <code>class</code>, 其首先会调用所有的<code>class_list</code>，其会遍历 <code>type_table</code>，遍历的过程中会顺带 <code>type_initialize</code> 所有的 <code>TypeImpl</code> 进而调用的 <code>class_init</code>。</p>
+<p>说完类型的初始化，再讲一下对象的初始化，也就是初始化非静态成员，也就是<code>instance_init</code>在何时被调用？</p>
+<p>对象初始化，通过调用 <code>object_new</code> 来实现初始化。</p>
+<ul>
+<li><code>object_initialize_with_type</code><ul>
+<li>初始化一个空的 :<code>Object::properties</code></li>
+<li><code>object_init_with_type</code><ul>
+<li>如果 <code>object</code> 有 <code>parent</code>，那么调用 <code>object_init_with_type</code> 首先初始化 <code>parent</code> 的</li>
+<li>调用<code>TypeImpl::instance_init</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs C">main <br>    qemu_init <br>        qmp_x_exit_preconfig <br>            qemu_init_board <br>                machine_run_board_init <br>                    pc_init_v6_1 <br>                        pc_init1 <br>                            x86_cpus_init <br>                                x86_cpu_new <br>                                    object_new <br>                                        object_new_with_type <br>                                            object_initialize_with_type <br>                                                object_init_with_type <br>                                                    x86_cpu_initfn <br></code></pre></td></tr></table></figure>
+
+<h3 id="多态"><a href="#多态" class="headerlink" title="多态"></a>多态</h3><p>多态是指同一操作作用于不同的对象，可以有不同的解释，产生不同的执行结果。为了实现多态，QOM 实现了一个非常重要的功能，就是动态类型转换。我们可以使用相关的函数，将一个<code>Object</code>的指针在运行时转换为子类对象的指针，可以将一个<code>ObjectClass</code>的指针在运行时转换为子类的指针。这样就可以调用子类中定义的函数指针来完成相应的功能。</p>
+<p>QEMU 定义了一些列的宏封来进行动态类型转换：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">//include/qom/object.h</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * DECLARE_INSTANCE_CHECKER:</span><br><span class="hljs-comment"> * @InstanceType: instance struct name</span><br><span class="hljs-comment"> * @OBJ_NAME: the object name in uppercase with underscore separators</span><br><span class="hljs-comment"> * @TYPENAME: type name</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Direct usage of this macro should be avoided, and the complete</span><br><span class="hljs-comment"> * OBJECT_DECLARE_TYPE macro is recommended instead.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * This macro will provide the instance type cast functions for a</span><br><span class="hljs-comment"> * QOM type.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \</span><br><span class="hljs-meta">    static inline G_GNUC_UNUSED InstanceType * \</span><br><span class="hljs-meta">    OBJ_NAME(const void *obj) \</span><br><span class="hljs-meta">    &#123; return OBJECT_CHECK(InstanceType, obj, TYPENAME); &#125;</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * DECLARE_CLASS_CHECKERS:</span><br><span class="hljs-comment"> * @ClassType: class struct name</span><br><span class="hljs-comment"> * @OBJ_NAME: the object name in uppercase with underscore separators</span><br><span class="hljs-comment"> * @TYPENAME: type name</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Direct usage of this macro should be avoided, and the complete</span><br><span class="hljs-comment"> * OBJECT_DECLARE_TYPE macro is recommended instead.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * This macro will provide the class type cast functions for a</span><br><span class="hljs-comment"> * QOM type.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME) \</span><br><span class="hljs-meta">    static inline G_GNUC_UNUSED ClassType * \</span><br><span class="hljs-meta">    OBJ_NAME##_GET_CLASS(const void *obj) \</span><br><span class="hljs-meta">    &#123; return OBJECT_GET_CLASS(ClassType, obj, TYPENAME); &#125; \</span><br><span class="hljs-meta">    \</span><br><span class="hljs-meta">    static inline G_GNUC_UNUSED ClassType * \</span><br><span class="hljs-meta">    OBJ_NAME##_CLASS(const void *klass) \</span><br><span class="hljs-meta">    &#123; return OBJECT_CLASS_CHECK(ClassType, klass, TYPENAME); &#125;</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * DECLARE_OBJ_CHECKERS:</span><br><span class="hljs-comment"> * @InstanceType: instance struct name</span><br><span class="hljs-comment"> * @ClassType: class struct name</span><br><span class="hljs-comment"> * @OBJ_NAME: the object name in uppercase with underscore separators</span><br><span class="hljs-comment"> * @TYPENAME: type name</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Direct usage of this macro should be avoided, and the complete</span><br><span class="hljs-comment"> * OBJECT_DECLARE_TYPE macro is recommended instead.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * This macro will provide the three standard type cast functions for a</span><br><span class="hljs-comment"> * QOM type.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> DECLARE_OBJ_CHECKERS(InstanceType, ClassType, OBJ_NAME, TYPENAME) \</span><br><span class="hljs-meta">    DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \</span><br><span class="hljs-meta">    \</span><br><span class="hljs-meta">    DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME)</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT_DECLARE_TYPE:</span><br><span class="hljs-comment"> * @InstanceType: instance struct name</span><br><span class="hljs-comment"> * @ClassType: class struct name</span><br><span class="hljs-comment"> * @MODULE_OBJ_NAME: the object name in uppercase with underscore separators</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * This macro is typically used in a header file, and will:</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> *   - create the typedefs for the object and class structs</span><br><span class="hljs-comment"> *   - register the type for use with g_autoptr</span><br><span class="hljs-comment"> *   - provide three standard type cast functions</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * The object struct and class struct need to be declared manually.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT_DECLARE_TYPE(InstanceType, ClassType, MODULE_OBJ_NAME) \</span><br><span class="hljs-meta">    typedef struct InstanceType InstanceType; \</span><br><span class="hljs-meta">    typedef struct ClassType ClassType; \</span><br><span class="hljs-meta">    \</span><br><span class="hljs-meta">    G_DEFINE_AUTOPTR_CLEANUP_FUNC(InstanceType, object_unref) \</span><br><span class="hljs-meta">    \</span><br><span class="hljs-meta">    DECLARE_OBJ_CHECKERS(InstanceType, ClassType, \</span><br><span class="hljs-meta">                         MODULE_OBJ_NAME, TYPE_##MODULE_OBJ_NAME)</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT:</span><br><span class="hljs-comment"> * @obj: A derivative of #Object</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Converts an object to a #Object.  Since all objects are #Objects,</span><br><span class="hljs-comment"> * this function will always succeed.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT(obj) \</span><br><span class="hljs-meta">    ((Object *)(obj))</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT_CLASS:</span><br><span class="hljs-comment"> * @class: A derivative of #ObjectClass.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Converts a class to an #ObjectClass.  Since all objects are #Objects,</span><br><span class="hljs-comment"> * this function will always succeed.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT_CLASS(class) \</span><br><span class="hljs-meta">    ((ObjectClass *)(class))</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT_CHECK:</span><br><span class="hljs-comment"> * @type: The C type to use for the return value.</span><br><span class="hljs-comment"> * @obj: A derivative of @type to cast.</span><br><span class="hljs-comment"> * @name: The QOM typename of @type</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * A type safe version of @object_dynamic_cast_assert.  Typically each class</span><br><span class="hljs-comment"> * will define a macro based on this type to perform type safe dynamic_casts to</span><br><span class="hljs-comment"> * this object type.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * If an invalid object is passed to this function, a run time assert will be</span><br><span class="hljs-comment"> * generated.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT_CHECK(type, obj, name) \</span><br><span class="hljs-meta">    ((type *)object_dynamic_cast_assert(OBJECT(obj), (name), \</span><br><span class="hljs-meta">                                        __FILE__, __LINE__, __func__))</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT_CLASS_CHECK:</span><br><span class="hljs-comment"> * @class_type: The C type to use for the return value.</span><br><span class="hljs-comment"> * @class: A derivative class of @class_type to cast.</span><br><span class="hljs-comment"> * @name: the QOM typename of @class_type.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * A type safe version of @object_class_dynamic_cast_assert.  This macro is</span><br><span class="hljs-comment"> * typically wrapped by each type to perform type safe casts of a class to a</span><br><span class="hljs-comment"> * specific class type.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT_CLASS_CHECK(class_type, class, name) \</span><br><span class="hljs-meta">    ((class_type *)object_class_dynamic_cast_assert(OBJECT_CLASS(class), (name), \</span><br><span class="hljs-meta">                                               __FILE__, __LINE__, __func__))</span><br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * OBJECT_GET_CLASS:</span><br><span class="hljs-comment"> * @class: The C type to use for the return value.</span><br><span class="hljs-comment"> * @obj: The object to obtain the class for.</span><br><span class="hljs-comment"> * @name: The QOM typename of @obj.</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * This function will return a specific class for a given object.  Its generally</span><br><span class="hljs-comment"> * used by each type to provide a type safe macro to get a specific class type</span><br><span class="hljs-comment"> * from an object.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> OBJECT_GET_CLASS(class, obj, name) \</span><br><span class="hljs-meta">    OBJECT_CLASS_CHECK(class, object_get_class(OBJECT(obj)), name)</span><br><br></code></pre></td></tr></table></figure>
+
+<p>以<code>OBJECT_DECLARE_TYPE(X86CPU, X86CPUClass, X86_CPU)</code>为例，宏展开如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">X86CPU</span> <span class="hljs-title">X86CPU</span>;</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">X86CPUClass</span> <span class="hljs-title">X86CPUClass</span>;</span><br>G_DEFINE_AUTOPTR_CLEANUP_FUNC(X86CPU, object_unref)<br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">inline</span> G_GNUC_UNUSED X86CPU *<span class="hljs-title">X86_CPU</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *obj)</span> </span>&#123;<br>  <span class="hljs-keyword">return</span> ((X86CPU *)object_dynamic_cast_assert(<br>      ((Object *)(obj)), (TYPE_X86_CPU),<br>      <span class="hljs-string">&quot;~/core/vn/docs/qemu/res/qom-macros.c&quot;</span>, <span class="hljs-number">64</span>, __func__));<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">inline</span> G_GNUC_UNUSED X86CPUClass *<span class="hljs-title">X86_CPU_GET_CLASS</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *obj)</span> </span>&#123;<br>  <span class="hljs-keyword">return</span> ((X86CPUClass *)object_class_dynamic_cast_assert(<br>      ((ObjectClass *)(object_get_class(((Object *)(obj))))), (TYPE_X86_CPU),<br>      <span class="hljs-string">&quot;~/core/vn/docs/qemu/res/qom-macros.c&quot;</span>, <span class="hljs-number">64</span>, __func__));<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">inline</span> G_GNUC_UNUSED X86CPUClass *<span class="hljs-title">X86_CPU_CLASS</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *klass)</span> </span>&#123;<br>  <span class="hljs-keyword">return</span> ((X86CPUClass *)object_class_dynamic_cast_assert(<br>      ((ObjectClass *)(klass)), (TYPE_X86_CPU),<br>      <span class="hljs-string">&quot;~/core/vn/docs/qemu/res/qom-macros.c&quot;</span>, <span class="hljs-number">64</span>, __func__));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>OBJECT_DECLARE_TYPE</code>通常在头文件中使用，效果是：</p>
+<ul>
+<li>创建了<code>X86CPU</code>和<code>X86CPUClass</code>的<code>typedef</code></li>
+<li>用<code>G_DEFINE_AUTOPTR_CLEANUP_FUNC</code>注册类型</li>
+<li>创建了三个类型转换函数<ul>
+<li><code>X86_CPU</code> : 将任何一个 <code>object</code> 指针 转换为 <code>X86CPU</code>（Object 转子对象）</li>
+<li><code>X86_CPU_GET_CLASS</code> : 根据 <code>object</code> 指针获取到 <code>X86CPUClass</code></li>
+<li><code>X86_CPU_CLASS</code> : 根据 <code>ObjectClass</code> 指针转换到 <code>X86CPUClass</code>（基类转子类）</li>
+</ul>
+</li>
+</ul>
+<p>这里的转换依赖内存布局，子类型的第一个成员总是基类型。子类转基类就很容易，只需要强制类型转换就可以实现。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://martins3.github.io/qemu/qom.html#init">QEMU 中的面向对象 : QOM | Deep Dark Fantasy</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4a9d26abb44d">浅谈 QEMU 的对象系统 - 简书</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2022/03/09/QEMU%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-QOM/" title="QEMU 源码分析-QOM" target="_blank" rel="external">http://example.com/2022/03/09/QEMU源码分析-QOM/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2022/03/18/Qt%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E7%A8%8B%E5%BA%8F%E6%94%BE%E5%88%B0%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%EF%BC%8C%E5%B1%8F%E8%94%BDqDebug%E8%BE%93%E5%87%BA/" title="Qt 编译后的程序放到指定目录，屏蔽 qDebug 输出"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2022/03/01/RGB%E4%B8%8EYUV%E9%A2%9C%E8%89%B2%E7%A9%BA%E9%97%B4/" title="RGB 与 YUV 颜色空间"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'gg',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

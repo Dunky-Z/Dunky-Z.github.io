@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>AMBA 总线协议-AXI 协议 | 夜云泊个人博客</title>
+  <meta name="description" content="AXI组成部分： AXI4 协议中包含五种信道，通道之间相互独立且存在差别，通过通道进行通信之前需要使用 VALID&#x2F;READY 进行握手，Read 和 Write 根据 Master 定义：  读地址信道（Read Address Channel） 写地址信道（Write Address Channel） 读数据信道（Read Data Channel） 写数据信道（Write Data Cha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AMBA 总线协议-AXI 协议">
+<meta property="og:url" content="http://example.com/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="AXI组成部分： AXI4 协议中包含五种信道，通道之间相互独立且存在差别，通过通道进行通信之前需要使用 VALID&#x2F;READY 进行握手，Read 和 Write 根据 Master 定义：  读地址信道（Read Address Channel） 写地址信道（Write Address Channel） 读数据信道（Read Data Channel） 写数据信道（Write Data Cha">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516200137.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201556.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201616.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201647.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517100503.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517100647.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516151233.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516154710.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516144318.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516143930.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516144030.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516162105.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516162805.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516171247.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516171348.png">
+<meta property="article:published_time" content="2022-05-17T13:16:45.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.046Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="AMBA">
+<meta property="article:tag" content="AXI">
+<meta property="article:tag" content="总线协议">
+<meta property="article:tag" content="协议">
+<meta property="article:tag" content="通信协议">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516200137.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">30</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenStack/">OpenStack</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">34</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">72</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">Linux, 网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenEuler/" rel="tag">OpenEuler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack/" rel="tag">OpenStack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">QEMU，虚拟机，网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" rel="tag">工具推荐</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">Linux, 网络配置</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenEuler/" style="font-size: 13px;">OpenEuler</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack/" style="font-size: 13px;">OpenStack</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">QEMU，虚拟机，网络配置</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.23px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" style="font-size: 13px;">工具推荐</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="title">Linux 网络配置常用命令</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T07:29:58.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/QEMU%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="title">QEMU 虚拟机网络配置</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T06:47:54.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/30/%E4%BD%BF%E7%94%A8Yadm%E7%AE%A1%E7%90%86%E5%B9%B6%E5%90%8C%E6%AD%A5%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6Dotfile/" class="title">使用 Yadm 管理并同步配置文件 Dotfile</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-30T05:39:04.000Z" itemprop="datePublished">2023-07-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/23/QEMU%E5%90%AF%E5%8A%A8RISC-V%E6%9E%B6%E6%9E%84OpenEuler%E5%B9%B6%E9%85%8D%E7%BD%AEOSC%E7%8E%AF%E5%A2%83/" class="title">QEMU启动RISC-V架构OpenEuler并配置OSC环境</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-23T11:28:29.000Z" itemprop="datePublished">2023-07-23</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/OpenStack/">OpenStack</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/28/SSH-%E7%99%BB%E5%BD%95-OpenStack-%E5%AE%9E%E4%BE%8B/" class="title">SSH 登录 OpenStack 实例</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-28T14:20:05.000Z" itemprop="datePublished">2023-06-28</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-AMBA总线协议-AXI协议" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      AMBA 总线协议-AXI 协议
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/" class="article-date">
+	  <time datetime="2022-05-17T13:16:45.000Z" itemprop="datePublished">2022-05-17</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/AMBA/" rel="tag">AMBA</a>, <a class="article-tag-link-link" href="/tags/AXI/" rel="tag">AXI</a>, <a class="article-tag-link-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a>, <a class="article-tag-link-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a>, <a class="article-tag-link-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.9k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 10(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="AXI"><a href="#AXI" class="headerlink" title="AXI"></a>AXI</h2><p>组成部分：</p>
+<p>AXI4 协议中包含五种信道，通道之间相互独立且存在差别，通过通道进行通信之前需要使用 VALID/READY 进行握手，Read 和 Write 根据 Master 定义：</p>
+<ul>
+<li>读地址信道（Read Address Channel）</li>
+<li>写地址信道（Write Address Channel）</li>
+<li>读数据信道（Read Data Channel）</li>
+<li>写数据信道（Write Data Channel）</li>
+<li>写响应信道（Write Response Channel）</li>
+</ul>
+<p>还有两种 Component</p>
+<ul>
+<li>Master component</li>
+<li>Slave component</li>
+</ul>
+<p>通信由 Master 发起，Master 可以对 Slave 进行读数据（read）或写（write）数据。每次读写操作都需要一个地址，读地址信道（Read Address Channel）和写地址信道（Write Address Channel）用于传输地址。在写完数据后，Master 需要确认 Slave 有没有收完数据，Slave 收到完整数据后，会通过写响应信道（Write Response Channel）给 Master 一个反馈（completion），表示写操作已经完成。</p>
+<h3 id="VALID-READY-握手机制"><a href="#VALID-READY-握手机制" class="headerlink" title="VALID/READY 握手机制"></a>VALID/READY 握手机制</h3><p>AXI 五个信道相互独立，但是使用同一个握手机制来实现信息传递。</p>
+<p>在握手机制中，通信双方分别扮演<strong>发送方</strong>(Source) 和<strong>接收方</strong>（Destination），两者的操作（技能）并不相同。</p>
+<p><strong>发送方</strong>置高 <strong>VALID</strong> 信号表示发送方已经将数据，地址或者控制信息已经就绪，并保持于消息总线上。</p>
+<p><strong>接收方</strong>置高 <strong>READY</strong> 信号表示接收方已经做好接收的准备。</p>
+<p>当双方的 VALID/READY 信号同时为高，在时钟 ACLK 上升沿，完成一次数据传输。所有数据传输完毕后，双方同时置低自己的信号。</p>
+<p>每个通道都有自己的 VALID /READY 握手信号对：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516200137.png"></p>
+<p>在握手过程中，还会用到 LAST 信号。LAST 信号存在 Write Data Channel 和 Read Data Channel 中，分别表示为 WLAST 和 RLAST，用于标记 burst 的最后一次数据传输，当 slave 接收到 LAST 信号后，说明本次数据传输完成。</p>
+<h4 id="双向流控"><a href="#双向流控" class="headerlink" title="双向流控"></a>双向流控</h4><p>所谓的<strong>双向流控</strong>机制，指的是发送方通过置起 VALID 信号控制发送的时机与速度，接收方也可以通过 READY 信号的置起与否控制接收速度。</p>
+<p>发送方拥有传输的主动权，但接收方在不具备接收能力时，也能够置低信号停止传输，反压发送方。</p>
+<h4 id="握手过程分析"><a href="#握手过程分析" class="headerlink" title="握手过程分析"></a>握手过程分析</h4><blockquote>
+<p>图中 INFORMATION 信号无底色区域表示此时数据已经准备好，已经有新的数据到达。</p>
+</blockquote>
+<p><strong>VALID 信号先到</strong></p>
+<p>发送方 VALID 信号早早就到了，但是接收方的 READY 信号在 T2 之前都没有发送。可能接收方在接收其他数据，或者被堵在数据通路上。</p>
+<p>过了 T2 后，READY 信号到来，此时开始传输，直到 T3 结束，传输完成。</p>
+<p>这里也体现了双向流控机制，发送方的 VALID 信号只要置高，再握手完成之前都不能置低，必须等到接收方 READY 信号置高。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201556.png"></p>
+<p><strong>READY 信号先到</strong></p>
+<p>READY 信号很自由，可以等待 VALID 信号到来再做响应，但也完全可以在 VALID 信号到来前就置高，表示接收端已经做好准备了。</p>
+<p>而且，READY 信号与 VALID 不同，接收方可以置起 READY 之后在 VALID 置高之前都可以随时再置低 READY 信号。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201616.png"></p>
+<p><strong>信号同时同时到达</strong></p>
+<p>这个最简单，两个信号都等着一个时钟上升沿就完成传输了。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516201647.png"></p>
+<h4 id="握手信号之间的依赖关系"><a href="#握手信号之间的依赖关系" class="headerlink" title="握手信号之间的依赖关系"></a>握手信号之间的依赖关系</h4><p>为了防止死锁发生，信号之间要遵循一些规矩，举例来说，如上面提到的 READY 信号依赖 VALID 信号，但是 VALID 信号不能根据 READY 信号来判断是否数据已准备好，否则将会造成死锁。下面详细解释读写过程中需要遵循的依赖关系。</p>
+<ul>
+<li>单箭头指向的两个信号，信号的置高，低没有顺序要求。</li>
+<li>双箭头表示箭头所指对象应迟于箭头出发信号发送。</li>
+</ul>
+<p><strong>Read transaction dependencies</strong></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517100503.png"></p>
+<ul>
+<li>Master 不得等待 Slave 置高 ARREADY</li>
+<li>Slave 可以在置高 ARREADY 之前等待 ARVALID 置高</li>
+<li>Slave 能够在 ARVALID 置高之前先置高 ARREADY</li>
+<li>Slave 必须等待 ARVALID 和 ARREADY 都被置高，然后才置高 RVALID 以表示有效数据可用</li>
+<li>在置高 RVALID 之前，Slave 不得等待 Master 置高 RREADY</li>
+<li>Master 可以在置高 RREADY 之前等待 RVALID 被置高</li>
+<li>Master 可以在 RVALID 被置高之前置高 RREADY</li>
+</ul>
+<p><strong>Write transaction dependencies</strong></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220517100647.png"></p>
+<ul>
+<li>在置高 AWVALID 或 WVALID 之前，Master 不得等待 Slave 置高 AWREADY 或 WREADY</li>
+<li>Slave 可以在置高 AWREADY 之前等待 AWVALID 或 WVALID，或两者都等待</li>
+<li>Slave 可以在 AWVALID 或 WVALID 或两者都被置高之前置高 AWREADY</li>
+<li>在置高 WREADY 之前，Slave 可以等待 AWVALID 或 WVALID，或两者都等待</li>
+<li>Slave 可以在 AWVALID 或 WVALID 或两者都被置高之前置高 WREADY</li>
+<li>在置高 BVALID 之前，Slave 必须等待 WVALID 和 WREADY 都被置高<ul>
+<li>Slave还必须在置高 BVALID 之前等待 WLAST 被置高，因为写入响应 BRESP 必须在写入事务的最后一次数据传输之后才发出信号</li>
+</ul>
+</li>
+<li>在置高 BVALID 之前，Slave 不得等待 Master 置高 BREADY</li>
+<li>Master 可以在置高 BREADY 之前等待 BVALID</li>
+<li>Master 可以在 BVALID 被置高之前置高 BREADY</li>
+</ul>
+<h3 id="地址结构（Address-structure）"><a href="#地址结构（Address-structure）" class="headerlink" title="地址结构（Address structure）"></a>地址结构（Address structure）</h3><p>AXI 协议是基于 Burst 的，地址结构里声明了一些传输过程中需要的信号，如起始地址，burst 传输长度，传输模式等等。</p>
+<h4 id="Burst"><a href="#Burst" class="headerlink" title="Burst"></a>Burst</h4><p>在介绍 Burst transfer 之前，需要解释一下什么是 Burst。在手册的术语表中，与 AXI 传输相关的有三个概念，分别是 transfer(beat)、burst、transaction。</p>
+<ul>
+<li><strong>AXI Transaction</strong>：the complete set of required operations on the AXI bus form the AXI Transaction.表示传输一段数据 (AXI burst) 所需的一整套操作；</li>
+<li><strong>AXI Burst</strong>：any required payload data is transferred as an AXI Burst.表示 AXI 待传数据；</li>
+<li><strong>AXI Beats</strong>：a burst can comprise multiple data transfers, or AXI Beats.表示 AXI burst 的组成，一个 Beat 就是一个 transfer。</li>
+</ul>
+<p>三者的关系：在 AXI 传输事务（Transaction）中，数据以突发传输（Burst）的形式组织。一次突发传输中可以包含一至多个数据（Transfer）。每个 transfer 因为使用一个周期，又被称为一拍数据（Beat）。</p>
+<p>$$<br>\text{Transaction} = M <em>\text{Burst} ,M \geq 1 \<br>\text{Burst} = N</em> \text{Transfer( or Beat)} ,N \geq 1<br>$$</p>
+<p>在地址通道中有三个信号控制进行控制，包括：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516151233.png"></p>
+<p><strong>ARLEN(Burst Length)</strong></p>
+<p>指一次突发传输中包含的数据传输 (transfer) 数量，在协议中使用 AxLen 信号控制。在 AXI4 中，INCR 类型最大支持长度为 256，其他类型最大长度为 16。而 AXI3 中这一数字无论何种模式均为 16。因此 AXI4 中 AxLen 信号位宽为 8bit，AXI3 中的 AxLen 则仅需要 4bit。</p>
+<p><strong>ARSIZE(Burst Size)</strong></p>
+<p>指传输中的数据位宽，具体地，是每周期传输数据的字节数量，在协议中使用 AXSIZE 信号控制。<strong>突发传输数据宽度不能超过数据总线本身的位宽</strong>。而当数据总线位宽大于突发传输宽度时，将根据协议的相关规定，将数据在部分数据线上传输。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516154710.png"></p>
+<p><strong>ARBURST(Burst Type)</strong></p>
+<p>Burst Type：AXI 协议中支持不同的 Burst 传输类型，主要分 FIXED、INCR、WRAP。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516144318.png"></p>
+<ul>
+<li><strong>FIXED 传输为地址固定传输</strong>，所有传输都会写在同一个地址中。主要应用在 FIFO 的传输中，因为 FIFO 为先入先出，只需要往同一个地址写数据即可。</li>
+<li><strong>INCR 传输为地址递增传输</strong>，可根据具体的配置有固定长度递增和非定长递增。<strong>大部分的数据传输都是使用这种方式</strong>，尤其是在内存访问中，可以大大提高效率。</li>
+<li><strong>WRAP 传输为地址回环传输</strong>，在一定长度后会回环到起始地址。主要应用在 Cache 操作中，因为 cache 是按照 cache line 进行操作，采用 wrap 传输可以方便的实现从内存中取回整个 cache line。</li>
+</ul>
+<p>AXI burst 读操作：<strong>master 只需要发送 burst 的起始地址</strong>，slave 会根据 burst 的起始地址与 burst 场地自动进行地址计算，将对应的数据与响应发送到 master 侧。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516143930.png"></p>
+<p>AXI burst 写操作中，<strong>也只需要发送 burst 写的起始地址</strong>，slave 只需要接受起始地址，然后根据传输的长度将数据传输到对应的地址缓存中。只需要进行一次握手就可以实现地址通道的请求传输，避免系统总线的占用。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516144030.png"></p>
+<h3 id="数据结构（Data-read-and-write-structure）"><a href="#数据结构（Data-read-and-write-structure）" class="headerlink" title="数据结构（Data read and write structure）"></a>数据结构（Data read and write structure）</h3><p>读写数据结构中声明了几种数据传输方式。</p>
+<p>在介绍这些传输方式之前，需要了解<strong>WSTRB(Write strobes) 写选通信号</strong>。写选通信号 WSTRB 允许在写数据总线上进行 稀疏数据 传输。每个写选通信号对应写数据总线上的一个字节。当写选通断言时，表示写数据总线上对应的字节通道中包含将被更新到 memory 的有效信息。  </p>
+<p>写数据总线上每 8 位具有一个写选通位，因此 WSTRB[n] 对应  WDATA[(8 x n) + 7 : (8 x n)]。默认情况下 WSTRB = 0xFFFF。也就是所有通路都是通的。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516162105.png"></p>
+<h4 id="Narrow-Transfer"><a href="#Narrow-Transfer" class="headerlink" title="Narrow Transfer"></a>Narrow Transfer</h4><p>当本次传输中数据位宽小于通道本身的数据位宽时，称为<strong>窄位宽数据传输</strong>，或者直接翻译成<strong>窄传输</strong>。如下图，传输总线为 32bit，但是每次只传了 8 bit。</p>
+<p>窄传输就是<strong>通过 STRB 信号指定有效传输数据的位宽来实现</strong>。针对一些特定的寄存器读写，或者在不同数据位宽的总线传输中会使用窄传输操作。如图，第一次传输时，WSTRB 信号为 0x01，WSTRB = b’001，表示 WDATA[7:0] 数据有效。</p>
+<p>需要注意<strong>在多笔连续的窄传输操作中，STRB 会随着地址递增进行响应的变化</strong>，这样方便在系统设计使用中可以方便的将窄传输合并，从而提升系统传输效率。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516162805.png"></p>
+<h4 id="Unaligned-Transfer"><a href="#Unaligned-Transfer" class="headerlink" title="Unaligned Transfer"></a>Unaligned Transfer</h4><p>AXI 协议规定单次 burst 传输中的数据，其地址不能跨越 4KB 边界。也就是在传输过程中会进行 4K 对齐。但是在某些时候，会期望在非对齐的地址开始一个突发，即非对齐传输。  </p>
+<blockquote>
+<p>协议中之所以规定一个 burst 不能跨越 4K 边界是为了避免一次 burst 访问两个 slave（每个 slave 的地址空间是 4K/1K 对齐的）。4K 对齐最大原因是系统中定义一个 page 大小是 4K，而所谓的 4K 边界是指低 12bit 为 0 的地址。</p>
+</blockquote>
+<p>非对齐传输是指<strong>有些传输指令不是按照 word 对齐，而是按照 Byte 对齐进行传输</strong>。起始地址可能是任意的地址。如下图中，起始地址为 0x1，则在系统上需要按照非对齐的方式进行传输。<strong>第一次传输采用 strb 信号指定对应的 Byte 有效，后面的传输可以按照正常的传输进行</strong>。</p>
+<p>下图是一些传输示例，有阴影的格子表示当前字节不会被传输。</p>
+<p>图一为正常的对齐传输，传输起始地址为 0x00。</p>
+<p>图二为非对齐传输，起始地址为 0x01，第一个格子对应的 WSTRB = b’1110。</p>
+<p>图三同上，只是 Burst length 为 5。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516171247.png"></p>
+<p>图四也为非对齐传输，起始地址为 0x07。对应的 WSTRB = b’1000。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220516171348.png"></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2022/05/17/AMBA%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE-AXI%E5%8D%8F%E8%AE%AE/" title="AMBA 总线协议-AXI 协议" target="_blank" rel="external">http://example.com/2022/05/17/AMBA总线协议-AXI协议/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2022/05/18/Interlaken%E5%8D%8F%E8%AE%AE/" title="Interlaken 协议"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2022/05/15/C%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" title="C 语言实现简单有限状态机"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'gg',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

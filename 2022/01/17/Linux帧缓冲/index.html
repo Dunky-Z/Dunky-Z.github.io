@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Linux 帧缓冲 | 夜云泊个人博客</title>
+  <meta name="description" content="简介FrameBuffer 是内核当中的一种驱动程序接口。Linux 是工作在保护模式下，所以用户态进程是无法象 DOS 那样使用显卡 BIOS 里提供的中断调用来实现直接写屏，Linux 抽象出 FrameBuffer 这个设备来供用户态进程实现直接写屏。  帧缓冲主要结构 fb_info  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 帧缓冲">
+<meta property="og:url" content="http://example.com/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="简介FrameBuffer 是内核当中的一种驱动程序接口。Linux 是工作在保护模式下，所以用户态进程是无法象 DOS 那样使用显卡 BIOS 里提供的中断调用来实现直接写屏，Linux 抽象出 FrameBuffer 这个设备来供用户态进程实现直接写屏。  帧缓冲主要结构 fb_info  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220117192106.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220120202118.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225141549.jpg">
+<meta property="article:published_time" content="2022-01-17T09:38:04.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.293Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="FrameBuffer">
+<meta property="article:tag" content="LCD">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">30</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenStack/">OpenStack</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/">嵌入式开发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%EF%BC%8C%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事，必先利其器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boot-Rom/" rel="tag">Boot Rom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">34</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">72</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">Linux, 网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" rel="tag">Linux，攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">Linux，每天学命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenEuler/" rel="tag">OpenEuler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack/" rel="tag">OpenStack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" rel="tag">OpenStack，云计算，Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">QEMU，虚拟机，网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" rel="tag">嵌入式开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" rel="tag">工具推荐</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="/tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="/tags/AXI/" style="font-size: 13px;">AXI</a> <a href="/tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="/tags/Boot-Rom/" style="font-size: 13px;">Boot Rom</a> <a href="/tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="/tags/Bug/" style="font-size: 13.92px;">Bug</a> <a href="/tags/C/" style="font-size: 13.62px;">C</a> <a href="/tags/C/" style="font-size: 13.23px;">C++</a> <a href="/tags/CI/" style="font-size: 13px;">CI</a> <a href="/tags/CPU/" style="font-size: 13.08px;">CPU</a> <a href="/tags/CSAPP/" style="font-size: 13.15px;">CSAPP</a> <a href="/tags/Cache/" style="font-size: 13.23px;">Cache</a> <a href="/tags/Clash/" style="font-size: 13px;">Clash</a> <a href="/tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="/tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="/tags/DMA/" style="font-size: 13px;">DMA</a> <a href="/tags/DOS/" style="font-size: 13px;">DOS</a> <a href="/tags/Debian/" style="font-size: 13px;">Debian</a> <a href="/tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="/tags/Docker/" style="font-size: 13px;">Docker</a> <a href="/tags/Driver/" style="font-size: 13px;">Driver</a> <a href="/tags/ELF/" style="font-size: 13px;">ELF</a> <a href="/tags/Efficiency/" style="font-size: 13.46px;">Efficiency</a> <a href="/tags/FSM/" style="font-size: 13px;">FSM</a> <a href="/tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="/tags/GCC/" style="font-size: 13px;">GCC</a> <a href="/tags/GDB/" style="font-size: 13.23px;">GDB</a> <a href="/tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="/tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="/tags/Git/" style="font-size: 13.85px;">Git</a> <a href="/tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="/tags/Github/" style="font-size: 13px;">Github</a> <a href="/tags/HEXO/" style="font-size: 13.23px;">HEXO</a> <a href="/tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="/tags/IPC/" style="font-size: 13.23px;">IPC</a> <a href="/tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="/tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="/tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="/tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="/tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="/tags/Kernel/" style="font-size: 13px;">Kernel</a> <a href="/tags/LCD/" style="font-size: 13px;">LCD</a> <a href="/tags/LaTeX/" style="font-size: 13.15px;">LaTeX</a> <a href="/tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="/tags/Linux/" style="font-size: 14px;">Linux</a> <a href="/tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">Linux, 网络配置</a> <a href="/tags/Linux%EF%BC%8C%E6%94%92%E6%9C%BA/" style="font-size: 13px;">Linux，攒机</a> <a href="/tags/Linux%EF%BC%8C%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13px;">Linux，每天学命令</a> <a href="/tags/MESI/" style="font-size: 13px;">MESI</a> <a href="/tags/MMU/" style="font-size: 13px;">MMU</a> <a href="/tags/Makefile/" style="font-size: 13.08px;">Makefile</a> <a href="/tags/Markdown/" style="font-size: 13.38px;">Markdown</a> <a href="/tags/NAS/" style="font-size: 13.08px;">NAS</a> <a href="/tags/NOC/" style="font-size: 13px;">NOC</a> <a href="/tags/Office/" style="font-size: 13px;">Office</a> <a href="/tags/OpenEuler/" style="font-size: 13px;">OpenEuler</a> <a href="/tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="/tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="/tags/OpenStack/" style="font-size: 13px;">OpenStack</a> <a href="/tags/OpenStack%EF%BC%8C%E4%BA%91%E8%AE%A1%E7%AE%97%EF%BC%8CDevstack/" style="font-size: 13px;">OpenStack，云计算，Devstack</a> <a href="/tags/PDF/" style="font-size: 13.08px;">PDF</a> <a href="/tags/Pandoc/" style="font-size: 13.15px;">Pandoc</a> <a href="/tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="/tags/Python/" style="font-size: 13.31px;">Python</a> <a href="/tags/QEMU/" style="font-size: 13.54px;">QEMU</a> <a href="/tags/QEMU%EF%BC%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%EF%BC%8C%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">QEMU，虚拟机，网络配置</a> <a href="/tags/Qt/" style="font-size: 13.77px;">Qt</a> <a href="/tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="/tags/RISC-V/" style="font-size: 13.23px;">RISC-V</a> <a href="/tags/RISCV/" style="font-size: 13.46px;">RISCV</a> <a href="/tags/SSH/" style="font-size: 13px;">SSH</a> <a href="/tags/Shell/" style="font-size: 13px;">Shell</a> <a href="/tags/SoC/" style="font-size: 13.08px;">SoC</a> <a href="/tags/TLB/" style="font-size: 13px;">TLB</a> <a href="/tags/Timer/" style="font-size: 13px;">Timer</a> <a href="/tags/Translation/" style="font-size: 13.23px;">Translation</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/VSCode/" style="font-size: 13.69px;">VSCode</a> <a href="/tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="/tags/WSL2/" style="font-size: 13px;">WSL2</a> <a href="/tags/listing/" style="font-size: 13px;">listing</a> <a href="/tags/pip/" style="font-size: 13px;">pip</a> <a href="/tags/zsh/" style="font-size: 13px;">zsh</a> <a href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13px;">云计算</a> <a href="/tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13px;">内存管理</a> <a href="/tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="/tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="/tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="/tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="/tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="/tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="/tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="/tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="/tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="/tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.08px;">字体</a> <a href="/tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="/tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13.08px;">嵌入式</a> <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" style="font-size: 13px;">嵌入式开发</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.08px;">工具</a> <a href="/tags/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" style="font-size: 13px;">工具推荐</a> <a href="/tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="/tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="/tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.23px;">推荐</a> <a href="/tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="/tags/%E6%95%88%E7%8E%87/" style="font-size: 13.15px;">效率</a> <a href="/tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.62px;">每天学命令</a> <a href="/tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="/tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="/tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.08px;">缓存一致性</a> <a href="/tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="/tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="/tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.08px;">芯片开发</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13px;">虚拟内存</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.23px;">计算机组成原理</a> <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.08px;">计算机网络</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="/tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.08px;">通信协议</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="/tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.08px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/Linux%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="title">Linux 网络配置常用命令</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T07:29:58.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/05/QEMU%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="title">QEMU 虚拟机网络配置</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-05T06:47:54.000Z" itemprop="datePublished">2023-08-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/30/%E4%BD%BF%E7%94%A8Yadm%E7%AE%A1%E7%90%86%E5%B9%B6%E5%90%8C%E6%AD%A5%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6Dotfile/" class="title">使用 Yadm 管理并同步配置文件 Dotfile</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-30T05:39:04.000Z" itemprop="datePublished">2023-07-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/23/QEMU%E5%90%AF%E5%8A%A8RISC-V%E6%9E%B6%E6%9E%84OpenEuler%E5%B9%B6%E9%85%8D%E7%BD%AEOSC%E7%8E%AF%E5%A2%83/" class="title">QEMU启动RISC-V架构OpenEuler并配置OSC环境</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-23T11:28:29.000Z" itemprop="datePublished">2023-07-23</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/OpenStack/">OpenStack</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/28/SSH-%E7%99%BB%E5%BD%95-OpenStack-%E5%AE%9E%E4%BE%8B/" class="title">SSH 登录 OpenStack 实例</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-28T14:20:05.000Z" itemprop="datePublished">2023-06-28</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Linux帧缓冲" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux 帧缓冲
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/" class="article-date">
+	  <time datetime="2022-01-17T09:38:04.000Z" itemprop="datePublished">2022-01-17</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/FrameBuffer/" rel="tag">FrameBuffer</a>, <a class="article-tag-link-link" href="/tags/LCD/" rel="tag">LCD</a>, <a class="article-tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 3.5k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 13(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>FrameBuffer 是内核当中的一种驱动程序接口。Linux 是工作在保护模式下，所以用户态进程是无法象 DOS 那样使用显卡 BIOS 里提供的中断调用来实现直接写屏，Linux 抽象出 FrameBuffer 这个设备来供用户态进程实现直接写屏。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220118092227.png"></p>
+<h2 id="帧缓冲主要结构"><a href="#帧缓冲主要结构" class="headerlink" title="帧缓冲主要结构"></a>帧缓冲主要结构</h2><ul>
+<li><p>fb_info<br>  该结构体记录当前帧缓冲设备的状态信息，如果系统中有多个帧缓冲设备，就需要两个fb_info结构，这个结构只在内核中可以看到，对用户空间不可见。</p>
+</li>
+<li><p>fb_var_screeninfo<br>  该结构体记录指定的帧缓冲设备和显示模式中可以被修改的信息，其中包括显示器分辨率等信息。</p>
+</li>
+<li><p>fb_fix_screeninfo<br>  该结构体表示帧缓冲设备中一些不能修改的参数，包括特定的显示模式，屏幕缓冲区的物理地址，显示缓冲区的长度信息。</p>
+</li>
+<li><p>fb_ops<br>  LCD底层硬件操作接口集。比如<code>fb_open</code>、<code>fb_release</code>、<code>fb_read</code>、<code>fb_write</code>、<code>fb_ioctl</code>、<code>fb_mmap</code>等：</p>
+</li>
+<li><p>fb_cmap<br>  <code>fb_cmap</code>指定颜色映射，用于以内核可以理解的方式存储用户的颜色定义。</p>
+</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220117192106.png"></p>
+<h2 id="帧缓冲显示原理"><a href="#帧缓冲显示原理" class="headerlink" title="帧缓冲显示原理"></a>帧缓冲显示原理</h2><p>帧缓冲设备是一种显示抽象的设备，也可以被理解为它是一个内存区域，上面的应用程序可以直接对显示缓冲区进行读和写操作，就像访问文件的通用接口一样，用户可以认为帧缓冲是一块内存，能读取数据的内存块也可以向这个内存写入数据，因此显示器显示图形界面实际上根据根据的是指定的内存数据块内的数据。</p>
+<p>帧缓冲的显示缓冲区位于 Linux 内核地址空间，应用程序不能直接访问内核地址空间，在 Linux 中，只有一个内存的内核地址空间映射到用户地址空间才可以由用户访问，内存的映射是通过<code>MMAP</code>函数实现的在 Linux 中。对于帧缓冲，虚拟地址是通过内存映射的方法将显示缓冲区内核地址映射到用户空间的，然后用户可以通过读和写这部分的虚拟地址来访问显示缓冲区，在屏幕上绘图。</p>
+<h2 id="使用流程"><a href="#使用流程" class="headerlink" title="使用流程"></a>使用流程</h2><p>使用帧缓冲之前应该首先确定 Linux 系统上已安装了帧缓冲驱动，可以在目录<code>/dev/</code>下查找<code>fb*</code>如，<code>/dev/fb0, /dev/fb1</code>等设备来确定是否安装。如果没有需要安装一个帧缓冲驱动的模块到内核，或者重新编译内核生成一个带帧缓冲模块的镜像。</p>
+<p>使用帧缓冲需要进入控制台模式，即纯命令行的模式进行编程。一般可以通过快捷键<code>CTRL+ALT+F1</code>进入控制台模式，<code>CTRL+ALT+F7</code>切回图形窗口。如果控制台模式没有登录，可以<code>CTRL+ALT+F6</code>尝试登录。</p>
+<p>因硬件显示设备的物理显示区是通过帧缓存区操作，而帧缓存区是处于内核空间，应用程序不能随意操作，此时可以通过系统调用<code>mmap</code>把帧缓存映射到用户空间，在用户空间中创建出帧缓存映射区（用户图像数据缓存区），以后只需把用户图像数据写入到帧缓存映射区就可在硬件设备上显示图像。</p>
+<p>具体实现流程如下：</p>
+<h3 id="打开帧缓冲设备-dev-f0"><a href="#打开帧缓冲设备-dev-f0" class="headerlink" title="打开帧缓冲设备/dev/f0"></a>打开帧缓冲设备<code>/dev/f0</code></h3><p>在Linux的/dev目录的寻找b*设备文件然后使用读写模式打开它，Linux 系统将使用通用的<code>open</code>系统调用来完成功能， <code>open</code>的功能原型如下：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">open</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *path, <span class="hljs-keyword">int</span> oflags)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><code>Path</code>是准备打开的文件或设备的路径参数；</li>
+<li><code>oflags</code>指定打开文件时使用的参数；</li>
+<li><code>flags</code>参数的指定，是通过组合文件访问模式和其他的可选模式一起的，可以支持多个模式或，参数必须是指定下列文件的访问模式。<ul>
+<li>只读：O_RDONLLY</li>
+<li>只写：O_WRONLY</li>
+<li>读写：O_RDWR</li>
+</ul>
+</li>
+</ul>
+<p>简而言之， <code>open</code>函数建立设备文件的访问路径。如果操作成功，它返回一个文件描述符，只是一个文件描述符，它将不使用其他任何正在运行的进程共享。如果两个程序同时打开相同的文件，将得到两个不同的文件描述符。如果他们执行文件写入操作，他们将操作每个文件描述符，不会发生冲突，写完之后退出。他们的数据不会互相交织在一起的，但会互相的彼此覆盖 (后写完的内容覆盖前面写的内容)，两个程序来读取和写入的文件位置看似一样但是有各自不同拷贝所以不会发生交织。如果<code>open</code>调用未能返回<code>1</code>，则将全局变量<code>errno</code>设置为指示失败的原因。</p>
+<h3 id="通过系统调用ioctl函数获得帧设备相关信息"><a href="#通过系统调用ioctl函数获得帧设备相关信息" class="headerlink" title="通过系统调用ioctl函数获得帧设备相关信息"></a>通过系统调用<code>ioctl</code>函数获得帧设备相关信息</h3><p>通过顿缓冲文件描述符，屏幕的分辨率、颜色深度等信息可以被获得，帧缓冲驱动中存放了这些对应的信息，必须使用 Linux 系统调用<code>ioctl</code>首先将帧缓冲的文件描述符和<code>fb_var_screeninfo</code> 结构体对应起来。</p>
+<p>结构体<code>fb_var_screeninfo</code>包含以下三个重要数据结构：</p>
+<ul>
+<li>屏幕的 x 方向分辨率，像素作为单位。</li>
+<li>屏幕的 Y 方向分辨率，像素作为单位。</li>
+<li>屏幕的像素颜色深度，每个像素用多少比特数表示。</li>
+</ul>
+<p><code>ioctl</code>函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">ioctl</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> __fd, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> <span class="hljs-keyword">int</span> __request, ...)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>ioctl</code>调用实现访问设备驱动各种各样的配置信息功能，它提供了一个控制设备的行为和配置底层服务接口的驱动函数，各种设备驱动程序，例如套接字和系统终端，还有磁带机都有<code>ioctl</code>命令可以支持。</p>
+<ul>
+<li><code>__fd</code>：<code>ioctl</code>命令中是该帧缓冲的文件描述符；</li>
+<li><code>__request</code>：<code>ioctl</code>函数将要执行的命令，实现参数给定的对象描述符中指定的函数操作，各种设备支持的功能是有差异的<ul>
+<li><code>FBIOGET_VSCREENINFO</code>命令字返回与Framebuffer有关的固定的信息；</li>
+<li><code>FBIOGET_VSCREENINFO</code>命令字返回与 Framebuffer 有关的可变的信息；</li>
+</ul>
+</li>
+<li>第三个参数是一个指针用来指向结构体<code>fb_var_screeninfo</code>。</li>
+</ul>
+<p>最后使用者可以通过结构体<code>fb_var_screeninfo</code>来获得屏幕的分辨率和颜色位深和其他重要的屏幕信息。根据这些信息可以计算屏幕缓冲区的大小：屏幕缓冲区大小 (以字节为单位) = 屏幕宽度x高度x屏幕颜色深度/8</p>
+<h3 id="帧缓冲映射"><a href="#帧缓冲映射" class="headerlink" title="帧缓冲映射"></a>帧缓冲映射</h3><p>在进行帧缓冲的<code>MMAP</code>映射之前，要先得到帧缓冲文件描述符，才能像屏幕上面显示，必须首先将缓冲区的内核地址映射映射到用户地址空间。Linux 系统将使用<code>MMAP</code>系统调用完成功能，<code>MMAP</code>函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">void</span> *<span class="hljs-title">mmap</span> <span class="hljs-params">(<span class="hljs-keyword">void</span> *__addr, <span class="hljs-keyword">size_t</span> __len, <span class="hljs-keyword">int</span> __prot,</span></span><br><span class="hljs-params"><span class="hljs-function">     <span class="hljs-keyword">int</span> __flags, <span class="hljs-keyword">int</span> __fd, <span class="hljs-keyword">__off_t</span> __offset)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>__addr</code>：返回一个指向<code>mmap</code>函数的内存区域的指针，与内容相关的文件指针，通过指针可以访问帧缓冲区的内存区域。</p>
+</li>
+<li><p><code>__len</code>：可以请求使用特定内存地址，通过设置地址参数，如果值为<code>0</code>，将自动分配指针，这是推荐的做法，否则会降低程序的可移植性，因为不同的系统可用的地址范围是不一样的。</p>
+</li>
+<li><p><code>__prot</code>：设置内存访问的权限设定，通过端口相关的参数定义，位的定义值如下：</p>
+<ul>
+<li><code>PORT_EXEC</code>:允许内存段的执行。</li>
+<li><code>PORT_NONE</code>:无法访问内存段。</li>
+<li><code>PORT_READ</code>:允许读取内存段。</li>
+<li><code>PORT_WRITE</code>:允许编写内存段。</li>
+</ul>
+</li>
+<li><p><code>__flags</code>：改变控制参数标志，能够影响该内存段的作用域，如下所示：</p>
+<ul>
+<li><code>MAP_FIXED</code>:内存段必须位于addr中指定的地址。</li>
+<li><code>MAP_SHARED</code>:内存的修改保存到一个文件中。</li>
+<li><code>MAP_PRIVATE</code>:内存段是私人的，变化仅在本地范围内有效。</li>
+</ul>
+</li>
+<li><p><code>__fd</code>：是通过一个<code>open</code>调用得到的访问文件的描述符。</p>
+</li>
+<li><p><code>offset</code>：用于指定访问数据的开始偏移量在内存段中，和访问普通文件使用方式是相同的，再指定文件描述符参数，以及访问的数据长度参数即可。</p>
+</li>
+</ul>
+<h3 id="读写帧缓冲"><a href="#读写帧缓冲" class="headerlink" title="读写帧缓冲"></a>读写帧缓冲</h3><p><code>MMAP</code>返回的指针，可以访问到帧缓冲内存区，可以定位到屏幕缓冲区具体为每个显示像素的位置，通过读函数调用读取对应的位置数据在帧缓冲内存中，相反写操作对应于内存的写入数据可以显示内容写到屏幕上。</p>
+<h3 id="解除帧缓冲映射"><a href="#解除帧缓冲映射" class="headerlink" title="解除帧缓冲映射"></a>解除帧缓冲映射</h3><p>在绘图完成后，帧缓冲文件描述符必须被释放之前，解除帧缓冲区的地址映射，使用 Linux 系统调用完成<code>mmap</code>函数的逆函数实现，即是<code>munmap</code>，函数的原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">munmap</span> <span class="hljs-params">(<span class="hljs-keyword">void</span> *__addr, <span class="hljs-keyword">size_t</span> __len)</span> __THROW</span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>addr</code>参数应该与调用<code>MMAP</code>时指定的参数值一致， <code>len</code>参数也应该与之前调用<code>MMAP</code>时指定的<code>len</code>参数保持一致。</p>
+<p><code>mmap</code>调用返回<code>0</code>成功，失败则返回<code>1</code>，同时将全局变量<code>erno</code>设置为指示失败的原因。</p>
+<h3 id="调用close关闭设备"><a href="#调用close关闭设备" class="headerlink" title="调用close关闭设备"></a>调用<code>close</code>关闭设备</h3><p>使用帧缓冲设备后，应关闭相应的文件描述符，使用 Linux 系统标准的函数完成关闭功能，<code>close</code>函数的原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">extern</span> <span class="hljs-keyword">int</span> <span class="hljs-title">close</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> __fd)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>close</code>的参数和在开始调用<code>open</code>时指定的参数一致，文件描述符释放后可以重用，结束调用成功返回<code>0</code>，失败返回<code>1</code>。</p>
+<h2 id="帧缓冲实例"><a href="#帧缓冲实例" class="headerlink" title="帧缓冲实例"></a>帧缓冲实例</h2><p>以下代码摘自<a target="_blank" rel="noopener" href="https://github.com/xianjimli/linux-framebuffer-tools">xianjimli/linux-framebuffer-tools: linux framebuffer tool</a>，演示了帧缓冲设备的使用流程。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">fb_info_t</span> *<span class="hljs-title">linux_fb_open</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *filename)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">uint32_t</span>                 size = <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">fb_info_t</span>               *fb   = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">fb_fix_screeninfo</span> <span class="hljs-title">fix</span>;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">fb_var_screeninfo</span> <span class="hljs-title">var</span>;</span><br>    return_value_if_fail(filename != <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br><br>    fb = (<span class="hljs-keyword">fb_info_t</span> *)<span class="hljs-built_in">calloc</span>(<span class="hljs-number">1</span>, <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">fb_info_t</span>));<br>    return_value_if_fail(fb != <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br><br>    <span class="hljs-comment">// 打开帧缓冲设备，O_RDWR 读写模式</span><br>    fb-&gt;fd = open(filename, O_RDWR);<br>    <span class="hljs-keyword">if</span> (fb-&gt;fd &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        log_debug(<span class="hljs-string">&quot;open %s failed(%d)\n&quot;</span>, filename, errno);<br>        <span class="hljs-built_in">free</span>(fb);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>    &#125;<br>    <span class="hljs-comment">// 通过系统调用 ioctl 函数获得帧设备相关信息</span><br>    <span class="hljs-comment">// FBIOGET_FSCREENINFO 命令字返回与 Framebuffer 有关的固定的信息</span><br>    <span class="hljs-keyword">if</span> (ioctl(fb-&gt;fd, FBIOGET_FSCREENINFO, &amp;fix) &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> fail;<br>    <span class="hljs-comment">//命令字返回与 Framebuffer 有关的可变的信息</span><br>    <span class="hljs-keyword">if</span> (ioctl(fb-&gt;fd, FBIOGET_VSCREENINFO, &amp;var) &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">goto</span> fail;<br><br>    var.xoffset = <span class="hljs-number">0</span>;<br>    var.yoffset = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// 显示</span><br>    ioctl(fb-&gt;fd, FBIOPAN_DISPLAY, &amp;(var));<br><br>    log_debug(<span class="hljs-string">&quot;fb_info_t: %s\n&quot;</span>, filename);<br>    log_debug(<span class="hljs-string">&quot;fb_info_t: xres=%d yres=%d bits_per_pixel=%d mem_size=%d\n&quot;</span>, var.xres, var.yres,<br>              var.bits_per_pixel, fb_size(fb));<br>    log_debug(<span class="hljs-string">&quot;fb_info_t: red(%d %d) green(%d %d) blue(%d %d)\n&quot;</span>, var.red.offset, var.red.length,<br>              var.green.offset, var.green.length, var.blue.offset, var.blue.length);<br><br>    fb-&gt;w           = var.xres;<br>    fb-&gt;h           = var.yres;<br>    fb-&gt;bpp         = var.bits_per_pixel / <span class="hljs-number">8</span>;<br>    fb-&gt;line_length = fix.line_length;<br><br>    size = fb_size(fb);<br>    <span class="hljs-comment">// 帧缓冲映射</span><br>    <span class="hljs-comment">// PROT_READ | PROT_WRITE:可读写</span><br>    <span class="hljs-comment">// MAP_SHARED：内存的修改保存到一个文件</span><br>    fb-&gt;data = (<span class="hljs-keyword">uint8_t</span> *)mmap(<span class="hljs-number">0</span>, size, PROT_READ | PROT_WRITE, MAP_SHARED, fb-&gt;fd, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-keyword">if</span> (fb-&gt;data == MAP_FAILED)<br>    &#123;<br>        log_debug(<span class="hljs-string">&quot;map framebuffer failed.\n&quot;</span>);<br>        <span class="hljs-keyword">goto</span> fail;<br>    &#125;<br><br>    log_debug(<span class="hljs-string">&quot;line_length=%d mem_size=%d\n&quot;</span>, fix.line_length, fb_size(fb));<br>    log_debug(<span class="hljs-string">&quot;xres_virtual =%d yres_virtual=%d xpanstep=%d ywrapstep=%d\n&quot;</span>, var.xres_virtual,<br>              var.yres_virtual, fix.xpanstep, fix.ywrapstep);<br><br>    <span class="hljs-keyword">return</span> fb;<br>fail:<br>    log_debug(<span class="hljs-string">&quot;%s is not a framebuffer.\n&quot;</span>, filename);<br>    close(fb-&gt;fd);<br>    <span class="hljs-built_in">free</span>(fb);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>感兴趣可以下载源码编译运行，其中<code>/bin/fbshow</code>可以使用帧缓冲设备显示图片。图形界面下直接运行可能提示无法运行，需要<code>Chrtl+Alt+F1</code>切换到控制台模式。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220120202118.png"></p>
+<h2 id="LCD-与-Framebuffer-的关系"><a href="#LCD-与-Framebuffer-的关系" class="headerlink" title="LCD 与 Framebuffer 的关系"></a>LCD 与 Framebuffer 的关系</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225141549.jpg"></p>
+<p>LCD 控制器首先通过 VDEN 信号，使能。接下来根据 VCLK 时钟信号，在像素点上“喷涂”不同的颜色（打个比方），控制器有 VD（video data）信号，传送不同颜色信息。每来一个时钟信号，就向右移动一个像素，根据行同步信号 HSYNC，就从最右边移动到最左边。当移动到右下角时根据垂直同步信号 VSYNC。</p>
+<p>那么问题来了，不同颜色的信息从哪里来？就是从上文介绍的 Framebuffer 中来的。</p>
+<p>很多人都会说操纵 LCD 显示就是操纵 FrameBuffer，表面上来看是这样的。实际上是 FrameBuffer 就是 Linux 内核驱动申请的一片内存空间，然后 LCD 内有一片 sram，CPU 内部有个 LCD 控制器，它有个单独的 dma 用来将 FrameBuffer 中的数据拷贝到 LCD 的 sram 中去 拷贝到 LCD 的 sram 中的数据就会显示在 LCD 上，LCD 驱动和 FrameBuffer 驱动没有必然的联系，它只是驱动 LCD 正常工作的，比如有信号传过来，那么 LCD 驱动负责把信号转成显示屏上的内容，至于什么内容这就是应用层要处理的。</p>
+<blockquote>
+<p>静态随机存取存储器（Static Random-Access Memory，SRAM）是随机存取存储器的一种。所谓的“静态”，是指这种存储器只要保持通电，里面储存的数据就可以恒常保持。<br>DMA（Direct Memory Access），直接内存访问。使用 DMA 的好处就是它不需要 CPU 的干预而直接服务外设，这样 CPU 就可以去处理别的事务，从而提高系统的效率。</p>
+</blockquote>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a target="_blank" rel="noopener" href="https://carlyleliu.github.io/2021/Linux%E9%A9%B1%E5%8A%A8%E4%B9%8BFramebuffer%E5%AD%90%E7%B3%BB%E7%BB%9F/">Linux 驱动之 Framebuffer 子系统 | 量子范式</a><br><a target="_blank" rel="noopener" href="https://www.codenong.com/cs106598190/">Linux 驱动开发（9）——- framebuffer 驱动详解 | 码农家园</a><br><a target="_blank" rel="noopener" href="https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=CMFD&dbname=CMFD201502&filename=1015587486.nh&uniplatform=NZKPT&v=KNvhApgKTzqH-mWxqP6f8BkbDR9mSjPHz8PfaxqDg2f1j30XqnHzSDsvwoqz-CbX">嵌入式系统中帧缓冲显示模块的设计与实现 - 中国知网</a><br><a target="_blank" rel="noopener" href="https://github.com/tsuibin/research/tree/master/framebuffer/fivechess/fivechess-0.1">research/framebuffer/fivechess/fivechess-0.1 at master · tsuibin/research</a><br><a target="_blank" rel="noopener" href="https://www.shangmayuan.com/a/f67d260756ce42258a9ed4ef.html">五子棋 framebuffer 版 - 尚码园</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/yangwen123/article/details/12096483">FrameBuffer 驱动程序分析_深入剖析 Android 系统-CSDN 博客_framebuffer</a><br><a target="_blank" rel="noopener" href="https://github.com/xianjimli/linux-framebuffer-tools">xianjimli/linux-framebuffer-tools: linux framebuffer tool</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1HW411L76t?p=2">韦东山_嵌入式 Linux_第 2 期_Linux 高级驱动视频教程_免费试看版_哔哩哔哩_bilibili</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/356443723">Linux LCD Frambuffer 基础介绍和使用（1） - 知乎</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2022/01/17/Linux%E5%B8%A7%E7%BC%93%E5%86%B2/" title="Linux 帧缓冲" target="_blank" rel="external">http://example.com/2022/01/17/Linux帧缓冲/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>分享经验</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2022/01/19/%E8%A7%A3%E5%86%B3VSCode%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%87%E7%A8%8B%E8%AF%95%E5%9B%BE%E5%86%99%E5%85%A5%E7%9A%84%E7%AE%A1%E9%81%93%E4%B8%8D%E5%AD%98%E5%9C%A8/" title="解决 VSCode 配置远程连接，过程试图写入的管道不存在"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2022/01/13/%E8%A7%A3%E5%86%B3Git%20ssh%20permission%20denied(publickey)/" title="解决 ssh permission denied(publickey)"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'gg',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>
