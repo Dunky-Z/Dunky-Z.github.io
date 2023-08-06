@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-08-05T07:30:42.502Z</updated>
+  <updated>2023-08-06T09:22:28.595Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>QEMU常用命令</title>
+    <link href="http://example.com/2023/08/06/QEMU%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"/>
+    <id>http://example.com/2023/08/06/QEMU%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/</id>
+    <published>2023-08-06T09:22:12.000Z</published>
+    <updated>2023-08-06T09:22:28.595Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="QEMU-常用命令总结"><a href="#QEMU-常用命令总结" class="headerlink" title="QEMU 常用命令总结"></a>QEMU 常用命令总结</h1><p>QEMU 是一个开源的虚拟化软件，它能够模拟不同的硬件平台，让用户在不同的操作系统之间进行切换和测试。以下是 QEMU 常用命令的总结文档，包含每个命令的功能说明。</p><h2 id="启动虚拟机"><a href="#启动虚拟机" class="headerlink" title="启动虚拟机"></a>启动虚拟机</h2><p>以下命令用于启动虚拟机：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -boot d -cdrom /path/to/iso -m 1024 -hda /path/to/hda.img</span><br></pre></td></tr></table></figure><ul><li>-boot d：从 CD/DVD 启动</li><li>-cdrom /path/to/iso：指定 ISO 文件的路径</li><li>-m 1024：设置虚拟机的内存大小为 1024MB</li><li>-hda /path/to/hda.img：指定虚拟硬盘的路径</li></ul><h2 id="安装系统至磁盘"><a href="#安装系统至磁盘" class="headerlink" title="安装系统至磁盘"></a>安装系统至磁盘</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 \</span><br><span class="line">    -cdrom ~/Downloads/ubuntu.iso \</span><br><span class="line">    -drive file=ubuntu.qcow2 \</span><br><span class="line">    -enable-kvm \</span><br><span class="line">    -cpu host \</span><br><span class="line">    -smp cores=2,threads=2 \</span><br><span class="line">    -m 2G \</span><br><span class="line">    -vga virtio \</span><br><span class="line">    -display sdl,gl=on </span><br></pre></td></tr></table></figure><h2 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h2><p>以下命令用于配置虚拟机的网络：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -net nic -net user,hostfwd=tcp::2222-:22</span><br></pre></td></tr></table></figure><ul><li>-net nic：启用虚拟网卡</li><li>-net user：使用用户模式网络堆栈</li><li>hostfwd=tcp::2222-:22：将主机的 2222 端口转发到虚拟机的 22 端口</li></ul><h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>以下命令用于启用调试模式：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -s -S</span><br></pre></td></tr></table></figure><ul><li>-s：启用 GDB 调试</li><li>-S：在启动时暂停虚拟机，等待调试器连接</li></ul><h2 id="快照管理"><a href="#快照管理" class="headerlink" title="快照管理"></a>快照管理</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拍快照</span></span><br><span class="line">qemu-img snapshot -c oe-rv-snapshot1  openEuler-22.09-riscv64-qemu.qcow2</span><br><span class="line"><span class="comment"># 列举快照</span></span><br><span class="line">qemu-img snapshot-l openEuler-22.09-riscv64-qemu.qcow2</span><br><span class="line"><span class="comment"># 恢复快照</span></span><br><span class="line">qemu-img snapshot -a my_snapshot mydisk.qcow2</span><br></pre></td></tr></table></figure><h2 id="查看虚拟硬盘信息"><a href="#查看虚拟硬盘信息" class="headerlink" title="查看虚拟硬盘信息"></a>查看虚拟硬盘信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img info /path/to/image</span><br></pre></td></tr></table></figure><h2 id="将虚拟硬盘转换为-QCOW2-格式"><a href="#将虚拟硬盘转换为-QCOW2-格式" class="headerlink" title="将虚拟硬盘转换为 QCOW2 格式"></a>将虚拟硬盘转换为 QCOW2 格式</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img convert -O qcow2 /path/to/image /path/to/new/image</span><br></pre></td></tr></table></figure><h3 id="调整磁盘大小"><a href="#调整磁盘大小" class="headerlink" title="调整磁盘大小"></a>调整磁盘大小</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img resize ubuntu.qcow2 +5G</span><br></pre></td></tr></table></figure><h2 id="显示器选项"><a href="#显示器选项" class="headerlink" title="显示器选项"></a>显示器选项</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -vga std</span><br><span class="line">qemu-system-x86_64 -display sdl</span><br><span class="line">qemu-system-x86_64 -display gtk</span><br></pre></td></tr></table></figure><ul><li>-vga std：使用标准 VGA 显示器</li><li>-display sdl：使用 SDL 显示器</li><li>-display gtk：使用 GTK 显示器</li></ul><h2 id="输入选项"><a href="#输入选项" class="headerlink" title="输入选项"></a>输入选项</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -k en-us</span><br><span class="line">qemu-system-x86_64 -usb</span><br><span class="line">qemu-system-x86_64 -device usb-mouse</span><br></pre></td></tr></table></figure><ul><li>-k en-us：使用英文键盘布局</li><li>-usb：启用 USB 支持</li><li>-device usb-mouse：使用 USB 鼠标设备</li></ul><h2 id="声音选项"><a href="#声音选项" class="headerlink" title="声音选项"></a>声音选项</h2><p>以下命令用于配置虚拟机的声音：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -soundhw all</span><br><span class="line">qemu-system-x86_64 -soundhw sb16</span><br><span class="line">qemu-system-x86_64 -audiodev pa,id=pa1,out.mixing-engine=off</span><br></pre></td></tr></table></figure><ul><li>-soundhw all：启用所有声卡</li><li>-soundhw sb16：启用 SoundBlaster 16 声卡</li><li>-audiodev pa,id=pa1,out.mixing-engine=off：使用 PulseAudio 声音设备</li></ul><h2 id="USB-设备管理"><a href="#USB-设备管理" class="headerlink" title="USB 设备管理"></a>USB 设备管理</h2><p>以下命令用于管理虚拟机的 USB 设备：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -usbdevice host:1234:5678</span><br><span class="line">qemu-system-x86_64 -usbdevice tablet</span><br><span class="line">qemu-system-x86_64 -usbdevice keyboard</span><br></pre></td></tr></table></figure><ul><li>-usbdevice host:1234:5678：将主机的 USB 设备 1234:5678 分配给虚拟机</li><li>-usbdevice tablet：使用 USB 触摸板</li><li>-usbdevice keyboard：使用 USB 键盘</li></ul><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;QEMU-常用命令总结&quot;&gt;&lt;a href=&quot;#QEMU-常用命令总结&quot; class=&quot;headerlink&quot; title=&quot;QEMU 常用命令总结&quot;&gt;&lt;/a&gt;QEMU 常用命令总结&lt;/h1&gt;&lt;p&gt;QEMU 是一个开源的虚拟化软件，它能够模拟不同的硬件平台，让用户在</summary>
+      
+    
+    
+    
+    
+    <category term="QEMU" scheme="http://example.com/tags/QEMU/"/>
+    
+  </entry>
   
   <entry>
     <title>Linux 网络配置常用命令</title>
@@ -468,33 +490,6 @@
     <category term="Linux" scheme="http://example.com/tags/Linux/"/>
     
     <category term="安装教程" scheme="http://example.com/tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>每天学命令-chown 修改文件拥有者</title>
-    <link href="http://example.com/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-chown%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E6%8B%A5%E6%9C%89%E8%80%85/"/>
-    <id>http://example.com/2022/12/04/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-chown%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E6%8B%A5%E6%9C%89%E8%80%85/</id>
-    <published>2022-12-04T08:32:59.000Z</published>
-    <updated>2022-12-04T08:33:15.742Z</updated>
-    
-    <content type="html"><![CDATA[<p>chown 命令用来变更文件或目录的拥有者或所属群组，通过 chown 改变文件的拥有者和群组。用户可以是用户名或者用户 ID；组可以是组名或者组 ID；文件是以空格分开的文件列表，文件名也支持通配符。</p><h2 id="命令格式"><a href="#命令格式" class="headerlink" title="命令格式"></a>命令格式</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown [选项] [用户或组] [文件或目录]<br>-c或--changes           <span class="hljs-comment">#效果类似“-v”参数，但仅回报更改的部分；</span><br>-f或--quite或—-silent    <span class="hljs-comment">#不显示错误信息；</span><br>-h或--no-dereference    <span class="hljs-comment">#只对符号连接的文件作修改，而不更改其他任何相关文件；</span><br>-R或--recursive         <span class="hljs-comment">#递归处理，将指定目录下的所有文件及子目录一并处理；</span><br>-v或--version           <span class="hljs-comment">#显示指令执行过程；</span><br>--dereference          <span class="hljs-comment">#效果和“-h”参数相同；</span><br>--<span class="hljs-built_in">help</span>                 <span class="hljs-comment">#在线帮助</span><br>--reference=&lt;参考文件或目录&gt;   <span class="hljs-comment">#把指定文件或目录的拥有者与所属群组全部设成和参考文件或目录的拥有者与所属群组相同；</span><br>--version    <span class="hljs-comment">#显示版本信息。</span><br></code></pre></td></tr></table></figure><h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>将文件<code>test.md</code>拥有者改为<code>nic</code></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown nic test.md<br></code></pre></td></tr></table></figure><p>将目录<code>/home/nic/develop</code>及其下面的所有文件、子目录的文件拥有者改为<code>nic</code></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Bash">chown -R nic /home/nic/develop<br><br></code></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;chown 命令用来变更文件或目录的拥有者或所属群组，通过 chown 改变文件的拥有者和群组。用户可以是用户名或者用户 ID；组可以是组名或者组 ID；文件是以空格分开的文件列表，文件名也支持通配符。&lt;/p&gt;
-&lt;h2 id=&quot;命令格式&quot;&gt;&lt;a href=&quot;#命令格式&quot; c</summary>
-      
-    
-    
-    
-    <category term="每天学命令" scheme="http://example.com/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/"/>
-    
-    
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
-    
-    <category term="每天学命令" scheme="http://example.com/tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/"/>
     
   </entry>
   
