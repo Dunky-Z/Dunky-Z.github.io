@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-08-17T15:16:37.838Z</updated>
+  <updated>2023-08-19T06:23:59.356Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,37 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SPI 协议</title>
+    <link href="http://example.com/2023/08/19/SPI%E5%8D%8F%E8%AE%AE/"/>
+    <id>http://example.com/2023/08/19/SPI%E5%8D%8F%E8%AE%AE/</id>
+    <published>2023-08-19T06:23:40.000Z</published>
+    <updated>2023-08-19T06:23:59.356Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="SPI-概述"><a href="#SPI-概述" class="headerlink" title="SPI 概述"></a>SPI 概述</h1><p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png"></p><p>4 线制 SPI 四个信号：</p><ul><li>SCLK：串行时钟信号，由主设备产生，用于同步数据传输。</li><li>CS：片选信号，由主设备产生，用于选择从设备。</li><li>MOSI：主设备输出，从设备输入，用于主设备向从设备传输数据。</li><li>MISO：主设备输入，从设备输出，用于从设备向主设备传输数据。</li></ul><p>除了四线式 SPI 总线之外，还有三线式 SPI 总线和双线式 SPI 总线。 </p><ul><li><p>四线式 SPI 总线，也称为标准 SPI 总线，由 SCLK、MOSI、MISO 和 SS（Slave Select）四个信号线组成。其中，SCLK 是时钟信号线；MOSI 是主设备向从设备发送数据的信号线；MISO 是从设备向主设备发送数据的信号线；SS 是从设备的片选信号线，用于选择要通信的从设备。 </p></li><li><p>三线式 SPI 总线将 MOSI 和 MISO 合并为单一的信号线。这种 SPI 总线有一个专门的叫做 MOMI 的信号线，既可以作为主设备向从设备发送数据的信号线，又可以作为从设备向主设备发送数据的信号线。</p></li><li><p>双线式 SPI 总线（也称为 MICROWIRE 或 uWire），由一个串行数据线和一个时钟线组成。在这种 SPI 总线上，没有单独的片选信号线，而是使用一个帧选择控制位来选择相应的从设备。</p></li></ul><blockquote><p>他们传输速率有差别吗？<br>是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。<br>SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p></blockquote><h3 id="时钟极性和时钟相位"><a href="#时钟极性和时钟相位" class="headerlink" title="时钟极性和时钟相位"></a>时钟极性和时钟相位</h3><p>在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。</p><table><thead><tr><th align="center">SPI 模式</th><th align="center">CPOL(Serial Clock Polarity)</th><th align="center">CPHA(Serial Clock Phase)</th><th align="center">空闲状态下的时钟极性</th><th align="center">采样时的时钟相位</th><th align="center">移位数据的时钟相位</th></tr></thead><tbody><tr><td align="center">0</td><td align="center">0</td><td align="center">0</td><td align="center">逻辑低电平</td><td align="center">上升沿</td><td align="center">下降沿</td></tr><tr><td align="center">1</td><td align="center">0</td><td align="center">1</td><td align="center">逻辑低电平</td><td align="center">下降沿</td><td align="center">上升沿</td></tr><tr><td align="center">2</td><td align="center">1</td><td align="center">1</td><td align="center">高电平</td><td align="center">下降沿</td><td align="center">上升沿</td></tr><tr><td align="center">3</td><td align="center">1</td><td align="center">0</td><td align="center">高电平</td><td align="center">上升沿</td><td align="center">下降沿</td></tr></tbody></table><blockquote><p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p></blockquote><p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。"></p><p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。"></p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出"></p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。"></p><h1 id="多从机配置"><a href="#多从机配置" class="headerlink" title="多从机配置"></a>多从机配置</h1><h2 id="标准-SPI-模式"><a href="#标准-SPI-模式" class="headerlink" title="标准 SPI 模式"></a>标准 SPI 模式</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png"></p><p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p><p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p><h2 id="菊花链模式"><a href="#菊花链模式" class="headerlink" title="菊花链模式"></a>菊花链模式</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png"></p><p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p><p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png"></p><h1 id="SPI-实现"><a href="#SPI-实现" class="headerlink" title="SPI 实现"></a>SPI 实现</h1><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="https://www.analog.com/cn/analog-dialogue/articles/introduction-to-spi-interface.html">SPI 接口简介 | 亚德诺半导体</a></p><p><a href="https://jia.je/hardware/2023/04/26/spi/#sd-%E5%8D%A1">SPI 协议 - 杰哥的{运维，编程，调板子}小笔记</a></p><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;SPI-概述&quot;&gt;&lt;a href=&quot;#SPI-概述&quot; class=&quot;headerlink&quot; title=&quot;SPI 概述&quot;&gt;&lt;/a&gt;SPI 概述&lt;/h1&gt;&lt;p&gt;SPI 是一种同步的、全双工的、高速的串行通信总线。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://pi</summary>
+      
+    
+    
+    
+    <category term="Embedded Development" scheme="http://example.com/categories/Embedded-Development/"/>
+    
+    
+    <category term="SoC" scheme="http://example.com/tags/SoC/"/>
+    
+    <category term="MCU" scheme="http://example.com/tags/MCU/"/>
+    
+    <category term="BootROM" scheme="http://example.com/tags/BootROM/"/>
+    
+    <category term="SPI" scheme="http://example.com/tags/SPI/"/>
+    
+  </entry>
   
   <entry>
     <title>Docker 部署 Radarr 刮削电影</title>
@@ -474,28 +505,6 @@
     
     
     <category term="JAVA" scheme="http://example.com/tags/JAVA/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何使用 Gitlab CI Pipeline</title>
-    <link href="http://example.com/2023/01/07/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Gitlab-CI-Pipeline/"/>
-    <id>http://example.com/2023/01/07/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Gitlab-CI-Pipeline/</id>
-    <published>2023-01-07T03:08:19.000Z</published>
-    <updated>2023-03-25T04:13:10.820Z</updated>
-    
-    <content type="html"><![CDATA[<p>GitLab CI/CD 是一个强大的工具，可以帮助开发团队实现自动化构建、测试和部署。本文将介绍如何使用 GitLab CI/CD 的 Pipeline 功能，以实现将 Markdown 文件自动编译为 PDF 并上传至 GitLab Release 界面的功能。</p><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>在开始使用 GitLab CI/CD 的 Pipeline 功能之前，需要进行一些准备工作。具体步骤如下：</p><ol><li>创建 GitLab 项目：在 GitLab 上创建一个新项目，并将 Markdown 文件上传至项目的某个目录下。例如，我们将 Markdown 文件上传至项目的根目录下，并命名为 <code>example.md</code>。</li></ol><ul><li><p>安装 Pandoc：Pandoc 是一个用于文档转换的工具，我们将使用它将 Markdown 文件转换为 PDF。在安装 Pandoc 之前，需要先安装 LaTeX，因为 Pandoc 使用 LaTeX 进行 PDF 渲染。具体安装步骤请参考 Pandoc 和 LaTeX 的官方文档。</p></li><li><p>创建 Release：在 GitLab 上创建一个 Release，用于存储编译好的 PDF 文件。具体操作方法请参考 GitLab 的官方文档。</p></li><li><p>创建 CI/CD 配置文件：在项目根目录下创建一个<code>.gitlab-ci.yml</code> 文件，并在其中定义 Pipeline 的流程。</p></li></ul><h2 id="编写-CI-CD-配置文件"><a href="#编写-CI-CD-配置文件" class="headerlink" title="编写 CI/CD 配置文件"></a>编写 CI/CD 配置文件</h2><p>下面是一个样例的<code>.gitlab-ci.yml</code> 文件，用于实现将 Markdown 文件编译为 PDF 并上传至 GitLab Release 界面的功能。</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">image:</span> <span class="hljs-string">pandoc/core:latest</span><br><br><span class="hljs-attr">stages:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">build</span><br><br><span class="hljs-attr">pdf:</span><br>  <span class="hljs-attr">stage:</span> <span class="hljs-string">build</span><br>  <span class="hljs-attr">script:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">pandoc</span> <span class="hljs-string">example.md</span> <span class="hljs-string">-o</span> <span class="hljs-string">example.pdf</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">curl</span> <span class="hljs-string">--header</span> <span class="hljs-string">&quot;PRIVATE-TOKEN: $&#123;CI_PRIVATE_TOKEN&#125;&quot;</span> <span class="hljs-string">--upload-file</span> <span class="hljs-string">example.pdf</span> <span class="hljs-string">&quot;$&#123;CI_API_V4_URL&#125;/projects/$&#123;CI_PROJECT_ID&#125;/uploads&quot;</span><br>  <span class="hljs-attr">artifacts:</span><br>    <span class="hljs-attr">paths:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">example.pdf</span><br></code></pre></td></tr></table></figure><p>上述配置文件中，我们使用了 <code>pandoc/core:latest</code> 作为 Docker 镜像，该镜像已经预安装了 Pandoc 工具。</p><p>该文件中包含了一个 build 阶段，其中包含了一个 pdf 任务。在 pdf 任务中，我们使用 Pandoc 工具将 Markdown 文件转换为 PDF 文件，并使用 cURL 工具将编译好的 PDF 文件上传至 GitLab Release 界面。注意，我们使用了环境变量<code>$&#123;CI_PRIVATE_TOKEN&#125;</code>和$<code>&#123;CI_API_V4_URL&#125;</code>，这些变量是 GitLab 自动注入的，用于进行身份验证和上传文件。</p><p>最后，我们将编译好的 PDF 文件定义为 Pipeline 的 artifacts，这样可以确保文件能够被保留并可用于后续的部署。</p><h2 id="运行-Pipeline"><a href="#运行-Pipeline" class="headerlink" title="运行 Pipeline"></a>运行 Pipeline</h2><p>完成 CI/CD 配置文件的编写后，我们可以在 GitLab 上启动 Pipeline，将 Markdown 文件自动编译为 PDF 并上传至 GitLab Release 界面。具体步骤如下：</p><ul><li><p>提交代码：将<code>.gitlab-ci.yml</code> 文件提交到 GitLab</p></li><li><p>启动 Pipeline：在 GitLab 上打开项目，并点击“CI/CD”-&gt;“Pipelines”选项卡。点击“Run Pipeline”按钮，启动 Pipeline 流程。</p></li><li><p>等待 Pipeline 完成：在 Pipeline 启动后，GitLab 会自动创建一个 Runner 并分配任务。Pipeline 的状态会在页面上实时更新，直到 Pipeline 执行完成。</p></li><li><p>查看 Release：Pipeline 执行完成后，我们可以在 GitLab Release 界面中找到编译好的 PDF 文件。点击 PDF 文件链接，即可下载并查看编译好的 PDF 文件。</p></li></ul><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;GitLab CI/CD 是一个强大的工具，可以帮助开发团队实现自动化构建、测试和部署。本文将介绍如何使用 GitLab CI/CD 的 Pipeline 功能，以实现将 Markdown 文件自动编译为 PDF 并上传至 GitLab Release 界面的功能。&lt;/p&gt;</summary>
-      
-    
-    
-    
-    <category term="工欲善其事必先利其器" scheme="http://example.com/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
-    
     
   </entry>
   
