@@ -3,11 +3,11 @@
   <title>如云泊</title>
   
   
-  <link href="http://example.com/atom.xml" rel="self"/>
+  <link href="https://lifeislife.cn/atom.xml" rel="self"/>
   
-  <link href="http://example.com/"/>
-  <updated>2024-01-10T03:12:43.373Z</updated>
-  <id>http://example.com/</id>
+  <link href="https://lifeislife.cn/"/>
+  <updated>2024-01-13T14:00:32.285Z</updated>
+  <id>https://lifeislife.cn/</id>
   
   <author>
     <name>Dominic</name>
@@ -17,9 +17,30 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Linux内核模块校验机制</title>
+    <link href="https://lifeislife.cn/2024/01/13/Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E6%A0%A1%E9%AA%8C%E6%9C%BA%E5%88%B6/"/>
+    <id>https://lifeislife.cn/2024/01/13/Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%E6%A0%A1%E9%AA%8C%E6%9C%BA%E5%88%B6/</id>
+    <published>2024-01-13T14:00:16.000Z</published>
+    <updated>2024-01-13T14:00:32.285Z</updated>
+    
+    <content type="html"><![CDATA[<p>初学 Linux 内核或者第一次编译使用内核模块时经常会遇到类似这样的错误：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insmod: ERROR: could not insert module kvm.ko: Invalid module format </span><br></pre></td></tr></table></figure><p>这个报错通常由于当前插入<code>kvm.ko</code>的<code>version magic</code>版本信息与正在运行的 kernel 的<code>version magic</code>版本不一致导致的。</p><h1 id="内核校验模块的流程"><a href="#内核校验模块的流程" class="headerlink" title="内核校验模块的流程"></a>内核校验模块的流程</h1><p>我们从问题出发，看看内核是如何校验模块的。搜索了内核源码，找到了在函数<code>check_version</code>中抛出了<code>disagrees about version of symbol</code>错误信息，我们根据源码来回溯一下整个过程。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/module.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">check_version</span><span class="params">(<span class="keyword">const</span> struct load_info *info,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">const</span> <span class="keyword">char</span> *symname,</span></span></span><br><span class="line"><span class="params"><span class="function">    struct <span class="keyword">module</span> *mod,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">const</span> s32 *crc)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> Elf_Shdr *sechdrs = info-&gt;sechdrs;</span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> versindex = info-&gt;index.vers;</span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> i, num_versions;</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">modversion_info</span> *<span class="title">versions</span>;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Exporting module didn&#x27;t supply crcs?  OK, we&#x27;re already tainted. */</span></span><br><span class="line"> <span class="keyword">if</span> (!crc)</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/* No versions at all?  modprobe --force does this. */</span></span><br><span class="line"> <span class="keyword">if</span> (versindex == <span class="number">0</span>)</span><br><span class="line">  <span class="keyword">return</span> try_to_force_load(mod, symname) == <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"> versions = (<span class="keyword">void</span> *) sechdrs[versindex].sh_addr;</span><br><span class="line"> num_versions = sechdrs[versindex].sh_size</span><br><span class="line">  / <span class="keyword">sizeof</span>(struct modversion_info);</span><br><span class="line"></span><br><span class="line"> <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; num_versions; i++) &#123;</span><br><span class="line">  u32 crcval;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">strcmp</span>(versions[i].name, symname) != <span class="number">0</span>)</span><br><span class="line">   <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (IS_ENABLED(CONFIG_MODULE_REL_CRCS))</span><br><span class="line">   crcval = resolve_rel_crc(crc);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">   crcval = *crc;</span><br><span class="line">  <span class="keyword">if</span> (versions[i].crc == crcval)</span><br><span class="line">   <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  pr_debug(<span class="string">&quot;Found checksum %X vs module %lX\n&quot;</span>,</span><br><span class="line">    crcval, versions[i].crc);</span><br><span class="line">  <span class="keyword">goto</span> bad_version;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Broken toolchain. Warn once, then let it go.. */</span></span><br><span class="line"> pr_warn_once(<span class="string">&quot;%s: no symbol version for %s\n&quot;</span>, info-&gt;name, symname);</span><br><span class="line"> <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">bad_version:</span><br><span class="line"> pr_warn(<span class="string">&quot;%s: disagrees about version of symbol %s\n&quot;</span>,</span><br><span class="line">        info-&gt;name, symname);</span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>参数说明：</p><ul><li>info: 包含正在加载信息的结构体。</li><li>symname: 需要查找对比的符号的名称。</li><li>mod: 表示模块的结构体。</li><li>crc: 当前正在运行的内核的模块符号的 CRC（Cyclic Redundancy Check）值</li></ul><ol><li>如果 CRC 为空，不检查直接 PASS</li><li>如果模块中没有_versions 小节，表示模块没有开启 CRC<ol><li>如果开启了 CONFIG_MODULE_FORCE_LOAD，则强制加载，内核标记为 tainted，直接 PASS</li><li>如果没有开启 CONFIG_MODULE_FORCE_LOAD，则报错</li></ol></li><li>如果模块中有_versions 小节，没有找到 module_layout 符号，报 warning，直接 PASS</li><li>如果模块中有_versions 小节，找到 module_layout 符号<ol><li>对比_versions 小节中的 CRC 和参数中的 CRC，如果一致，PASS</li><li>如果不一致，报错</li></ol></li></ol><blockquote><p>插播一句，CRC是什么？在 Linux 内核中，模块符号 CRC（Cyclic Redundancy Check）是一种校验值，用于确保模块中的符号（函数、变量等）在加载时与内核中的符号一致。当模块被构建时，针对每个符号都会计算一个 CRC 值，然后将这些 CRC 值保存在模块的符号版本表中。简单理解就是如果要保持CRC不变，需要满足两个条件：</p><ol><li>语法保持不变<br>  遵守这个条件，说明如果模块在新内核下重新编译，那应该没有任何语法问题。 即导出符号的类型名没有变化，如果是函数，则要求参数和返回值类型没有任何变化；如果这些类型是结构体的话，结构体的成员名也没有有任何变化。</li><li>语义保持不变<br> 这要求符号的类型不能有变化，如果类型本身是结构体(struct)，则它成员的类型不能有变化，成员在结构体内的位置不能有变化，以及成员本身不能增删。<br>如果想要深入了解如何计算CRC可以参考这篇博客：<a href="https://blog.csdn.net/linyt/article/details/42559639">Linux内核模块符号CRC检查机制-CSDN博客</a></li></ol></blockquote><p>分析代码我们可以知道，内核会通过遍历正在加载的模块的版本信息的数组<code>versions</code>，从中查找与给定符号名称匹配的版本信息。如果找到匹配的版本信息，则计算 CRC 值，与参数中的 CRC 值进行比较。（通过后续分析我们知道参数的 CRC 就是正在运行的内核的 module_layout 符号的 CRC）如果匹配，表示版本一致，返回 1。如果不匹配，打印调试信息，并跳转到 <code>bad_version</code>，输出警告信息。</p><p>这里有两个疑问，</p><ol><li><code>versions</code> 内容是怎么链接到模块的 elf 文件中的？</li></ol><p>我们找到模块的<code>mod.c</code>文件，打开可以发现以下内容：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">MODULE_INFO(vermagic, VERMAGIC_STRING);</span><br><span class="line">MODULE_INFO(name, KBUILD_MODNAME);</span><br><span class="line"></span><br><span class="line">__visible <span class="class"><span class="keyword">struct</span> <span class="title">module</span> __<span class="title">this_module</span></span></span><br><span class="line"><span class="class">__<span class="title">section</span>(.<span class="title">gnu</span>.<span class="title">linkonce</span>.<span class="title">this_module</span>) =</span> &#123;</span><br><span class="line"> .name = KBUILD_MODNAME,</span><br><span class="line"> .init = init_module,</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_MODULE_UNLOAD</span></span><br><span class="line"> .<span class="built_in">exit</span> = cleanup_module,</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"> .arch = MODULE_ARCH_INIT,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_RETPOLINE</span></span><br><span class="line">MODULE_INFO(retpoline, <span class="string">&quot;Y&quot;</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">modversion_info</span> ____<span class="title">versions</span>[]</span></span><br><span class="line"><span class="class">__<span class="title">used</span> __<span class="title">section</span>(__<span class="title">versions</span>) =</span> &#123;</span><br><span class="line"> &#123; <span class="number">0x3e549f1d</span>, <span class="string">&quot;module_layout&quot;</span> &#125;,</span><br><span class="line"> &#123; <span class="number">0x5138e6ba</span>, <span class="string">&quot;param_ops_int&quot;</span> &#125;,</span><br><span class="line"> &#123; <span class="number">0x183b57f9</span>, <span class="string">&quot;phy_ethtool_nway_reset&quot;</span> &#125;,</span><br><span class="line"> &#123; <span class="number">0x6e5363eb</span>, <span class="string">&quot;eth_validate_addr&quot;</span> &#125;,</span><br><span class="line"> &#123; <span class="number">0x4df55e5b</span>, <span class="string">&quot;usb_deregister&quot;</span> &#125;,</span><br><span class="line"> &#123; <span class="number">0x8e48f69b</span>, <span class="string">&quot;usb_register_driver&quot;</span> &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这个文件是在编译过程中调用了<code>scripts/modpost</code>脚本生成的，它的功能是在里面增加了 2 个<code>__section</code>，<code>.gnu.linkonce.this_module</code>和<code>__versions</code>。__versions 小节的内容就是一些字符串和值组成的数组，<code>check_version</code>就是解析这个小节去做验证。</p><ol start="2"><li>CRC 值哪来的？</li></ol><p>我们继续向上跟踪，找到函数<code>check_modstruct_version</code>，其中<code>find_symbol</code>会在内核符号表中查找给定符号名称的符号信息，接着调用<code>check_version</code>函数，传入符号名称、模块结构体和 CRC 值，进行版本匹配。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/module.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">check_modstruct_version</span><span class="params">(<span class="keyword">const</span> struct load_info *info,</span></span></span><br><span class="line"><span class="params"><span class="function">       struct <span class="keyword">module</span> *mod)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="keyword">const</span> s32 *crc;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/*</span></span><br><span class="line"><span class="comment">  * Since this should be found in kernel (which can&#x27;t be removed), no</span></span><br><span class="line"><span class="comment">  * locking is necessary -- use preempt_disable() to placate lockdep.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> preempt_disable();</span><br><span class="line"> <span class="keyword">if</span> (!find_symbol(<span class="string">&quot;module_layout&quot;</span>, <span class="literal">NULL</span>, &amp;crc, <span class="literal">true</span>, <span class="literal">false</span>)) &#123;</span><br><span class="line">  preempt_enable();</span><br><span class="line">  BUG();</span><br><span class="line"> &#125;</span><br><span class="line"> preempt_enable();</span><br><span class="line"> <span class="keyword">return</span> check_version(info, <span class="string">&quot;module_layout&quot;</span>, mod, crc);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取当前运行内核 module_layout 函数的 crc 值</span></span><br><span class="line">find_symbol(<span class="string">&quot;module_layout&quot;</span>, <span class="literal">NULL</span>, &amp;crc, <span class="literal">true</span>, <span class="literal">false</span>)</span><br><span class="line">    each_symbol_section(find_exported_symbol_in_section, &amp;fsa)</span><br><span class="line">        <span class="comment">// 遍历内核三个导出符号表段__start___ksymtab，__start___ksymtab_gpl 和__start___ksymtab_gpl_future，为每段调用 find_symbol_in_section</span></span><br><span class="line">        each_symbol_in_section(arr, ARRAY_SIZE(arr), <span class="literal">NULL</span>, fn, data)</span><br><span class="line">        <span class="comment">// 遍历内核每个已加载模块的三个导出符号表段 mod-&gt;syms,mod-&gt;gpl_syms,mod-&gt;gpl_future_syms，为每段调用 find_symbol_in_section</span></span><br><span class="line">        each_symbol_in_section(arr, ARRAY_SIZE(arr), mod, fn, data)</span><br><span class="line">            <span class="comment">// 对导出符号表进行二分查找，按照字符串排序，符号表的地址按照地址排序</span></span><br><span class="line">            find_exported_symbol_in_section(<span class="keyword">const</span> struct symsearch *syms,struct <span class="keyword">module</span> *owner,<span class="keyword">void</span> *data)</span><br></pre></td></tr></table></figure><p><strong>Linux 对可装载模块采取了两层验证</strong>：除了上述的模块 CRC 值校验外还有 <code>vermagic</code> 的检查。模块 vermagic（即 Version Magic String）保存了模块编译时的内核版本以及 SMP 等配置信息，当模块 vermagic 与主机信息不相符时也无法加载模块。</p><p>在内核中<code>load_module</code>函数调用<code>check_modstruct_version</code>函数完成 CRC 校验后，就会继续调用<code>layout_and_allocate --&gt; check_modinfo</code> 完成 vermagic 校验。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/module.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">check_modinfo</span><span class="params">(struct <span class="keyword">module</span> *mod, struct load_info *info, <span class="keyword">int</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="keyword">const</span> <span class="keyword">char</span> *modmagic = get_modinfo(info, <span class="string">&quot;vermagic&quot;</span>);</span><br><span class="line"> <span class="keyword">int</span> err;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">if</span> (flags &amp; MODULE_INIT_IGNORE_VERMAGIC)</span><br><span class="line">  modmagic = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/* This is allowed: modprobe --force will invalidate it. */</span></span><br><span class="line"> <span class="keyword">if</span> (!modmagic) &#123;</span><br><span class="line">  err = try_to_force_load(mod, <span class="string">&quot;bad vermagic&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (err)</span><br><span class="line">   <span class="keyword">return</span> err;</span><br><span class="line"> &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!same_magic(modmagic, vermagic, info-&gt;index.vers)) &#123;</span><br><span class="line">  pr_err(<span class="string">&quot;%s: version magic &#x27;%s&#x27; should be &#x27;%s&#x27;\n&quot;</span>,</span><br><span class="line">         info-&gt;name, modmagic, vermagic);</span><br><span class="line">  <span class="keyword">return</span> -ENOEXEC;</span><br><span class="line"> &#125;</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><code>get_modinfo</code> 会获取内核中的 vermagic 信息，模块 vermagic 信息则被保存在了 ELF 的 <code>.modinfo</code> 小节中。这里我们说的 vermagic 就是下文提到的拓展版本信息，它就是系统配置信息组成的一个字符串。</p><h1 id="如何解决模块校验错误"><a href="#如何解决模块校验错误" class="headerlink" title="如何解决模块校验错误"></a>如何解决模块校验错误</h1><p>Linux 对可装载模块采取了两层验证，我们需要分别从 CRC 和 vermagic 两个方面来解决模块校验错误。首先从简单的 vermagic 校验开始。我们需要保证运行的内核版本与模块编译时的内核版本一致，这样才能保证 vermagic 校验通过。首先了解如何查看内核版本以及模块版本信息，然后修改内核模块版本信息。</p><h2 id="解决-vermagic-校验错误"><a href="#解决-vermagic-校验错误" class="headerlink" title="解决 vermagic 校验错误"></a>解决 vermagic 校验错误</h2><h3 id="如何查看内核版本以及模块版本信息"><a href="#如何查看内核版本以及模块版本信息" class="headerlink" title="如何查看内核版本以及模块版本信息"></a>如何查看内核版本以及模块版本信息</h3><p><code>uname</code>参数功能：</p><ul><li>-s, 输出 kernel 名称；</li><li>-n, 输出主机名；</li><li>-r, 输出 kernel 发行版本号；</li><li>-v, 输出操作系统版本；</li><li>-m, 输出主机的硬件架构名称；</li><li>-p, 输出处理器类型；</li><li>-i, 输出硬件平台；</li><li>-o, 输出操作系统名称</li><li>-a, 输出所有信息</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输出kernel发行版本号</span></span><br><span class="line">uname -r</span><br><span class="line">6.4.0-10.1.0.20.oe2309.riscv64</span><br><span class="line"><span class="comment"># 输出所有信息</span></span><br><span class="line">uname -a</span><br><span class="line">Linux openeuler 6.4.0-10.1.0.20.oe2309.riscv64 <span class="comment">#1 SMP Sat Oct  7 06:19:28 UTC 2023 riscv64 riscv64 riscv64 GNU/Linux</span></span><br></pre></td></tr></table></figure><p>modinfo 可以查看模块信息，包括模块vermagic信息。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">modinfo kvm.ko</span><br><span class="line">filename:       /root/build-kernel/kernel/./arch/riscv/kvm/kvm.ko</span><br><span class="line">license:        GPL</span><br><span class="line">author:         Qumranet</span><br><span class="line">srcversion:     5DA13DC0E55100B5FE1D56A</span><br><span class="line">depends:</span><br><span class="line">intree:         Y</span><br><span class="line">name:           kvm</span><br><span class="line">vermagic:       6.4.0 SMP mod_unload modversions riscv</span><br><span class="line">parm:           halt_poll_ns:uint</span><br><span class="line">parm:           halt_poll_ns_grow:uint</span><br><span class="line">parm:           halt_poll_ns_grow_start:uint</span><br><span class="line">parm:           halt_poll_ns_shrink:uint</span><br></pre></td></tr></table></figure><p>其中<code>vermagic</code>就是<code>version magic</code>版本信息，可以看到当前<code>kvm.ko</code>的<code>version magic</code>版本信息为<code>6.4.0</code>。与前文的<code>uname -r</code>输出的 kernel 发行版本号<code>6.4.0-10.1.0.20.oe2309.riscv64</code>不一致。所以会报错。</p><h3 id="修改内核模块版本信息"><a href="#修改内核模块版本信息" class="headerlink" title="修改内核模块版本信息"></a>修改内核模块版本信息</h3><ol><li>修改基础版本信息</li></ol><p>打开内核源代码根目录下的 Makefile 文件。你会找到一个包含内核版本信息的地方，类似于：</p><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># SPDX-License-Identifier: GPL-2.0</span></span><br><span class="line">VERSION = 6</span><br><span class="line">PATCHLEVEL = 4</span><br><span class="line">SUBLEVEL = 0</span><br><span class="line">EXTRAVERSION =</span><br></pre></td></tr></table></figure><p>表示内核版基础本号为<code>6.4.0</code>。</p><ol start="2"><li>修改拓展版本信息</li></ol><p>kernel 引入了一些配置来增强版本信息，在内核源码的<code>&quot;include/linux/vermagic.h&quot;</code>下我们可以看到模块的健全版本信息，如下默认配置的有：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Simply sanity version stamp for modules. */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SMP</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_SMP <span class="meta-string">&quot;SMP &quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_SMP <span class="meta-string">&quot;&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_PREEMPT_BUILD</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_PREEMPT <span class="meta-string">&quot;preempt &quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined(CONFIG_PREEMPT_RT)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_PREEMPT <span class="meta-string">&quot;preempt_rt &quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_PREEMPT <span class="meta-string">&quot;&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_MODULE_UNLOAD</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_MODULE_UNLOAD <span class="meta-string">&quot;mod_unload &quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_MODULE_UNLOAD <span class="meta-string">&quot;&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_MODVERSIONS</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_MODVERSIONS <span class="meta-string">&quot;modversions &quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_VERMAGIC_MODVERSIONS <span class="meta-string">&quot;&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> RANDSTRUCT</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;generated/randstruct_hash.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_RANDSTRUCT <span class="meta-string">&quot;RANDSTRUCT_&quot;</span> RANDSTRUCT_HASHED_SEED</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MODULE_RANDSTRUCT</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> VERMAGIC_STRING                                                 \</span></span><br><span class="line"><span class="meta">        UTS_RELEASE <span class="meta-string">&quot; &quot;</span>                                                 \</span></span><br><span class="line"><span class="meta">        MODULE_VERMAGIC_SMP MODULE_VERMAGIC_PREEMPT                     \</span></span><br><span class="line"><span class="meta">        MODULE_VERMAGIC_MODULE_UNLOAD MODULE_VERMAGIC_MODVERSIONS       \</span></span><br><span class="line"><span class="meta">        MODULE_ARCH_VERMAGIC                                            \</span></span><br><span class="line"><span class="meta">        MODULE_RANDSTRUCT</span></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>其中，<code>&quot;UTS_RELEASE&quot;</code>的配置在内核源码的<code>&quot;include/generated/utsrelease.h&quot;</code>下可以看到，<code>utsrelease.h</code>的内容是由<code>Makefile</code>和``.config<code>的内容来生成的，当成功编译kernel以后，</code>utsrelease.h`得到更新，</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#defineUTS_RELEASE &quot;6.4.0&quot;</span></span><br></pre></td></tr></table></figure><p>那么前文”6.4.0-d46299ae”中的”-d46299ae”是如何得来的呢？其实这个是开发者使用了 Git 来管理代码。当你修改或者提交代码以后，每次编译内核后，在”UTS_RELEASE”后面就会看到一串哈希值，例如”6.4.0-d46299ae”，其中”-d46299ae”这个就是 Git 版本控制而产生的哈希值。发行版本号只是各个厂商用于区别自己发布的不同时期的 kernel 版本或者产品版本而产生的编号，完全由各厂商自己定义。</p><h2 id="解决-CRC-校验错误"><a href="#解决-CRC-校验错误" class="headerlink" title="解决 CRC 校验错误"></a>解决 CRC 校验错误</h2><p>我们可以通过一些手段修改新模块的 module_layout 的 CRC 与内核CRC相同，再插入。<code>/boot</code>目录下通常有个在<code>symvers-&lt;kernel_version&gt;.gz</code> 文件通常包含了内核模块的符号版本信息。这个文件是由 Linux 内核构建时生成的，用于记录在该内核版本下构建的模块的符号信息，包括函数和变量的名称、版本号等。里面就保存了内核的 module_layout 的 CRC 值。我们可以使用<code>gzip -d</code>命令解压这个文件，找到 module_layout 的 CRC 值，记录下来。</p><ul><li><p>方法一：使用 16 进制编辑器修改模块文件，将 module_layout 的值修改为相同的值，再插入。<br>  在 Linux 中，可以使用 <code>hexdump</code> 和 <code>xxd</code> 等工具查看二进制文件的内容，并尝试编辑。下面是一种使用 <code>xxd</code> 查看和修改二进制文件的方法：</p><ol><li><p>使用 <code>xxd</code> 将二进制文件转换为十六进制文本：</p> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xxd /usr/src/linux-6.4.0-10.1.0.20.oe2309.riscv64/arch/riscv/kvm/kvm.ko &gt; kvm_hex.txt</span><br></pre></td></tr></table></figure><p> 这将创建一个名为 <code>kvm_hex.txt</code> 的文本文件，其中包含 <code>kvm.ko</code> 的十六进制表示。</p></li><li><p>使用文本编辑器（如 <code>nano</code> 或 <code>vim</code>）打开 <code>kvm_hex.txt</code>，找到并编辑 <code>module_layout</code> 的值。请确保你了解所做更改的含义，并且只修改你确信的内容。</p></li><li><p>保存并关闭文本编辑器。</p></li><li><p>使用 <code>xxd</code> 将修改后的十六进制文本转换回二进制文件：</p> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xxd -r kvm_hex.txt &gt; /usr/src/linux-6.4.0-10.1.0.20.oe2309.riscv64/arch/riscv/kvm/kvm.ko</span><br></pre></td></tr></table></figure><p> 这将覆盖原始的 <code>kvm.ko</code> 文件。</p></li></ol></li><li><p>方法二：修改 Module.symvers</p>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 清理编译结果。不要使用 make distclean，这会删除.config 文件以及 Module.symvers 文件</span></span><br><span class="line">make clean</span><br><span class="line"><span class="comment"># 修改 Module.symvers 文件</span></span><br><span class="line">sed -i  <span class="string">&#x27;/module_layout/ s/0x[0-9a-f][0-9a-f]*/0xdf88831e/&#x27;</span> Module.symvers</span><br><span class="line"><span class="comment"># 重新编译模块</span></span><br><span class="line">make M=./arch/riscv/kvm/ -j33</span><br><span class="line"><span class="comment"># 检查模块的 module_layout</span></span><br><span class="line">modprobe --dump-modversions /usr/src/linux-6.4.0-10.1.0.20.oe2309.riscv64/arch/riscv/kvm/kvm.ko | grep module_layout</span><br><span class="line">0xdf88831e</span><br></pre></td></tr></table></figure></li></ul><h1 id="如何生成-mod-c-文件"><a href="#如何生成-mod-c-文件" class="headerlink" title="如何生成 .mod.c 文件"></a>如何生成 .mod.c 文件</h1><p>如果是自己写的模块，可以根据下面的命令编译模块，就可以得到<code>.mod.c</code>文件，它是源文件到<code>.mod.o</code>文件的一个中间文件。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -C /root/build-kernel/kernel M=/driver_study/ modules -j22</span><br></pre></td></tr></table></figure><p>如果是用内核自己的模块，执行<code>make modules</code>命令，也可以得到<code>.mod.c</code>文件。但是一般执行<code>make -j22</code>命令就不会生成这些文件，我们可以找一个启用的内核模块，例如<code>kvm.ko</code>，执行下面的命令，就可以得到<code>.mod.c</code>文件。不能随便找个模块，必须在 config 中开启的模块，否则会报错<code>undefined!</code>。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make  M=./arch/riscv/kvm modules -j22</span><br></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;初学 Linux 内核或者第一次编译使用内核模块时经常会遇到类似这样的错误：&lt;/p&gt;
+&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
     <title>x86平台使用Gitea Actions构建多架构应用</title>
-    <link href="http://example.com/2024/01/10/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8Gitea-Actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/"/>
-    <id>http://example.com/2024/01/10/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8Gitea-Actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</id>
+    <link href="https://lifeislife.cn/2024/01/10/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8Gitea-Actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/"/>
+    <id>https://lifeislife.cn/2024/01/10/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8Gitea-Actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</id>
     <published>2024-01-10T03:10:04.000Z</published>
     <updated>2024-01-10T03:12:43.373Z</updated>
     
@@ -33,23 +54,23 @@
     
     
     
-    <category term="Self-Hosted" scheme="http://example.com/categories/Self-Hosted/"/>
+    <category term="Self-Hosted" scheme="https://lifeislife.cn/categories/Self-Hosted/"/>
     
     
-    <category term="Docker" scheme="http://example.com/tags/Docker/"/>
+    <category term="Docker" scheme="https://lifeislife.cn/tags/Docker/"/>
     
-    <category term="Gitea" scheme="http://example.com/tags/Gitea/"/>
+    <category term="Gitea" scheme="https://lifeislife.cn/tags/Gitea/"/>
     
-    <category term="DevOps" scheme="http://example.com/tags/DevOps/"/>
+    <category term="DevOps" scheme="https://lifeislife.cn/tags/DevOps/"/>
     
-    <category term="Actions" scheme="http://example.com/tags/Actions/"/>
+    <category term="Actions" scheme="https://lifeislife.cn/tags/Actions/"/>
     
   </entry>
   
   <entry>
     <title>解决Armoury Crate(华硕奥创中心）安装驱动卡在55%</title>
-    <link href="http://example.com/2024/01/07/%E8%A7%A3%E5%86%B3Armoury-Crate-%E5%8D%8E%E7%A1%95%E5%A5%A5%E5%88%9B%E4%B8%AD%E5%BF%83%EF%BC%89%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8%E5%8D%A1%E5%9C%A855/"/>
-    <id>http://example.com/2024/01/07/%E8%A7%A3%E5%86%B3Armoury-Crate-%E5%8D%8E%E7%A1%95%E5%A5%A5%E5%88%9B%E4%B8%AD%E5%BF%83%EF%BC%89%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8%E5%8D%A1%E5%9C%A855/</id>
+    <link href="https://lifeislife.cn/2024/01/07/%E8%A7%A3%E5%86%B3Armoury-Crate-%E5%8D%8E%E7%A1%95%E5%A5%A5%E5%88%9B%E4%B8%AD%E5%BF%83%EF%BC%89%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8%E5%8D%A1%E5%9C%A855/"/>
+    <id>https://lifeislife.cn/2024/01/07/%E8%A7%A3%E5%86%B3Armoury-Crate-%E5%8D%8E%E7%A1%95%E5%A5%A5%E5%88%9B%E4%B8%AD%E5%BF%83%EF%BC%89%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8%E5%8D%A1%E5%9C%A855/</id>
     <published>2024-01-07T02:37:28.000Z</published>
     <updated>2024-01-07T02:50:50.150Z</updated>
     
@@ -68,8 +89,8 @@
   
   <entry>
     <title>迁移WSL2到非系统盘</title>
-    <link href="http://example.com/2024/01/06/%E8%BF%81%E7%A7%BBWSL2%E5%88%B0%E9%9D%9E%E7%B3%BB%E7%BB%9F%E7%9B%98/"/>
-    <id>http://example.com/2024/01/06/%E8%BF%81%E7%A7%BBWSL2%E5%88%B0%E9%9D%9E%E7%B3%BB%E7%BB%9F%E7%9B%98/</id>
+    <link href="https://lifeislife.cn/2024/01/06/%E8%BF%81%E7%A7%BBWSL2%E5%88%B0%E9%9D%9E%E7%B3%BB%E7%BB%9F%E7%9B%98/"/>
+    <id>https://lifeislife.cn/2024/01/06/%E8%BF%81%E7%A7%BBWSL2%E5%88%B0%E9%9D%9E%E7%B3%BB%E7%BB%9F%E7%9B%98/</id>
     <published>2024-01-06T08:47:57.000Z</published>
     <updated>2024-01-06T09:26:13.752Z</updated>
     
@@ -88,8 +109,8 @@
   
   <entry>
     <title>耳机换电池复活耳机小记</title>
-    <link href="http://example.com/2024/01/06/%E8%80%B3%E6%9C%BA%E6%8D%A2%E7%94%B5%E6%B1%A0%E5%A4%8D%E6%B4%BB%E8%80%B3%E6%9C%BA%E5%B0%8F%E8%AE%B0/"/>
-    <id>http://example.com/2024/01/06/%E8%80%B3%E6%9C%BA%E6%8D%A2%E7%94%B5%E6%B1%A0%E5%A4%8D%E6%B4%BB%E8%80%B3%E6%9C%BA%E5%B0%8F%E8%AE%B0/</id>
+    <link href="https://lifeislife.cn/2024/01/06/%E8%80%B3%E6%9C%BA%E6%8D%A2%E7%94%B5%E6%B1%A0%E5%A4%8D%E6%B4%BB%E8%80%B3%E6%9C%BA%E5%B0%8F%E8%AE%B0/"/>
+    <id>https://lifeislife.cn/2024/01/06/%E8%80%B3%E6%9C%BA%E6%8D%A2%E7%94%B5%E6%B1%A0%E5%A4%8D%E6%B4%BB%E8%80%B3%E6%9C%BA%E5%B0%8F%E8%AE%B0/</id>
     <published>2024-01-06T02:34:10.000Z</published>
     <updated>2024-01-08T12:48:55.630Z</updated>
     
@@ -103,17 +124,17 @@
     
     
     
-    <category term="缝缝补补又三年" scheme="http://example.com/categories/%E7%BC%9D%E7%BC%9D%E8%A1%A5%E8%A1%A5%E5%8F%88%E4%B8%89%E5%B9%B4/"/>
+    <category term="缝缝补补又三年" scheme="https://lifeislife.cn/categories/%E7%BC%9D%E7%BC%9D%E8%A1%A5%E8%A1%A5%E5%8F%88%E4%B8%89%E5%B9%B4/"/>
     
     
-    <category term="维修" scheme="http://example.com/tags/%E7%BB%B4%E4%BF%AE/"/>
+    <category term="维修" scheme="https://lifeislife.cn/tags/%E7%BB%B4%E4%BF%AE/"/>
     
   </entry>
   
   <entry>
     <title>解决Adobe Photoshop正版升级弹窗</title>
-    <link href="http://example.com/2023/12/23/%E8%A7%A3%E5%86%B3Adobe-Photoshop%E6%AD%A3%E7%89%88%E5%8D%87%E7%BA%A7%E5%BC%B9%E7%AA%97/"/>
-    <id>http://example.com/2023/12/23/%E8%A7%A3%E5%86%B3Adobe-Photoshop%E6%AD%A3%E7%89%88%E5%8D%87%E7%BA%A7%E5%BC%B9%E7%AA%97/</id>
+    <link href="https://lifeislife.cn/2023/12/23/%E8%A7%A3%E5%86%B3Adobe-Photoshop%E6%AD%A3%E7%89%88%E5%8D%87%E7%BA%A7%E5%BC%B9%E7%AA%97/"/>
+    <id>https://lifeislife.cn/2023/12/23/%E8%A7%A3%E5%86%B3Adobe-Photoshop%E6%AD%A3%E7%89%88%E5%8D%87%E7%BA%A7%E5%BC%B9%E7%AA%97/</id>
     <published>2023-12-23T04:08:36.000Z</published>
     <updated>2023-12-23T04:26:51.780Z</updated>
     
@@ -132,8 +153,8 @@
   
   <entry>
     <title>ZWIFT使用Tips</title>
-    <link href="http://example.com/2023/12/17/ZWIFT%E4%BD%BF%E7%94%A8Tips/"/>
-    <id>http://example.com/2023/12/17/ZWIFT%E4%BD%BF%E7%94%A8Tips/</id>
+    <link href="https://lifeislife.cn/2023/12/17/ZWIFT%E4%BD%BF%E7%94%A8Tips/"/>
+    <id>https://lifeislife.cn/2023/12/17/ZWIFT%E4%BD%BF%E7%94%A8Tips/</id>
     <published>2023-12-17T05:24:55.000Z</published>
     <updated>2023-12-18T13:49:42.260Z</updated>
     
@@ -152,8 +173,8 @@
   
   <entry>
     <title>Nexus搭建内部镜像</title>
-    <link href="http://example.com/2023/12/16/Nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/"/>
-    <id>http://example.com/2023/12/16/Nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</id>
+    <link href="https://lifeislife.cn/2023/12/16/Nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/"/>
+    <id>https://lifeislife.cn/2023/12/16/Nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</id>
     <published>2023-12-16T04:16:34.000Z</published>
     <updated>2023-12-16T15:54:46.459Z</updated>
     
@@ -167,21 +188,21 @@
     
     
     
-    <category term="Self-Hosted" scheme="http://example.com/categories/Self-Hosted/"/>
+    <category term="Self-Hosted" scheme="https://lifeislife.cn/categories/Self-Hosted/"/>
     
     
-    <category term="Docker" scheme="http://example.com/tags/Docker/"/>
+    <category term="Docker" scheme="https://lifeislife.cn/tags/Docker/"/>
     
-    <category term="DevOps" scheme="http://example.com/tags/DevOps/"/>
+    <category term="DevOps" scheme="https://lifeislife.cn/tags/DevOps/"/>
     
-    <category term="Nexus" scheme="http://example.com/tags/Nexus/"/>
+    <category term="Nexus" scheme="https://lifeislife.cn/tags/Nexus/"/>
     
   </entry>
   
   <entry>
     <title>Tunasync 搭建私有镜像站</title>
-    <link href="http://example.com/2023/12/14/Tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/"/>
-    <id>http://example.com/2023/12/14/Tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</id>
+    <link href="https://lifeislife.cn/2023/12/14/Tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/"/>
+    <id>https://lifeislife.cn/2023/12/14/Tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</id>
     <published>2023-12-14T06:15:54.000Z</published>
     <updated>2023-12-18T13:50:07.831Z</updated>
     
@@ -195,21 +216,21 @@
     
     
     
-    <category term="Self-Hosted" scheme="http://example.com/categories/Self-Hosted/"/>
+    <category term="Self-Hosted" scheme="https://lifeislife.cn/categories/Self-Hosted/"/>
     
     
-    <category term="Docker" scheme="http://example.com/tags/Docker/"/>
+    <category term="Docker" scheme="https://lifeislife.cn/tags/Docker/"/>
     
-    <category term="DevOps" scheme="http://example.com/tags/DevOps/"/>
+    <category term="DevOps" scheme="https://lifeislife.cn/tags/DevOps/"/>
     
-    <category term="Tunasync" scheme="http://example.com/tags/Tunasync/"/>
+    <category term="Tunasync" scheme="https://lifeislife.cn/tags/Tunasync/"/>
     
   </entry>
   
   <entry>
     <title>VSCode Linux内核源码阅读环境</title>
-    <link href="http://example.com/2023/12/14/VSCode-Linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83/"/>
-    <id>http://example.com/2023/12/14/VSCode-Linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83/</id>
+    <link href="https://lifeislife.cn/2023/12/14/VSCode-Linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83/"/>
+    <id>https://lifeislife.cn/2023/12/14/VSCode-Linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83/</id>
     <published>2023-12-14T02:02:32.000Z</published>
     <updated>2023-12-14T02:35:33.997Z</updated>
     
@@ -224,15 +245,15 @@
     
     
     
-    <category term="工欲善其事必先利其器" scheme="http://example.com/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
+    <category term="工欲善其事必先利其器" scheme="https://lifeislife.cn/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
     
     
   </entry>
   
   <entry>
     <title>嵌入式Linux驱动开发环境搭建踩坑</title>
-    <link href="http://example.com/2023/12/13/%E5%B5%8C%E5%85%A5%E5%BC%8FLinux%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E8%B8%A9%E5%9D%91/"/>
-    <id>http://example.com/2023/12/13/%E5%B5%8C%E5%85%A5%E5%BC%8FLinux%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E8%B8%A9%E5%9D%91/</id>
+    <link href="https://lifeislife.cn/2023/12/13/%E5%B5%8C%E5%85%A5%E5%BC%8FLinux%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E8%B8%A9%E5%9D%91/"/>
+    <id>https://lifeislife.cn/2023/12/13/%E5%B5%8C%E5%85%A5%E5%BC%8FLinux%E9%A9%B1%E5%8A%A8%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E8%B8%A9%E5%9D%91/</id>
     <published>2023-12-13T14:59:23.000Z</published>
     <updated>2023-12-13T15:12:17.566Z</updated>
     
@@ -251,8 +272,8 @@
   
   <entry>
     <title>解决Ubuntu更新源报错Clearsigned file isnt valid, got NOSPLIT</title>
-    <link href="http://example.com/2023/11/19/%E8%A7%A3%E5%86%B3Ubuntu%E6%9B%B4%E6%96%B0%E6%BA%90%E6%8A%A5%E9%94%99Clearsigned-file-isn-t-valid-got-NOSPLIT/"/>
-    <id>http://example.com/2023/11/19/%E8%A7%A3%E5%86%B3Ubuntu%E6%9B%B4%E6%96%B0%E6%BA%90%E6%8A%A5%E9%94%99Clearsigned-file-isn-t-valid-got-NOSPLIT/</id>
+    <link href="https://lifeislife.cn/2023/11/19/%E8%A7%A3%E5%86%B3Ubuntu%E6%9B%B4%E6%96%B0%E6%BA%90%E6%8A%A5%E9%94%99Clearsigned-file-isn-t-valid-got-NOSPLIT/"/>
+    <id>https://lifeislife.cn/2023/11/19/%E8%A7%A3%E5%86%B3Ubuntu%E6%9B%B4%E6%96%B0%E6%BA%90%E6%8A%A5%E9%94%99Clearsigned-file-isn-t-valid-got-NOSPLIT/</id>
     <published>2023-11-19T13:18:09.000Z</published>
     <updated>2023-11-19T13:23:00.588Z</updated>
     
@@ -271,8 +292,8 @@
   
   <entry>
     <title>使用Gitea部署个人代码仓库</title>
-    <link href="http://example.com/2023/11/18/%E4%BD%BF%E7%94%A8Gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/"/>
-    <id>http://example.com/2023/11/18/%E4%BD%BF%E7%94%A8Gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</id>
+    <link href="https://lifeislife.cn/2023/11/18/%E4%BD%BF%E7%94%A8Gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/"/>
+    <id>https://lifeislife.cn/2023/11/18/%E4%BD%BF%E7%94%A8Gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</id>
     <published>2023-11-18T10:17:42.000Z</published>
     <updated>2023-11-18T10:33:25.178Z</updated>
     
@@ -286,25 +307,25 @@
     
     
     
-    <category term="Self-Hosted" scheme="http://example.com/categories/Self-Hosted/"/>
+    <category term="Self-Hosted" scheme="https://lifeislife.cn/categories/Self-Hosted/"/>
     
     
-    <category term="Git" scheme="http://example.com/tags/Git/"/>
+    <category term="Git" scheme="https://lifeislife.cn/tags/Git/"/>
     
-    <category term="Docker" scheme="http://example.com/tags/Docker/"/>
+    <category term="Docker" scheme="https://lifeislife.cn/tags/Docker/"/>
     
-    <category term="Gitea" scheme="http://example.com/tags/Gitea/"/>
+    <category term="Gitea" scheme="https://lifeislife.cn/tags/Gitea/"/>
     
-    <category term="Self-Hosted" scheme="http://example.com/tags/Self-Hosted/"/>
+    <category term="Self-Hosted" scheme="https://lifeislife.cn/tags/Self-Hosted/"/>
     
-    <category term="DevOps" scheme="http://example.com/tags/DevOps/"/>
+    <category term="DevOps" scheme="https://lifeislife.cn/tags/DevOps/"/>
     
   </entry>
   
   <entry>
     <title>ocrmypdf 让 PDF 可搜索</title>
-    <link href="http://example.com/2023/09/19/ocrmypdf-%E8%AE%A9PDF%E5%8F%AF%E6%90%9C%E7%B4%A2/"/>
-    <id>http://example.com/2023/09/19/ocrmypdf-%E8%AE%A9PDF%E5%8F%AF%E6%90%9C%E7%B4%A2/</id>
+    <link href="https://lifeislife.cn/2023/09/19/ocrmypdf-%E8%AE%A9PDF%E5%8F%AF%E6%90%9C%E7%B4%A2/"/>
+    <id>https://lifeislife.cn/2023/09/19/ocrmypdf-%E8%AE%A9PDF%E5%8F%AF%E6%90%9C%E7%B4%A2/</id>
     <published>2023-09-19T11:51:18.000Z</published>
     <updated>2023-09-19T14:51:10.376Z</updated>
     
@@ -318,21 +339,21 @@
     
     
     
-    <category term="工欲善其事必先利其器" scheme="http://example.com/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
+    <category term="工欲善其事必先利其器" scheme="https://lifeislife.cn/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
     
     
-    <category term="Efficiency" scheme="http://example.com/tags/Efficiency/"/>
+    <category term="Efficiency" scheme="https://lifeislife.cn/tags/Efficiency/"/>
     
-    <category term="ocrmypdf" scheme="http://example.com/tags/ocrmypdf/"/>
+    <category term="ocrmypdf" scheme="https://lifeislife.cn/tags/ocrmypdf/"/>
     
-    <category term="OCR" scheme="http://example.com/tags/OCR/"/>
+    <category term="OCR" scheme="https://lifeislife.cn/tags/OCR/"/>
     
   </entry>
   
   <entry>
     <title>uCore-实验第 0 章 - 实验环境搭建</title>
-    <link href="http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
-    <id>http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</id>
+    <link href="https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <id>https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</id>
     <published>2023-09-08T02:46:20.000Z</published>
     <updated>2023-08-28T02:46:20.000Z</updated>
     
@@ -347,25 +368,25 @@
     
     
     
-    <category term="uCore 实验" scheme="http://example.com/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
+    <category term="uCore 实验" scheme="https://lifeislife.cn/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="RISC-V" scheme="http://example.com/tags/RISC-V/"/>
+    <category term="RISC-V" scheme="https://lifeislife.cn/tags/RISC-V/"/>
     
-    <category term="OS" scheme="http://example.com/tags/OS/"/>
+    <category term="OS" scheme="https://lifeislife.cn/tags/OS/"/>
     
-    <category term="uCore" scheme="http://example.com/tags/uCore/"/>
+    <category term="uCore" scheme="https://lifeislife.cn/tags/uCore/"/>
     
-    <category term="Lab" scheme="http://example.com/tags/Lab/"/>
+    <category term="Lab" scheme="https://lifeislife.cn/tags/Lab/"/>
     
   </entry>
   
   <entry>
     <title>uCore-实验第 1 章 - 应用程序与基本执行环境</title>
-    <link href="http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/"/>
-    <id>http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/</id>
+    <link href="https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/"/>
+    <id>https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/</id>
     <published>2023-09-08T02:45:14.000Z</published>
     <updated>2023-08-28T06:46:20.000Z</updated>
     
@@ -379,25 +400,25 @@
     
     
     
-    <category term="uCore 实验" scheme="http://example.com/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
+    <category term="uCore 实验" scheme="https://lifeislife.cn/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="RISC-V" scheme="http://example.com/tags/RISC-V/"/>
+    <category term="RISC-V" scheme="https://lifeislife.cn/tags/RISC-V/"/>
     
-    <category term="OS" scheme="http://example.com/tags/OS/"/>
+    <category term="OS" scheme="https://lifeislife.cn/tags/OS/"/>
     
-    <category term="uCore" scheme="http://example.com/tags/uCore/"/>
+    <category term="uCore" scheme="https://lifeislife.cn/tags/uCore/"/>
     
-    <category term="Lab" scheme="http://example.com/tags/Lab/"/>
+    <category term="Lab" scheme="https://lifeislife.cn/tags/Lab/"/>
     
   </entry>
   
   <entry>
     <title>uCore 实验第 5 章 - 进程及进程管理</title>
-    <link href="http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
-    <id>http://example.com/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</id>
+    <link href="https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
+    <id>https://lifeislife.cn/2023/09/08/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</id>
     <published>2023-09-08T02:01:20.000Z</published>
     <updated>2023-09-20T13:49:44.952Z</updated>
     
@@ -411,35 +432,35 @@
     
     
     
-    <category term="uCore 实验" scheme="http://example.com/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
+    <category term="uCore 实验" scheme="https://lifeislife.cn/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="RISC-V" scheme="http://example.com/tags/RISC-V/"/>
+    <category term="RISC-V" scheme="https://lifeislife.cn/tags/RISC-V/"/>
     
-    <category term="OS" scheme="http://example.com/tags/OS/"/>
+    <category term="OS" scheme="https://lifeislife.cn/tags/OS/"/>
     
-    <category term="uCore" scheme="http://example.com/tags/uCore/"/>
+    <category term="uCore" scheme="https://lifeislife.cn/tags/uCore/"/>
     
-    <category term="Lab" scheme="http://example.com/tags/Lab/"/>
+    <category term="Lab" scheme="https://lifeislife.cn/tags/Lab/"/>
     
-    <category term="进程管理" scheme="http://example.com/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
+    <category term="进程管理" scheme="https://lifeislife.cn/tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/"/>
     
-    <category term="进程" scheme="http://example.com/tags/%E8%BF%9B%E7%A8%8B/"/>
+    <category term="进程" scheme="https://lifeislife.cn/tags/%E8%BF%9B%E7%A8%8B/"/>
     
-    <category term="线程" scheme="http://example.com/tags/%E7%BA%BF%E7%A8%8B/"/>
+    <category term="线程" scheme="https://lifeislife.cn/tags/%E7%BA%BF%E7%A8%8B/"/>
     
-    <category term="多线程" scheme="http://example.com/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
+    <category term="多线程" scheme="https://lifeislife.cn/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
     
-    <category term="多进程" scheme="http://example.com/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/"/>
+    <category term="多进程" scheme="https://lifeislife.cn/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/"/>
     
   </entry>
   
   <entry>
     <title>uCore 实验第 4 章 - 地址空间</title>
-    <link href="http://example.com/2023/09/04/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/"/>
-    <id>http://example.com/2023/09/04/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/</id>
+    <link href="https://lifeislife.cn/2023/09/04/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/"/>
+    <id>https://lifeislife.cn/2023/09/04/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/</id>
     <published>2023-09-04T03:11:48.000Z</published>
     <updated>2023-09-09T04:01:37.232Z</updated>
     
@@ -454,33 +475,33 @@
     
     
     
-    <category term="uCore 实验" scheme="http://example.com/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
+    <category term="uCore 实验" scheme="https://lifeislife.cn/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="RISC-V" scheme="http://example.com/tags/RISC-V/"/>
+    <category term="RISC-V" scheme="https://lifeislife.cn/tags/RISC-V/"/>
     
-    <category term="内存管理" scheme="http://example.com/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <category term="内存管理" scheme="https://lifeislife.cn/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
     
-    <category term="MMU" scheme="http://example.com/tags/MMU/"/>
+    <category term="MMU" scheme="https://lifeislife.cn/tags/MMU/"/>
     
-    <category term="虚拟内存" scheme="http://example.com/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/"/>
+    <category term="虚拟内存" scheme="https://lifeislife.cn/tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/"/>
     
-    <category term="OS" scheme="http://example.com/tags/OS/"/>
+    <category term="OS" scheme="https://lifeislife.cn/tags/OS/"/>
     
-    <category term="uCore" scheme="http://example.com/tags/uCore/"/>
+    <category term="uCore" scheme="https://lifeislife.cn/tags/uCore/"/>
     
-    <category term="Lab" scheme="http://example.com/tags/Lab/"/>
+    <category term="Lab" scheme="https://lifeislife.cn/tags/Lab/"/>
     
-    <category term="分页分段" scheme="http://example.com/tags/%E5%88%86%E9%A1%B5%E5%88%86%E6%AE%B5/"/>
+    <category term="分页分段" scheme="https://lifeislife.cn/tags/%E5%88%86%E9%A1%B5%E5%88%86%E6%AE%B5/"/>
     
   </entry>
   
   <entry>
     <title>uCore 实验第 3 章 - 多道程序与分时多任务</title>
-    <link href="http://example.com/2023/09/02/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/"/>
-    <id>http://example.com/2023/09/02/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/</id>
+    <link href="https://lifeislife.cn/2023/09/02/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/"/>
+    <id>https://lifeislife.cn/2023/09/02/uCore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/</id>
     <published>2023-09-02T08:03:02.000Z</published>
     <updated>2023-09-09T04:01:37.232Z</updated>
     
@@ -494,25 +515,25 @@
     
     
     
-    <category term="uCore 实验" scheme="http://example.com/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
+    <category term="uCore 实验" scheme="https://lifeislife.cn/categories/uCore-%E5%AE%9E%E9%AA%8C/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="RISC-V" scheme="http://example.com/tags/RISC-V/"/>
+    <category term="RISC-V" scheme="https://lifeislife.cn/tags/RISC-V/"/>
     
-    <category term="OS" scheme="http://example.com/tags/OS/"/>
+    <category term="OS" scheme="https://lifeislife.cn/tags/OS/"/>
     
-    <category term="uCore" scheme="http://example.com/tags/uCore/"/>
+    <category term="uCore" scheme="https://lifeislife.cn/tags/uCore/"/>
     
-    <category term="Lab" scheme="http://example.com/tags/Lab/"/>
+    <category term="Lab" scheme="https://lifeislife.cn/tags/Lab/"/>
     
   </entry>
   
   <entry>
     <title>yq 为 yaml 文件内容排序</title>
-    <link href="http://example.com/2023/09/01/yq%E4%B8%BAyaml%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%8E%92%E5%BA%8F/"/>
-    <id>http://example.com/2023/09/01/yq%E4%B8%BAyaml%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%8E%92%E5%BA%8F/</id>
+    <link href="https://lifeislife.cn/2023/09/01/yq%E4%B8%BAyaml%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%8E%92%E5%BA%8F/"/>
+    <id>https://lifeislife.cn/2023/09/01/yq%E4%B8%BAyaml%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%8E%92%E5%BA%8F/</id>
     <published>2023-09-01T13:37:25.000Z</published>
     <updated>2023-09-01T13:48:35.213Z</updated>
     
@@ -526,42 +547,14 @@
     
     
     
-    <category term="工欲善其事必先利其器" scheme="http://example.com/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
+    <category term="工欲善其事必先利其器" scheme="https://lifeislife.cn/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
     
     
-    <category term="Linux" scheme="http://example.com/tags/Linux/"/>
+    <category term="Linux" scheme="https://lifeislife.cn/tags/Linux/"/>
     
-    <category term="工具" scheme="http://example.com/tags/%E5%B7%A5%E5%85%B7/"/>
+    <category term="工具" scheme="https://lifeislife.cn/tags/%E5%B7%A5%E5%85%B7/"/>
     
-    <category term="yaml" scheme="http://example.com/tags/yaml/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>解决复制 Markdown 文本到思源笔记无法转义为 Markdown 格式</title>
-    <link href="http://example.com/2023/09/01/%E8%A7%A3%E5%86%B3%E5%A4%8D%E5%88%B6Markdown%E6%96%87%E6%9C%AC%E5%88%B0%E6%80%9D%E6%BA%90%E7%AC%94%E8%AE%B0%E6%97%A0%E6%B3%95%E8%BD%AC%E4%B9%89%E4%B8%BAMarkdown%E6%A0%BC%E5%BC%8F/"/>
-    <id>http://example.com/2023/09/01/%E8%A7%A3%E5%86%B3%E5%A4%8D%E5%88%B6Markdown%E6%96%87%E6%9C%AC%E5%88%B0%E6%80%9D%E6%BA%90%E7%AC%94%E8%AE%B0%E6%97%A0%E6%B3%95%E8%BD%AC%E4%B9%89%E4%B8%BAMarkdown%E6%A0%BC%E5%BC%8F/</id>
-    <published>2023-09-01T12:25:05.000Z</published>
-    <updated>2023-09-01T12:33:38.115Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>在 VSCode 中编辑 Markdown 文本，复制到思源笔记后，思源笔记无法转义为 Markdown 格式。会变成一个代码块，但是代码块内的内容并不是复制的内容。</p><p>比如上面这段话复制到思源笔记成了下图这样：</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/01/264c4a2f58447a13c50012a676bf0ed7.png"></p><p>但是我需要的是能够转义为 Markdown 的阅读模式。</p><h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>问题的原因在于 VSCode 复制的文本是带格式的，而思源笔记默认的粘贴模式是纯文本模式，所以会出现上面的问题。</p><p>解决方法就是从 VSCode 复制的内容为纯文本，一种可以把文本复制到 <code>txt</code> 文件中，再复制，但是比较麻烦。</p><p>第二种方法是使用 VSCode 的插件 <code>Copy Plain Text</code>，搜索下载后，默认快捷键为 <code>Ctrl+Alt+C</code>，可以复制为纯文本。</p><p>再次粘贴到思源笔记中，就可以转义为 Markdown 格式了。</p><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/01/4f9aa2d7cb07f061aabbc5977977b6cb.png"></p><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h2 id=&quot;问题描述&quot;&gt;&lt;a href=&quot;#问题描述&quot; class=&quot;headerlink&quot; title=&quot;问题描述&quot;&gt;&lt;/a&gt;问题描述&lt;/h2&gt;&lt;p&gt;在 VSCode 中编辑 Markdown 文本，复制到思源笔记后，思源笔记无法转义为 Markdown 格式。会变成一个代</summary>
-      
-    
-    
-    
-    <category term="工欲善其事必先利其器" scheme="http://example.com/categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/"/>
-    
-    
-    <category term="VSCode" scheme="http://example.com/tags/VSCode/"/>
-    
-    <category term="Markdown" scheme="http://example.com/tags/Markdown/"/>
-    
-    <category term="思源笔记" scheme="http://example.com/tags/%E6%80%9D%E6%BA%90%E7%AC%94%E8%AE%B0/"/>
+    <category term="yaml" scheme="https://lifeislife.cn/tags/yaml/"/>
     
   </entry>
   
