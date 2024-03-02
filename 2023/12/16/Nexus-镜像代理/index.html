@@ -33,9 +33,10 @@
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png">
 <meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png">
 <meta property="article:published_time" content="2023-12-16T04:16:34.000Z">
-<meta property="article:modified_time" content="2024-01-17T13:29:19.676Z">
+<meta property="article:modified_time" content="2024-03-01T14:31:20.228Z">
 <meta property="article:author" content="Dominic">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="DevOps">
@@ -60,7 +61,7 @@
 <meta name="generator" content="Hexo 5.4.0"></head>
 
 
-<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
   <div class="slimContent">
     <div class="navbar-header">
@@ -379,10 +380,10 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.7k(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.8k(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 6(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 7(分)</span>
 	
 
       </div>
@@ -406,7 +407,7 @@ services:
 <p>修改data目录有最高权限，否则无法启动成功：</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">chmod</span> -R <span class="token number">777</span> /srv/nexus/data<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h1 id="配置Nexus"><a href="#配置Nexus" class="headerlink" title="配置Nexus"></a>配置Nexus</h1><h2 id="登录WEB页面"><a href="#登录WEB页面" class="headerlink" title="登录WEB页面"></a>登录WEB页面</h2><p>登录WEB页面，地址为：<a href="http://192.168.1.9:8081。">http://192.168.1.9:8081。</a><br>用户名为：admin，密码通过命令获取：</p>
+<h1 id="代理Docker-Hub"><a href="#代理Docker-Hub" class="headerlink" title="代理Docker Hub"></a>代理Docker Hub</h1><h2 id="登录WEB页面"><a href="#登录WEB页面" class="headerlink" title="登录WEB页面"></a>登录WEB页面</h2><p>登录WEB页面，地址为：<a href="http://192.168.1.9:8081。">http://192.168.1.9:8081。</a><br>用户名为：admin，密码通过命令获取：</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker <span class="token builtin class-name">exec</span> nexus3 <span class="token function">cat</span> /nexus-data/admin.password<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <h2 id="创建Blob"><a href="#创建Blob" class="headerlink" title="创建Blob"></a>创建Blob</h2><p>在 Nexus Repository Manager 中，Blob Store（二进制大对象存储）是一个用于存储仓库数据的核心组件。Blob Store 主要用于存储各种二进制文件，例如软件包、依赖库、构建产物等，这些文件通常被称为“blob”。</p>
@@ -463,7 +464,7 @@ services:
 <p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png"></p>
 <h2 id="启用Realms"><a href="#启用Realms" class="headerlink" title="启用Realms"></a>启用Realms</h2><p>这里要在 Security-Realms 里面启用 Docker Bearer Token Realm。</p>
 <p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png"></p>
-<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><p>如果直接使用docker pull拉取镜像，会报错：</p>
+<h2 id="拉取镜像"><a href="#拉取镜像" class="headerlink" title="拉取镜像"></a>拉取镜像</h2><p>如果直接使用docker pull拉取镜像，会报错：</p>
 <pre class="line-numbers language-base" data-language="base"><code class="language-base">$ docker pull 192.168.1.9:8082&#x2F;redis
 
 Using default tag: latest
@@ -512,6 +513,20 @@ docker push <span class="token number">192.168</span>.1.9:8083/hello-world:mytag
 <p>拉取这个镜像：</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker pull <span class="token number">192.168</span>.1.9:8083/hello-world:mytag<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
+<h1 id="代理-YUM-源"><a href="#代理-YUM-源" class="headerlink" title="代理 YUM 源"></a>代理 YUM 源</h1><h1 id="代理-APT-源"><a href="#代理-APT-源" class="headerlink" title="代理 APT 源"></a>代理 APT 源</h1><p>和 YUM 源代理稍有不同的是，APT 源代理时没有 Group 仓库，但是使用APT源的系统如Ubuntu也是有多个版本的，我们只需要在 Distribution 参数里填写需要代理的版本即可，每隔版本用逗号分隔。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png"></p>
+<p>常用的版本以及代号如下：</p>
+<ul>
+<li>Ubuntu 16.04 Xenial Xerus</li>
+<li>Ubuntu 18.04 Bionic Beaver</li>
+<li>Ubuntu 20.04 Focal Fossa</li>
+<li>Ubuntu 21.04 Hirsute Hippo</li>
+<li>Ubuntu 21.10 Impish Indri</li>
+<li>Ubuntu 22.04 Jammy Jellyfish</li>
+<li>Ubuntu 22.10 Kinetic Kudu</li>
+<li>Ubuntu 23.04 Lunar Lobster</li>
+<li>Ubuntu 23.10 Mantic Minotau</li>
+</ul>
 <h1 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h1><h2 id="docker-login-nexus-unauthorized-authentication-required"><a href="#docker-login-nexus-unauthorized-authentication-required" class="headerlink" title="docker login nexus unauthorized authentication required"></a>docker login nexus unauthorized authentication required</h2><ol>
 <li>确认登录密码是否正确，密码为Nexus登录密码</li>
 <li>却是否启用Realms</li>
