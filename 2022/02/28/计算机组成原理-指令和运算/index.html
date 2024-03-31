@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>计算机组成原理-指令和运算 | 夜云泊个人博客</title>
+  <meta name="description" content="计算机指令上世纪 60 年代晚期或 70 年代初期，程序需要先写在纸上，然后转成二进制机器码，再打到打孔卡上（0 表示不打孔，1 表示打孔），送入特殊的计算机中执行。 从硬件的角度来看，CPU 就是一个超大规模集成电路，通过电路实现了加法、乘法乃至各种各样的处理逻辑。 从软件的角度来看，CPU 就是一个执行各种计算机指令（Instruction Code）的逻辑机器。这里的计算机指令，就好比一门">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机组成原理-指令和运算">
+<meta property="og:url" content="https://lifeislife.cn/2022/02/28/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E5%92%8C%E8%BF%90%E7%AE%97/index.html">
+<meta property="og:site_name" content="如云泊">
+<meta property="og:description" content="计算机指令上世纪 60 年代晚期或 70 年代初期，程序需要先写在纸上，然后转成二进制机器码，再打到打孔卡上（0 表示不打孔，1 表示打孔），送入特殊的计算机中执行。 从硬件的角度来看，CPU 就是一个超大规模集成电路，通过电路实现了加法、乘法乃至各种各样的处理逻辑。 从软件的角度来看，CPU 就是一个执行各种计算机指令（Instruction Code）的逻辑机器。这里的计算机指令，就好比一门">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203032207712.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203032209801.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203051544158.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203061034401.png">
+<meta property="og:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203061037029.png">
+<meta property="article:published_time" content="2022-02-28T13:28:56.000Z">
+<meta property="article:modified_time" content="2022-10-15T03:14:29.878Z">
+<meta property="article:author" content="Dominic">
+<meta property="article:tag" content="计算机组成原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203032207712.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://lifeislife.cn/2022/02/28/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E5%92%8C%E8%BF%90%E7%AE%97/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="如云泊" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="../../../../css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="" target="_blank">
+          <img class="img-circle img-rotate" src="../../../../images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">夜云泊</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">软件工程师</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 浙江</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="../../../../.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="../../../../archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="../../../../categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="../../../../tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="../../../../repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="../../../../links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="../../../../about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="../../../../https:/github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>Game is Game</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="../../../../categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a><span class="category-list-count">31</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/CSAPP-Lab/">CSAPP-Lab</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/Embedded-Development/">Embedded Development</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/Git-%E5%AE%9E%E6%88%98/">Git 实战</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/JAVA-%E5%BC%80%E5%8F%91/">JAVA 开发</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/LaTeX/">LaTeX</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/Linux-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">Linux 操作系统</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/OpenStack/">OpenStack</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/RISC-V-%E5%85%A5%E9%97%A8/">RISC-V 入门</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/Self-Hosted/">Self-Hosted</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/uCore-%E5%AE%9E%E9%AA%8C/">uCore 实验</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a><span class="category-list-count">28</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/">每天学命令</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E7%BC%9D%E7%BC%9D%E8%A1%A5%E8%A1%A5%E5%8F%88%E4%B8%89%E5%B9%B4/">缝缝补补又三年</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="../../../../categories/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/">通信协议</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/ACPI/" rel="tag">ACPI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/AI/" rel="tag">AI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/AMBA/" rel="tag">AMBA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/AXI/" rel="tag">AXI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Actions/" rel="tag">Actions</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Affinity/" rel="tag">Affinity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/BootROM/" rel="tag">BootROM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/BootRom/" rel="tag">BootRom</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Bootloader/" rel="tag">Bootloader</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Bug/" rel="tag">Bug</a><span class="tag-list-count">35</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/C/" rel="tag">C</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/C/" rel="tag">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/CI/" rel="tag">CI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/CPU/" rel="tag">CPU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/CSAPP/" rel="tag">CSAPP</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Cache/" rel="tag">Cache</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Centos/" rel="tag">Centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Clash/" rel="tag">Clash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/CodeReview/" rel="tag">CodeReview</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Cryptography/" rel="tag">Cryptography</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/DMA/" rel="tag">DMA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/DOS/" rel="tag">DOS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Debian/" rel="tag">Debian</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/DevOps/" rel="tag">DevOps</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Devstack/" rel="tag">Devstack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Die2Die/" rel="tag">Die2Die</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Docker-Compose/" rel="tag">Docker-Compose</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Driver/" rel="tag">Driver</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/ELF/" rel="tag">ELF</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Efficiency/" rel="tag">Efficiency</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Embedded/" rel="tag">Embedded</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/FSM/" rel="tag">FSM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Flash/" rel="tag">Flash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/FrameBuffer/" rel="tag">FrameBuffer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/GCC/" rel="tag">GCC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/GPIO/" rel="tag">GPIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Gerrit/" rel="tag">Gerrit</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Git/" rel="tag">Git</a><span class="tag-list-count">25</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/GitHub-Copilot/" rel="tag">GitHub Copilot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Gitbash/" rel="tag">Gitbash</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Gitea/" rel="tag">Gitea</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Github/" rel="tag">Github</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/HEXO/" rel="tag">HEXO</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/IIC/" rel="tag">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/IPC/" rel="tag">IPC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Interlaken/" rel="tag">Interlaken</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/JAVA/" rel="tag">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/JTAG/" rel="tag">JTAG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Jellyfin/" rel="tag">Jellyfin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/KeePass/" rel="tag">KeePass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Kernel/" rel="tag">Kernel</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/LCD/" rel="tag">LCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/LaTeX/" rel="tag">LaTeX</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/LaTex/" rel="tag">LaTex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Lab/" rel="tag">Lab</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">84</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">Linux,网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/MCU/" rel="tag">MCU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/MESI/" rel="tag">MESI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/MMU/" rel="tag">MMU</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Makefile/" rel="tag">Makefile</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/NAS/" rel="tag">NAS</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/NOC/" rel="tag">NOC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Nexus/" rel="tag">Nexus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OCR/" rel="tag">OCR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OS/" rel="tag">OS</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Office/" rel="tag">Office</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OpenEuler/" rel="tag">OpenEuler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OpenOCD/" rel="tag">OpenOCD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OpenSBI/" rel="tag">OpenSBI</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/OpenStack/" rel="tag">OpenStack</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/PDF/" rel="tag">PDF</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Pandoc/" rel="tag">Pandoc</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Plugins/" rel="tag">Plugins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Python/" rel="tag">Python</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/QEMU/" rel="tag">QEMU</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Qt/" rel="tag">Qt</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/QtCreator/" rel="tag">QtCreator</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/RISC-V/" rel="tag">RISC-V</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/RISCV/" rel="tag">RISCV</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/RPM/" rel="tag">RPM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Radarr/" rel="tag">Radarr</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/SPI/" rel="tag">SPI</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/SSH/" rel="tag">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/SSH-Linux/" rel="tag">SSH,Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Self-Hosted/" rel="tag">Self-Hosted</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Shell/" rel="tag">Shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/SoC/" rel="tag">SoC</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/TLB/" rel="tag">TLB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Timer/" rel="tag">Timer</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Translation/" rel="tag">Translation</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Tunasync/" rel="tag">Tunasync</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Ubuntu/" rel="tag">Ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/VSCode/" rel="tag">VSCode</a><span class="tag-list-count">22</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/Virtual-Memory/" rel="tag">Virtual Memory</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/WSL2/" rel="tag">WSL2</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/listing/" rel="tag">listing</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/ocrmypdf/" rel="tag">ocrmypdf</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/openEuler/" rel="tag">openEuler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/pip/" rel="tag">pip</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/uCore/" rel="tag">uCore</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/yaml/" rel="tag">yaml</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/zsh/" rel="tag">zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" rel="tag">云计算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" rel="tag">亲和性</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%86%85%E6%A0%B8/" rel="tag">内核</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%88%86%E9%A1%B5%E5%88%86%E6%AE%B5/" rel="tag">分页分段</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" rel="tag">加密算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="tag">动态链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%8D%8F%E8%AE%AE/" rel="tag">协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%90%8C%E6%AD%A5/" rel="tag">同步</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" rel="tag">后端开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" rel="tag">固件开发</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%9B%BE%E5%BA%8A/" rel="tag">图床</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%A4%87%E4%BB%BD/" rel="tag">备份</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%A4%96%E8%AE%BE/" rel="tag">外设</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" rel="tag">多级页表</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/" rel="tag">多进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%AD%97%E4%BD%93/" rel="tag">字体</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%AD%98%E5%82%A8%E5%99%A8/" rel="tag">存储器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" rel="tag">安装教程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" rel="tag">密码管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" rel="tag">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E5%B7%A5%E5%85%B7%EF%BC%8CEfficiency%EF%BC%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" rel="tag">工具，Efficiency，内网穿透</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%80%9D%E6%BA%90%E7%AC%94%E8%AE%B0/" rel="tag">思源笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%80%BB%E7%BA%BF/" rel="tag">总线</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" rel="tag">总线协议</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%8E%A8%E8%8D%90/" rel="tag">推荐</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%8F%92%E4%BB%B6/" rel="tag">插件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag">操作系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%94%92%E6%9C%BA/" rel="tag">攒机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%95%88%E7%8E%87/" rel="tag">效率</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" rel="tag">有限状态机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" rel="tag">每天学命令</a><span class="tag-list-count">19</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="tag">汇编语言</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%A1%AC%E4%BB%B6/" rel="tag">硬件</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BA%BF%E7%A8%8B/" rel="tag">线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">组成原理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BB%B4%E4%BF%AE/" rel="tag">维修</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BC%93%E5%AD%98/" rel="tag">缓存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag">缓存一致性</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BC%96%E8%AF%91/" rel="tag">编译</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">网络配置</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" rel="tag">腾讯云</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" rel="tag">芯片开发</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" rel="tag">虚拟内存</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="tag">虚拟机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%BF%9B%E7%A8%8B/" rel="tag">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" rel="tag">进程管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" rel="tag">通信协议</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="../../../../tags/%E9%A1%B5%E8%A1%A8/" rel="tag">页表</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="../../../../tags/ACPI/" style="font-size: 13px;">ACPI</a> <a href="../../../../tags/AI/" style="font-size: 13px;">AI</a> <a href="../../../../tags/AMBA/" style="font-size: 13px;">AMBA</a> <a href="../../../../tags/AXI/" style="font-size: 13px;">AXI</a> <a href="../../../../tags/Actions/" style="font-size: 13px;">Actions</a> <a href="../../../../tags/Affinity/" style="font-size: 13px;">Affinity</a> <a href="../../../../tags/BootROM/" style="font-size: 13.14px;">BootROM</a> <a href="../../../../tags/BootRom/" style="font-size: 13px;">BootRom</a> <a href="../../../../tags/Bootloader/" style="font-size: 13px;">Bootloader</a> <a href="../../../../tags/Bug/" style="font-size: 13.93px;">Bug</a> <a href="../../../../tags/C/" style="font-size: 13.64px;">C</a> <a href="../../../../tags/C/" style="font-size: 13.21px;">C++</a> <a href="../../../../tags/CI/" style="font-size: 13px;">CI</a> <a href="../../../../tags/CPU/" style="font-size: 13.07px;">CPU</a> <a href="../../../../tags/CSAPP/" style="font-size: 13.14px;">CSAPP</a> <a href="../../../../tags/Cache/" style="font-size: 13.21px;">Cache</a> <a href="../../../../tags/Centos/" style="font-size: 13px;">Centos</a> <a href="../../../../tags/Clash/" style="font-size: 13px;">Clash</a> <a href="../../../../tags/CodeReview/" style="font-size: 13px;">CodeReview</a> <a href="../../../../tags/Cryptography/" style="font-size: 13px;">Cryptography</a> <a href="../../../../tags/DMA/" style="font-size: 13px;">DMA</a> <a href="../../../../tags/DOS/" style="font-size: 13px;">DOS</a> <a href="../../../../tags/Debian/" style="font-size: 13px;">Debian</a> <a href="../../../../tags/DevOps/" style="font-size: 13.29px;">DevOps</a> <a href="../../../../tags/Devstack/" style="font-size: 13px;">Devstack</a> <a href="../../../../tags/Die2Die/" style="font-size: 13px;">Die2Die</a> <a href="../../../../tags/Docker/" style="font-size: 13.36px;">Docker</a> <a href="../../../../tags/Docker-Compose/" style="font-size: 13px;">Docker-Compose</a> <a href="../../../../tags/Driver/" style="font-size: 13px;">Driver</a> <a href="../../../../tags/ELF/" style="font-size: 13px;">ELF</a> <a href="../../../../tags/Efficiency/" style="font-size: 13.5px;">Efficiency</a> <a href="../../../../tags/Embedded/" style="font-size: 13.07px;">Embedded</a> <a href="../../../../tags/FSM/" style="font-size: 13px;">FSM</a> <a href="../../../../tags/Flash/" style="font-size: 13px;">Flash</a> <a href="../../../../tags/FrameBuffer/" style="font-size: 13px;">FrameBuffer</a> <a href="../../../../tags/GCC/" style="font-size: 13px;">GCC</a> <a href="../../../../tags/GDB/" style="font-size: 13.21px;">GDB</a> <a href="../../../../tags/GPIO/" style="font-size: 13px;">GPIO</a> <a href="../../../../tags/Gerrit/" style="font-size: 13px;">Gerrit</a> <a href="../../../../tags/Git/" style="font-size: 13.86px;">Git</a> <a href="../../../../tags/GitHub-Copilot/" style="font-size: 13px;">GitHub Copilot</a> <a href="../../../../tags/Gitbash/" style="font-size: 13px;">Gitbash</a> <a href="../../../../tags/Gitea/" style="font-size: 13.07px;">Gitea</a> <a href="../../../../tags/Github/" style="font-size: 13px;">Github</a> <a href="../../../../tags/HEXO/" style="font-size: 13.21px;">HEXO</a> <a href="../../../../tags/Hexo/" style="font-size: 13px;">Hexo</a> <a href="../../../../tags/IIC/" style="font-size: 13px;">IIC</a> <a href="../../../../tags/IPC/" style="font-size: 13.21px;">IPC</a> <a href="../../../../tags/Interlaken/" style="font-size: 13px;">Interlaken</a> <a href="../../../../tags/JAVA/" style="font-size: 13px;">JAVA</a> <a href="../../../../tags/JTAG/" style="font-size: 13px;">JTAG</a> <a href="../../../../tags/Jellyfin/" style="font-size: 13px;">Jellyfin</a> <a href="../../../../tags/KeePass/" style="font-size: 13px;">KeePass</a> <a href="../../../../tags/Kernel/" style="font-size: 13.07px;">Kernel</a> <a href="../../../../tags/LCD/" style="font-size: 13px;">LCD</a> <a href="../../../../tags/LaTeX/" style="font-size: 13.14px;">LaTeX</a> <a href="../../../../tags/LaTex/" style="font-size: 13px;">LaTex</a> <a href="../../../../tags/Lab/" style="font-size: 13.36px;">Lab</a> <a href="../../../../tags/Linux/" style="font-size: 14px;">Linux</a> <a href="../../../../tags/Linux-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">Linux,网络配置</a> <a href="../../../../tags/MCU/" style="font-size: 13.07px;">MCU</a> <a href="../../../../tags/MESI/" style="font-size: 13px;">MESI</a> <a href="../../../../tags/MMU/" style="font-size: 13.07px;">MMU</a> <a href="../../../../tags/Makefile/" style="font-size: 13.07px;">Makefile</a> <a href="../../../../tags/Markdown/" style="font-size: 13.43px;">Markdown</a> <a href="../../../../tags/NAS/" style="font-size: 13.14px;">NAS</a> <a href="../../../../tags/NOC/" style="font-size: 13px;">NOC</a> <a href="../../../../tags/Nexus/" style="font-size: 13px;">Nexus</a> <a href="../../../../tags/OCR/" style="font-size: 13px;">OCR</a> <a href="../../../../tags/OS/" style="font-size: 13.36px;">OS</a> <a href="../../../../tags/Office/" style="font-size: 13px;">Office</a> <a href="../../../../tags/OpenEuler/" style="font-size: 13px;">OpenEuler</a> <a href="../../../../tags/OpenOCD/" style="font-size: 13px;">OpenOCD</a> <a href="../../../../tags/OpenSBI/" style="font-size: 13px;">OpenSBI</a> <a href="../../../../tags/OpenStack/" style="font-size: 13.07px;">OpenStack</a> <a href="../../../../tags/PDF/" style="font-size: 13.07px;">PDF</a> <a href="../../../../tags/Pandoc/" style="font-size: 13.14px;">Pandoc</a> <a href="../../../../tags/Plugins/" style="font-size: 13px;">Plugins</a> <a href="../../../../tags/Python/" style="font-size: 13.29px;">Python</a> <a href="../../../../tags/QEMU/" style="font-size: 13.57px;">QEMU</a> <a href="../../../../tags/Qt/" style="font-size: 13.79px;">Qt</a> <a href="../../../../tags/QtCreator/" style="font-size: 13px;">QtCreator</a> <a href="../../../../tags/RISC-V/" style="font-size: 13.5px;">RISC-V</a> <a href="../../../../tags/RISCV/" style="font-size: 13.43px;">RISCV</a> <a href="../../../../tags/RPM/" style="font-size: 13px;">RPM</a> <a href="../../../../tags/Radarr/" style="font-size: 13px;">Radarr</a> <a href="../../../../tags/SPI/" style="font-size: 13.07px;">SPI</a> <a href="../../../../tags/SSH/" style="font-size: 13px;">SSH</a> <a href="../../../../tags/SSH-Linux/" style="font-size: 13px;">SSH,Linux</a> <a href="../../../../tags/Self-Hosted/" style="font-size: 13px;">Self-Hosted</a> <a href="../../../../tags/Shell/" style="font-size: 13px;">Shell</a> <a href="../../../../tags/SoC/" style="font-size: 13.21px;">SoC</a> <a href="../../../../tags/TLB/" style="font-size: 13px;">TLB</a> <a href="../../../../tags/Timer/" style="font-size: 13px;">Timer</a> <a href="../../../../tags/Translation/" style="font-size: 13.21px;">Translation</a> <a href="../../../../tags/Tunasync/" style="font-size: 13px;">Tunasync</a> <a href="../../../../tags/Ubuntu/" style="font-size: 13px;">Ubuntu</a> <a href="../../../../tags/Unix/" style="font-size: 13px;">Unix</a> <a href="../../../../tags/VSCode/" style="font-size: 13.79px;">VSCode</a> <a href="../../../../tags/Virtual-Memory/" style="font-size: 13px;">Virtual Memory</a> <a href="../../../../tags/WSL2/" style="font-size: 13.07px;">WSL2</a> <a href="../../../../tags/listing/" style="font-size: 13px;">listing</a> <a href="../../../../tags/ocrmypdf/" style="font-size: 13px;">ocrmypdf</a> <a href="../../../../tags/openEuler/" style="font-size: 13px;">openEuler</a> <a href="../../../../tags/pip/" style="font-size: 13px;">pip</a> <a href="../../../../tags/uCore/" style="font-size: 13.36px;">uCore</a> <a href="../../../../tags/yaml/" style="font-size: 13px;">yaml</a> <a href="../../../../tags/zsh/" style="font-size: 13px;">zsh</a> <a href="../../../../tags/%E4%BA%91%E8%AE%A1%E7%AE%97/" style="font-size: 13.07px;">云计算</a> <a href="../../../../tags/%E4%BA%B2%E5%92%8C%E6%80%A7/" style="font-size: 13px;">亲和性</a> <a href="../../../../tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 13.07px;">内存管理</a> <a href="../../../../tags/%E5%86%85%E6%A0%B8/" style="font-size: 13px;">内核</a> <a href="../../../../tags/%E5%88%86%E9%A1%B5%E5%88%86%E6%AE%B5/" style="font-size: 13px;">分页分段</a> <a href="../../../../tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/" style="font-size: 13px;">加密算法</a> <a href="../../../../tags/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">动态链接</a> <a href="../../../../tags/%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">协议</a> <a href="../../../../tags/%E5%90%8C%E6%AD%A5/" style="font-size: 13px;">同步</a> <a href="../../../../tags/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" style="font-size: 13px;">后端开发</a> <a href="../../../../tags/%E5%9B%BA%E4%BB%B6%E5%BC%80%E5%8F%91/" style="font-size: 13px;">固件开发</a> <a href="../../../../tags/%E5%9B%BE%E5%BA%8A/" style="font-size: 13px;">图床</a> <a href="../../../../tags/%E5%A4%87%E4%BB%BD/" style="font-size: 13px;">备份</a> <a href="../../../../tags/%E5%A4%96%E8%AE%BE/" style="font-size: 13px;">外设</a> <a href="../../../../tags/%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8/" style="font-size: 13px;">多级页表</a> <a href="../../../../tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" style="font-size: 13px;">多线程</a> <a href="../../../../tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/" style="font-size: 13px;">多进程</a> <a href="../../../../tags/%E5%AD%97%E4%BD%93/" style="font-size: 13.07px;">字体</a> <a href="../../../../tags/%E5%AD%98%E5%82%A8%E5%99%A8/" style="font-size: 13px;">存储器</a> <a href="../../../../tags/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/" style="font-size: 13px;">安装教程</a> <a href="../../../../tags/%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86/" style="font-size: 13px;">密码管理</a> <a href="../../../../tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/" style="font-size: 13px;">嵌入式</a> <a href="../../../../tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.29px;">工具</a> <a href="../../../../tags/%E5%B7%A5%E5%85%B7%EF%BC%8CEfficiency%EF%BC%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" style="font-size: 13.07px;">工具，Efficiency，内网穿透</a> <a href="../../../../tags/%E6%80%9D%E6%BA%90%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">思源笔记</a> <a href="../../../../tags/%E6%80%BB%E7%BA%BF/" style="font-size: 13px;">总线</a> <a href="../../../../tags/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/" style="font-size: 13px;">总线协议</a> <a href="../../../../tags/%E6%8E%A8%E8%8D%90/" style="font-size: 13.21px;">推荐</a> <a href="../../../../tags/%E6%8F%92%E4%BB%B6/" style="font-size: 13px;">插件</a> <a href="../../../../tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" style="font-size: 13px;">操作系统</a> <a href="../../../../tags/%E6%94%92%E6%9C%BA/" style="font-size: 13px;">攒机</a> <a href="../../../../tags/%E6%95%88%E7%8E%87/" style="font-size: 13.14px;">效率</a> <a href="../../../../tags/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" style="font-size: 13px;">有限状态机</a> <a href="../../../../tags/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/" style="font-size: 13.71px;">每天学命令</a> <a href="../../../../tags/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" style="font-size: 13px;">汇编语言</a> <a href="../../../../tags/%E7%A1%AC%E4%BB%B6/" style="font-size: 13px;">硬件</a> <a href="../../../../tags/%E7%BA%BF%E7%A8%8B/" style="font-size: 13px;">线程</a> <a href="../../../../tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13px;">组成原理</a> <a href="../../../../tags/%E7%BB%B4%E4%BF%AE/" style="font-size: 13px;">维修</a> <a href="../../../../tags/%E7%BC%93%E5%AD%98/" style="font-size: 13px;">缓存</a> <a href="../../../../tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/" style="font-size: 13.07px;">缓存一致性</a> <a href="../../../../tags/%E7%BC%96%E8%AF%91/" style="font-size: 13px;">编译</a> <a href="../../../../tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13px;">网络配置</a> <a href="../../../../tags/%E8%85%BE%E8%AE%AF%E4%BA%91/" style="font-size: 13px;">腾讯云</a> <a href="../../../../tags/%E8%8A%AF%E7%89%87%E5%BC%80%E5%8F%91/" style="font-size: 13.07px;">芯片开发</a> <a href="../../../../tags/%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" style="font-size: 13.07px;">虚拟内存</a> <a href="../../../../tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/" style="font-size: 13px;">虚拟机</a> <a href="../../../../tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" style="font-size: 13.21px;">计算机组成原理</a> <a href="../../../../tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" style="font-size: 13.07px;">计算机网络</a> <a href="../../../../tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13px;">读书笔记</a> <a href="../../../../tags/%E8%BF%9B%E7%A8%8B/" style="font-size: 13px;">进程</a> <a href="../../../../tags/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" style="font-size: 13px;">进程管理</a> <a href="../../../../tags/%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE/" style="font-size: 13.07px;">通信协议</a> <a href="../../../../tags/%E9%93%BE%E6%8E%A5/" style="font-size: 13px;">链接</a> <a href="../../../../tags/%E9%A1%B5%E8%A1%A8/" style="font-size: 13.07px;">页表</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2024/03/">三月 2024</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2024/01/">一月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/12/">十二月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/11/">十一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/09/">九月 2023</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/08/">八月 2023</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/07/">七月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/06/">六月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/04/">四月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/03/">三月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2023/01/">一月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/12/">十二月 2022</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/10/">十月 2022</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/09/">九月 2022</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/08/">八月 2022</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/07/">七月 2022</a><span class="archive-list-count">15</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/06/">六月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/05/">五月 2022</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/04/">四月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/03/">三月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/02/">二月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2022/01/">一月 2022</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/12/">十二月 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/11/">十一月 2021</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/10/">十月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/09/">九月 2021</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/08/">八月 2021</a><span class="archive-list-count">38</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2021/07/">七月 2021</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="../../../../archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="../../../../categories/Embedded-Development/">Embedded Development</a>
+              </p>
+              <p class="item-title">
+                <a href="../../../../2024/03/30/BootROM%E4%B8%ADSPI%E5%A6%82%E4%BD%95%E9%80%82%E9%85%8D%E4%B8%8D%E5%90%8C%E5%8E%82%E5%AE%B6%E7%9A%84Flash%E8%8A%AF%E7%89%87/" class="title">BootROM 中 SPI 如何适配不同厂家的 Flash 芯片</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-30T13:38:10.000Z" itemprop="datePublished">2024-03-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="../../../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+              </p>
+              <p class="item-title">
+                <a href="../../../../2024/03/24/GitHub-Copilot-CLI%E5%91%BD%E4%BB%A4%E8%A1%8CAI%E5%B7%A5%E5%85%B7/" class="title">GitHub Copilot CLI命令行AI工具</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-24T01:44:16.000Z" itemprop="datePublished">2024-03-24</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="../../../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+              </p>
+              <p class="item-title">
+                <a href="../../../../2024/03/03/RemoteX11-%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95%E5%B8%A6GUI%E5%BA%94%E7%94%A8/" class="title">RemoteX11 远程调试带GUI应用</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-03T12:45:56.000Z" itemprop="datePublished">2024-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="../../../../categories/Bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/">Bug 踩坑记录</a>
+              </p>
+              <p class="item-title">
+                <a href="../../../../2024/03/02/%E8%A7%A3%E5%86%B3%E7%B3%BB%E7%BB%9F%E4%BE%9D%E8%B5%96%E9%94%99%E8%AF%AFGLIBCXX-3-4-29-not-found/" class="title">解决系统依赖错误GLIBCXX_3.4.29 not found</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-02T14:21:23.000Z" itemprop="datePublished">2024-03-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="../../../../2024/01/17/repo%E6%BA%90%E9%85%8D%E7%BD%AE%E8%A7%A3%E6%9E%90/" class="title">repo源配置解析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-01-17T13:32:04.000Z" itemprop="datePublished">2024-01-17</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-计算机组成原理-指令和运算" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      计算机组成原理-指令和运算
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="" class="article-date">
+	  <time datetime="2022-02-28T13:28:56.000Z" itemprop="datePublished">2022-02-28</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="../../../../categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="../../../../tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/" rel="tag">计算机组成原理</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 6.9k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 26(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="计算机指令"><a href="#计算机指令" class="headerlink" title="计算机指令"></a>计算机指令</h2><p>上世纪 60 年代晚期或 70 年代初期，程序需要先写在纸上，然后转成二进制机器码，再打到打孔卡上（0 表示不打孔，1 表示打孔），送入特殊的计算机中执行。</p>
+<p>从硬件的角度来看，CPU 就是一个超大规模集成电路，通过电路实现了加法、乘法乃至各种各样的处理逻辑。</p>
+<p>从软件的角度来看，CPU 就是一个执行各种计算机指令（Instruction Code）的逻辑机器。这里的计算机指令，就好比一门 CPU 能够听得懂的语言，我们也可以把它叫作<strong>机器语言</strong>（Machine Language）。</p>
+<p>不同的 CPU 能够听懂的语言不太一样。也就是 CPU 支持的语言不一样，这里的语言叫<strong>指令集</strong>（Instruction Set）。</p>
+<p>一个计算机程序由成千上万条指令组成的。但是 CPU 里不能一直放着所有指令，所以计算机程序平时是存储在存储器中的。这种程序指令存储在存储器里面的计算机，我们就叫作<strong>存储程序型计算机</strong>（Stored-program Computer）。</p>
+<p>了解了计算机指令和计算机指令集，接下来我们来看看，平时编写的代码，到底是怎么变成一条条计算机指令，最后被 CPU 执行的呢？我们拿一小段真实的 C 语言程序来看看。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// test.c</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> 
+  <span class="token keyword">int</span> b <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+  a <span class="token operator">=</span> a <span class="token operator">+</span> b<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>通过编译器，可以将上述代码编译成汇编代码，再通过汇编器，将汇编代码编译成机器码，最后通过 CPU 执行。</p>
+<p>在一个 Linux 操作系统上，我们可以简单地使用 gcc 和 objdump 这样两条命令，把对应的汇编代码和机器码都打印出来。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gcc -g -c test.c
+$ objdump -d -M intel -S test.o
+
+test.o:     <span class="token function">file</span> <span class="token function">format</span> elf64-x86-64
+Disassembly of section .text:
+0000000000000000 <span class="token operator">&lt;</span>main<span class="token operator">></span>:
+int <span class="token function-name function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+   <span class="token number">0</span>:   <span class="token number">55</span>                      push   rbp
+   <span class="token number">1</span>:   <span class="token number">48</span> <span class="token number">89</span> e5                mov    rbp,rsp
+  int a <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> 
+   <span class="token number">4</span>:   c7 <span class="token number">45</span> fc 01 00 00 00    mov    DWORD PTR <span class="token punctuation">[</span>rbp-0x4<span class="token punctuation">]</span>,0x1
+  int b <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+   b:   c7 <span class="token number">45</span> f8 02 00 00 00    mov    DWORD PTR <span class="token punctuation">[</span>rbp-0x8<span class="token punctuation">]</span>,0x2
+  a <span class="token operator">=</span> a + b<span class="token punctuation">;</span>
+  <span class="token number">12</span>:   8b <span class="token number">45</span> f8                mov    eax,DWORD PTR <span class="token punctuation">[</span>rbp-0x8<span class="token punctuation">]</span>
+  <span class="token number">15</span>:   01 <span class="token number">45</span> fc                <span class="token function">add</span>    DWORD PTR <span class="token punctuation">[</span>rbp-0x4<span class="token punctuation">]</span>,eax
+<span class="token punctuation">&#125;</span>
+  <span class="token number">18</span>:   5d                      pop    rbp
+  <span class="token number">19</span>:   c3                      ret    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>左侧有一堆数字，这些就是一条条机器码；右边有一系列的<code>push</code>、<code>mov</code>、<code>add</code>、<code>pop</code> 等，这些就是对应的汇编代码。</p>
+<p>了解了这个过程，下面我们放大局部，来看看这一行行的汇编代码和机器指令，到底是什么意思。</p>
+<p>常见的指令可以分成五大类。</p>
+<p>第一类是算术类指令。我们的加减乘除，在 CPU 层面，都会变成一条条算术类指令。</p>
+<p>第二类是数据传输类指令。给变量赋值、在内存里读写数据，用的都是数据传输类指令。</p>
+<p>第三类是逻辑类指令。逻辑上的与或非，都是这一类指令。</p>
+<p>第四类是条件分支类指令。日常我们写的“if/else”，其实都是条件分支类指令。</p>
+<p>最后一类是无条件跳转指令。写一些大一点的程序，我们常常需要写一些函数或者方法。在调用函数的时候，其实就是发起了一个无条件跳转指令。</p>
+<h2 id="指令跳转"><a href="#指令跳转" class="headerlink" title="指令跳转"></a>指令跳转</h2><h3 id="CPU-如何执行指令的"><a href="#CPU-如何执行指令的" class="headerlink" title="CPU 如何执行指令的"></a>CPU 如何执行指令的</h3><p>代码经过软件层面的编译后就是一条条二进制指令，指令交由 CPU 中几百亿个晶体管去执行。我们先不管几百亿的晶体管的背后是怎么通过电路运转起来的，逻辑上，我们可以认为，CPU 其实就是由一堆寄存器组成的。而寄存器就是 CPU 内部，由多个<strong>触发器</strong>（Flip-Flop）或者<strong>锁存器</strong>（Latches）组成的简单电路。触发器和锁存器，其实就是两种不同原理的数字电路组成的逻辑门。</p>
+<p><code>N</code> 个触发器或者锁存器，就可以组成一个<code>N</code>位（Bit）的寄存器，能够保存 <code>N</code>位的数据。比方说，我们用的<code>64</code>位 <code>Intel</code>服务器，寄存器就是<code>64</code> 位的。</p>
+<p>一个 CPU 里面会有很多种不同功能的寄存器。这里介绍三种比较特殊的。</p>
+<ul>
+<li><p>PC 寄存器（Program Counter Register），我们也叫<strong>指令地址寄存器</strong>（Instruction Address Register）。顾名思义，它就是用来存放下一条需要执行的计算机指令的内存地址。</p>
+</li>
+<li><p>指令寄存器（Instruction Register），用来存放当前正在执行的指令。</p>
+</li>
+<li><p>条件码寄存器（Status Register），用里面的一个一个标记位（Flag），存放 CPU 进行算术或者逻辑计算的结果。</p>
+</li>
+</ul>
+<p>除此之外还有<strong>整数寄存器</strong>、<strong>浮点数寄存器</strong>、<strong>向量寄存器</strong>和<strong>地址寄存器</strong>等等。有些寄存器既可以存放数据，又能存放地址，我们就叫它通用寄存器。</p>
+<p>实际上，一个程序执行的时候，CPU 会根据 PC 寄存器里的地址，从内存里面把需要执行的指令读取到指令寄存器里面执行，然后根据指令长度自增，开始顺序读取下一条指令。可以看到，一个程序的一条条指令，在内存里面是连续保存的，也会一条条顺序加载。</p>
+<p>而有些特殊指令，比如上一讲我们讲到 <code>J</code> 类指令，也就是跳转指令，会修改 PC 寄存器里面的地址值。</p>
+<h3 id="从-if…else-来看程序的执行和跳转"><a href="#从-if…else-来看程序的执行和跳转" class="headerlink" title="从 if…else 来看程序的执行和跳转"></a>从 if…else 来看程序的执行和跳转</h3><p>首先看如下的例程，</p>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">&#x2F;&#x2F; test.c
+#include &lt;time.h&gt;
+#include &lt;stdlib.h&gt;
+ 
+int main()
+&#123;
+  srand(time(NULL));
+  int r &#x3D; rand() % 2;
+  int a &#x3D; 10;
+  if (r &#x3D;&#x3D; 0)
+  &#123;
+    a &#x3D; 1;
+  &#125; else &#123;
+    a &#x3D; 2;
+  &#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">gcc -g -c test.c
+objdump -d -M intel -S test.o <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>编译后打印出汇编代码如下：</p>
+<pre class="line-numbers language-none"><code class="language-none">if (r &#x3D;&#x3D; 0)
+ 3b:   83 7d fc 00             cmp    DWORD PTR [rbp-0x4],0x0
+ 3f:   75 09                   jne    4a &lt;main+0x4a&gt;
+   &#123;
+       a &#x3D; 1;
+ 41:   c7 45 f8 01 00 00 00    mov    DWORD PTR [rbp-0x8],0x1
+ 48:   eb 07                   jmp    51 &lt;main+0x51&gt;
+   &#125;
+   else
+   &#123;
+       a &#x3D; 2;
+ 4a:   c7 45 f8 02 00 00 00    mov    DWORD PTR [rbp-0x8],0x2
+ 51:   b8 00 00 00 00          mov    eax,0x0
+   &#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>可以看到，这里对于 <code>r == 0</code>的条件判断，被编译成了 cmp 和 jne 这两条指令。</p>
+<p><code>cmp</code> 指令比较了前后两个操作数的值，这里的<code>DWORD PTR</code> 代表操作的数据类型是 <code>32</code>位的整数，而 <code>[rbp-0x4]</code> 则是一个寄存器的地址。所以，第一个操作数就是从寄存器里拿到的变量 <code>r</code> 的值。第二个操作数 <code>0x0</code> 就是我们设定的常量<code>0</code>的 <code>16</code> 进制表示。<code>cmp</code> 指令的比较结果，会存入到条件码寄存器当中去。</p>
+<p>在这里，如果比较的结果是 <code>True</code>，也就是 <code>r == 0</code>，就把零标志条件码（对应的条件码是 <code>ZF</code>，<code>Zero Flag</code>）设置为 <code>1</code>。除了零标志之外，<code>Intel</code> 的 <code>CPU</code> 下还有进位标志（<code>CF</code>，<code>Carry Flag</code>）、符号标志（<code>SF</code>，<code>Sign Flag</code>）以及溢出标志（<code>OF</code>，<code>Overflow Flag</code>），用在不同的判断条件下。</p>
+<p><code>cmp</code> 指令执行完成之后，<code>PC</code> 寄存器会自动自增，开始执行下一条 <code>jne</code> 的指令。</p>
+<p>跟着的 <code>jne</code> 指令，是 <code>jump if not equal</code> 的意思，它会查看对应的零标志位。如果为<code>0</code>，会跳转到后面跟着的操作数 <code>4a</code> 的位置。这个 <code>4a</code>，对应这里汇编代码的行号，也就是上面设置的 <code>else</code> 条件里的第一条指令。当跳转发生的时候，<code>PC</code> 寄存器就不再是自增变成下一条指令的地址，而是被直接设置成这里的 <code>4a</code> 这个地址。这个时候，<code>CPU</code> 再把 <code>4a</code> 地址里的指令加载到指令寄存器中来执行。</p>
+<p>跳转到执行地址为 <code>4a</code> 的指令，实际是一条 <code>mov</code> 指令，第一个操作数和前面的 <code>cmp</code> 指令一样，是另一个 <code>32</code> 位整型的寄存器地址，以及对应的 <code>2</code> 的<code>16</code> 进制值 <code>0x2</code>。<code>mov</code> 指令把 <code>2</code> 设置到对应的寄存器里去，相当于一个赋值操作。然后，<code>PC</code>寄存器里的值继续自增，执行下一条 <code>mov</code> 指令。</p>
+<p>这条 <code>mov</code> 指令的第一个操作数<code>eax</code>，代表累加寄存器，第二个操作数<code>0x0</code>则是 <code>16</code> 进制的<code>0</code>的表示。这条指令其实没有实际的作用，它的作用是一个占位符。我们回过头去看前面的 <code>if</code> 条件，如果满足的话，在赋值的 mov 指令执行完成之后，有一个 <code>jmp</code> 的无条件跳转指令。跳转的地址就是这一行的地址<code>51</code>。我们的 <code>main</code> 函数没有设定返回值，而<code>mov eax</code>, <code>0x0</code> 其实就是给 <code>main</code> 函数生成了一个默认的为 <code>0</code> 的返回值到累加器里面。<code>if</code> 条件里面的内容执行完成之后也会跳转到这里，和 <code>else</code> 里的内容结束之后的位置是一样的。</p>
+<h2 id="函数调用：为什么会发生-Stack-Overflow"><a href="#函数调用：为什么会发生-Stack-Overflow" class="headerlink" title="函数调用：为什么会发生 Stack Overflow"></a>函数调用：为什么会发生 Stack Overflow</h2><h2 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h2><p>既然我们的程序最终都被变成了一条条机器码去执行，那为什么同一个程序，在同一台计算机上，在 Linux 下可以运行，而在 Windows 下却不行呢？反过来，Windows 上的程序在 Linux 上也是一样不能执行的。可是我们的 CPU 并没有换掉，它应该可以识别同样的指令呀？</p>
+<p>将以下两个例程编译，然后通过 objdump 命令看看它们的汇编代码。</p>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">&#x2F;&#x2F; add_lib.c
+int add(int a, int b)
+&#123;
+    return a+b;
+&#125;
+
+&#x2F;&#x2F; link_example.c
+#include &lt;stdio.h&gt;
+int main()
+&#123;
+    int a &#x3D; 10;
+    int b &#x3D; 5;
+    int c &#x3D; add(a, b);
+    printf(&quot;c &#x3D; %d\n&quot;, c);
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">gcc -g -c add_lib.c link_example.c
+objdump -d -M intel -S add_lib.o
+objdump -d -M intel -S link_example.o<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-none"><code class="language-none">add_lib.o:     file format elf64-x86-64
+Disassembly of section .text:
+0000000000000000 &lt;add&gt;:
+   0:   55                      push   rbp
+   1:   48 89 e5                mov    rbp,rsp
+   4:   89 7d fc                mov    DWORD PTR [rbp-0x4],edi
+   7:   89 75 f8                mov    DWORD PTR [rbp-0x8],esi
+   a:   8b 55 fc                mov    edx,DWORD PTR [rbp-0x4]
+   d:   8b 45 f8                mov    eax,DWORD PTR [rbp-0x8]
+  10:   01 d0                   add    eax,edx
+  12:   5d                      pop    rbp
+  13:   c3                      ret    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-none"><code class="language-none">link_example.o:     file format elf64-x86-64
+Disassembly of section .text:
+0000000000000000 &lt;main&gt;:
+   0:   55                      push   rbp
+   1:   48 89 e5                mov    rbp,rsp
+   4:   48 83 ec 10             sub    rsp,0x10
+   8:   c7 45 fc 0a 00 00 00    mov    DWORD PTR [rbp-0x4],0xa
+   f:   c7 45 f8 05 00 00 00    mov    DWORD PTR [rbp-0x8],0x5
+  16:   8b 55 f8                mov    edx,DWORD PTR [rbp-0x8]
+  19:   8b 45 fc                mov    eax,DWORD PTR [rbp-0x4]
+  1c:   89 d6                   mov    esi,edx
+  1e:   89 c7                   mov    edi,eax
+  20:   b8 00 00 00 00          mov    eax,0x0
+  25:   e8 00 00 00 00          call   2a &lt;main+0x2a&gt;
+  2a:   89 45 f4                mov    DWORD PTR [rbp-0xc],eax
+  2d:   8b 45 f4                mov    eax,DWORD PTR [rbp-0xc]
+  30:   89 c6                   mov    esi,eax
+  32:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # 39 &lt;main+0x39&gt;
+  39:   b8 00 00 00 00          mov    eax,0x0
+  3e:   e8 00 00 00 00          call   43 &lt;main+0x43&gt;
+  43:   b8 00 00 00 00          mov    eax,0x0
+  48:   c9                      leave  
+  49:   c3                      ret    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>既然代码已经被我们“编译”成了指令，我们不妨尝试运行一下 <code>./link_example.o</code>。</p>
+<p>然而我们并不能成功运行，会得到一条<code>cannot execute binary file: Exec format error</code> 的错误。</p>
+<p>我们再仔细看一下 objdump 出来的两个文件的代码，<strong>会发现两个程序的地址都是从 0 开始的</strong>。如果地址是一样的，程序如果需要通过 <code>call</code> 指令调用函数的话，<strong>它怎么知道应该跳转到哪一个文件里呢？</strong></p>
+<p>无论是这里的运行报错，还是 <code>objdump</code> 出来的汇编代码里面的重复地址，都是因为<code>add_lib.o</code>以及 <code>link_example.o</code> 并不是一个可执行文件（Executable Program），而是目标文件（Object File）。<strong>只有通过链接器（Linker）把多个目标文件以及调用的各种函数库链接起来，我们才能得到一个可执行文件。</strong></p>
+<p>通过 <code>gcc</code> 的<code>-o</code>参数，可以生成对应的可执行文件。</p>
+<pre class="line-numbers language-none"><code class="language-none">$ gcc -o link-example add_lib.o link_example.o
+$ .&#x2F;link_example
+c &#x3D; 15<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>ELF（Execuatable and Linkable File Format）的文件格式，中文名字叫可执行与可链接文件格式，这里面不仅存放了编译成的汇编指令，还保留了很多别的数据。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203032207712.png"></p>
+<p>链接器会扫描所有输入的目标文件，然后把所有符号表里的信息收集起来，构成一个全局的符号表。然后再根据重定位表，把所有不确定要跳转地址的代码，根据符号表里面存储的地址，进行一次修正。最后，把所有的目标文件的对应段进行一次合并，变成了最终的可执行代码。这也是为什么，可执行文件里面的函数调用的地址都是正确的。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203032209801.png"></p>
+<p>在链接器把程序变成可执行文件之后，要装载器去执行程序就容易多了。装载器不再需要考虑地址跳转的问题，只需要解析 ELF 文件，把对应的指令和数据，加载到内存里面供 CPU 执行就可以了。</p>
+<p>为什么同样一个程序，在 Linux 下可以执行而在 Windows 下不能执行了。其中一个非常重要的原因就是，<strong>两个操作系统下可执行文件的格式不一样</strong>。</p>
+<p>我们今天讲的是 Linux 下的 ELF 文件格式，而 Windows 的可执行文件格式是一种叫作 PE（Portable Executable Format）的文件格式。<strong>Linux 下的装载器只能解析 ELF 格式而不能解析 PE 格式。</strong></p>
+<p>如果我们有一个可以能够解析 PE 格式的装载器，我们就有可能在 Linux 下运行 Windows 程序了。这样的程序真的存在吗？没错，Linux 下著名的开源项目 Wine，就是通过兼容 PE 格式的装载器，使得我们能直接在 Linux 下运行 Windows 程序的。而现在微软的 Windows 里面也提供了 WSL，也就是 Windows Subsystem for Linux，可以解析和加载 ELF 格式的文件。</p>
+<h2 id="程序装载"><a href="#程序装载" class="headerlink" title="程序装载"></a>程序装载</h2><h4 id="程序装载面临的挑战"><a href="#程序装载面临的挑战" class="headerlink" title="程序装载面临的挑战"></a>程序装载面临的挑战</h4><ul>
+<li>可执行程序加载后占用的内存空间应该是连续的。<br>  这点很好理解，指令正常都是顺序执行的。</li>
+<li>我们需要同时加载很多个程序，并且不能让程序自己规定在内存中加载的位置。<br>  计算机通常会同时运行很多个程序，可能你想要的内存地址已经被其他加载了的程序占用了。</li>
+</ul>
+<p>我们把指令里用到的内存地址叫作<strong>虚拟内存地址</strong>（Virtual Memory Address），实际在内存硬件里面的空间地址，我们叫<strong>物理内存地址</strong>（Physical Memory Address）。</p>
+<p>程序里有指令和各种内存地址，我们只需要关心虚拟内存地址就行了。对于任何一个程序来说，它看到的都是同样的内存地址。我们<strong>维护一个虚拟内存到物理内存的映射表</strong>，这样实际程序指令执行的时候，会通过虚拟内存地址，找到对应的物理内存地址，然后执行。</p>
+<h4 id="内存分段"><a href="#内存分段" class="headerlink" title="内存分段"></a>内存分段</h4><p>这种找出一段连续的物理内存和虚拟内存地址进行映射的方法，我们叫<strong>分段</strong>（Segmentation）。这里的段，就是指系统分配出来的那个连续的内存空间。</p>
+<p>分段的办法很好，解决了程序本身不需要关心具体的物理内存地址的问题，但它也有一些不足之处，第一个就是<strong>内存碎片</strong>（Memory Fragmentation）的问题。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203051544158.png"></p>
+<p>我们可以通过<strong>内存交换</strong>（Memory Swapping）技术解决。</p>
+<p>我们可以把 Python 程序占用的那 256MB 内存写到硬盘上，然后再从硬盘上读回来到内存里面。不过读回来的时候，我们不再把它加载到原来的位置，而是紧紧跟在那已经被占用了的 512MB 内存后面。这样，我们就有了连续的 256MB 内存空间，就可以去加载一个新的 200MB 的程序。</p>
+<p>如果你自己安装过 Linux 操作系统，你应该遇到过分配一个 swap 硬盘分区的问题。这块分出来的磁盘空间，其实就是专门给 Linux 操作系统进行内存交换用的。</p>
+<p>硬盘的访问速度要比内存慢很多，而每一次内存交换，我们都需要把一大段连续的内存数据写到硬盘上。所以，如果内存交换的时候，交换的是一个很占内存空间的程序，这样整个机器都会显得卡顿。</p>
+<h4 id="内存分页"><a href="#内存分页" class="headerlink" title="内存分页"></a>内存分页</h4><p>既然问题出在内存碎片和内存交换的空间太大上，那么解决问题的办法就是，<strong>少出现一些内存碎片，并且让需要交换写入或者从磁盘装载的数据更少一点</strong>。于是就有了内存分页（Paging）。</p>
+<p><strong>和分段这样分配一整段连续的空间给到程序相比，分页是把整个物理内存空间切成一段段固定尺寸的大小</strong>。而对应的程序所需要占用的虚拟内存空间，也会同样切成一段段固定尺寸的大小。这样一个连续并且尺寸固定的内存空间，我们叫页（Page）。</p>
+<p>从虚拟内存到物理内存的映射，不再是拿整段连续的内存的物理地址，而是按照一个一个页来的。页的尺寸一般远远小于整个程序的大小。在 Linux 下，我们通常只设置成 4KB。</p>
+<p><strong>由于内存空间都是预先划分好的，也就没有了不能使用的碎片</strong>，而只有被释放出来的很多 4KB 的页。即使内存空间不够，需要让现有的、正在运行的其他程序，通过内存交换释放出一些内存的页出来，一次性写入磁盘的也只有少数的一个页或者几个页，不会花太多时间，让整个机器被内存交换的过程给卡住。</p>
+<p>分页的方式使得我们在加载程序的时候，<strong>不再需要一次性都把程序加载到物理内存中</strong>。我们完全可以在进行虚拟内存和物理内存的页之间的映射之后，并不真的把页加载到物理内存里，而是只在程序运行中，需要用到对应虚拟内存页里面的指令和数据时，再加载到物理内存里面去。</p>
+<p>实际上，我们的操作系统，的确是这么做的。当要读取特定的页，却发现数据并没有加载到物理内存里的时候，就会触发一个来自于 CPU 的<strong>缺页错误</strong>（Page Fault）。我们的操作系统会捕捉到这个错误，然后将对应的页，从存放在硬盘上的虚拟内存里读取出来，加载到物理内存里。</p>
+<h2 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h2><p>如果我们有很多个程序都要通过装载器装载到内存里面，那里面链接好的同样的功能代码，也都需要再装载一遍，再占一遍内存空间。在一个运行上百个进程的系统中，这将会造成极大的资源浪费。</p>
+<p>共享库（shared library）是致力于解决静态库缺陷的一个现代创新产物。共享库是一个目标模块，在运行或加载时，可以加载到任意的内存地址，并和一个在内存中的程序链接起来。这个过程称为<strong>动态链接</strong>（dynamic linking）是由一个叫做<strong>动态链接器</strong>（dynamic linker）的程序来执行的。Linux 中为<code>.so</code>文件，Windows 中为<code>.dll</code>文件。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203061034401.png"></p>
+<h3 id="PIC-（Position-Independent-Code）"><a href="#PIC-（Position-Independent-Code）" class="headerlink" title="PIC （Position-Independent Code）"></a>PIC （Position-Independent Code）</h3><p>要想要在程序运行的时候共享代码，也有一定的要求，就是这些机器码必须是“<strong>地址无关</strong>”的。也就是说，我们编译出来的共享库文件的指令代码，放在哪个内存地址都能正常运行。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202203061037029.png"></p>
+<p>对于所有动态链接共享库的程序来讲，虽然我们的<strong>共享库用的都是同一段物理内存地址，但是在不同的应用程序里，它所在的虚拟内存地址是不同的</strong>。我们没办法、也不应该要求动态链接同一个共享库的不同程序，必须把这个共享库所使用的虚拟内存地址变成一致。如果这样的话，我们写的程序就必须明确地知道内部的内存地址分配。</p>
+<p>如何才能实现地址无关？</p>
+<p>动态代码库内部的变量和函数调用都很容易解决，我们只需要使用<strong>相对地址</strong>（Relative Address）就好了。各种指令中使用到的内存地址，给出的不是一个绝对的地址空间，而是一个相对于当前指令偏移量的内存地址。因为整个共享库是放在一段连续的虚拟内存地址中的，无论装载到哪一段地址，不同指令之间的相对地址都是不变的。</p>
+<h3 id="PLT-和-GOT"><a href="#PLT-和-GOT" class="headerlink" title="PLT 和 GOT"></a>PLT 和 GOT</h3><pre class="line-numbers language-C" data-language="C"><code class="language-C">&#x2F;&#x2F; lib.h
+#ifndef LIB_H
+#define LIB_H
+ 
+void show_me_the_money(int money);
+#endif
+
+&#x2F;&#x2F; lib.c
+#include &lt;stdio.h&gt;
+ 
+void show_me_the_money(int money)
+&#123;
+    printf(&quot;Show me USD %d from lib.c \n&quot;, money);
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">&#x2F;&#x2F; show_me_poor.c
+#include &quot;lib.h&quot;
+int main()
+&#123;
+    int money &#x3D; 5;
+    show_me_the_money(money);
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-none"><code class="language-none">gcc lib.c -fPIC -shared -o lib.so
+gcc -o show_me_poor show_me_poor.c .&#x2F;lib.so<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p><code>-fpic</code> 选项指示编译器生成与位置无关的代码。<code>-shared</code>选项指示链接器创建一个共享的目标文件。</p>
+<p>然后，我们再通过 <code>gcc</code> 编译 <code>show_me_poor</code> 动态链接了 <code>lib.so</code> 的可执行文件。在这些操作都完成了之后，我们把 <code>show_me_poor</code> 这个文件通过 <code>objdump</code> 出来看一下。</p>
+<pre class="line-numbers language-none"><code class="language-none">$ objdump -d -M intel -S show_me_poor
+
+……
+0000000000400540 &lt;show_me_the_money@plt-0x10&gt;:
+  400540:       ff 35 12 05 20 00       push   QWORD PTR [rip+0x200512]        # 600a58 &lt;_GLOBAL_OFFSET_TABLE_+0x8&gt;
+  400546:       ff 25 14 05 20 00       jmp    QWORD PTR [rip+0x200514]        # 600a60 &lt;_GLOBAL_OFFSET_TABLE_+0x10&gt;
+  40054c:       0f 1f 40 00             nop    DWORD PTR [rax+0x0]
+ 
+0000000000400550 &lt;show_me_the_money@plt&gt;:
+  400550:       ff 25 12 05 20 00       jmp    QWORD PTR [rip+0x200512]        # 600a68 &lt;_GLOBAL_OFFSET_TABLE_+0x18&gt;
+  400556:       68 00 00 00 00          push   0x0
+  40055b:       e9 e0 ff ff ff          jmp    400540 &lt;_init+0x28&gt;
+……
+0000000000400676 &lt;main&gt;:
+  400676:       55                      push   rbp
+  400677:       48 89 e5                mov    rbp,rsp
+  40067a:       48 83 ec 10             sub    rsp,0x10
+  40067e:       c7 45 fc 05 00 00 00    mov    DWORD PTR [rbp-0x4],0x5
+  400685:       8b 45 fc                mov    eax,DWORD PTR [rbp-0x4]
+  400688:       89 c7                   mov    edi,eax
+  40068a:       e8 c1 fe ff ff          call   400550 &lt;show_me_the_money@plt&gt;
+  40068f:       c9                      leave  
+  400690:       c3                      ret    
+  400691:       66 2e 0f 1f 84 00 00    nop    WORD PTR cs:[rax+rax*1+0x0]
+  400698:       00 00 00 
+  40069b:       0f 1f 44 00 00          nop    DWORD PTR [rax+rax*1+0x0]
+……<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>在 <code>main</code> 函数调用 <code>show_me_the_money</code> 的函数的时候，对应的代码是这样的：</p>
+<pre class="line-numbers language-none"><code class="language-none">call   400550 &lt;show_me_the_money@plt&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>这里后面有一个<code>@plt</code> 的关键字，代表了我们需要从<code>PLT</code>，也就是<strong>过程链接表</strong>（Procedure Link Table）里面找要调用的函数。对应的地址呢，则是 <code>400550</code> 这个地址。</p>
+<p>那当我们把目光挪到上面的 400550 这个地址，你又会看到里面进行了一次跳转，这个跳转指定的跳转地址，你可以在后面的注释里面可以看到，GLOBAL_OFFSET_TABLE+0x18。这里的 GLOBAL_OFFSET_TABLE，就是我接下来要说的全局偏移表。</p>
+<pre class="line-numbers language-none"><code class="language-none">400550:       ff 25 12 05 20 00       jmp    QWORD PTR [rip+0x200512]        # 600a68 &lt;_GLOBAL_OFFSET_TABLE_+0x18&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>在动态链接对应的共享库，我们在共享库的 data section 里面，保存了一张<strong>全局偏移表</strong>（GOT，Global Offset Table）。<strong>虽然共享库的代码部分的物理内存是共享的，但是数据部分是各个动态链接它的应用程序里面各加载一份的</strong>。所有需要引用当前共享库外部的地址的指令，都会查询 GOT，来找到当前运行程序的虚拟内存里的对应位置。而 GOT 表里的数据，则是在我们加载一个个共享库的时候写进去的。</p>
+<p>虽然不同的程序调用的同样的动态库，各自的内存地址是独立的，调用的又都是同一个动态库，但是不需要去修改动态库里面的代码所使用的地址，而是各个程序各自维护好自己的 GOT，能够找到对应的动态库就好了。</p>
+<h2 id="二进制编码"><a href="#二进制编码" class="headerlink" title="二进制编码"></a>二进制编码</h2><p>原码表示法，左侧第一位是符号位，符号位为 1 时表示负数，为 0 时表示正数。<br>补码表示法，我们不再把这一位当成单独的符号位，在剩下几位计算出的十进制前加上正负号，而是在计算整个二进制值的时候，在左侧最高位前面加个负号。</p>
+<p>比如，一个 4 位的二进制补码数值 1011，转换成十进制，就是<br>$-1 \times 2^3 + 0 \times 2^2 + 1 \times 2^1  + 1 \times 2^0 = -5$</p>
+<p>一个 4 位的二进制数，可以表示从 -8 到 7 这 16 个整数，不会白白浪费一位。</p>
+<p>字符集：表示的可以是字符的一个集合。比如说“第一版《新华字典》里面出现的所有汉字”，这是一个中文字符集。比如，我们日常说的<code>Unicode</code>，其实就是一个字符集，包含了 150 种语言的 14 万个不同的字符。</p>
+<p>字符编码：对于字符集里的这些字符，怎么一一用二进制表示出来的一个字典。我们上面说的 <code>Unicode</code>，就可以用<code>UTF-8</code>、<code>UTF-16</code>，乃至 <code>UTF-32</code> 来进行编码，存储成二进制。</p>
+<p>同样的文本，采用不同的编码存储下来。如果另外一个程序，用一种不同的编码方式来进行解码和展示，就会出现乱码。</p>
+<h3 id="锟斤拷-烫烫烫"><a href="#锟斤拷-烫烫烫" class="headerlink" title="锟斤拷 烫烫烫"></a>锟斤拷 烫烫烫</h3><p>Unicode 编码一直持续在收录各种字元，这就可能会出现各种作业系统支援的 Unicode 字元不一样。这也就会导致 A 上的一个用 Unicode 编码的字元，在 B 上就会出现无法显示的情况。为了避免这种情况，在 Unicode 中定义了一个特殊字元�，它的 Unicode 编码为 0xFFFD。</p>
+<p>假如 A 支援特殊字元⬆，但是 B 并不支援这个⬆，那么在 B 中将会用�来代替。</p>
+<p>这个字元用 UTF-8 编码后，十六进位表示为<code>0xEF 0XBF 0XBD</code>。如果连续出现两个⬆符号，那么用 UTF-8 编码后的十六进位则表示为<code>0xEF 0XBF 0XBD 0xEF 0XBF 0XBD</code>，这时候再转码成 GBK，因为 GBK 中用两个位元组表示一个字元，那么上述的字元就成了锟（<code>0xEFBF</code>），斤（<code>0xBDEF</code>），拷（<code>0xBFBD</code>）。出现锟斤拷的原因就是 UTF-8 转码 GBK 的过程中出现了问题。当然如果想要出现锟斤拷，则至少需要两个字元出现乱码。</p>
+<p>而“烫烫烫”，则是因为如果你用了 Visual Studio 的调试器，默认使用 MBCS 字符集。“烫”在里面是由 <code>0xCCCC</code> 来表示的，而 <code>0xCC</code> 又恰好是未初始化的内存的赋值。于是，在读到没有赋值的内存地址或者变量的时候，电脑就开始大叫“烫烫烫”了。</p>
+<h2 id="理解电路"><a href="#理解电路" class="headerlink" title="理解电路"></a>理解电路</h2><p>从以上的学习可以知道，最终执行的程序都是二进制的指令。那为何计算机最终选择了二进制呢？接下来看看计算机在硬件层面究竟是怎么表示二进制的，以此你就会明白，为什么计算机会选择二进制。</p>
+<h2 id="加法器"><a href="#加法器" class="headerlink" title="加法器"></a>加法器</h2><h2 id="乘法器"><a href="#乘法器" class="headerlink" title="乘法器"></a>乘法器</h2><h2 id="浮点数和定点数"><a href="#浮点数和定点数" class="headerlink" title="浮点数和定点数"></a>浮点数和定点数</h2><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://lifeislife.cn/2022/02/28/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E5%92%8C%E8%BF%90%E7%AE%97/" title="计算机组成原理-指令和运算" target="_blank" rel="external">https://lifeislife.cn/2022/02/28/计算机组成原理-指令和运算/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="../../../../images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="" target="_blank"><span class="text-dark">夜云泊</span><small class="ml-1x">软件工程师</small></a></h3>
+        <div>Game is Game</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="../../../03/01/RGB%E4%B8%8EYUV%E9%A2%9C%E8%89%B2%E7%A9%BA%E9%97%B4/" title="RGB 与 YUV 颜色空间"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="../../16/%E8%A7%A3%E5%86%B3OpenSSL-SSL-read-Connection-was-reset-errno-10054/" title="解决 OpenSSL SSL_read: Connection was reset, errno 10054"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="../../../../https:/github.com/Dunky-Z" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="../../../../js/plugin.min.js"></script>
+
+
+<script src="../../../../js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '../../../../content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="../../../../js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'gg',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PS8L2EEEPR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-PS8L2EEEPR');
+</script>
+
+
+
+</body>
+</html>
