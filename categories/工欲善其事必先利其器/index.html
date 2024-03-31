@@ -132,6 +132,138 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2024/03/24/GitHub-Copilot-CLI%E5%91%BD%E4%BB%A4%E8%A1%8CAI%E5%B7%A5%E5%85%B7/" itemprop="url">GitHub Copilot CLI命令行AI工具</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2024-03-24T01:44:16.000Z" itemprop="datePublished">3月 24 2024</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            6 分钟 读完 (约 865 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <html><head></head><body><p>GitHub Copilot CLI 是一个命令行工具，它允许你在终端中使用 GitHub Copilot。你可以使用它来获取代码建议，这些建议是由 OpenAI 的 GPT-4 模型生成的。这个工具可以在任何支持命令行的环境中使用，包括 Visual Studio Code 的集成终端。</p>
+<p>参考官方文档：<a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/github-copilot-in-the-cli/using-github-copilot-in-the-cli">Using GitHub Copilot in the CLI - GitHub Docs</a></p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>前提：</p>
+<ol>
+<li><p>需要订阅Github Copilot，每月$10。</p>
+</li>
+<li><p>需要安装GH CLI</p>
+</li>
+</ol>
+<p>订阅自行解决，接下来安装GH CLI：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">mkdir</span> -p -m <span class="token number">755</span> /etc/apt/keyrings <span class="token operator">&amp;&amp;</span> <span class="token function">wget</span> -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /etc/apt/keyrings/githubcli-archive-keyring.gpg <span class="token operator">&gt;</span> /dev/null <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">chmod</span> go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">echo</span> <span class="token string">"deb [arch=<span class="token variable"><span class="token variable">$(</span>dpkg --print-architecture<span class="token variable">)</span></span> signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"</span> <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /etc/apt/sources.list.d/github-cli.list <span class="token operator">&gt;</span> /dev/null <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">apt</span> update <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> gh -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>如果没法安装，可以下载deb文件手动安装。<a target="_blank" rel="noopener" href="https://github.com/cli/cli/releases/tag/v2.46.0">Release GitHub CLI 2.46.0 · cli/cli</a></p>
+<p>安装完GH CLI后，安装Copilot CLI：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh auth login
+<span class="token comment"># 选择登录账号类型为Github.com</span>
+? What account <span class="token keyword">do</span> you want to log into?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> GitHub.com
+  GitHub Enterprise Server
+<span class="token comment"># 选择传输协议为SSH</span>
+? What is your preferred protocol <span class="token keyword">for</span> Git operations on this host?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+  HTTPS
+<span class="token operator">&gt;</span> SSH
+<span class="token comment"># 选择一个本地的公钥，并命名SSH key的名称</span>
+? Title <span class="token keyword">for</span> your SSH key: <span class="token punctuation">(</span>GitHub CLI<span class="token punctuation">)</span> wsl2
+<span class="token comment"># 选择验证方式为使用浏览器验证</span>
+? How would you like to authenticate GitHub CLI?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> Login with a web browser
+  Paste an authentication token
+<span class="token operator">!</span> First copy your one-time code: 7AAA-SA47
+<span class="token comment"># 回车后会弹出浏览器，输入验证码即可</span>
+Press Enter to <span class="token function">open</span> github.com <span class="token keyword">in</span> your browser<span class="token punctuation">..</span>.
+<span class="token operator">!</span> Failed opening a web browser at https://github.com/login/device
+  fork/exec /usr/bin/winchrome: <span class="token builtin class-name">exec</span> <span class="token function">format</span> error
+  Please try entering the URL <span class="token keyword">in</span> your browser manually<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>WSL2 环境下可能会出现无法打开浏览器的情况，可以手动打开浏览器输入地址验证<a target="_blank" rel="noopener" href="https://github.com/login/device%E3%80%82">https://github.com/login/device。</a></p>
+</blockquote>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><p>支持两个命令：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 解释代码</span>
+gh copilot explain
+<span class="token comment"># 获取命令行建议</span>
+gh copilot suggest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>示例：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh copilot explain <span class="token string">"sudo apt-get"</span>
+
+Welcome to GitHub Copilot <span class="token keyword">in</span> the CLI<span class="token operator">!</span>
+version <span class="token number">1.0</span>.1 <span class="token punctuation">(</span><span class="token number">2024</span>-03-22<span class="token punctuation">)</span>
+
+I'm powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For <span class="token function">more</span> information, see https://gh.io/gh-copilot-transparency
+
+Explanation:                                                                                                                                                                       
+                                                                                                                                                                                   
+  • <span class="token function">sudo</span> is used to run a <span class="token builtin class-name">command</span> with elevated rights, typically as a superuser.                                                                                                  
+    • <span class="token function">apt-get</span> is the Ubuntu package manager.                                                                                                                                       
+      • It is used to manage packages on the system, including installing, updating, and removing software packages.                                                               
+      • It requires administrative privileges to perform these operations.                                                                                                         
+      • Additional sub-commands can be used with <span class="token function">apt-get</span> to perform specific tasks, such as install, remove, update, etc.                                                          <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh copilot suggest <span class="token string">"Install git"</span>
+Welcome to GitHub Copilot <span class="token keyword">in</span> the CLI<span class="token operator">!</span>
+version <span class="token number">1.0</span>.1 <span class="token punctuation">(</span><span class="token number">2024</span>-03-22<span class="token punctuation">)</span>
+
+I'm powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For <span class="token function">more</span> information, see https://gh.io/gh-copilot-transparency
+
+? What kind of <span class="token builtin class-name">command</span> can I <span class="token builtin class-name">help</span> you with?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> generic shell <span class="token builtin class-name">command</span>
+  gh <span class="token builtin class-name">command</span>
+  <span class="token function">git</span> <span class="token builtin class-name">command</span>
+Suggestion:                                                                                                                                                                        
+  <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token function">git</span>                                                                                                                                                     
+? Select an option  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> Copy <span class="token builtin class-name">command</span> to clipboard
+  Explain <span class="token builtin class-name">command</span>
+  Execute <span class="token builtin class-name">command</span>
+  Revise <span class="token builtin class-name">command</span>
+  Rate response
+  Exit<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>gh copilot 默认提供了这两个命令的别名，无需输入完整命令，可以直接使用：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># ghce 为 gh copilot explain 的别名</span>
+ghce <span class="token string">"sudo apt-get"</span>
+<span class="token comment"># ghcs 为 gh copilot suggest 的别名</span>
+ghcs <span class="token string">"install git"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>为了便于在每个终端中使用 gh copilot cli，将以下配置放到配置文件中：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">'eval "$(gh copilot alias -- zsh)"'</span> <span class="token operator">&gt;&gt;</span> ~/.zshrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css"></body></html>
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2024/03/03/RemoteX11-%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95%E5%B8%A6GUI%E5%BA%94%E7%94%A8/" itemprop="url">RemoteX11 远程调试带GUI应用</a>
         
     </h1>
@@ -653,140 +785,6 @@ export DISPLAY=:0<span aria-hidden="true" class="line-numbers-rows"><span></span
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Host ServerA</span><br><span class="line">    HostName 10.12.193.53</span><br><span class="line">    Port 22</span><br><span class="line">    User userA</span><br><span class="line">    IdentityFile ~/.ssh/host2servera_id_rsa</span><br></pre></td></tr></table></figure>
 
 <p>然后就可以直接使用<code>ssh ServerA</code>登录了。</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2023/07/30/%E4%BD%BF%E7%94%A8Yadm%E7%AE%A1%E7%90%86%E5%B9%B6%E5%90%8C%E6%AD%A5%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6Dotfile/" itemprop="url">使用 Yadm 管理并同步配置文件 Dotfile</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2023-07-30T05:39:04.000Z" itemprop="datePublished">7月 30 2023</time>
-            
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="">工欲善其事必先利其器</a>
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            13 分钟 读完 (约 1981 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>Dotfiles 就是我们在使用软件的时候，软件为了存储我们个人偏好设置而建立的一个以 <code>.</code> 开头的文件。例如，vim 的配置文件就是 <code>.vimrc</code>，zsh 的配置文件就是 <code>.zshrc</code>。这些文件通常存储在用户的 home 目录中。但是，在不同的电脑上工作时，如果需要使用相同的配置，我们可以考虑使用版本控制工具来管理这些文件。或者在一台新电脑上想快速配置好环境，也可以使用版本控制工具来管理这些文件。Yadm 就可以帮助我们完成这些需求。</p>
-<h1 id="安装-yadm"><a href="#安装-yadm" class="headerlink" title="安装 yadm"></a>安装 yadm</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>安装 <code>yadm</code> 非常简单，只需在终端输入以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install yadm</span><br></pre></td></tr></table></figure>
-
-<h2 id="初始化-yadm-仓库"><a href="#初始化-yadm-仓库" class="headerlink" title="初始化 yadm 仓库"></a>初始化 yadm 仓库</h2><p>创建一个新的 yadm 仓库很容易，只需在 home 目录中运行以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm init</span><br></pre></td></tr></table></figure>
-
-<p>现在，yadm 已经创建了一个空白的 git 仓库。</p>
-<h2 id="添加-dotfile-文件"><a href="#添加-dotfile-文件" class="headerlink" title="添加 dotfile 文件"></a>添加 dotfile 文件</h2><p>要将现有的 dotfile 添加到 yadm 仓库中，请使用以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm add ~/.zshrc</span><br></pre></td></tr></table></figure>
-
-<p>一旦您完成了对要添加的文件的更改并将它们添加到 yadm 仓库中，您需要提交它们。可以使用以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm commit -m &quot;Add .zshrc file to yadm repository&quot;</span><br></pre></td></tr></table></figure>
-
-<h2 id="建立远程仓库"><a href="#建立远程仓库" class="headerlink" title="建立远程仓库"></a>建立远程仓库</h2><p>使用 yadm 还可以将 dotfile 文件同步到 GitHub 等 Git 托管服务中。</p>
-<p>登录 Github，创建一个新的仓库。例如，您可以创建一个名为 <code>dotfile</code> 的仓库。现在，您需要将本地仓库与远程仓库连接起来。要将本地仓库连接到远程仓库，请使用以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm remote add origin https://github.com/[用户名]/dotfile.git</span><br></pre></td></tr></table></figure>
-
-<p>现在 yadm 已经连接到您在 Github 上创建的仓库。要将本地代码上传到远程仓库，请使用以下命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm push</span><br></pre></td></tr></table></figure>
-
-<h1 id="使用多台电脑时如何同步配置"><a href="#使用多台电脑时如何同步配置" class="headerlink" title="使用多台电脑时如何同步配置"></a>使用多台电脑时如何同步配置</h1><p>假设需要在多个计算机之间共享 <code>dotfile</code> 文件。只需按照以下步骤即可：</p>
-<ol>
-<li>在另一台计算机上安装 yadm 并初始化 yadm 仓库。</li>
-<li>将远程仓库克隆到该计算机的 yadm 仓库中：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm clone https://github.com/[用户名]/dotfile.git</span><br></pre></td></tr></table></figure></li>
-<li>此时，您的 dotfile 文件应在计算机上自动更新。</li>
-</ol>
-<p>执行完 clone 命令后实际上就是 yadm 会把远程仓库的文件都拷贝到本地。</p>
-<h2 id="如果本地有修改和远程有冲突怎么办"><a href="#如果本地有修改和远程有冲突怎么办" class="headerlink" title="如果本地有修改和远程有冲突怎么办"></a>如果本地有修改和远程有冲突怎么办</h2><p>如果本地有修改，远程也有修改，那么就会产生冲突。这时候需要先解决冲突，然后再提交。</p>
-<h2 id="每台电脑的配置不一样怎么办"><a href="#每台电脑的配置不一样怎么办" class="headerlink" title="每台电脑的配置不一样怎么办"></a>每台电脑的配置不一样怎么办</h2><p>比如我们会在<code>.zshrc</code>中配置一些环境变量，但是每台电脑的环境变量可能不一样。这时候我们可以在<code>.zshrc</code>中添加一些判断，比如我们可以简单的判断一下主机名，然后根据主机名来加载不同的配置。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [ <span class="variable">$HOSTNAME</span> = <span class="string">&quot;xxx&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># xxx的配置</span></span><br><span class="line"><span class="keyword">elif</span> [ <span class="variable">$HOSTNAME</span> = <span class="string">&quot;yyy&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="comment"># yyy的配置</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
-
-<p>但有一些配置文件可能不支持这样的添加语句，比如<code>.gitconfig</code>，这时候我们可以使用 yadm 的 Alternate Files 功能解决。</p>
-<p>Alternate Files 是一个用于管理同一文件不同版本的功能，有时在不同的主机、操作系统和用户需要不同的文件。Alternate Files 允许使用同一个文件名字，在文件名后添加一个带有条件的后缀，例如##os.Linux,hostname.host1，class.work，yadm 会根据当前系统的特定条件自动选择适当的版本，并创建符号链接。如果没有符合条件的版本，它将选择默认版本。</p>
-<p>就以<code>.gitconfig</code>配置文件为例，我们通常在公司的电脑和家里的电脑配置不太一样，比如公司使用下面的配置：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[user]</span><br><span class="line">	email = 公司邮箱</span><br><span class="line">	name = 公司用户名</span><br></pre></td></tr></table></figure>
-
-<p>在家里使用下面的配置：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[user]</span><br><span class="line">    email = 日常使用邮箱</span><br><span class="line">    name = 日常使用用户名</span><br></pre></td></tr></table></figure>
-<p>配置文件不支持条件语句，所以无法通过直接在同一个配置文件里完成不同环境的配置。这就用到了 Alternate Files 功能，我们可以复制两个<code>.gitconfig</code>文件后面添加一个条件后缀，比如<code>.gitconfig##class.work</code>，然后在<code>.gitconfig##class.work</code>文件中添加公司的配置，<code>.gitconfig</code>文件中添加家里的配置。这样 yadm 就会根据当前的主机名自动选择合适的配置文件。并把这三个文件都加入到 yadm 仓库中。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yadm add ~/.gitconfig</span><br><span class="line">yadm add ~/.gitconfig<span class="comment">##class.work</span></span><br><span class="line">yadm add ~/.gitconfig<span class="comment">##class.home</span></span><br></pre></td></tr></table></figure>
-
-<p>那么 yadm 是如何实现不同环境的切换呢？我们还需要进一步配置，有注意到我们的配置文件名中的<code>class</code>属性吗，这是 yadm 支持的条件属性之一。我们可以通过<code>yadm config</code>命令来配置当前电脑的属性。比如我们配置公司电脑的<code>class</code>属性为<code>work</code>，家里的电脑的<code>class</code>属性为<code>home</code>。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yadm config local.class work</span><br></pre></td></tr></table></figure>
-<p>我们执行完此命令后，yadm 会自动为<code>.gitconfig</code>文件添加一个软链接，链接到<code>.gitconfig##class.work</code>文件。这样我们就可以在公司电脑上使用公司的配置了。如果我们在家里的电脑上执行<code>yadm config local.class home</code>，那么 yadm 会自动为<code>.gitconfig</code>文件添加一个软链接，链接到<code>.gitconfig##class.home</code>文件。这样我们就可以在家里的电脑上使用家里的配置了。</p>
-<p>yadm 支持以下这些条件：</p>
-<table>
-<thead>
-<tr>
-<th>属性</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>arch, a</td>
-<td>如果值匹配架构则有效。通过运行 uname -m 计算架构。</td>
-</tr>
-<tr>
-<td>class, c</td>
-<td>如果值匹配 local.class 配置，则有效。必须使用“yadm config local.class <class>”手动设置 Class。</td>
-</tr>
-<tr>
-<td>default</td>
-<td>当没有其他备选项有效时有效。</td>
-</tr>
-<tr>
-<td>distro, d</td>
-<td>如果值与发行版匹配，则有效。通过运行 lsb_release -si或检查/etc/os-release来计算分布。</td>
-</tr>
-<tr>
-<td>distro_family, f</td>
-<td>如果值匹配发行版系列，则有效。通过检查/etc/os-release 中的 ID_LIKE 行计算发行版系列。</td>
-</tr>
-<tr>
-<td>extension, e</td>
-<td>一种特殊的“条件”，不影响选择过程。它的目的是允许备选文件以特定扩展名结尾，例如使编辑器正确突出显示内容。</td>
-</tr>
-<tr>
-<td>hostname, h</td>
-<td>如果值匹配短主机名，则有效。通过运行 uname -n，并去除任何域来计算主机名。</td>
-</tr>
-<tr>
-<td>os，o</td>
-<td>如果值与操作系统匹配，则有效。通过运行 uname -s 计算 OS。*</td>
-</tr>
-<tr>
-<td>template, t</td>
-<td>当值与支持的模板处理器匹配时有效。有关更多详细信息，请参见模板部分。</td>
-</tr>
-<tr>
-<td>user, u</td>
-<td>如果值匹配当前用户，则有效。通过运行 id -u -n 计算当前用户。</td>
-</tr>
-</tbody></table>
-<p>再举个例子，上面用的 class 条件是必须通过<code>yadm config local.class &lt;class&gt;</code>手动设置的。但是有一些条件不需要手动设置 yadm 可以自动识别。比如 os 属性。我们将<code>.zshrc</code>文件复制两份份，命名为<code>.zshrc##os.Linux</code>和<code>.zshrc##os.Darwin</code>，然后在<code>.zshrc##os.Linux</code>文件中添加一些 Linux 系统的配置，<code>.zshrc##os.Darwin</code>文件中添加一些 Mac 系统的配置。并把这三个文件都加入到 <code>yadm</code> 仓库中。这样 <code>yadm</code> 就会根据当前的系统自动选择合适的配置文件。</p>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
     
     </div>

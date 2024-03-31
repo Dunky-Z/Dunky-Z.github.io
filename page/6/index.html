@@ -125,6 +125,119 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2023/01/07/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Gitlab-CI-Pipeline/" itemprop="url">如何使用 Gitlab CI Pipeline</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2023-01-07T03:08:19.000Z" itemprop="datePublished">1月 7 2023</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            5 分钟 读完 (约 823 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>GitLab CI/CD 是一个强大的工具，可以帮助开发团队实现自动化构建、测试和部署。本文将介绍如何使用 GitLab CI/CD 的 Pipeline 功能，以实现将 Markdown 文件自动编译为 PDF 并上传至 GitLab Release 界面的功能。</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>在开始使用 GitLab CI/CD 的 Pipeline 功能之前，需要进行一些准备工作。具体步骤如下：</p>
+<ol>
+<li>创建 GitLab 项目：在 GitLab 上创建一个新项目，并将 Markdown 文件上传至项目的某个目录下。例如，我们将 Markdown 文件上传至项目的根目录下，并命名为 <code>example.md</code>。</li>
+</ol>
+<ul>
+<li><p>安装 Pandoc：Pandoc 是一个用于文档转换的工具，我们将使用它将 Markdown 文件转换为 PDF。在安装 Pandoc 之前，需要先安装 LaTeX，因为 Pandoc 使用 LaTeX 进行 PDF 渲染。具体安装步骤请参考 Pandoc 和 LaTeX 的官方文档。</p>
+</li>
+<li><p>创建 Release：在 GitLab 上创建一个 Release，用于存储编译好的 PDF 文件。具体操作方法请参考 GitLab 的官方文档。</p>
+</li>
+<li><p>创建 CI/CD 配置文件：在项目根目录下创建一个<code>.gitlab-ci.yml</code> 文件，并在其中定义 Pipeline 的流程。</p>
+</li>
+</ul>
+<h2 id="编写-CI-CD-配置文件"><a href="#编写-CI-CD-配置文件" class="headerlink" title="编写 CI/CD 配置文件"></a>编写 CI/CD 配置文件</h2><p>下面是一个样例的<code>.gitlab-ci.yml</code> 文件，用于实现将 Markdown 文件编译为 PDF 并上传至 GitLab Release 界面的功能。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">image:</span> <span class="hljs-string">pandoc/core:latest</span><br><br><span class="hljs-attr">stages:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">build</span><br><br><span class="hljs-attr">pdf:</span><br>  <span class="hljs-attr">stage:</span> <span class="hljs-string">build</span><br>  <span class="hljs-attr">script:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">pandoc</span> <span class="hljs-string">example.md</span> <span class="hljs-string">-o</span> <span class="hljs-string">example.pdf</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">curl</span> <span class="hljs-string">--header</span> <span class="hljs-string">&quot;PRIVATE-TOKEN: $&#123;CI_PRIVATE_TOKEN&#125;&quot;</span> <span class="hljs-string">--upload-file</span> <span class="hljs-string">example.pdf</span> <span class="hljs-string">&quot;$&#123;CI_API_V4_URL&#125;/projects/$&#123;CI_PROJECT_ID&#125;/uploads&quot;</span><br>  <span class="hljs-attr">artifacts:</span><br>    <span class="hljs-attr">paths:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">example.pdf</span><br></code></pre></td></tr></table></figure>
+
+<p>上述配置文件中，我们使用了 <code>pandoc/core:latest</code> 作为 Docker 镜像，该镜像已经预安装了 Pandoc 工具。</p>
+<p>该文件中包含了一个 build 阶段，其中包含了一个 pdf 任务。在 pdf 任务中，我们使用 Pandoc 工具将 Markdown 文件转换为 PDF 文件，并使用 cURL 工具将编译好的 PDF 文件上传至 GitLab Release 界面。注意，我们使用了环境变量<code>$&#123;CI_PRIVATE_TOKEN&#125;</code>和$<code>&#123;CI_API_V4_URL&#125;</code>，这些变量是 GitLab 自动注入的，用于进行身份验证和上传文件。</p>
+<p>最后，我们将编译好的 PDF 文件定义为 Pipeline 的 artifacts，这样可以确保文件能够被保留并可用于后续的部署。</p>
+<h2 id="运行-Pipeline"><a href="#运行-Pipeline" class="headerlink" title="运行 Pipeline"></a>运行 Pipeline</h2><p>完成 CI/CD 配置文件的编写后，我们可以在 GitLab 上启动 Pipeline，将 Markdown 文件自动编译为 PDF 并上传至 GitLab Release 界面。具体步骤如下：</p>
+<ul>
+<li><p>提交代码：将<code>.gitlab-ci.yml</code> 文件提交到 GitLab</p>
+</li>
+<li><p>启动 Pipeline：在 GitLab 上打开项目，并点击“CI/CD”-&gt;“Pipelines”选项卡。点击“Run Pipeline”按钮，启动 Pipeline 流程。</p>
+</li>
+<li><p>等待 Pipeline 完成：在 Pipeline 启动后，GitLab 会自动创建一个 Runner 并分配任务。Pipeline 的状态会在页面上实时更新，直到 Pipeline 执行完成。</p>
+</li>
+<li><p>查看 Release：Pipeline 执行完成后，我们可以在 GitLab Release 界面中找到编译好的 PDF 文件。点击 PDF 文件链接，即可下载并查看编译好的 PDF 文件。</p>
+</li>
+</ul>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2023/01/07/Markdown%E5%B5%8C%E5%85%A5Draw-io/" itemprop="url">Markdown 嵌入 Draw.io</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2023-01-07T02:42:06.000Z" itemprop="datePublished">1月 7 2023</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            几秒 读完 (约 72 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>Markdown 是支持嵌入 HTML 的，大部分阅读器也都支持解析。Draw.io 可以导出为 HTML 格式。</p>
+<p>文件—导出为 HTML—导出—新窗口打开—复制 HTML 代码—只保留<code>&lt;body&gt;</code>标签之间的内容，不包含<code>&lt;body&gt;</code>和<code>&lt;/body&gt;</code>。</p>
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;toolbar&quot;:&quot;zoom layers tags lightbox&quot;,&quot;edit&quot;:&quot;_blank&quot;,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot; modified=\&quot;2023-01-07T02:39:36.940Z\&quot; agent=\&quot;5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36\&quot; etag=\&quot;bw-obfhzFCRdb4Hl-GTj\&quot; version=\&quot;20.7.4\&quot; type=\&quot;device\&quot;&gt;&lt;diagram id=\&quot;qJU06MX9joVzOyRxsnLc\&quot; name=\&quot;第 1 页\&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
+<script type="text/javascript" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2022/12/24/Ubuntu-18-04-%E5%AE%89%E8%A3%85Clang-LLVM-11/" itemprop="url">Ubuntu 18.04 安装Clang/LLVM 11</a>
         
     </h1>
@@ -686,454 +799,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/11/01/QEMU-s-instance-init-vs-realize/" itemprop="url">QEMU&#39;s instance_init() vs. realize()</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-11-01T01:51:28.000Z" itemprop="datePublished">11月 1 2022</time>
-            
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="../../categories/QEMU-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">QEMU 源码分析</a>
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            9 分钟 读完 (约 1392 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p>转载自<a target="_blank" rel="noopener" href="https://github.com/huth">huth (Thomas Huth)</a>的一篇文章，原文已经 404，从网页快照中找回的文章。</p>
-<p>Note that this is a blog post for (new) QEMU developers. If you are just interested in using QEMU, you can certainly skip this text. Otherwise, in case you have ever been in touch with the QEMU device model (“qdev”), you are likely aware of the basic qdev code boilerplate already:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_realize</span><span class="hljs-params">(DeviceState *dev, Error **errp)</span></span><br><span class="hljs-function"></span>&#123;<br>    <br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_instance_init</span><span class="hljs-params">(Object *obj)</span></span><br><span class="hljs-function"></span>&#123;<br>    <br>&#125;<br><br><span class="hljs-keyword">static</span> Property mydev_properties[] = &#123;<br>    DEFINE_PROP_xxx(<span class="hljs-string">&quot;myprop&quot;</span>, MyDevState, field, ...),<br>    <br>    DEFINE_PROP_END_OF_LIST(),<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_class_init</span><span class="hljs-params">(ObjectClass *oc, <span class="hljs-keyword">void</span> *data)</span></span><br><span class="hljs-function"></span>&#123;<br>    DeviceClass *dc = DEVICE_CLASS(oc);<br><br>    dc-&gt;realize = mydev_realize;<br>    dc-&gt;desc = <span class="hljs-string">&quot;My cool device&quot;</span>;<br>    dc-&gt;props = mydev_properties;<br>    <br>&#125;<br><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> TypeInfo mydev_info = &#123;<br>    .name          = TYPE_MYDEV,<br>    .parent        = TYPE_SYS_BUS_DEVICE,  <br>    .instance_size = <span class="hljs-keyword">sizeof</span>(mydev_state),<br>    .instance_init = mydev_instance_init,<br>    .class_init    = mydev_class_init,<br>&#125;;<br><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">mydev_register_types</span><span class="hljs-params">(<span class="hljs-keyword">void</span>)</span></span><br><span class="hljs-function"></span>&#123;<br>    type_register_static(&amp;mydev_info);<br>&#125;<br><br>type_init(mydev_register_types)<br></code></pre></td></tr></table></figure>
-
-<p>There are three different initialization functions involved here, the <strong>class_init</strong>, the <strong>instance_init</strong> and the <strong>realize</strong> function. While it is quite obvious to distinguish the <em>class_init</em> function from the two others (it is used for initializing the class data, not the data that is used for an instance … this is similar to the object model with classes and instances in C++), I initially always wondered about the difference between the <em>instance_init()</em> and the <em>realize()</em> functions. Having fixed quite a lot of related bugs in the past months in the QEMU code base, I now know that a lot of other people are also not properly aware of the difference here, so I think it is now time to write down some information that I’m now aware of, to make sure that I don’t forget about this again, and maybe help others to avoid related bugs in the future ;-)</p>
-<p>First it is of course always a good idea to have a look at the documentation. While the <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l427">documentation of </a><a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l427"><em>TypeInfo</em></a> (where <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/qom/object.h;hb=v3.0.0%23l434"><em>instance_init()</em></a> is defined) is not very helpful to understand the differences, the <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l40">documentation of </a><a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l40"><em>DeviceClass</em></a> (where <a target="_blank" rel="noopener" href="https://translate.google.com/website?sl=en&tl=zh-CN&hl=zh-CN&prev=search&u=https://git.qemu.org/?p=qemu.git;a=blob;f=include/hw/qdev-core.h;hb=v3.0.0%23l43"><em>realize()</em></a> is defined) has some more useful information: You can learn here that the object instantiation is done first, before the device is realized, i.e. the <em>instance_init()</em> function is called first, and the <em>realize()</em> function is called afterwards. The former must not fail, while the latter can return an error to its caller via a pointer to an <em>“Error”</em> object pointer.</p>
-<p>So the basic idea here is that device objects are first instantiated, then these objects can be inspected for their interfaces and their creators can set up their properties to configure their settings and wire them up with other devices, before the device finally becomes “active” by being <em>realized</em>. It is important here to notice that <strong>devices can be instantiated (and also finalized) <em><strong><strong>without</strong></strong></em> being realized</strong>! This happens for example if the device is introspected: If you enter for example <code>device_add xyz,help</code> at the HMP monitor, or if you send the <code>device-list-properties</code> QOM command to QEMU to retrieve the device’s properties, QEMU creates a temporary instance of the device to query the properties of the object, without realizing it. The object gets destroyed (“finalized”) immediately afterwards.</p>
-<p>Knowing this, you can avoid a set of bugs which could be found with a couple of devices in the past:</p>
-<ul>
-<li>If you want your device to provide properties for other parts of the QEMU code or for the users, and you want to add those properties via one of the many object_property_add*() functions of QEMU (instead of using the <em>“props”</em> field of the <em>DeviceClass</em>), then you should do this in the <em>instance_init()</em> and not in the <em>realize()</em> function. Otherwise the properties won’t show up when the user runs <code>--device xyz,help</code> or the <code>device-list-properties</code> QOM command to get some information about your device.</li>
-<li><em>instance_init()</em> functions must really never fail, i.e. also not call <em>abort()</em> or <em>exit()</em>. Otherwise QEMU can terminate unexpectedly when a user simply wanted to have a look at the list of device properties with <code>device_add xyz,help</code> or the <code>device-list-properties</code> QOM command. If your device cannot work in certain circumstances, check for the error condition in the <em>realize()</em> function instead and return with an appropriate error there.</li>
-<li>Never assume that your device is always instantiated only with the machine that it was designed for. It’s of course a good idea to set the <em>“user_creatable = false”</em> flag in the <em>DeviceClass</em> of your device if your device cannot be plugged in arbitrary machines. But device introspection can still happen at any time, with any machine. So if you wrote a device called “mydev-a” that only works with <code>--machine A</code>, the user still can start QEMU with the option <code>--machine B</code> instead and then run <code>device_add mydev-a,help</code> or the <code>device-list-properties</code> QOM command. The <em>instance_init()</em> function of your device will be called to create a temporary instance of your device, even though the base machine is B and not A here. So you especially should take care to not depend on the availability of certain buses or other devices in the <em>instance_init()</em> function, nor use things like <em>serial_hd()</em> or <em>nd_table[]</em> in your <em>instance_init()</em> function, since these might (and should) have been used by the machine init function already. If your device needs to be wired up, provide properties as interfaces to the outside and let the creator of your device (e.g. the machine init code) wire your device between the device instantiation and the realize phase instead.</li>
-<li>Make sure that your device leaves a clean state after a temporary instance is destroyed again, i.e. don’t assume that there will be only one instance of your device which is created at the beginning right after QEMU has been started and is destroyed at the very end before QEMU terminates. Thus do not assume that the things that you do in your <em>instance_init()</em> don’t need explicit clean-up since the device instance will only be destroyed when QEMU terminates. Device instances can be created and destroyed at any time, so when the device is finalized, you must not leave any dangling pointers or references to your device behind you, e.g. in the QOM tree. When you create other objects in your <em>instance_init()</em> function, make sure to set proper parents of these objects or use an <em>instance_finalize()</em> function, so that the created objects get cleaned up correctly again when your device is destroyed.</li>
-</ul>
-<p>All in all, if you write code for a new QEMU device, it is likely a good idea to use the <em>instance_init()</em> function only for e.g. creating properties and other things that are required before device realization, and then do the main work in the <em>realize()</em> function instead.</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/10/18/ZH-UEFI%E8%A7%84%E8%8C%83-1-%E5%BC%95%E8%A8%80/" itemprop="url">ZH-UEFI 规范 -1-引言</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-10-18T12:07:10.000Z" itemprop="datePublished">10月 18 2022</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            1 小时 读完 (约 9684 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>统一可扩展固件接口 (UEFI) 规范描述了操作系统和平台固件之间的接口。UEFI 之前是可扩展固件接口规范 1.10 (EFI)。因此，一些代码和某些协议名称保留了 EFI 名称。除非另有说明，本规范中的 EFI 名称可假定为 UEFI 的一部分。</p>
-<p>该接口采用数据表的形式，其中包含与平台相关的信息，以及可供 OS 加载程序和 OS 使用的引导和运行时服务调用。它们共同提供了一个引导操作系统的标准环境。本规范是作为一个纯粹的接口规范设计的。因此，<strong>该规范定义了平台固件必须实现的接口和结构集</strong>。类似地，该规范定义了操作系统在引导时可能使用的一组接口和结构。无论是固件开发者选择如何实现所需的元素，还是操作系统开发者选择如何利用这些接口和结构，都由开发者自己决定。</p>
-<p>该规范的目的是定义一种方法，使操作系统和平台固件仅通信支持操作系统引导过程所必需的信息。这是通过平台和固件提供给操作系统的软件可见接口的正式和完整的抽象规范来实现的。</p>
-<p>本规范的目的是为操作系统和平台固件定义一种方式，以仅传递支持操作系统启动过程所需的信息。这是通过平台和固件呈现给操作系统的软件可见接口的抽象规范来实现的。</p>
-<p>使用这一正式定义，旨在运行在与受支持的处理器规范兼容的平台上的收缩包装操作系统将能够在各种系统设计上启动，而无需进一步的平台或操作系统定制。该定义还允许平台创新引入新特性和功能，以增强平台的能力，而不需要按照操作系统的引导顺序编写新代码。</p>
-<p>此外，抽象规范开辟了一条替代遗留设备和固件代码的路径。新的设备类型和相关代码可以通过相同定义的抽象接口提供同等的功能，同样不会影响 OS 引导支持代码。</p>
-<p>该规范适用于从移动系统到服务器的所有硬件平台。该规范提供了一组核心服务以及一组协议接口。协议接口的选择可以随着时间的推移而发展，并针对不同的平台市场细分进行优化。与此同时，该规范允许 oem 提供最大限度的可扩展性和定制能力，以实现差异化。在这方面，UEFI 的目的是定义一个从传统的“PC-AT”风格的引导世界到一个没有遗留 API 的环境的进化路径。</p>
-<h2 id="UEFI-驱动模型扩展"><a href="#UEFI-驱动模型扩展" class="headerlink" title="UEFI 驱动模型扩展"></a>UEFI 驱动模型扩展</h2><p>对启动设备的访问是通过一系列的协议接口提供的。UEFI 驱动模型的一个目的是为 “PC-AT”式的 Option ROM（TODO）提供一个替代品。需要指出的是，写在 UEFI 驱动模型上的驱动，被设计为在预启动环境中访问启动设备。它们并不是为了取代高性能的、针对操作系统的驱动程序。</p>
-<p>UEFI 驱动模型被设计为支持执行模块化的代码，也被称为驱动，在预启动环境中运行。这些驱动程序可以管理或控制平台上的硬件总线和设备，也可以提供一些软件衍生的、平台特定的服务。</p>
-<p>UEFI 驱动模型还包含了 UEFI 驱动编写者所需的信息，以设计和实现平台启动 UEFI 兼容的操作系统可能需要的任何总线驱动和设备驱动的组合。</p>
-<p>UEFI 驱动模型被设计为通用的，可以适应任何类型的总线或设备。UEFI 规范描述了如何编写 PCI 总线驱动程序、PCI 设备驱动程序、USB 总线驱动程序、USB 设备驱动程序和 SCSI 驱动程序。提供了允许将 UEFI 驱动程序存储在 PCI Option ROM 中的其他详细信息，同时保持了与旧 Option ROM 镜像的兼容性。</p>
-<p>UEFI 规范的一个设计目标是使驱动镜像尽可能的小。然而，如果一个驱动程序需要支持多个处理器架构，那么也需要为每个支持的处理器架构提供一个驱动程序对象文件。为了解决这个空间问题，本规范还定义了 EFI 字节代码虚拟机（EFI Byte Code Virtual Machine）。一个 UEFI 驱动可以被编译成一个 EFI 字节代码对象文件。UEFI Specification-complaint（TODO）的固件必须包含一个 EFI 字节代码解释器。这使得支持多种处理器架构的单一 EFI 字节代码对象文件可以被运出。另一种节省空间的技术是使用压缩。该规范定义了压缩和解压算法，可用于减少 UEFI 驱动程序的大小，从而减少 UEFI 驱动程序存储在 ROM 设备中时的开销。</p>
-<p>OSV、IHV、OEM 和固件供应商可以使用 UEFI 规范中包含的信息来设计和实现符合本规范的固件、生成标准协议接口的驱动程序以及可用于引导 UEFI 兼容的操作系统加载程序操作系统。</p>
-<h2 id="章节安排"><a href="#章节安排" class="headerlink" title="章节安排"></a>章节安排</h2><p>本规范的章节组织如下：</p>
-<table>
-<thead>
-<tr>
-<th align="left">章节名</th>
-<th align="left">内容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">引言/概述</td>
-<td align="left">介绍 UEFI 规范，并描述 UEFI 的主要组件。</td>
-</tr>
-<tr>
-<td align="left">启动管理器</td>
-<td align="left">管理器用于加载写入此规范的驱动程序和应用程序。</td>
-</tr>
-<tr>
-<td align="left">EFI 系统表和分区</td>
-<td align="left">描述了一个 EFI 系统表，它被传递给每个兼容的驱动程序和应用程序，并定义了一个基于 GUID 的分区方案。</td>
-</tr>
-<tr>
-<td align="left">块转换表</td>
-<td align="left">用于执行块 I/O 的布局和规则集，可提供单个块的断电写入原子性。</td>
-</tr>
-<tr>
-<td align="left">引导服务</td>
-<td align="left">包含在引导操作系统之前存在于 UEFI 兼容系统中的基本服务的定义。</td>
-</tr>
-<tr>
-<td align="left">运行时服务</td>
-<td align="left">包含在操作系统启动之前和之后存在于兼容系统中的基本服务的定义。</td>
-</tr>
-<tr>
-<td align="left">协议</td>
-<td align="left">EFI 加载图像协议描述已加载到内存的 UEFI 镜像。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">设备路径协议提供了在 UEFI 环境中构建和管理设备路径所需的信息。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">UEFI 驱动模型描述了一组服务和协议，适用于每个总线和设备类型。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">控制台支持协议定义了I/O协议，处理系统用户在启动服务环境中执行的基于文本的信息的输入和输出。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">媒介访问协议定义了加载文件协议，文件系统格式和媒介格式处理可移动媒介。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">PCI 总线支持协议定义 PCI 总线驱动程序，PCI 设备驱动程序和 PCI Option ROM 布局。所描述的协议包括 PCI 根桥 I/O 协议和 PCI I/O协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">SCSI 驱动程序模型和总线支持定义了 SCSI I/O协议和扩展SCSI Pass Thru 协议，用于抽象访问由 SCSI 主机控制器产生的 SCSI 通道。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">iSCSI协议定义了通过TCP/IP传输SCSI数据。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">USB 支持协议定义了 USB 总线驱动程序和 USB 设备驱动程序。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">调试器支持协议描述了一组可选的协议，提供所需的服务，以实现一个源级调试器的 UEFI 环境。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">压缩算法规范详细描述了压缩/解压缩算法，外加一个标准的EFI解压缩接口，用于启动时使用。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">ACPI 协议可用于从平台上安装或删除 ACPI 表。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">字符串服务：Unicode 排序协议允许在启动服务环境中运行的代码对给定语言的 Unicode 字符串执行词法比较函数;正则表达式协议用于根据正则表达式模式匹配 Unicode 字符串。</td>
-</tr>
-<tr>
-<td align="left">EFI 字节码虚拟机</td>
-<td align="left">定义 EFI 字节码虚拟处理器及其指令集。它还定义了如何将 EBC 对象文件加载到内存中，以及从本机代码到 EBC 代码再转换到本机代码的机制。</td>
-</tr>
-<tr>
-<td align="left">固件更新和报告</td>
-<td align="left">为设备提供一个抽象，以提供固件管理支持。</td>
-</tr>
-<tr>
-<td align="left">网络协议</td>
-<td align="left">SNP、PXE、BIS 和 HTTP 启动协议定义了在 UEFI 启动服务环境中执行时提供对网络设备访问的协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">受管网络协议定义了 EFI 受管网络协议，它提供原始 (未格式化) 异步网络数据包 I/O 服务和托管网络服务绑定协议，用于定位 MNP 驱动支持的通信设备。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">VLAN、EAP、Wi-Fi 和 Supplicant 协议定义了一个协议，为 VLAN 配置提供可管理性接口。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">蓝牙协议定义。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">TCP、IP、PIPsec、FTP、GTLS 和 Configurations 协议定义了 EFI TCPv4 (Transmission Control Protocol version 4) 协议和 EFI IPv4 (Internet Protocol version 4) 协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">ARP、DHCP、DNS、HTTP 和 REST 协议定义了 ARP (Address Resolution Protocol) 协议接口和 EFI DHCPv4 协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">UDP 和 MTFTP 协议定义了 EFI UDPv4 (User Datagram Protocol version 4) 协议，该协议在 EFI IPv4 协议上接口，并定义了 EFI MTFTPv4 协议接口，该接口建立在 EFI UDPv4 协议之上。</td>
-</tr>
-<tr>
-<td align="left">安全引导和驱动程序签名</td>
-<td align="left">介绍 Secure Boot 和生成 UEFI 数字签名的方法。</td>
-</tr>
-<tr>
-<td align="left">人机界面基础设施 (HII)</td>
-<td align="left">定义实现人机接口基础设施 (HII) 所需的核心代码和服务，包括管理用户输入和相关协议的代码定义的基本机制。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">描述用于管理系统配置的数据和 api:描述旋钮和设置的实际数据。</td>
-</tr>
-<tr>
-<td align="left">用户标识</td>
-<td align="left">描述描述平台当前用户的服务。</td>
-</tr>
-<tr>
-<td align="left">安全技术</td>
-<td align="left">描述用于利用安全技术的协议，包括加密散列和密钥管理。</td>
-</tr>
-<tr>
-<td align="left">杂项协议</td>
-<td align="left">Timestamp 协议提供了一个独立于平台的接口来检索高分辨率的时间戳计数器。当调用 ResetSystem 时，重置通知协议提供注册通知的服务。</td>
-</tr>
-<tr>
-<td align="left">附录</td>
-<td align="left">GUID 和时间格式。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">基于基本文本的控制台要求，符合 efi 系统需要提供通信能力。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">设备路径使用数据结构的例子，定义各种硬件设备的引导服务。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">状态代码列出了 UEFI 接口返回的成功、错误和警告代码。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">通用网络驱动程序接口定义了32/64位硬件和软件通用网络驱动程序接口(UNDIs)。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">使用简单指针协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">使用 EFI 扩展 SCISI 直通协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">压缩源代码的一个压缩算法的实现。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">一个 EFI 解压缩算法的实现的解压源代码。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">EFI 字节码虚拟机操作码列表提供了相应指令集的摘要。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">字母功能列表按字母顺序标识所有 UEFI 接口功能。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">EFI 1.10 协议变更和折旧清单标识了协议、GUID、修订标识符名称变更以及与 EFI 1.10 规范相比已弃用的协议。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">平台错误记录描述了用于表示平台硬件错误的常见平台错误记录格式。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">UEFI ACPI Data Table 定义了 UEFI ACPI 表格式。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">硬件错误记录持久性使用。</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">引用</td>
-</tr>
-<tr>
-<td align="left"></td>
-<td align="left">术语表</td>
-</tr>
-<tr>
-<td align="left">索引</td>
-<td align="left">提供规范中关键术语和概念的索引。</td>
-</tr>
-</tbody></table>
-<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>“PC-AT”启动环境对行业内的创新提出了重大挑战。每一个新的平台功能或硬件创新都要求固件开发人员设计越来越复杂的解决方案，并且通常要求操作系统开发人员修改引导代码，然后客户才能从创新中受益。这可能是一个耗时的过程，需要大量的资源投资。</p>
-<p>UEFI 规范的主要目标是定义一个替代引导环境，可以减轻这些考虑。在这个目标中，该规范类似于其他现有的引导规范。本规范的主要属性可以概括为以下属性：</p>
-<ul>
-<li><p><strong>一致的、可扩展的平台环境</strong>。该规范为固件定义了一个完整的解决方案，以描述所有平台特性和 OS 的 surface platform(TODO) 功能在引导过程中。这些定义非常丰富，足以涵盖一系列当代处理器设计。</p>
-</li>
-<li><p><strong>从固件中抽象操作系统</strong>。该规范定义了平台功能的接口。通过使用抽象接口，该规范允许在构建 OS 加载器时，而无需了解作为这些接口基础的平台和固件。这些接口代表了底层平台和固件实现与操作系统加载程序之间定义良好的稳定边界。这样的边界允许底层固件和操作系统加载程序更改，前提是两者都将交互限制在定义的接口上。</p>
-</li>
-<li><p><strong>合理的设备抽象，不需要遗留接口</strong>。“PC-AT”BIOS 接口要求操作系统加载程序对某些硬件设备的工作有特定的了解。该规范为 OS 加载器开发人员提供了一些不同的东西：抽象接口使得可以构建在一系列底层硬件设备上工作的代码，而无需明确了解该范围内每个设备的细节。</p>
-</li>
-<li><p><strong>从固件中提取 Option ROM</strong>。该规范定义了平台功能的接口，包括 PCI、USB 和 SCSI 等标准总线类型。支持的总线类型可能会随着时间的推移而增加，因此包括了一种扩展到未来总线类型的机制。这些定义的接口以及扩展到未来总线类型的能力是 UEFI 驱动程序模型的组件。UEFI 驱动模型的一个目的是解决现有“PC-AT”Option ROM 中存在的广泛问题。与 OS 加载程序一样，驱动程序使用抽象接口，因此可以构建设备驱动程序和总线驱动程序，而无需了解作为这些接口基础的平台和固件。</p>
-</li>
-<li><p><strong>架构上可共享的系统分区</strong>。扩展平台功能和添加新设备的计划通常需要软件支持。在许多情况下，当这些平台创新（TODO）在操作系统控制平台之前被激活时，它们必须由特定于平台而不是客户选择的操作系统的代码支持。解决这个问题的传统方法是在制造过程中将代码嵌入平台中（例如，在闪存设备中）。对这种持久存储的需求正在快速增长。该规范定义了大型海量存储媒介类型上的持久存储，以供平台支持代码扩展使用，以补充传统方法。规范中明确了其工作原理的定义，以确保固件开发商、OEM、操作系统供应商甚至第三方可以安全地共享空间，同时增加平台功能。</p>
-</li>
-</ul>
-<p>可以通过多种方式定义提供这些属性的引导环境。实际上，在编写本规范时，已经存在几种替代方案，从学术角度来看可能是可行的。然而，考虑到当前围绕支持的处理器平台的基础设施能力，这些替代方案通常会带来很高的门槛。本规范旨在提供上面列出的属性，同时也认识到行业的独特需求，该行业在兼容性方面进行了大量投资，并且拥有大量无法立即放弃的系统安装基础。这些需求推动了对本规范中体现的附加属性的要求：</p>
-<ul>
-<li><strong>进化性的，而不是革命性的</strong>。规范中的接口和结构旨在尽可能地减少初始实现的负担。虽然已经小注意保在接口本身中维护适当的抽象，但该设计还确保可以重用 BIOS 代码来实现接口，而只需要最少的额外编码工作。换句话说，在 PC-AT 平台上，规范最初可以作为基于现有代码的底层实现之上的薄接口（thin Interface TODO）层来实现。同时，抽象接口的引入提供了将来从遗留代码的迁移。一旦抽象被确立为固件和操作系统加载程序在引导期间交互的手段，开发人员就可以随意替换抽象接口下的遗留代码。类似的硬件遗留迁移也是可能的。由于抽象隐藏了设备的细节，因此可以移除底层硬件，并用提供改进功能、降低成本或两者兼而有之的新硬件替换它。显然，这需要编写新的平台固件来支持设备并通过抽象接口将其呈现给 OS 加载器。但是，如果没有接口抽象，则可能根本无法移除旧设备。</li>
-<li><strong>设计上的兼容性</strong>。系统分区结构的设计还保留了当前在“PC-AT”引导环境中使用的所有结构。因此，构建一个能够从同一磁盘引导传统操作系统或 EFI-aware 操作系统的单一系统是一件简单的事情。</li>
-<li><strong>简化了操作系统中立的平台增值的添加</strong>。该规范定义了一个开放的、可扩展的接口，它有助于创建平台“驱动程序”。这些可能类似于操作系统驱动程序，在引导过程中为新设备类型提供支持，或者它们可能用于实现增强的平台功能，例如容错或安全性。此外，这种扩展平台能力的能力从一开始就被设计到规范中。这旨在帮助开发人员避免在尝试将新代码挤入传统 BIOS 环境时所固有的许多挫败感。由于包含用于添加新协议的接口，OEM 或固件开发人员拥有以模块化方式向平台添加功能的基础设施。由于规范中定义的调用约定和环境，此类驱动程序可能会使用高级编码语言来实现。这反过来可能有助于降低创新的难度和成本。系统分区选项为此类扩展提供了非易失性存储器存储的替代方案。</li>
-<li><strong>建立在现有投入的基础上</strong>。在可能的情况下，规范避免在现有行业规范提供足够覆盖的领域重新定义接口和结构。例如，ACPI 规范为操作系统提供了发现和配置平台资源所需的所有信息。同样，规范设计的这种哲学选择旨在尽可能降低采用该规范的障碍。</li>
-</ul>
-<h2 id="目标受众"><a href="#目标受众" class="headerlink" title="目标受众"></a>目标受众</h2><p>本文档主要适用于以下读者：</p>
-<ul>
-<li>将实现 UEFI 驱动程序的 IHV 和 OEM。</li>
-<li>将创建支持的处理器平台的 OEM 厂商，旨在启动 shrink-wrap（TODO）的操作系统。</li>
-<li>BIOS 开发人员，无论是创建通用 BIOS 和其他固件产品的人员，还是修改这些产品的支持人员。</li>
-<li>操作系统开发人员将调整他们的 shrink-wrap（TODO）操作系统产品，用来在支持的基于处理器的平台上运行。</li>
-</ul>
-<h2 id="UEFI-设计概述"><a href="#UEFI-设计概述" class="headerlink" title="UEFI 设计概述"></a>UEFI 设计概述</h2><p>UEFI 的设计基于以下基本要素：</p>
-<ul>
-<li><strong>重用现有的基于表格的接口</strong>。为了保持对现有基础支持代码（包括操作系统和固件）的投资，必须在希望符合 UEFI 规范的平台上，实现通常在与支持的处理器规范兼容的平台上，实现的许多现有规范。 （有关更多信息，请参阅附录 Q：参考资料。）</li>
-<li><strong>系统分区</strong>。系统分区定义了一个分区和文件系统，可允许多个供应商之间安全共享，并用于不同目的。包含单独的、可共享的系统分区的能力提供了增加平台附加值的机会，而不会显著增加对非易失性平台存储器的需求。</li>
-<li><strong>引导服务</strong>。引导服务为可在引导期间使用的设备和系统功能提供接口。设备访问是通过“句柄”（handles）和“协议”(protocols) 抽象出来的。这有利于重用现有 BIOS 代码，将基本实现要求保持在规范之外，而不会给访问设备的消费者带来负担。</li>
-<li><strong>运行时服务</strong>。提供了一组最小的运行时服务，以确保对基础平台的硬件资源进行适当的抽象，这些资源可能是操作系统在正常运行时需要的。</li>
-</ul>
-<hr>
-<p><img src="../pic/1-1.jpg" alt="UEFI 概念概述"></p>
-<hr>
-<p>图 1-1 描述了用于完成平台和操作系统引导的符合 UEFI 规范的系统的各种组件的交互。</p>
-<p>平台固件能够从系统分区中检索操作系统加载器镜像。该规范提供了各种大容量存储设备类型，包括磁盘、CD-ROM 和 DVD，以及通过网络的远程启动。通过可扩展的协议接口，有可能增加其他的引导媒介类型，尽管如果这些媒介需要使用本文件中定义的协议以外的协议，可能需要修改操作系统加载器。</p>
-<p>一旦启动，操作系统加载程序将继续引导整个操作系统。为此，它可以使用本规范或其他所需规范定义的 EFI 引导服务和接口来探测、解析和初始化各种平台组件和管理它们的操作系统软件。在引导阶段，EFI 运行时服务也可供 OS 加载器使用。</p>
-<h2 id="UEFI-驱动模型"><a href="#UEFI-驱动模型" class="headerlink" title="UEFI 驱动模型"></a>UEFI 驱动模型</h2><p>本节描述了符合本规范的固件的驱动模型的目标。目标是让这个驱动模型为所有类型的总线和设备提供一个实现总线驱动和设备驱动的机制。在撰写本文时，支持的总线类型包括 PCI、USB 等。</p>
-<p>随着硬件架构的不断发展，平台中存在的总线数量和类型也在不断增加。这种趋势在高端服务器中尤为明显。然而，更多样化的总线类型被设计到桌面和移动系统，甚至一些嵌入式系统中。这种日益增长的复杂性，意味着在预启动环境中，需要一种简单的方法来描述和管理平台中的所有总线和设备。UEFI 驱动模型以协议、服务和启动服务的形式提供了这种简单的方法。</p>
-<h3 id="UEFI-驱动程序模型目标"><a href="#UEFI-驱动程序模型目标" class="headerlink" title="UEFI 驱动程序模型目标"></a>UEFI 驱动程序模型目标</h3><p>UEFI 驱动模型有以下目标：</p>
-<ul>
-<li><strong>兼容</strong> – 符合此规范的驱动程序必须保持与 EFI 1.10 规范和 UEFI 规范的兼容性。这意味着 UEFI 驱动程序模型利用 UEFI 2. 0 规范中的可扩展性机制来添加所需的功能。</li>
-<li><strong>简单</strong> - 符合本规范的驱动程序必须易于实现，易于维护。UEFI 驱动模型必须允许驱动编写者专注于正在开发的特定设备的驱动。驱动程序不应关注平台策略或平台管理问题。这些考虑应该留给系统固件。</li>
-<li><strong>可扩展性</strong> - UEFI 驱动模型必须能够适应所有类型的平台。这些平台包括嵌入式系统、移动和桌面系统，以及工作站和服务器。</li>
-<li><strong>灵活</strong> - UEFI 驱动模型必须支持枚举所有设备的能力，或者只枚举启动所需操作系统的那些设备。最小的设备枚举提供了对更快速的启动能力的支持，而完整的设备媒体提供了在系统中存在的任何启动设备上执行操作系统安装、系统维护或系统诊断的能力。</li>
-<li><strong>可扩展性</strong> - UEFI 驱动模型必须能够扩展到未来定义的总线类型。</li>
-<li><strong>可移植性</strong> - 根据 UEFI 驱动模型编写的驱动，必须在不同平台和支持的处理器架构之间可移植。</li>
-<li><strong>可互操作性</strong> - 驱动程序必须与其他驱动程序和系统固件共存，并且必须在不产生资源冲突的情况下进行操作。</li>
-<li><strong>描述复杂的总线层次结构</strong> - UEFI 驱动模型必须能够描述各种总线拓扑结构，从非常简单的单总线平台到包含许多不同类型总线的非常复杂的平台。</li>
-<li><strong>驱动占用空间小</strong> - 由 UEFI 驱动程序模型产生的可执行文件的大小必须最小化，以减少整体平台成本。虽然灵活性和可扩展性是目标，但支持这些所需的额外开销必须保持在最低水平，以防止固件组件的大小变得无法管理。</li>
-<li><strong>解决遗留 Option ROM 的问题</strong> - UEFI 驱动模型必须直接解决遗留 Option ROM 的约束和限制。具体来说，必须能够建立同时支持 UEFI 驱动和传统 Option ROM 的插件卡，这种卡可以在传统 BIOS 系统和符合 UEFI 的平台上执行，而无需修改卡上的代码。该解决方案必须提供一个从传统 Option ROM 驱动程序迁移到 UEFI 驱动程序的进化路径。</li>
-</ul>
-<h3 id="遗留-Option-ROM-问题"><a href="#遗留-Option-ROM-问题" class="headerlink" title="遗留 Option ROM 问题"></a>遗留 Option ROM 问题</h3><p>这个支持驱动模型的想法来自于对 UEFI 规范的反馈，它提供了一个明确的、由市场驱动的对传统选项 ROM（有时也被称为扩展 ROM）的替代要求。人们认为，UEFI 规范的出现代表了一个机会，通过用一种在 UEFI 规范框架内工作的替代机制来取代传统选项 ROM 镜像的构建和操作，从而摆脱隐含的限制。</p>
-<h2 id="迁移要求"><a href="#迁移要求" class="headerlink" title="迁移要求"></a>迁移要求</h2><p>迁移要求涵盖了从最初实施本规范到未来所有平台和操作系统都实施本规范的过渡时期。在这一时期，有两个主要的兼容性考虑是很重要的。</p>
-<ul>
-<li>能够继续启动传统的操作系统；</li>
-<li>能够在现有的平台上实现 UEFI，尽可能多地复用现有的固件代码，将开发资源和时间要求降到最低。</li>
-</ul>
-<h3 id="旧版操作系统支持"><a href="#旧版操作系统支持" class="headerlink" title="旧版操作系统支持"></a>旧版操作系统支持</h3><p>UEFI 规范代表了收缩式操作系统和固件在启动过程中进行通信的首选方式。然而，选择制作一个符合该规范的平台，并不排除该平台，也支持不了解 UEFI 规范的，现有传统操作系统二进制文件。</p>
-<p>UEFI 规范并不限制平台设计者，选择同时支持 UEFI 规范和更传统的 “PC-AT “启动基础架构。如果要实现这样的传统基础架构，应该按照现有的行业惯例来开发，这些惯例是在本规范范围之外定义的。在任何给定的平台上，支持的传统操作系统的选项是由该平台的制造商决定的。</p>
-<h3 id="在旧平台上支持-UEFI-规范"><a href="#在旧平台上支持-UEFI-规范" class="headerlink" title="在旧平台上支持 UEFI 规范"></a>在旧平台上支持 UEFI 规范</h3><p>UEFI 规范经过精心设计，允许以最少的开发工作扩展现有系统以支持它。特别是 UEFI 规范中定义的抽象结构和服务，都可以在遗留平台上得到支持</p>
-<p>例如，要在现有且受支持的基于 32 位的平台上实现此类支持，该平台使用传统 BIOS 来支持操作系统启动，需要提供额外的固件代码层。需要这些额外的代码来将服务和设备的现有接口转换为对本规范中定义的抽象的支持。</p>
-<h2 id="本文档中使用的约定"><a href="#本文档中使用的约定" class="headerlink" title="本文档中使用的约定"></a>本文档中使用的约定</h2><h3 id="数据结构描述"><a href="#数据结构描述" class="headerlink" title="数据结构描述"></a>数据结构描述</h3><p><strong>支持的处理器是“小端”机器</strong>。这种区别意味着内存中多字节数据项的低位字节位于最低地址，而高位字节位于最高地址。一些受支持的 64 位处理器可以配置为“小端”和“大端”操作。所有旨在符合本规范的实现都使用“小端”操作。</p>
-<p>在某些内存布局描述中，某些字段被标记为保留。软件必须将这些字段初始化为零并在读取时忽略它们。在更新操作中，软件必须保留任何保留字段。</p>
-<h3 id="协议描述"><a href="#协议描述" class="headerlink" title="协议描述"></a>协议描述</h3><p>协议描述一般有以下格式：</p>
-<ul>
-<li><strong>协议名称</strong>：协议接口的正式名称。</li>
-<li><strong>摘要</strong>：协议接口的简要描述。</li>
-<li><strong>GUID</strong>：协议接口的 128 位 GUID (Globally Unique Identifier)。</li>
-<li><strong>协议接口结构</strong>：一种“c 风格”的数据结构定义，包含由该协议接口产生的过程和数据字段。</li>
-<li><strong>参数</strong>：协议接口结构中各字段的简要说明。</li>
-<li><strong>描述</strong>：对接口提供的功能的描述，包括调用者应该知道的任何限制和警告。</li>
-<li><strong>相关定义</strong>：协议接口结构或其任何过程中使用的类型声明和常量。</li>
-</ul>
-<h3 id="过程描述"><a href="#过程描述" class="headerlink" title="过程描述"></a>过程描述</h3><p>过程描述通常具有以下格式：</p>
-<ul>
-<li><strong>过程名称</strong>：过程的正式名称。</li>
-<li><strong>摘要</strong>：过程的简要说明。</li>
-<li><strong>原型</strong>：定义调用序列的“C 风格”过程标头。</li>
-<li><strong>参数</strong>：对程序原型中每个字段的简要描述。</li>
-<li><strong>描述</strong>：对接口所提供的功能的描述，包括调用者应该注意的任何限制和注意事项。</li>
-<li><strong>相关定义</strong>：仅由该过程使用的类型声明和常量。</li>
-<li><strong>返回的状态代码</strong>：对接口所返回的任何代码的描述。该过程需要实现本表中列出的任何状态代码。可以返回更多的错误代码，但是它们不会被标准的符合性测试所测试，而且任何使用该程序的软件，都不能依赖于实现可能提供的任何扩展错误代码。</li>
-</ul>
-<h3 id="指令描述"><a href="#指令描述" class="headerlink" title="指令描述"></a>指令描述</h3><p>EBC 指令的指令描述一般有以下格式：</p>
-<ul>
-<li><strong>指令名称</strong>：指令的正式名称。</li>
-<li><strong>语法</strong>：指令的简要描述。</li>
-<li><strong>描述</strong>：对指令所提供的功能的描述，并附有指令编码的详细表格。</li>
-<li><strong>操作</strong>：详细说明对操作数进行的操作。</li>
-<li><strong>行为和限制</strong>：逐项描述指令中涉及的每个操作数的行为，以及适用于操作数或指令的任何限制。</li>
-</ul>
-<h3 id="伪代码约定"><a href="#伪代码约定" class="headerlink" title="伪代码约定"></a>伪代码约定</h3><p>提出伪代码是为了以更简洁的形式描述算法。本文件中的所有算法都不打算直接进行编译。代码是在与周围文本相对应的水平上呈现的。</p>
-<p>在描述变量时，列表是一个无序的同质对象的集合。一个队列是一个同质对象的有序列表。除非另有说明，否则假设排序为先进先出。</p>
-<p>伪代码以类似于 C 的格式呈现，在适当的地方使用 C 约定。编码风格，特别是缩进风格，是为了可读性，不一定符合 UEFI 规范的实现。</p>
-<h3 id="排版约定"><a href="#排版约定" class="headerlink" title="排版约定"></a>排版约定</h3><p>本文件采用了以下描述的排版和说明性惯例。</p>
-<ul>
-<li>纯文本：规范中的绝大部分描述性文本都使用普通文本字体。</li>
-<li>纯文本（蓝色）：任何有下划线和蓝色的纯文本都表示与交叉参考资料的活动链接。点击该词，就可以跟踪超链接。</li>
-<li>加粗：在文本中，粗体字标识了一个处理器寄存器的名称。在其他情况下，黑体字可以作为段落中的标题。</li>
-<li>斜体：在文本中，斜体字可以用作强调，以引入一个新的术语或表示手册或规范的名称。</li>
-<li>加粗等宽（暗红色）：计算机代码、示例代码段和所有原型代码段使用 BOLD Monospace 字体，颜色为暗红色。这些代码列表通常出现在一个或多个独立的段落中，尽管单词或片段也可以嵌入到一个正常的文本段落中。</li>
-<li>加粗等宽（蓝色）：用粗体单色字体的字，下划线和蓝色的字，表示该功能或类型定义的代码定义的活动超链接。点击该词，即可进入超链接。</li>
-</ul>
-<p><strong>注意</strong>：出于管理和文件大小的考虑，每一页上只有第一次出现的参考文献是一个主动链接。同一页上的后续参考文献不会被主动链接到定义上，而是使用标准的、无下划线的 BOLD Monospace 字体。在页面上找到该名称的第一个实例（使用下划线的 BOLD Monospace 字体），点击该词即可跳转到该功能或类型的定义。</p>
-<ul>
-<li>斜体等宽：在代码或文本中，斜体字表示必须提供的变量信息的占位符名称（即参数）。</li>
-</ul>
-<h3 id="数字格式"><a href="#数字格式" class="headerlink" title="数字格式"></a>数字格式</h3><p>在本标准中，二进制数字是由仅由西方阿拉伯数字 0 和 1 组成的任何数字序列表示的，后面紧跟一个小写的 b（例如，0101b）。在二进制数字表示中的字符之间可以包含下划线或空格，以增加可读性或划分领域边界（例如，0 0101 1010b 或 0_0101_1010b）。</p>
-<h4 id="十六进制"><a href="#十六进制" class="headerlink" title="十六进制"></a>十六进制</h4><p>十六进制数字在本标准中用 0x 表示，前面是仅由西阿拉伯数字 0 至 9 和/或大写英文字母 A 至 F 组成的任何数字序列（例如，0xFA23）。十六进制数字表示中的字符之间可以包含下划线或空格，以增加可读性或划定字段边界（例如，0xB FD8C FA23 或 0xB_FD8C_FA23）。</p>
-<h4 id="十进制"><a href="#十进制" class="headerlink" title="十进制"></a>十进制</h4><p>在本标准中，小数是由仅由阿拉伯数字 0 到 9 组成的任何数字序列来表示的，后面不紧跟小写的 b 或小写的 h（例如，25）。本标准使用以下惯例来表示小数：</p>
-<ul>
-<li>小数点分隔符（即分隔数字的整数部分和小数部分）是一个句号；</li>
-<li>千位数分隔符（即分隔数字部分的三位数组）是一个逗号；</li>
-<li>千位数分隔符用于数字的整数部分，不用于数字的小数部分。</li>
-</ul>
-<h3 id="二进制前缀"><a href="#二进制前缀" class="headerlink" title="二进制前缀"></a>二进制前缀</h3><p>本标准使用国际单位制（SI）中定义的前缀来表示 10 的幂值。见 “SI 二进制前缀 “标题下的 “UEFI 相关文件链接”（<a target="_blank" rel="noopener" href="http://uefi.org/uefi">http://uefi.org/uefi</a>）。</p>
-<p><img src="../pic/table1-1.jpg"></p>
-<p>本标准使用ISO/IEC 80000-13《数量和单位–第 13 部分：信息科学和技术》和 IEEE 1514《二进制倍数前缀标准》中定义的二进制前缀，用于表示 2 的幂值。</p>
-<p><img src="../pic/table1-2.jpg"></p>
-<p>例如，4 KB 意味着 4000 个字节，4 KiB 意味着 4096 个字节。</p>
-<h3 id="修订号"><a href="#修订号" class="headerlink" title="修订号"></a>修订号</h3><p>对 UEFI 规范的更新被认为是新的修订或勘误表，如下所述：</p>
-<ul>
-<li>当有实质性的新内容或可能修改现有行为的变化时，就会产生一个新的修订。新的修订版由一个主要的。次要的版本号来指定（例如：xx.yy）。在变化特别小的情况下，我们可能有一个 major.minor.minor 的命名惯例（例如 xx.yy.zz）。</li>
-<li>当批准的规范更新不包括任何重要的新材料或修改现有行为时，就会产生勘误的版本。勘误的指定方法是在版本号后面加上一个大写字母，如 xx.yy 勘误 A。</li>
-</ul>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -1157,7 +822,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>

@@ -125,6 +125,126 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2021/10/30/%E8%A7%A3%E5%86%B3%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E9%85%8D%E7%BD%AE%E4%B8%A4%E4%B8%AAGIT%E8%B4%A6%E6%88%B7/" itemprop="url">解决一台电脑配置两个 GIT 账户</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2021-10-30T03:14:27.000Z" itemprop="datePublished">10月 30 2021</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            4 分钟 读完 (约 544 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>公司的也在用 git，但是账号和地址肯定都不同，需要配置两个不同的提交环境。</p>
+<h2 id="生成两个-Key"><a href="#生成两个-Key" class="headerlink" title="生成两个 Key"></a>生成两个 Key</h2><h3 id="生成第一个-Key"><a href="#生成第一个-Key" class="headerlink" title="生成第一个 Key"></a>生成第一个 Key</h3><p>如果电脑上已经在用 Git 了就无需重新生成 key，用当前的就可以。key 保存在<code>~/.ssh</code>文件夹内。</p>
+<p>如果第一次使用，就使用以下命令重新生成：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  .ssh ssh-keygen -t rsa -C home_pc<br>Generating public/private rsa key pair.<br>Enter file <span class="hljs-keyword">in</span> <span class="hljs-built_in">which</span> to save the key (/home/dominic/.ssh/id_rsa): id_rsa_pc<br><br></code></pre></td></tr></table></figure>
+
+<p><code>home_pc</code>就是个备注名，假设我们这个 key 是平时捣腾 GitHub 玩，用来和 GitHub 同步用的，<code>id_rsa_pc</code>是生成的文件名，打开<code>id_rsa_pc.pub</code>可以看到生成的 key 最后就是备注名（如下）。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs PowerShell">ssh<span class="hljs-literal">-rsa</span> AAAAB3NzaC1yc2EAAAADAQABAAABR/Fyj7Pz+e+/////////////////ZbdPGtHB86fLQYh/uR+TKcCERedrDKzGPdVt8= home_pc<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置-GitHub-SSH"><a href="#配置-GitHub-SSH" class="headerlink" title="配置 GitHub SSH"></a>配置 GitHub SSH</h3><p>路径为：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs PowerShell">Github-头像<span class="hljs-literal">-settings</span><span class="hljs-literal">-SSH</span> and GPG keys<span class="hljs-literal">-New</span> SSH key<br></code></pre></td></tr></table></figure>
+
+<h3 id="测试连通"><a href="#测试连通" class="headerlink" title="测试连通"></a>测试连通</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ssh -T git@github.com<br></code></pre></td></tr></table></figure>
+
+<h3 id="生成第二-Key"><a href="#生成第二-Key" class="headerlink" title="生成第二 Key"></a>生成第二 Key</h3><p>这个 key 就打算用来和公司代码同步用，所以备注名换成了<code>work_ubuntu</code>，文件名也换成了<code>id_rsa_work</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">➜  .ssh ssh-keygen -t rsa -C work_ubuntu<br>Generating public/private rsa key pair.<br>Enter file <span class="hljs-keyword">in</span> <span class="hljs-built_in">which</span> to save the key (/home/dominic/.ssh/id_rsa): id_rsa_work<br><br></code></pre></td></tr></table></figure>
+
+<h3 id="配置公司-SSH"><a href="#配置公司-SSH" class="headerlink" title="配置公司 SSH"></a>配置公司 SSH</h3><p>和 GitHub 类似，根据自己公司使用的平台设置。</p>
+<h2 id="配置本地账户"><a href="#配置本地账户" class="headerlink" title="配置本地账户"></a>配置本地账户</h2><p>因为本地的代码仓库可能是从 GitHub 下载的，也有从公司仓库下载的。那么提交代码时就需要为仓库配置指定的用户名和邮箱。以前只有一个 GitHub，所以配置时使用的是<code>-global</code>参数，任何一个仓库都是配置的相同的用户名与邮箱，而现在需要区分。</p>
+<h3 id="取消全局配置"><a href="#取消全局配置" class="headerlink" title="取消全局配置"></a>取消全局配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"> <span class="hljs-comment"># 取消全局 用户名/邮箱 配置</span><br>git config --global --<span class="hljs-built_in">unset</span> user.name<br>git config --global --<span class="hljs-built_in">unset</span> user.email<br><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="单独配置代码仓"><a href="#单独配置代码仓" class="headerlink" title="单独配置代码仓"></a>单独配置代码仓</h3><p>进入项目目录，有<code>.git</code>目录的那一级。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 单独设置每个repo 用户名/邮箱</span><br>git config user.email “xxxx@xx.com”<br>git config user.name “xxxx”<br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2021/10/22/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E6%9D%82%E5%A3%B0%E6%98%8E/" itemprop="url">C 语言复杂声明</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2021-10-22T03:02:58.000Z" itemprop="datePublished">10月 22 2021</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            10 分钟 读完 (约 1503 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>C 语言常常因为声明的语法问题而受到人们的批评，特别是涉及到函数指针的语法。C 语言的语法力图使声明和使用相一致。对于简单的情况，C 语言的做法是很有效的，但是，如果情况比较复杂，则容易让人混淆，原因在于，C 语言的声明不能从左至右阅读，而且使用了太多的圆括号。<br>在 C 中，声明的形式为（dcl 是 declaration 的简写）：</p>
+<figure class="highlight maxima"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs maxima">dcl: optional *&#x27;s <span class="hljs-built_in">direct</span>-dcl（含有可选<span class="hljs-string">&quot;*&quot;</span>的<span class="hljs-built_in">direct</span>-dcl）<br><span class="hljs-built_in">direct</span>-dcl name<br>            (dcl)<br>            <span class="hljs-built_in">direct</span>-dcl()<br>            <span class="hljs-built_in">direct</span>-dcl[optional size] <br></code></pre></td></tr></table></figure>
+
+<p>简而言之，声明符<code>dc1</code>(可以理解成间接声明) 就是前面可能带有多个<code>*</code>的<code>direcr-dclo</code>。<code>direct-dcl</code>可以是<code>name</code>、由一对圆括号括起来的<code>dcl</code>、后面跟有一对圆括号的<code>direct-dcl</code>、后面跟有用方括号括起来的表示可选长度的<code>direc-dcl</code>。</p>
+<p>根据该规则进行逆向解析，就可以得到正确的声明。简化一下：<code>TypeName Declarator;</code>其中，<code>Declarator</code>就是声明中的那个<code>name</code>。当你遇到任何你不能理解的声明时，这个法则就是救命稻草。最简单的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">int</span> aInt;<br></code></pre></td></tr></table></figure>
+
+<p>这里，<code>int</code>是<code>TypeName</code>，<code>aInt</code>是<code>Declarator</code>。</p>
+<p>再说明一下结合紧密度。在声或定义变量时，可以使用一些修饰比如<code>*</code>，<code>[]</code>，<code>()</code>等。<code>()</code>（非函数声明中的<code>()</code>）具有最高的紧密度，其次才是函数和数组的<code>()</code>和<code>[]</code>。</p>
+<p>没有<code>*</code>的声明称为直接声明（<code>direct-dcl</code>），而有<code>*</code>称为声明（<code>dcl</code>）。直接声明要比声明结合的紧。分解声明时，先读出结合紧的。在这里，我把<code>direct-dcl</code>称为更紧的结合，它比<code>dcl</code>结合得紧。</p>
+<p>最后，需要你用英语来读出这个声明。对于<code>[]</code>，应该读成<code>array of</code>。</p>
+<p>对于复杂的定义，可以将其分解。比如<code>T (*p)()</code>可以分解成<code>T D1()</code>，<code>D1</code>读作：*<code>function returning T</code><em>。其中<code>D1</code>是<code>*p</code>。那么该声明应该读成：</em><code>p is a poniter to</code>*。二者合在一起，就变成了 *<code>p is a pointer to function returning T</code>*，即：<code>p</code>是指向返回<code>T</code>类对象的函数的指针。</p>
+<p>再看一个稍微复杂的示例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">T (*pfa[])();<br></code></pre></td></tr></table></figure>
+
+<p>根据<code>dcl</code>和<code>direct-dcl</code>，可以分解成<code>T1 D1</code>（因为结合紧密度），<code>T1</code>也就是<code>T ()</code>，那么应该读作：<br>*<code>D1 is function returning T</code>*。</p>
+<p><code>D1</code>又可以写成<code>T2 D2</code>，其中<code>T2</code>是<code>T1 []</code>，可以分解成<code>T1 D2[]</code>，读作：*<code>array of D2 function returning T</code>*。</p>
+<p><code>D2</code>是指针，读作：*<code>pointers to</code><em>。那么整个 <em><code>T (*pfa[])()</code></em> 应该读作：</em><code>pfa is an array of pointers to function returning T</code>*，即：<code>pfa</code>是个存放指向返回 T 类对象函数的指针的数组。</p>
+<p>换种方式看，在这个例子中，<code>pfa</code>是名字，<code>T(*[])()</code>是类型。将<code>(*pfa[])</code>视为一体（<code>direct-dcl</code>），称为<code>D1</code>，那么可以写成<code>T D1()</code>，*<code>function returning object of T</code>*。在<code>D1</code>中，将<code>*pfa</code>视为一体（<code>dcl</code>），称为<code>D2</code>，那么<code>*pfa[]</code>应该是<code>D2[]</code>（direct-dcl），<code>array of D2</code>。合起来就是 *<code>array of D2 function returning object of T</code>*。<code>D2</code>是<code>*pfa</code>（dcl），替换到前面这句话，结果就是 *<code>array of pointers to function returning object of T</code>*。</p>
+<p>有了这些说明，可以试着做一下下面的题，看看自己是否真的理解了：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">char</span> **argv<br>    <span class="hljs-comment">// argv:  pointer to pointer to char</span><br>    <span class="hljs-comment">// 指向 char 型指针的指针</span><br><span class="hljs-keyword">int</span> (*daytab)[<span class="hljs-number">13</span>]<br>    <span class="hljs-comment">// daytab:  pointer to array[13] of int</span><br>    <span class="hljs-comment">// 指向 int 型数组的指针</span><br><span class="hljs-keyword">int</span> *daytab[<span class="hljs-number">13</span>]<br>    <span class="hljs-comment">// daytab:  array[13] of pointer to int</span><br>    <span class="hljs-comment">// 存放 int 型指针的数组</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> *<span class="hljs-title">comp</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    <span class="hljs-comment">// comp: function returning pointer to void</span></span><br><span class="hljs-function">    <span class="hljs-comment">// 返回值为指向 void 型指针的函数</span></span><br><span class="hljs-function"><span class="hljs-title">void</span> <span class="hljs-params">(*comp)</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    <span class="hljs-comment">// comp: pointer to function returning void</span></span><br><span class="hljs-function">    <span class="hljs-comment">// 指向返回值为 void 型函数的指针</span></span><br><span class="hljs-function"><span class="hljs-title">char</span> <span class="hljs-params">(*(*x())[])</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    <span class="hljs-comment">// x: function returning pointer to array[] of</span></span><br><span class="hljs-function">    <span class="hljs-comment">// pointer to function returning char</span></span><br><span class="hljs-function">    <span class="hljs-comment">// 返回值为 char 型的函数</span></span><br><span class="hljs-function"><span class="hljs-title">char</span> <span class="hljs-params">(*(*x[<span class="hljs-number">3</span>])())</span>[5]</span><br><span class="hljs-function">    <span class="hljs-comment">// x: array[3] of pointer to function returning</span></span><br><span class="hljs-function">    <span class="hljs-comment">// pointer to array[5] of char</span></span><br></code></pre></td></tr></table></figure>
+
+<p>理解复杂声明可用的“右左法则”：从变量名看起，先往右，再往左，碰到一个圆括号就调转阅读的方向；括号内分析完就跳出括号，还是按先右后左的顺序，如此循环，直到整个声明分析完。举例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">int</span> (*<span class="hljs-function"><span class="hljs-keyword">func</span>)<span class="hljs-params">(<span class="hljs-keyword">int</span> *p)</span>;</span><br></code></pre></td></tr></table></figure>
+
+<p>首先找到变量名<code>func</code>，外面有一对圆括号，而且左边是一个<code>*</code>号，这说明<code>func</code>是一个指针；然后跳出这个圆括号，先看右边，又遇到圆括号，这说明<code>(*func)</code>是一个函数，所以<code>func</code>是一个指向这类函数的指针，即函数指针，这类函数具有<code>int*</code>类型的形参，返回值类型是<code>int</code>。</p>
+<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs delphi">int <span class="hljs-comment">(*func[5])(int *)</span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>func</code>右边是一个<code>[]</code>运算符，说明<code>func</code>是具有<code>5</code>个元素的数组；<code>func</code>的左边有一个<code>*</code>，说明<code>func</code>的元素是指针（注意这里的<code>*</code>不是修饰<code>func</code>，而是修饰<code>func[5]</code>的，原因是<code>[]</code>运算符优先级比<code>*</code>高，<code>func</code>先跟<code>[]</code>结合）。跳出这个括号，看右边，又遇到圆括号，说明<code>func</code>数组的元素是函数类型的指针，它指向的函数具有<code>int*</code>类型的形参，返回值类型为<code>int</code>。</p>
+<p>在 C++中，规则比 C 要复杂一些。不过，基本思想保持不变，按照 C 的原则来理解复杂的声明，基本上就能满足要求了。没有在这里列出 C++的规则一方面是因为太广，不能覆盖全；另一个原因就是，按照 C 的规则来就足够了，毕竟 C++要与 C 兼容。</p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2021/10/21/C%E8%AF%AD%E8%A8%80%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0CyclicBuffer%E5%BE%AA%E7%8E%AF%E7%BC%93%E5%86%B2%E5%8C%BA/" itemprop="url">C 语言共享内存实现 CyclicBuffer 循环缓冲区</a>
         
     </h1>
@@ -861,103 +981,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2021/09/29/VScode%E5%BF%AB%E9%80%9F%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A%E6%A8%A1%E6%9D%BF/" itemprop="url">VScode 快速添加注释模板</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2021-09-29T09:03:13.000Z" itemprop="datePublished">9月 29 2021</time>
-            
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="../../categories/%E4%B8%87%E8%83%BD-VSCode/">万能 VSCode</a>
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            2 分钟 读完 (约 294 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>通常函数的注释一般都比较长，而且每个函数注释都格式一致，例如下面的函数注释模板。如果每次写注释都要复制一遍比较麻烦，复制完还要删除多余的字符。但是现有的编辑器一般都支持快捷输入。下面介绍在 VSCode 中如何快捷输入注释模板。</p>
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><ul>
-<li><p><code>Ctrl+Shift+P</code>打开编辑器命令窗口 - 输入<code>snippets</code>-选择<code>Preferences:Configure User Snippets</code>-选择·c.json·<br>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210929170226.png"><br>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210929170717.png"></p>
-</li>
-<li><p>更改如下：</p>
-  <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs json">   &#123;<br><br><span class="hljs-comment">// Place your snippets for c here. Each snippet is defined under a snippet name and has a prefix, body and</span><br><span class="hljs-comment">// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:</span><br><span class="hljs-comment">// $1, $2 for tab stops, $0 for the final cursor position, and $&#123;1:label&#125;, $&#123;2:another&#125; for placeholders. Placeholders with the</span><br><span class="hljs-comment">// same ids are connected.</span><br><span class="hljs-comment">// Example:</span><br><span class="hljs-comment">// &quot;Print to console&quot;: &#123;</span><br><span class="hljs-comment">//  &quot;prefix&quot;: &quot;log&quot;,</span><br><span class="hljs-comment">//  &quot;body&quot;: [</span><br><span class="hljs-comment">//   &quot;console.log(&#x27;$1&#x27;);&quot;,</span><br><span class="hljs-comment">//   &quot;$2&quot;</span><br><span class="hljs-comment">//  ],</span><br><span class="hljs-comment">//  &quot;description&quot;: &quot;Log output to console&quot;</span><br><span class="hljs-comment">// &#125;</span><br> <span class="hljs-attr">&quot;Function comment&quot;</span>: &#123;<br> <span class="hljs-attr">&quot;prefix&quot;</span>: <span class="hljs-string">&quot;funcom&quot;</span>,<br> <span class="hljs-attr">&quot;body&quot;</span>: [<br>   <span class="hljs-string">&quot;/*&quot;</span><br>    <span class="hljs-string">&quot;* Description:      &quot;</span><br>    <span class="hljs-string">&quot;*Input Parameter:  &quot;</span><br>    <span class="hljs-string">&quot;* Output Parameter: &quot;</span><br>    <span class="hljs-string">&quot;*Return:           &quot;</span><br>    <span class="hljs-string">&quot;*/ &quot;</span><br> ],<br> <span class="hljs-attr">&quot;description&quot;</span>: <span class="hljs-string">&quot;function comment&quot;</span><br>   &#125;<br></code></pre></td></tr></table></figure></li>
-<li><p><code>prefix</code>:输入时的缩写，触发器</p>
-</li>
-<li><p><code>body</code>:内容</p>
-</li>
-<li><p><code>description</code>:描述</p>
-</li>
-</ul>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903869424599053">VSCode 利用 Snippets 设置超实用的代码块 - 掘金</a></p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2021/09/28/QtCreator%E5%BF%AB%E9%80%9F%E6%B7%BB%E5%8A%A0%E6%B3%A8%E9%87%8A%E6%A8%A1%E6%9D%BF/" itemprop="url">QtCreator 快速添加注释模板</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2021-09-28T11:26:03.000Z" itemprop="datePublished">9月 28 2021</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            3 分钟 读完 (约 421 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>通常函数的注释一般都比较长，而且每个函数注释都格式一致，例如下面的函数注释模板。如果每次写注释都要复制一遍比较麻烦，复制完还要删除多余的字符。但是现有的编辑器一般都支持快捷输入。下面介绍在 QtCreator 中如何快捷输入注释模板。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/* </span><br><span class="hljs-comment"> * Description:      // 函数功能、性能等的描述  </span><br><span class="hljs-comment"> * Input Parameter:  // 输入参数说明，包括每个参数的作 </span><br><span class="hljs-comment"> * Output Parameter: // 对输出参数的说明。 </span><br><span class="hljs-comment"> * Return:           // 函数返回值的说明 </span><br><span class="hljs-comment"> */</span> <br></code></pre></td></tr></table></figure>
-
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><ul>
-<li>QtCreator-菜单栏工具（Tool）- 选项（Options）- 文本编辑器（Text Editor）- 片段（Snippets）</li>
-<li>组（Group）选择<code>C++</code>-添加（Add）<br>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210928193309.png"></li>
-<li>现在要为我们的触发（Trigger）起个名字，因为是函数注释，我起了个<code>funcom</code>，然后在下方空白框里填入注释模板。Apply 保存。如图<br>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210928193538.png"></li>
-<li>在需要添加注释模板的地方输入<code>funcom</code>即可提示快捷输入，回车即可添加注释模板。<br>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210928194108.gif"></li>
-</ul>
-<p>我们可以看到片段里有很多熟悉的内容，比如<code>if else</code>，我们在写代码时输入<code>if else</code>自动补全花括号其实就是在这里设置的。同理，我们还可以设置一些其他需要的快捷输入内容。比如行注释，文件注释，经常使用的代码框架等等。</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -981,7 +1004,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>

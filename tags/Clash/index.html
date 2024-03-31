@@ -151,13 +151,13 @@
         <span class="column is-narrow">
             
             
-            3 分钟 读完 (约 475 字)
+            4 分钟 读完 (约 585 字)
         </span>
         
     </div>
     <div class="article-entry is-size-6-mobile" itemprop="articleBody">
     
-        <h2 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h2><p>点击下载 <a target="_blank" rel="noopener" href="https://glados.rocks/tools/clash-linux.zip">Linux 版本的Clash</a>，下载完成后解压缩。</p>
+        <html><head></head><body><h2 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h2><p>点击下载 <a target="_blank" rel="noopener" href="https://glados.rocks/tools/clash-linux.zip">Linux 版本的Clash</a>，下载完成后解压缩。</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">unzip</span> clash-linux.zip
 <span class="token function">sudo</span> <span class="token function">mv</span> clash-linux /usr/local/bin/clash
 <span class="token function">sudo</span> <span class="token function">chmod</span> +x /usr/local/bin/clash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
@@ -170,19 +170,19 @@
 <span class="token comment"># 即可正常下载</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
 <h2 id="开机启动"><a href="#开机启动" class="headerlink" title="开机启动"></a>开机启动</h2><pre class="line-numbers language-Bash" data-language="Bash"><code class="language-Bash">cd ~
-sudo cp &#x2F;usr&#x2F;local&#x2F;bin&#x2F;clash &#x2F;etc&#x2F;
-sudo vim &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;clash.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+sudo cp /usr/local/bin/clash /etc/
+sudo vim /etc/systemd/system/clash.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
 <p>添加如下内容，并保存：</p>
 <pre class="line-numbers language-YAML" data-language="YAML"><code class="language-YAML">[Unit]
-Description&#x3D;Clash Daemon
+Description=Clash Daemon
 
 [Service]
-ExecStart&#x3D;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;clash -f &#x2F;etc&#x2F;clash&#x2F;订阅的配置文件.yaml -d &#x2F;etc&#x2F;clash&#x2F;
-Restart&#x3D;on-failure
+ExecStart=/usr/local/bin/clash -f /etc/clash/订阅的配置文件.yaml -d /etc/clash/
+Restart=on-failure
 
 [Install]
-WantedBy&#x3D;multi-user.target<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+WantedBy=multi-user.target<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>启用 clash 服务</p>
 <pre class="line-numbers language-Bash" data-language="Bash"><code class="language-Bash">sudo systemctl enable clash.service
@@ -207,15 +207,20 @@ sudo systemctl disable clash.service
 
 <p>添加如下内容：</p>
 <pre class="line-numbers language-Bash" data-language="Bash"><code class="language-Bash">29 6    * * *   root    pgrep clash | xargs kill -s 9 
-30 6    * * *   root    cp &#x2F;etc&#x2F;clash&#x2F;订阅的配置文件.yaml &#x2F;etc&#x2F;clash&#x2F;backup.yaml 
-31 6    * * *   root    curl https:&#x2F;&#x2F;订阅链接.yaml &gt; &#x2F;etc&#x2F;clash&#x2F;订阅的配置文件.yaml
+30 6    * * *   root    cp /etc/clash/订阅的配置文件.yaml /etc/clash/backup.yaml 
+31 6    * * *   root    curl https://订阅链接.yaml &gt; /etc/clash/订阅的配置文件.yaml
 32 6    * * *   root    sudo systemctl start clash.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>重启cron服务</p>
 <pre class="line-numbers language-Bash" data-language="Bash"><code class="language-Bash">sudo systemctl restart cron.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
+<h2 id="使用Dashboard"><a href="#使用Dashboard" class="headerlink" title="使用Dashboard"></a>使用Dashboard</h2><p>编辑<code>/etc/clash/glados.yaml</code>，修改以下配置，默认配置为<code>127.0.0.1:9090</code>。如果你的<code>9090</code>端口没有被占用，将其修改为<code>0.0.0.0:9090</code>即可，因为我的NAS<code>9090</code>端口被占用，所以修改成了<code>0.0.0.0:19090</code>。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">external-controller: <span class="token number">0.0</span>.0.0:19090<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>这样就可以在浏览器通过<code>Nas IP:19090/ui</code>访问Dashboard，比如<code>192.168.1.9:19090/ui</code>。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F23%2Fb2d931cbaa82c449f590a3d6cb7da6cc.png"></p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://github.com/ghostxu97/clash-for-linux">ghostxu97/clash-for-linux: Linux环境安装配置Clash工具，以实现代理上网效果。包含下载、安装、配置、运行、测试以及开机自启动、定期自动更新订阅功能的操作文档，希望对你有所帮助</a></p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css"></body></html>
     
     </div>
     

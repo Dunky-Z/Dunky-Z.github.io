@@ -125,6 +125,330 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2022/07/19/SPI%E5%8D%8F%E8%AE%AE/" itemprop="url">SPI 协议</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-07-19T06:23:40.000Z" itemprop="datePublished">7月 19 2022</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/Embedded-Development/">Embedded Development</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            14 分钟 读完 (约 2059 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h1 id="SPI-概述"><a href="#SPI-概述" class="headerlink" title="SPI 概述"></a>SPI 概述</h1><p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png"></p>
+<p>4 线制 SPI 四个信号：</p>
+<ul>
+<li>SCLK：串行时钟信号，由主设备产生，用于同步数据传输。</li>
+<li>CS：片选信号，由主设备产生，用于选择从设备。</li>
+<li>MOSI：主设备输出，从设备输入，用于主设备向从设备传输数据。</li>
+<li>MISO：主设备输入，从设备输出，用于从设备向主设备传输数据。</li>
+</ul>
+<p>除了四线式 SPI 总线之外，还有三线式 SPI 总线和双线式 SPI 总线。 </p>
+<ul>
+<li><p>四线式 SPI 总线，也称为标准 SPI 总线，由 SCLK、MOSI、MISO 和 SS（Slave Select）四个信号线组成。其中，SCLK 是时钟信号线；MOSI 是主设备向从设备发送数据的信号线；MISO 是从设备向主设备发送数据的信号线；SS 是从设备的片选信号线，用于选择要通信的从设备。 </p>
+</li>
+<li><p>三线式 SPI 总线将 MOSI 和 MISO 合并为单一的信号线。这种 SPI 总线有一个专门的叫做 MOMI 的信号线，既可以作为主设备向从设备发送数据的信号线，又可以作为从设备向主设备发送数据的信号线。</p>
+</li>
+<li><p>双线式 SPI 总线（也称为 MICROWIRE 或 uWire），由一个串行数据线和一个时钟线组成。在这种 SPI 总线上，没有单独的片选信号线，而是使用一个帧选择控制位来选择相应的从设备。</p>
+</li>
+</ul>
+<blockquote>
+<p>他们传输速率有差别吗？<br>是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。<br>SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p>
+</blockquote>
+<h3 id="时钟极性和时钟相位"><a href="#时钟极性和时钟相位" class="headerlink" title="时钟极性和时钟相位"></a>时钟极性和时钟相位</h3><p>在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。</p>
+<table>
+<thead>
+<tr>
+<th align="center">SPI 模式</th>
+<th align="center">CPOL(Serial Clock Polarity)</th>
+<th align="center">CPHA(Serial Clock Phase)</th>
+<th align="center">空闲状态下的时钟极性</th>
+<th align="center">采样时的时钟相位</th>
+<th align="center">移位数据的时钟相位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">逻辑低电平</td>
+<td align="center">上升沿</td>
+<td align="center">下降沿</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">逻辑低电平</td>
+<td align="center">下降沿</td>
+<td align="center">上升沿</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">高电平</td>
+<td align="center">下降沿</td>
+<td align="center">上升沿</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">高电平</td>
+<td align="center">上升沿</td>
+<td align="center">下降沿</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p>
+</blockquote>
+<p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。"></p>
+<p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。"></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出"></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。"></p>
+<h1 id="多从机配置"><a href="#多从机配置" class="headerlink" title="多从机配置"></a>多从机配置</h1><h2 id="标准-SPI-模式"><a href="#标准-SPI-模式" class="headerlink" title="标准 SPI 模式"></a>标准 SPI 模式</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png"></p>
+<p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p>
+<p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p>
+<h2 id="菊花链模式"><a href="#菊花链模式" class="headerlink" title="菊花链模式"></a>菊花链模式</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png"></p>
+<p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p>
+<p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png"></p>
+<h1 id="SPI-实现"><a href="#SPI-实现" class="headerlink" title="SPI 实现"></a>SPI 实现</h1><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a target="_blank" rel="noopener" href="https://www.analog.com/cn/analog-dialogue/articles/introduction-to-spi-interface.html">SPI 接口简介 | 亚德诺半导体</a></p>
+<p><a target="_blank" rel="noopener" href="https://jia.je/hardware/2023/04/26/spi/#sd-%E5%8D%A1">SPI 协议 - 杰哥的{运维，编程，调板子}小笔记</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2022/07/17/%E7%90%86%E8%A7%A3%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/" itemprop="url">理解虚拟内存</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-07-17T13:45:20.000Z" itemprop="datePublished">7月 17 2022</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            38 分钟 读完 (约 5728 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="为什么需要虚拟内存？"><a href="#为什么需要虚拟内存？" class="headerlink" title="为什么需要虚拟内存？"></a>为什么需要虚拟内存？</h2><p>CPU 访问内存的最自然的方式就是使用物理地址，这种方式称为<strong>物理寻址</strong>。1，计算机中并不是只有一个程序在运行，如果它们都是用物理寻址的方式，那么所有程序必须在链接之前确定好自己所用到的内存范围，否则两个程序就可能会发生冲突。2，程序大于内存的问题早在上世纪六十年代就出现，后来出现了<strong>覆盖技术</strong>（Overlay），把程序分割成许多片段。程序开始执行时，将覆盖管理模块装入内存，该管理模块立即装入并运行覆盖 0。执行完成后，覆盖 0 通知管理模块装入覆盖 1，或者占用覆盖 0 的上方位置（如果有空间），或者占用覆盖 0（如果没有空间）。把一个大程序分割成小的、模块化的片段是非常费时和枯燥的，并且易于出错。很少程序员擅长使用覆盖技术。</p>
+<p>为了更加有效地管理内存并且少出错，现代系统提供了一种对主存的抽象概念，叫做<strong>虚拟内存</strong>(VM)。主要有三个功能：</p>
+<ul>
+<li>它将主存看成是一个存储在磁盘上的地址空间的高速缓存，在主存中只保存活动区域，并根据需要在磁盘和主存之间来回传送数据，通过这种方式，它<strong>高效地使用了主存</strong>。</li>
+<li>它为每个进程提供了一致的地址空间，从而<strong>简化了内存管理</strong>。</li>
+<li>它<strong>保护了每个进程</strong>的地址空间不被其他进程破坏。</li>
+</ul>
+<h2 id="什么是虚拟寻址？"><a href="#什么是虚拟寻址？" class="headerlink" title="什么是虚拟寻址？"></a>什么是虚拟寻址？</h2><p>如果主存被分为长度为$M$的单字节大小的数组，每个字节都对应一个物理地址，CPU 通过这个唯一的地址访问主存，这样的方式就是<strong>物理寻址</strong>。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png"><br>现代处理器使用<strong>虚拟寻址</strong>的方式。CPU 通过生成的<strong>虚拟地址</strong>来访问内存，这个地址在送到内存之前会被转换成<strong>物理地址</strong>。这个过程称为<strong>地址翻译</strong>。CPU 芯片上叫做<strong>内存管理单元</strong>（Memory Management Unit, MMU）的专用硬件，利用存放在主存中的<strong>查询表</strong>来动态翻译虚拟地址，该表的内容由操作系统管理。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png"></p>
+<h2 id="虚拟内存作为缓存的工具"><a href="#虚拟内存作为缓存的工具" class="headerlink" title="虚拟内存作为缓存的工具"></a>虚拟内存作为缓存的工具</h2><p>概念上而言，虚拟内存被组织成为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组，也就是<strong>字节数组</strong>。每个字节都有一个唯一的虚拟地址作为数组的索引。磁盘上活动的数组内容被缓存在主存中。在存储器结构中，较低层次上的磁盘的数据被分割成块，这些块作为和较高层次的主存之间的传输单元。<strong>主存作为虚拟内存的缓存</strong>。</p>
+<p>虚拟内存被分割为大小固定的块，这些块叫<strong>虚拟页</strong>（Virtual Page，VP），类似的物理内存也有<strong>物理页</strong>(Physical Page, PP)。虚拟页有三种不同的状态：</p>
+<ul>
+<li>未分配：VM 系统还未分配 (或者创建）的页。未分配的块没有任何数据和它们相关联，因此也就<strong>不占用任何磁盘空间</strong>。</li>
+<li>已缓存：当前已缓存在物理内存中的已分配页。</li>
+<li>未缓存：未缓存在物理内存中的已分配页。</li>
+</ul>
+<p>为了有助于清晰理解存储层次结构中不同的缓存概念，我们将使用术语<strong>SRAM</strong>缓存来表示位于 CPU 和主存之间的 Ll、L2 和 L3 <strong>高速缓存</strong>，并且用术语 <strong>DRAM</strong> 缓存来表示<strong>虚拟内存系统的缓存</strong>，它在主存中缓存虚拟页。</p>
+<p>在存储层次结构中，DRAM 缓存的位置对它的组织结构有很大的影响。回想一下，DRAM 比 SRAM 要慢大约 10 倍，而磁盘要比 DRAM 慢大约 100000 多倍。因此，<strong>DRAM 缓存中的不命中比起 SRAM 缓存中的不命中要昂贵得多</strong>。因此，与硬件对 SRAM 缓存相比，操作系统对 DRAM 缓存使用了更复杂精密的替换算法。（这些替换算法超出了我们的讨论范围）。最后，因为对磁盘的访问时间很长，<strong>DRAM 缓存总是使用写回，而不是直写</strong>。</p>
+<h3 id="页表"><a href="#页表" class="headerlink" title="页表"></a>页表</h3><p>虚拟内存系统可以完成以下这些功能，</p>
+<ul>
+<li>判定一个虚拟页是否缓存在 DRAM 中的某个地方；</li>
+<li>可以确定这个虚拟页存放在哪个物理页中；</li>
+<li>如果不命中，系统必须判断这个虚拟页存放在磁盘的哪个位置，在物理内存中选择一个牺牲页，并将虚拟页从磁盘复制到 DRAM 中，替换这个牺牲页。</li>
+</ul>
+<p>这些功能是由<strong>软硬件联合提供的</strong>，包括操作系统软件、MMU（内存管理单元）中的地址翻译硬件和一个<strong>存放在物理内存中叫做页表</strong>（page table）的数据结构。页表将虚拟页映射到物理页。每次地址翻译硬件将一个虚拟地址转换为物理地址时，都会读取页表。操作系统负责维护页表的内容，以及在磁盘与 DRAM 之间来回传送页。</p>
+<p>图 9-4 展示了一个页表的基本组织结构。页表就是一个页表条目（Page Table Entry，PTE）的数组。虚拟地址空间中的每个页在页表中一个固定偏移量处都有一个 PTE。</p>
+<p>PTE 由两部分组成：</p>
+<ul>
+<li>有效位：表明了该虚拟页当前是否被缓存在 DRAM 中；</li>
+<li>地址：表示 DRAM 中相应的物理页的起始位置，这个物理页中缓存了该虚拟页。</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png"></p>
+<h3 id="页命中与缺页"><a href="#页命中与缺页" class="headerlink" title="页命中与缺页"></a>页命中与缺页</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png">l</p>
+<p>当 CPU 访问已被缓存的地址时，就叫做<strong>页命中</strong>。如访问上图 VP2，虚拟地址索引到 PTE2，此时有效位为 1，地址翻译硬件就知道该地址被缓存了。</p>
+<p>当 CPU 访问未被缓存的地址时，会导致<strong>缺页</strong>。如访问上图的 VP3，虚拟地址索引到 PTE3，此时有效位为 0，地址翻译硬件就知道该地址未被缓存，需要从磁盘中读取。</p>
+<p>这时会触发一个<strong>缺页异常</strong>。<strong>缺页异常调用内核中的缺页异常处理程序</strong>，该程序会选择一个牺牲页，在此例中就是存放在 PP 3 中的 VP 4。如果 VP 4 已经被修改了，那么内核就会将它复制回磁盘。无论哪种情况，内核都会修改 VP 4 的页表条目，反映出 VP 4 不再缓存在主存中这一事实。</p>
+<p>接下来，内核从磁盘复制 VP 3 到内存中的 PP 3，更新 PTE 3，随后返回。当异常处理程序返回时，它会<strong>重新启动导致缺页的指令</strong>，该指令会把导致缺页的虚拟地址重发送到地址翻译硬件。但是现在，VP 3 已经缓存在主存中了，那么页命中也能由地址翻译硬件正常处理了。图 9-7 展示了在缺页之后我们的示例页表的状态。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png"></p>
+<p>在虚拟内存的习惯说法中，块被称为页。在磁盘和内存之间传送页的活动叫做<strong>交换</strong>（swapping）或者<strong>页面调度</strong>（paging）。页从磁盘换入（或者页面调入）DRAM 和从 DRAM 换出（或者页面调出）磁盘。一直等待，直到最后时刻，也就是当有不命中发生时，才换入页面的这种策略称为按需页面调度（demand paging）。</p>
+<h2 id="虚拟内存作为内存管理的工具"><a href="#虚拟内存作为内存管理的工具" class="headerlink" title="虚拟内存作为内存管理的工具"></a>虚拟内存作为内存管理的工具</h2><p>之前我们只讨论了一个页表的情况，但是实际上操作系统为<strong>每个进程都分配了一个独立的页表</strong>。多个虚拟页面可以映射到同一个共享物理页面上。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png"></p>
+<p>按需页面调度和独立的虚拟地址空间的结合，对系统中内存的使用和管理造成了深远的影响。特别地，VM 简化了链接和加载、代码和数据共享，以及应用程序的内存分配。</p>
+<ul>
+<li><strong>简化链接</strong>。独立的地址空间允许每个进程的内存映像使用相同的基本格式，而<strong>不管代码和数据实际存放在物理内存的何处</strong>。例如，一个给定的 Linux 系统上的每个进程都使用类似的内存格式。对于 64 位地址空间，代码段总是从虚拟地址 0x400000 开始。数据段跟在代码段之后，中间有一段符合要求的对齐空白。栈占据用户进程地址空间最高的部分，并向下生长。这样的一致性极大地简化了链接器的设计和实现，<strong>允许链接器生成完全链接的可执行文件，这些可执行文件是独立于物理内存中代码和数据的最终位置的</strong>。</li>
+<li><strong>简化加载</strong>。虚拟内存还使得容易向内存中加载可执行文件和共享对象文件。要把目标文件中 .text 和 .data 节加载到一个新创建的进程中，Linux 加载器为代码和数据段分配虚拟页，把它们标记为无效的（即未被缓存的），将页表条目指向目标文件中适当的位置。有趣的是，加载器从不从磁盘到内存实际复制任何数据。在每个页初次被引用时，要么是 CPU 取指令时引用的，要么是一条正在执行的指令引用一个内存位置时引用的，虚拟内存系统会按照需要自动地调入数据页。将一组连续的虚拟页映射到任意一个文件中的任意位置的表示法称作内存映射（memory mapping）。Linux 提供一个称为 mmap 的系统调用，允许应用程序自己做内存映射。</li>
+<li><strong>简化共享</strong>。独立地址空间为操作系统提供了一个管理用户进程和操作系统自身之间共享的一致机制。一般而言，每个进程都有自己私有的代码、数据、堆以及栈区域，是不和其他进程共享的。在这种情况中，操作系统创建页表，将相应的虚拟页映射到不连续的物理页面。</li>
+<li><strong>简化内存分配</strong>。虚拟内存为向用户进程提供一个简单的分配额外内存的机制。当一个运行在用户进程中的程序要求额外的堆空间时（如调用 malloc 的结果），<strong>操作系统分配一个适当数字（例如 k）个连续的虚拟内存页面，并且将它们映射到物理内存中任意位置的 k 个任意的物理页面</strong>。由于页表工作的方式，操作系统没有必要分配 k 个连续的物理内存页面。<strong>页面可以随机地分散在物理内存中</strong>。</li>
+</ul>
+<h2 id="虚拟内存作为内存保护的工具"><a href="#虚拟内存作为内存保护的工具" class="headerlink" title="虚拟内存作为内存保护的工具"></a>虚拟内存作为内存保护的工具</h2><p>操作系统中的用户程序不应该修改只读的代码段，也不应该读取或者修改内核中的代码和数据结构或者访问私有的以及其他的进程的内存，如果无法对用户进程的内存访问进行限制，攻击者就可以访问和修改其他进程的内存影响系统的安全。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png"></p>
+<p>通过在页表中添加页面的保护属性，可以让操作系统在页面被访问时进行检查，如果页面被保护为只读，则操作系统会报错。</p>
+<p>在图 9-10 这个示例中，每个 PTE 中已经添加了三个许可位。SUP 位表示进程是否必须运行在内核（超级用户）模式下才能访问该页。运行在内核模式中的进程可以访问任何页面，但是运行在用户模式中的进程只允许访问那些 SUP 为 0 的页面。READ 位和 WRITE 位控制对页面的读和写访问。例如，如果进程 i 运行在用户模式下，那么它有读 VP 0 和读写 VP 1 的权限。然而，不允许它访问 VP 2。</p>
+<p>如果一条指令违反了这些许可条件，那么 CPU 就触发一个一般保护故障，将控制传递给一个内核中的异常处理程序。Linux shell 一般将这种异常报告为<strong>段错误</strong>（segmentation fault）。</p>
+<h2 id="地址翻译"><a href="#地址翻译" class="headerlink" title="地址翻译"></a>地址翻译</h2><p>基本参数</p>
+<table>
+<thead>
+<tr>
+<th align="left">符号</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">$$\small N=2^n$$</td>
+<td align="left">虚拟地址空间中的地址数量</td>
+</tr>
+<tr>
+<td align="left">$$\small M=2^m$$</td>
+<td align="left">物理地址空间中的地址数量</td>
+</tr>
+<tr>
+<td align="left">$$\small P=2^p$$</td>
+<td align="left">页的大小（字节）</td>
+</tr>
+</tbody></table>
+<p>虚拟地址（VA）的组成部分</p>
+<table>
+<thead>
+<tr>
+<th align="left">符号</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">VPO</td>
+<td align="left">虚拟页面偏移量（字节）</td>
+</tr>
+<tr>
+<td align="left">VPN</td>
+<td align="left">虚拟页号</td>
+</tr>
+<tr>
+<td align="left">TLBI</td>
+<td align="left">TLB 索引</td>
+</tr>
+<tr>
+<td align="left">TLBT</td>
+<td align="left">TLB 标记</td>
+</tr>
+</tbody></table>
+<p>物理地址（PA）的组成部分</p>
+<table>
+<thead>
+<tr>
+<th align="left">符号</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PPO</td>
+<td align="left">物理页面偏移量（字节）</td>
+</tr>
+<tr>
+<td align="left">PPN</td>
+<td align="left">物理页号</td>
+</tr>
+<tr>
+<td align="left">CO</td>
+<td align="left">缓冲块内的字节偏移量</td>
+</tr>
+<tr>
+<td align="left">CI</td>
+<td align="left">高速缓存索引</td>
+</tr>
+<tr>
+<td align="left">CT</td>
+<td align="left">高速缓存标记</td>
+</tr>
+</tbody></table>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png"></p>
+<p>图 9-12 展示了 MMU 如何利用页表来实现地址翻译。CPU 中的一个控制寄存器，<strong>页表基址寄存器</strong>（Page Table Base Register，PTBR）指向当前页表。$n$ 位的虚拟地址包含两个部分：一个 $p$ 位的<strong>虚拟页面偏移</strong>（Virtual Page Offset，VPO）和一个$\small (n-p)$位的<strong>虚拟页号</strong>（Virtual Page Number，VPN）。MMU 利用 VPN 来选择适当的 PTE。例如，VPN 0 选择 PTE 0，VPN 1 选择 PTE 1，以此类推。将页表条目中<strong>物理页号</strong>（Physical Page Number，PPN）和虚拟地址中的 VP。串联起来，就得到相应的物理地址。注意，因为物理和虚拟页面都是 P 字节的，所以<strong>物理页面偏移（Physical Page Offset，PPO）和 VPO 是相同的</strong>。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png"></p>
+<p>图 9-13a 展示了当页面命中时，CPU 硬件执行的步骤。</p>
+<ul>
+<li>第 1 步：处理器生成一个<br>虚拟地址，并把它传送给 MMU。</li>
+<li>第 2 步：MMU 生成 PTE 地址，并从高速缓存/主存请求得到它。</li>
+<li>第 3 步：高速缓存/主存向 MMU 返回 PTE。</li>
+<li>第 4 步：MMU 构造物理地址，并把它传送给高速缓存/主存。</li>
+<li>第 5 步：高速缓存/主存返回所请求的数据字给处理器。</li>
+</ul>
+<p>页面命中完全是由硬件来处理的，与之不同的是，处理缺页要求硬件和操作系统内核协作完成，如图 9-13b 所示。</p>
+<ul>
+<li>第 1 - 3 步：和图 9-13a 中的第 1 步到第 3 步相同。</li>
+<li>第 4 步：PTE 中的有效位是零，所以 MMU 触发了一次异常，传递 CPU 中的控制到操作系统内核中的缺页异常处理程序。</li>
+<li>第 5 步：缺页处理程序确定出物理内存中的牺牲页，如果这个页面已经被修改了，则把它换出到磁盘。</li>
+<li>第 6 步：缺页处理程序页面调入新的页面，并更新内存中的 PTE。</li>
+<li>第 7 步：缺页处理程序返回到原来的进程，再次执行导致缺页的指令。CPU 将引起缺页的虚拟地址重新发送给 MMU。因为虚拟页面现在缓存在物理内存中，所以就会命中，在 MMU 执行了图 9-13b 中的步骤之后，主存就会将所请求字返回给处理器。</li>
+</ul>
+<h3 id="利用-TLB-加速地址翻译"><a href="#利用-TLB-加速地址翻译" class="headerlink" title="利用 TLB 加速地址翻译"></a>利用 TLB 加速地址翻译</h3><p>每次 CPU 访问一个虚拟地址，MMU 就必须查找 PTE，以便将虚拟地址翻译为物理地址。在最糟糕的情况下，这会要求从内存多取一次数据，代价是几十到几百个周期。如果 PTE 碰巧缓存在 L1 中，那么开销就下降到 1 个或 2 个周期。为了消除这样的开销，在 MMU 中包括了一个关于 PTE 的小的缓存，称为<strong>翻译后备缓冲器</strong>（Translation Lookaside Buffer，TLB）。</p>
+<p>TLB 是一个小的、虚拟寻址的缓存，其中<strong>每一行都保存着一个由单个 PTE 组成的块</strong>。TLB 通常有高度的相联度。如图 9-15 所示，用于组选择和行匹配的索引和标记字段是从虚拟地址中的虚拟页号中提取出来的。如果 TLB 有$\small T = 2^t$个组，那么 <strong>TLB 索引</strong>（TLBI）是由 VPN 的 $t$ 个最低位组成的，而 <strong>TLB 标记</strong>（TLBT）是由 VPN 中剩余的位组成的。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png"></p>
+<p>图 9-16a 展示了当 TLB 命中时（通常情况）所包括的步骤。这里的关键点是，所有的地址翻译步骤都是在芯片上的 MMU 中执行的，因此非常快。</p>
+<ul>
+<li>第 1 步：CPU 产生一个虚拟地址。</li>
+<li>第 2 - 3 步：MMU 从 TLB 中取出相应的 PTE。</li>
+<li>第 4 步：MMU 将这个虚拟地址翻译成一个物理地址，并且将它发送到高速缓存/主存。</li>
+<li>第 5 步：高速缓存/主存将所请求的数据字返回给 CPU。</li>
+</ul>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png"></p>
+<p>当 TLB 不命中时，MMU 必须从 L1 缓存中取出相应的 PTE，如图 9-16b 所示。新取出的 PTE 存放在 TLB 中，可能会覆盖一个已经存在的条目。</p>
+<h3 id="多级页表"><a href="#多级页表" class="headerlink" title="多级页表"></a>多级页表</h3><p>32 位环境下，虚拟地址空间共 4GB。如果分成 4KB 一个页，那就是 1M 个页。每个页表项需要 4 个字节来存储，那么整个 4GB 空间的映射就需要 4MB 的内存来存储映射表。如果每个进程都有自己的映射表，100 个进程就需要 400MB 的内存。对于内核来讲，有点大了。</p>
+<p>页表中所有页表项必须提前建好，并且要求是连续的。如果不连续，就没有办法通过虚拟地址里面的页号找到对应的页表项了。</p>
+<p>那怎么办呢？我们可以试着将页表再分页，4G 的空间需要 4M 的页表来存储映射。我们把这 4M 分成 1K（1024）个 4K，每个 4K 又能放在一页里面，这样 1K 个 4K 就是 1K 个页，这 1K 个页也需要一个表进行管理，我们称为页目录表，这个页目录表里面有 1K 项，每项 4 个字节，页目录表大小也是 4K。</p>
+<p>页目录有 1K 项，用 10 位就可以表示访问页目录的哪一项。这一项其实对应的是一整页的页表项，也即 4K 的页表项。每个页表项也是 4 个字节，因而一整页的页表项是 1K 个。再用 10 位就可以表示访问页表项的哪一项，页表项中的一项对应的就是一个页，是存放数据的页，这个页的大小是 4K，用 12 位可以定位这个页内的任何一个位置。</p>
+<p>这样加起来正好 32 位，也就是用前 10 位定位到页目录表中的一项。将这一项对应的页表取出来共 1k 项，再用中间 10 位定位到页表中的一项，将这一项对应的存放数据的页取出来，再用最后 12 位定位到页中的具体位置访问数据。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png"></p>
+<p>你可能会问，如果这样的话，映射 4GB 地址空间就需要 4MB+4KB 的内存，这样不是更大 了吗？当然如果页是满的，当时是更大了，但是，我们往往不会为一个进程分配那么多内 存。<br>比如说，上面图中，我们假设只给这个进程分配了一个数据页。如果只使用页表，也需要完 整的 1M 个页表项共 4M 的内存，但是如果使用了页目录，页目录需要 1K 个全部分配，占用内存 4K，但是里面只有一项使用了。到了页表项，只需要分配能够管理那个数据页的页表项页就可以了，也就是说，最多 4K，这样内存就节省多了</p>
+<p>当然对于 64 位的系统，两级肯定不够了，就变成了四级目录，分别是全局页目录项 PGD（Page Global Directory）、上层页目录项 PUD（Page Upper Directory）、中间<br>页目录项 PMD（Page Middle Directory）和页表项 PTE（Page Table Entry）。也就是一级页表，二级页表，三级页表，四级页表。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png"></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2022/07/16/C%E8%AF%AD%E8%A8%80getopt-%E5%87%BD%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/" itemprop="url">C 语言 getopt() 函数的用法</a>
         
     </h1>
@@ -761,179 +1085,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/07/07/ZH-CS%E5%8F%AF%E8%A7%86%E5%8C%96-%E5%B8%B8%E7%94%A8%E7%9A%84Git%E5%91%BD%E4%BB%A4/" itemprop="url">ZH-CS 可视化 - 常用的 Git 命令</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-07-07T08:20:48.000Z" itemprop="datePublished">7月 7 2022</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            20 分钟 读完 (约 2942 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h1 id="CS-可视化-常用的-Git-命令"><a href="#CS-可视化-常用的-Git-命令" class="headerlink" title="CS 可视化 - 常用的 Git 命令"></a>CS 可视化 - 常用的 Git 命令</h1><blockquote>
-<p>Author：Lydia Hallie<br>译：<a target="_blank" rel="noopener" href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p>
-</blockquote>
-<p>尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在<code>master</code>分支执行<code>hard reset</code>、<code>force push</code>到 <code>origin</code>、在<code>.git</code>文件夹执行<code>rimraf</code>的时候，为什么我的同事都哭了？</p>
-<p>我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！</p>
-<h2 id="Merging"><a href="#Merging" class="headerlink" title="Merging"></a>Merging</h2><p>拥有多个分支非常方便，可以将新更改彼此分开，并确保您不会意外地将未经批准或损坏的更改推送到生产环境。一旦更改获得批准，我们希望在我们的生产分支中获得这些更改！</p>
-<p>将更改从一个分支转移到另一个分支的一种方法是执行 <code>git merge</code>！Git 可以执行两种类型的合并：<code>fast-forward</code> 或​​ <code>no-fast-forward</code>。</p>
-<p>现在这可能没有多大意义，所以让我们看看差异！</p>
-<h3 id="Fast-forward-ff"><a href="#Fast-forward-ff" class="headerlink" title="Fast-forward (--ff)"></a>Fast-forward (<code>--ff</code>)</h3><p>如果当前分支与即将合并过来的分支相比，没有额外的提交，这种就是<code>fast-forward</code>合并。Git 很会偷懒，它会首先尝试最简单的方案，即<code>fast-forward</code>。这种合并方式不会创建新的提交，只是把另一个分支的提交记录直接合并到当前分支。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif"></p>
-<p>完美的！我们现在可以在 <code>master</code> 分支上使用在 <code>dev</code> 分支上所做的所有更改。那么，<code>no-fast-forward</code> 到底是什么？</p>
-<h3 id="No-fast-foward-no-ff"><a href="#No-fast-foward-no-ff" class="headerlink" title="No-fast-foward (--no-ff)"></a>No-fast-foward (<code>--no-ff</code>)</h3><p>如果与您要合并的分支相比，您当前的分支没有任何额外的提交，那就太好了，但不幸的是，这种情况很少见！如果我们在当前分支上提交了我们想要合并的分支没有的更改，Git 将执行 <code>no-fast-forward</code> 合并。</p>
-<p>使用 <code>no-fast-forward</code> 合并，Git 在活动分支上创建一个新的<strong>合并提交</strong>。提交的父提交指向活动分支和我们要合并的分支！</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif"></p>
-<p>没什么大不了的，完美的合并！ <code>master</code> 分支现在包含我们在 <code>dev</code> 分支上所做的所有更改。</p>
-<h3 id="Merge-Conflicts"><a href="#Merge-Conflicts" class="headerlink" title="Merge Conflicts"></a>Merge Conflicts</h3><p>尽管 Git 擅长决定如何合并分支和向文件添加更改，但它不能总是自己做出这个决定。当我们尝试合并的两个分支在同一个文件的同一行上发生更改时，可能会发生这种情况，或者如果一个分支删除了另一个分支修改的文件，等等。</p>
-<p>在这种情况下，Git 会要求您帮助决定我们要保留两个选项中的哪一个！假设在两个分支上，我们编辑了 <code>README.md</code> 中的第一行。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png"></p>
-<p>如果我们想将 <code>dev</code> 合并到 <code>master</code> 中，这将导致合并冲突：您希望标题是 <code>Hello!</code> 还是 <code>Hey!</code>？</p>
-<p>当试图合并分支时，Git 会告诉你冲突发生在哪里。我们可以手动删除不想保留的更改，保存更改，再次添加更改的文件，然后提交更改</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif"></p>
-<p>耶！尽管合并冲突通常很烦人，但它完全有道理：Git 不应该自己决定选择哪一个更改。</p>
-<h2 id="Rebasing"><a href="#Rebasing" class="headerlink" title="Rebasing"></a>Rebasing</h2><p>我们刚刚看到了如何通过执行 <code>git merge</code> 将更改从一个分支应用到另一个分支。另一种将更改从一个分支添加到另一个的方法是执行<code>git rebase</code>。</p>
-<p><code>git rebase</code> <em>复制</em>当前分支的提交，并将这些复制的提交放在指定分支的顶部。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif"></p>
-<p>完美，我们现在可以在 <code>dev</code> 分支上使用在 <code>master</code> 分支上所做的所有更改！</p>
-<p>与合并相比，一个很大的区别是 Git 不会尝试找出要保留和不保留的文件。我们正在变基的分支总是有我们想要保留的最新更改！通过这种方式，您不会遇到任何合并冲突，并保持良好的线性 Git 历史记录。</p>
-<p>这个例子展示了基于 <code>master</code> 分支的变基。然而，在更大的项目中，您通常不想这样做。 <code>git rebase</code> <strong>改变了项目的历史</strong>，因为为复制的提交创建了新的哈希！</p>
-<p>每当您在功能分支上工作并且主分支已更新时，重新定基都很棒。您可以获得分支上的所有更新，这将防止未来的合并冲突！</p>
-<h3 id="Interactive-Rebase"><a href="#Interactive-Rebase" class="headerlink" title="Interactive Rebase"></a>Interactive Rebase</h3><p>在重新提交提交之前，我们可以修改它们！我们可以使用 <em>interactive rebase</em> 来做到这一点。交互式变基对于您当前正在处理的分支也很有用，并且想要修改一些提交。</p>
-<p>我们可以对我们正在变基的提交执行 6 项操作：</p>
-<ul>
-<li><code>reword</code>: Change the commit message</li>
-<li><code>edit</code>: Amend this commit</li>
-<li><code>squash</code>: Meld commit into the previous commit</li>
-<li><code>fixup</code>: Meld commit into the previous commit, without keeping the commit’s log message</li>
-<li><code>exec</code>: Run a command on each commit we want to rebase</li>
-<li><code>drop</code>: Remove the commit</li>
-</ul>
-<p>惊人的！这样，我们可以完全控制我们的提交。如果我们想删除一个提交，我们可以直接 <code>drop</code> 它。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif"></p>
-<p>或者，如果我们想将多个提交压缩在一起以获得更清晰的历史记录，没问题！</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif"></p>
-<p>交互式变基使您可以对尝试变基的提交进行大量控制，即使在当前活动分支上也是如此！</p>
-<h2 id="Resetting"><a href="#Resetting" class="headerlink" title="Resetting"></a>Resetting</h2><p>我们可能会提交我们以后不想要的更改。也许它是一个<code>WIP</code>提交，或者是一个引入错误的提交！在这种情况下，我们可以执行 <code>git reset</code>。</p>
-<p><code>git reset</code> 会删除所有当前暂存的文件，并让我们控制 <code>HEAD</code> 应该指向的位置。</p>
-<h3 id="Soft-reset"><a href="#Soft-reset" class="headerlink" title="Soft reset"></a>Soft reset</h3><p><em>软重置</em>将 <code>HEAD</code> 移动到指定的提交（或提交的索引与 <code>HEAD</code> 相比），而不会消除随后在提交中引入的更改！</p>
-<p>假设我们不想保留添加了<code>style.css</code>文件的提交<code>9e78i</code>，也不想保留添加了<code>index.js</code>文件的提交<code>035cc</code>。但是，我们确实希望保留新添加的 <code>style.css</code> 和 <code>index.js</code> 文件！软重置的完美用例。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif"></p>
-<p>输入 <code>git status</code> 时，您会看到我们仍然可以访问对先前提交所做的所有更改。这很棒，因为这意味着我们可以修复这些文件的内容并在以后再次提交它们！</p>
-<h3 id="Hard-reset"><a href="#Hard-reset" class="headerlink" title="Hard reset"></a>Hard reset</h3><p>有时，我们不想保留某些提交引入的更改。与软重置不同，我们不再需要访问它们。Git 应该简单地将其状态重置回指定提交时的状态：这甚至包括工作目录和暂存文件中的更改！</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif"></p>
-<p>Git 丢弃了在 <code>9e78i</code> 和 <code>035cc</code> 上引入的更改，并将其状态重置为提交 <code>ec5be</code> 时的状态。</p>
-<h3 id="Reverting"><a href="#Reverting" class="headerlink" title="Reverting"></a>Reverting</h3><p>撤消更改的另一种方法是执行<code>git revert</code>。通过恢复某个提交，我们创建了一个包含恢复的更改的新提交！</p>
-<p>假设 <code>ec5be</code> 添加了一个 <code>index.js</code> 文件。后来，我们实际上意识到我们不再希望这次提交引入的这种变化！让我们恢复 <code>ec5be</code> 提交。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif"></p>
-<p>完美的！提交<code>9e78i</code>恢复了由<code>ec5be</code>提交引入的更改。执行 <code>git revert</code> 非常有用，可以撤消某个提交，而无需修改分支的历史记录。</p>
-<h2 id="Cherry-picking"><a href="#Cherry-picking" class="headerlink" title="Cherry-picking"></a>Cherry-picking</h2><p>当某个分支包含在活动分支上引入了我们需要的更改的提交时，我们可以 <code>cherry-pick</code> 该命令！通过 <code>cherry-pick</code> 提交，我们在活动分支上创建了一个新提交，其中包含由 <code>cherry-pick</code> 提交所引入的更改。</p>
-<p>假设 <code>dev</code> 分支上的提交 <code>76d12</code> 添加了我们想要在 <code>master</code> 分支中的 <code>index.js</code> 文件的更改。我们不想要<em>整个</em>，我们只关心这一次提交！</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif"></p>
-<p>很酷，<code>master</code> 分支现在包含了 <code>76d12</code> 引入的更改！</p>
-<h2 id="Fetching"><a href="#Fetching" class="headerlink" title="Fetching"></a>Fetching</h2><p>如果我们有一个远程 Git 分支，例如 GitHub 上的一个分支，则可能会发生远程分支具有当前分支没有的提交！也许另一个分支被合并了，你的同事推送了一个快速修复，等等。</p>
-<p>我们可以通过在远程分支上执行 <code>git fetch</code> 在本地获取这些更改！它不会以任何方式影响您的本地分支：<code>fetch</code> 只是下载新数据。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif"></p>
-<p>我们现在可以看到自上次推送以来所做的所有更改！既然我们在本地拥有新数据，我们就可以决定要如何处理这些数据。</p>
-<h2 id="Pulling"><a href="#Pulling" class="headerlink" title="Pulling"></a>Pulling</h2><p>虽然 <code>git fetch</code> 对于获取分支的远程信息非常有用，但我们也可以执行 <code>git pull</code>。 <code>git pull</code> 实际上是两个命令合二为一：<code>git fetch</code> 和 <code>git merge</code>。当我们从源中提取更改时，我们首先像使用 <code>git fetch</code> 一样获取所有数据，之后最新的更改会自动合并到本地分支中。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif"></p>
-<p>太棒了，我们现在与远程分支完美同步，并拥有所有最新更改！</p>
-<h2 id="Reflog"><a href="#Reflog" class="headerlink" title="Reflog"></a>Reflog</h2><p>每个人都会犯错，这完全没关系！有时你可能会觉得你把你的 <code>git repo</code> 搞砸了，以至于你只想完全删除它。</p>
-<p><code>git reflog</code> 是一个非常有用的命令，用于显示所有已采取的操作的日志！这包括合并、重置、恢复：基本上是对分支的任何更改。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif"></p>
-<p>如果您犯了错误，您可以根据 <code>reflog</code> 提供给我们的信息通过重置 <code>HEAD</code> 轻松地重做此操作！</p>
-<p>假设我们实际上并不想合并 <code>origin</code> 分支。当我们执行 <code>git reflog</code> 命令时，我们看到合并前 repo 的状态是在 <code>HEAD@&#123;1&#125;</code>。让我们执行 <code>git reset</code> 将 HEAD 指向它在 <code>HEAD@&#123;1&#125;</code> 上的位置！</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif"></p>
-<p>我们可以看到最新的 action 已经推送到<code>reflog</code>了！</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/06/30/C%E8%AF%AD%E8%A8%80%E6%95%B0%E7%BB%84-%E7%BB%93%E6%9E%84%E4%BD%93-%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E7%BB%84-%E8%81%94%E5%90%88%E4%BD%93%E5%88%9D%E5%A7%8B%E5%8C%96/" itemprop="url">C语言数组/结构体/结构体数组/联合体初始化</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-06-30T07:30:41.000Z" itemprop="datePublished">6月 30 2022</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            3 分钟 读完 (约 437 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="数组初始化"><a href="#数组初始化" class="headerlink" title="数组初始化"></a>数组初始化</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, [<span class="hljs-number">1</span>]=<span class="hljs-number">6</span>, [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, [<span class="hljs-number">4</span>]=<span class="hljs-number">11</span> &#125;; 或<br><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, <span class="hljs-number">6</span>, [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, <span class="hljs-number">11</span> &#125;; 或<br><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, <span class="hljs-number">11</span>, [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, <span class="hljs-number">6</span> &#125;; (指定顺序可变)<br>均等效于：<span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123;<span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">0</span>, <span class="hljs-number">10</span>, <span class="hljs-number">11</span>, <span class="hljs-number">0</span>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>Note:</p>
-<ol>
-<li>若在某个指定初始化项目后跟有不至一个值，如<code>[3]=10,11</code>。则多出的数值用于对后续的数组元素进行初始化，即数值 11 用来初始化 arr[4]。</li>
-<li>C 数组初始化一个或多个元素后，未初始化的元素将被自动地初始化为 0 或 NULL(针对指针变量)。未经过任何初始化的数组，所有元素的值都是不确定的。</li>
-</ol>
-<p>GNU C 还支持<code>[first … last]=value</code>(<code>…</code><strong>两侧有空格</strong>) 的形式，将该范围内的若干元素初始化为相同值。如：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">int</span> arr[]=&#123; [<span class="hljs-number">0</span> ... <span class="hljs-number">3</span>]=<span class="hljs-number">1</span>, [<span class="hljs-number">4</span> ... <span class="hljs-number">5</span>]=<span class="hljs-number">2</span>, [<span class="hljs-number">6</span> ... <span class="hljs-number">9</span>] =<span class="hljs-number">3</span>&#125;; 或<br><span class="hljs-keyword">int</span> arr[]=&#123; [<span class="hljs-number">0</span> ... <span class="hljs-number">3</span>]=<span class="hljs-number">1</span>, [<span class="hljs-number">4</span> ... <span class="hljs-number">5</span>]=<span class="hljs-number">2</span>, [<span class="hljs-number">6</span> ... <span class="hljs-number">8</span>] =<span class="hljs-number">3</span>, [<span class="hljs-number">9</span>] =<span class="hljs-number">3</span>&#125;;<br>均等效于：<span class="hljs-keyword">int</span> arr[<span class="hljs-number">10</span>] = &#123;<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>&#125;;<br></code></pre></td></tr></table></figure>
-
-<h2 id="结构体初始化"><a href="#结构体初始化" class="headerlink" title="结构体初始化"></a>结构体初始化</h2><p>对于结构体</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span>&#123;</span> <span class="hljs-keyword">int</span> a; <span class="hljs-keyword">int</span> b; &#125;; 或<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span>&#123;</span> <span class="hljs-keyword">int</span> a, b; &#125;;<br></code></pre></td></tr></table></figure>
-
-<p>有以下几种初始化方式：<br>用<code>.fieldname=指定待初始化成员名</code>(成员初始化顺序可变)，<strong>推荐使用的方式</strong>，该方式初始化时不必严格按照定义时的顺序，灵活性很高。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123;<br>    .a = <span class="hljs-number">1</span>,<br>    .b = <span class="hljs-number">2</span><br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>用<code>fieldname:指定待初始化成员名</code>(成员初始化顺序可变)，GCC 2.5 已废除，但仍接受</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123;<br>    a : <span class="hljs-number">1</span>,<br>    b : <span class="hljs-number">2</span><br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>用初始化列表初始化</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123; <span class="hljs-number">1</span>, <span class="hljs-number">2</span> &#125;;<br></code></pre></td></tr></table></figure>
-
-<h2 id="结构体数组初始化"><a href="#结构体数组初始化" class="headerlink" title="结构体数组初始化"></a>结构体数组初始化</h2><p>方法一：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">ptStct</span>[10] =</span> &#123;<br>     [<span class="hljs-number">2</span>].b = <span class="hljs-number">0x2B</span>, [<span class="hljs-number">2</span>].a = <span class="hljs-number">0x2A</span>,<br>     [<span class="hljs-number">0</span>].a = <span class="hljs-number">0x0A</span> &#125;;<br></code></pre></td></tr></table></figure>
-
-<p>方法二：该方法可以用于清除结构体。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-built_in">memset</span>(ptStct, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(struct Structure) * <span class="hljs-number">10</span>);<br></code></pre></td></tr></table></figure>
-
-<h2 id="联合体初始化"><a href="#联合体初始化" class="headerlink" title="联合体初始化"></a>联合体初始化</h2><p>可用<code>.fieldname</code>(或已废弃的<code>fieldname:</code>) 指示符来指定使用联合体的哪个元素，如：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">UnionT</span> &#123;</span> <span class="hljs-keyword">int</span> i; <span class="hljs-keyword">double</span> d; &#125;;<br><span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">UnionT</span> <span class="hljs-title">tUnion</span> =</span> &#123; .d = <span class="hljs-number">4</span> &#125;;<br></code></pre></td></tr></table></figure>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -957,7 +1108,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>

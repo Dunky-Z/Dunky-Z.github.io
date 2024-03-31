@@ -125,6 +125,179 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2022/07/07/ZH-CS%E5%8F%AF%E8%A7%86%E5%8C%96-%E5%B8%B8%E7%94%A8%E7%9A%84Git%E5%91%BD%E4%BB%A4/" itemprop="url">ZH-CS 可视化 - 常用的 Git 命令</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-07-07T08:20:48.000Z" itemprop="datePublished">7月 7 2022</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            20 分钟 读完 (约 2942 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h1 id="CS-可视化-常用的-Git-命令"><a href="#CS-可视化-常用的-Git-命令" class="headerlink" title="CS 可视化 - 常用的 Git 命令"></a>CS 可视化 - 常用的 Git 命令</h1><blockquote>
+<p>Author：Lydia Hallie<br>译：<a target="_blank" rel="noopener" href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p>
+</blockquote>
+<p>尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在<code>master</code>分支执行<code>hard reset</code>、<code>force push</code>到 <code>origin</code>、在<code>.git</code>文件夹执行<code>rimraf</code>的时候，为什么我的同事都哭了？</p>
+<p>我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！</p>
+<h2 id="Merging"><a href="#Merging" class="headerlink" title="Merging"></a>Merging</h2><p>拥有多个分支非常方便，可以将新更改彼此分开，并确保您不会意外地将未经批准或损坏的更改推送到生产环境。一旦更改获得批准，我们希望在我们的生产分支中获得这些更改！</p>
+<p>将更改从一个分支转移到另一个分支的一种方法是执行 <code>git merge</code>！Git 可以执行两种类型的合并：<code>fast-forward</code> 或​​ <code>no-fast-forward</code>。</p>
+<p>现在这可能没有多大意义，所以让我们看看差异！</p>
+<h3 id="Fast-forward-ff"><a href="#Fast-forward-ff" class="headerlink" title="Fast-forward (--ff)"></a>Fast-forward (<code>--ff</code>)</h3><p>如果当前分支与即将合并过来的分支相比，没有额外的提交，这种就是<code>fast-forward</code>合并。Git 很会偷懒，它会首先尝试最简单的方案，即<code>fast-forward</code>。这种合并方式不会创建新的提交，只是把另一个分支的提交记录直接合并到当前分支。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif"></p>
+<p>完美的！我们现在可以在 <code>master</code> 分支上使用在 <code>dev</code> 分支上所做的所有更改。那么，<code>no-fast-forward</code> 到底是什么？</p>
+<h3 id="No-fast-foward-no-ff"><a href="#No-fast-foward-no-ff" class="headerlink" title="No-fast-foward (--no-ff)"></a>No-fast-foward (<code>--no-ff</code>)</h3><p>如果与您要合并的分支相比，您当前的分支没有任何额外的提交，那就太好了，但不幸的是，这种情况很少见！如果我们在当前分支上提交了我们想要合并的分支没有的更改，Git 将执行 <code>no-fast-forward</code> 合并。</p>
+<p>使用 <code>no-fast-forward</code> 合并，Git 在活动分支上创建一个新的<strong>合并提交</strong>。提交的父提交指向活动分支和我们要合并的分支！</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif"></p>
+<p>没什么大不了的，完美的合并！ <code>master</code> 分支现在包含我们在 <code>dev</code> 分支上所做的所有更改。</p>
+<h3 id="Merge-Conflicts"><a href="#Merge-Conflicts" class="headerlink" title="Merge Conflicts"></a>Merge Conflicts</h3><p>尽管 Git 擅长决定如何合并分支和向文件添加更改，但它不能总是自己做出这个决定。当我们尝试合并的两个分支在同一个文件的同一行上发生更改时，可能会发生这种情况，或者如果一个分支删除了另一个分支修改的文件，等等。</p>
+<p>在这种情况下，Git 会要求您帮助决定我们要保留两个选项中的哪一个！假设在两个分支上，我们编辑了 <code>README.md</code> 中的第一行。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png"></p>
+<p>如果我们想将 <code>dev</code> 合并到 <code>master</code> 中，这将导致合并冲突：您希望标题是 <code>Hello!</code> 还是 <code>Hey!</code>？</p>
+<p>当试图合并分支时，Git 会告诉你冲突发生在哪里。我们可以手动删除不想保留的更改，保存更改，再次添加更改的文件，然后提交更改</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif"></p>
+<p>耶！尽管合并冲突通常很烦人，但它完全有道理：Git 不应该自己决定选择哪一个更改。</p>
+<h2 id="Rebasing"><a href="#Rebasing" class="headerlink" title="Rebasing"></a>Rebasing</h2><p>我们刚刚看到了如何通过执行 <code>git merge</code> 将更改从一个分支应用到另一个分支。另一种将更改从一个分支添加到另一个的方法是执行<code>git rebase</code>。</p>
+<p><code>git rebase</code> <em>复制</em>当前分支的提交，并将这些复制的提交放在指定分支的顶部。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif"></p>
+<p>完美，我们现在可以在 <code>dev</code> 分支上使用在 <code>master</code> 分支上所做的所有更改！</p>
+<p>与合并相比，一个很大的区别是 Git 不会尝试找出要保留和不保留的文件。我们正在变基的分支总是有我们想要保留的最新更改！通过这种方式，您不会遇到任何合并冲突，并保持良好的线性 Git 历史记录。</p>
+<p>这个例子展示了基于 <code>master</code> 分支的变基。然而，在更大的项目中，您通常不想这样做。 <code>git rebase</code> <strong>改变了项目的历史</strong>，因为为复制的提交创建了新的哈希！</p>
+<p>每当您在功能分支上工作并且主分支已更新时，重新定基都很棒。您可以获得分支上的所有更新，这将防止未来的合并冲突！</p>
+<h3 id="Interactive-Rebase"><a href="#Interactive-Rebase" class="headerlink" title="Interactive Rebase"></a>Interactive Rebase</h3><p>在重新提交提交之前，我们可以修改它们！我们可以使用 <em>interactive rebase</em> 来做到这一点。交互式变基对于您当前正在处理的分支也很有用，并且想要修改一些提交。</p>
+<p>我们可以对我们正在变基的提交执行 6 项操作：</p>
+<ul>
+<li><code>reword</code>: Change the commit message</li>
+<li><code>edit</code>: Amend this commit</li>
+<li><code>squash</code>: Meld commit into the previous commit</li>
+<li><code>fixup</code>: Meld commit into the previous commit, without keeping the commit’s log message</li>
+<li><code>exec</code>: Run a command on each commit we want to rebase</li>
+<li><code>drop</code>: Remove the commit</li>
+</ul>
+<p>惊人的！这样，我们可以完全控制我们的提交。如果我们想删除一个提交，我们可以直接 <code>drop</code> 它。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif"></p>
+<p>或者，如果我们想将多个提交压缩在一起以获得更清晰的历史记录，没问题！</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif"></p>
+<p>交互式变基使您可以对尝试变基的提交进行大量控制，即使在当前活动分支上也是如此！</p>
+<h2 id="Resetting"><a href="#Resetting" class="headerlink" title="Resetting"></a>Resetting</h2><p>我们可能会提交我们以后不想要的更改。也许它是一个<code>WIP</code>提交，或者是一个引入错误的提交！在这种情况下，我们可以执行 <code>git reset</code>。</p>
+<p><code>git reset</code> 会删除所有当前暂存的文件，并让我们控制 <code>HEAD</code> 应该指向的位置。</p>
+<h3 id="Soft-reset"><a href="#Soft-reset" class="headerlink" title="Soft reset"></a>Soft reset</h3><p><em>软重置</em>将 <code>HEAD</code> 移动到指定的提交（或提交的索引与 <code>HEAD</code> 相比），而不会消除随后在提交中引入的更改！</p>
+<p>假设我们不想保留添加了<code>style.css</code>文件的提交<code>9e78i</code>，也不想保留添加了<code>index.js</code>文件的提交<code>035cc</code>。但是，我们确实希望保留新添加的 <code>style.css</code> 和 <code>index.js</code> 文件！软重置的完美用例。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif"></p>
+<p>输入 <code>git status</code> 时，您会看到我们仍然可以访问对先前提交所做的所有更改。这很棒，因为这意味着我们可以修复这些文件的内容并在以后再次提交它们！</p>
+<h3 id="Hard-reset"><a href="#Hard-reset" class="headerlink" title="Hard reset"></a>Hard reset</h3><p>有时，我们不想保留某些提交引入的更改。与软重置不同，我们不再需要访问它们。Git 应该简单地将其状态重置回指定提交时的状态：这甚至包括工作目录和暂存文件中的更改！</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif"></p>
+<p>Git 丢弃了在 <code>9e78i</code> 和 <code>035cc</code> 上引入的更改，并将其状态重置为提交 <code>ec5be</code> 时的状态。</p>
+<h3 id="Reverting"><a href="#Reverting" class="headerlink" title="Reverting"></a>Reverting</h3><p>撤消更改的另一种方法是执行<code>git revert</code>。通过恢复某个提交，我们创建了一个包含恢复的更改的新提交！</p>
+<p>假设 <code>ec5be</code> 添加了一个 <code>index.js</code> 文件。后来，我们实际上意识到我们不再希望这次提交引入的这种变化！让我们恢复 <code>ec5be</code> 提交。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif"></p>
+<p>完美的！提交<code>9e78i</code>恢复了由<code>ec5be</code>提交引入的更改。执行 <code>git revert</code> 非常有用，可以撤消某个提交，而无需修改分支的历史记录。</p>
+<h2 id="Cherry-picking"><a href="#Cherry-picking" class="headerlink" title="Cherry-picking"></a>Cherry-picking</h2><p>当某个分支包含在活动分支上引入了我们需要的更改的提交时，我们可以 <code>cherry-pick</code> 该命令！通过 <code>cherry-pick</code> 提交，我们在活动分支上创建了一个新提交，其中包含由 <code>cherry-pick</code> 提交所引入的更改。</p>
+<p>假设 <code>dev</code> 分支上的提交 <code>76d12</code> 添加了我们想要在 <code>master</code> 分支中的 <code>index.js</code> 文件的更改。我们不想要<em>整个</em>，我们只关心这一次提交！</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif"></p>
+<p>很酷，<code>master</code> 分支现在包含了 <code>76d12</code> 引入的更改！</p>
+<h2 id="Fetching"><a href="#Fetching" class="headerlink" title="Fetching"></a>Fetching</h2><p>如果我们有一个远程 Git 分支，例如 GitHub 上的一个分支，则可能会发生远程分支具有当前分支没有的提交！也许另一个分支被合并了，你的同事推送了一个快速修复，等等。</p>
+<p>我们可以通过在远程分支上执行 <code>git fetch</code> 在本地获取这些更改！它不会以任何方式影响您的本地分支：<code>fetch</code> 只是下载新数据。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif"></p>
+<p>我们现在可以看到自上次推送以来所做的所有更改！既然我们在本地拥有新数据，我们就可以决定要如何处理这些数据。</p>
+<h2 id="Pulling"><a href="#Pulling" class="headerlink" title="Pulling"></a>Pulling</h2><p>虽然 <code>git fetch</code> 对于获取分支的远程信息非常有用，但我们也可以执行 <code>git pull</code>。 <code>git pull</code> 实际上是两个命令合二为一：<code>git fetch</code> 和 <code>git merge</code>。当我们从源中提取更改时，我们首先像使用 <code>git fetch</code> 一样获取所有数据，之后最新的更改会自动合并到本地分支中。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif"></p>
+<p>太棒了，我们现在与远程分支完美同步，并拥有所有最新更改！</p>
+<h2 id="Reflog"><a href="#Reflog" class="headerlink" title="Reflog"></a>Reflog</h2><p>每个人都会犯错，这完全没关系！有时你可能会觉得你把你的 <code>git repo</code> 搞砸了，以至于你只想完全删除它。</p>
+<p><code>git reflog</code> 是一个非常有用的命令，用于显示所有已采取的操作的日志！这包括合并、重置、恢复：基本上是对分支的任何更改。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif"></p>
+<p>如果您犯了错误，您可以根据 <code>reflog</code> 提供给我们的信息通过重置 <code>HEAD</code> 轻松地重做此操作！</p>
+<p>假设我们实际上并不想合并 <code>origin</code> 分支。当我们执行 <code>git reflog</code> 命令时，我们看到合并前 repo 的状态是在 <code>HEAD@&#123;1&#125;</code>。让我们执行 <code>git reset</code> 将 HEAD 指向它在 <code>HEAD@&#123;1&#125;</code> 上的位置！</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif"></p>
+<p>我们可以看到最新的 action 已经推送到<code>reflog</code>了！</p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2022/06/30/C%E8%AF%AD%E8%A8%80%E6%95%B0%E7%BB%84-%E7%BB%93%E6%9E%84%E4%BD%93-%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E7%BB%84-%E8%81%94%E5%90%88%E4%BD%93%E5%88%9D%E5%A7%8B%E5%8C%96/" itemprop="url">C语言数组/结构体/结构体数组/联合体初始化</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-06-30T07:30:41.000Z" itemprop="datePublished">6月 30 2022</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            3 分钟 读完 (约 437 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="数组初始化"><a href="#数组初始化" class="headerlink" title="数组初始化"></a>数组初始化</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, [<span class="hljs-number">1</span>]=<span class="hljs-number">6</span>, [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, [<span class="hljs-number">4</span>]=<span class="hljs-number">11</span> &#125;; 或<br><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, <span class="hljs-number">6</span>, [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, <span class="hljs-number">11</span> &#125;; 或<br><span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123; [<span class="hljs-number">3</span>] =<span class="hljs-number">10</span>, <span class="hljs-number">11</span>, [<span class="hljs-number">0</span>]=<span class="hljs-number">5</span>, <span class="hljs-number">6</span> &#125;; (指定顺序可变)<br>均等效于：<span class="hljs-keyword">int</span> arr[<span class="hljs-number">6</span>] = &#123;<span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">0</span>, <span class="hljs-number">10</span>, <span class="hljs-number">11</span>, <span class="hljs-number">0</span>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>Note:</p>
+<ol>
+<li>若在某个指定初始化项目后跟有不至一个值，如<code>[3]=10,11</code>。则多出的数值用于对后续的数组元素进行初始化，即数值 11 用来初始化 arr[4]。</li>
+<li>C 数组初始化一个或多个元素后，未初始化的元素将被自动地初始化为 0 或 NULL(针对指针变量)。未经过任何初始化的数组，所有元素的值都是不确定的。</li>
+</ol>
+<p>GNU C 还支持<code>[first … last]=value</code>(<code>…</code><strong>两侧有空格</strong>) 的形式，将该范围内的若干元素初始化为相同值。如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">int</span> arr[]=&#123; [<span class="hljs-number">0</span> ... <span class="hljs-number">3</span>]=<span class="hljs-number">1</span>, [<span class="hljs-number">4</span> ... <span class="hljs-number">5</span>]=<span class="hljs-number">2</span>, [<span class="hljs-number">6</span> ... <span class="hljs-number">9</span>] =<span class="hljs-number">3</span>&#125;; 或<br><span class="hljs-keyword">int</span> arr[]=&#123; [<span class="hljs-number">0</span> ... <span class="hljs-number">3</span>]=<span class="hljs-number">1</span>, [<span class="hljs-number">4</span> ... <span class="hljs-number">5</span>]=<span class="hljs-number">2</span>, [<span class="hljs-number">6</span> ... <span class="hljs-number">8</span>] =<span class="hljs-number">3</span>, [<span class="hljs-number">9</span>] =<span class="hljs-number">3</span>&#125;;<br>均等效于：<span class="hljs-keyword">int</span> arr[<span class="hljs-number">10</span>] = &#123;<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="结构体初始化"><a href="#结构体初始化" class="headerlink" title="结构体初始化"></a>结构体初始化</h2><p>对于结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span>&#123;</span> <span class="hljs-keyword">int</span> a; <span class="hljs-keyword">int</span> b; &#125;; 或<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span>&#123;</span> <span class="hljs-keyword">int</span> a, b; &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>有以下几种初始化方式：<br>用<code>.fieldname=指定待初始化成员名</code>(成员初始化顺序可变)，<strong>推荐使用的方式</strong>，该方式初始化时不必严格按照定义时的顺序，灵活性很高。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123;<br>    .a = <span class="hljs-number">1</span>,<br>    .b = <span class="hljs-number">2</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>用<code>fieldname:指定待初始化成员名</code>(成员初始化顺序可变)，GCC 2.5 已废除，但仍接受</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123;<br>    a : <span class="hljs-number">1</span>,<br>    b : <span class="hljs-number">2</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>用初始化列表初始化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">tStct</span> =</span> &#123; <span class="hljs-number">1</span>, <span class="hljs-number">2</span> &#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="结构体数组初始化"><a href="#结构体数组初始化" class="headerlink" title="结构体数组初始化"></a>结构体数组初始化</h2><p>方法一：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Structure</span> <span class="hljs-title">ptStct</span>[10] =</span> &#123;<br>     [<span class="hljs-number">2</span>].b = <span class="hljs-number">0x2B</span>, [<span class="hljs-number">2</span>].a = <span class="hljs-number">0x2A</span>,<br>     [<span class="hljs-number">0</span>].a = <span class="hljs-number">0x0A</span> &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>方法二：该方法可以用于清除结构体。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-built_in">memset</span>(ptStct, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(struct Structure) * <span class="hljs-number">10</span>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="联合体初始化"><a href="#联合体初始化" class="headerlink" title="联合体初始化"></a>联合体初始化</h2><p>可用<code>.fieldname</code>(或已废弃的<code>fieldname:</code>) 指示符来指定使用联合体的哪个元素，如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">UnionT</span> &#123;</span> <span class="hljs-keyword">int</span> i; <span class="hljs-keyword">double</span> d; &#125;;<br><span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">UnionT</span> <span class="hljs-title">tUnion</span> =</span> &#123; .d = <span class="hljs-number">4</span> &#125;;<br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2022/06/09/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-watch%E5%91%A8%E6%9C%9F%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4/" itemprop="url">每天学命令-watch 周期执行命令</a>
         
     </h1>
@@ -1040,172 +1213,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/05/15/C%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA/" itemprop="url">C 语言实现简单有限状态机</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-05-15T04:41:30.000Z" itemprop="datePublished">5月 15 2022</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            8 分钟 读完 (约 1129 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>常说的状态机是有限状态机 FSM，是表示有限个状态以及在这些状态之间的转移和动作等行为的数学计算模型。<br>三个特征：</p>
-<ul>
-<li>状态总数（state）是有限的。</li>
-<li>任一时刻，只处在一种状态之中。</li>
-<li>某种条件下，会从一种状态转变（transition）到另一种状态。</li>
-</ul>
-<p>设计状态机的关键点：当前状态、外部输入、下一个状态。</p>
-<h2 id="状态机分类"><a href="#状态机分类" class="headerlink" title="状态机分类"></a>状态机分类</h2><h3 id="Moore-型状态机"><a href="#Moore-型状态机" class="headerlink" title="Moore 型状态机"></a>Moore 型状态机</h3><p>Moore 型状态机特点是：输出只与当前状态有关（与输入信号无关）。相对简单，考虑状态机的下一个状态时只需要考虑它的当前状态就行了。</p>
-<h3 id="Mealy-型状态机"><a href="#Mealy-型状态机" class="headerlink" title="Mealy 型状态机"></a>Mealy 型状态机</h3><p>Mealy 型状态机的特点是：输出不只和当前状态有关，还与输入信号有关。状态机接收到一个输入信号需要跳转到下一个状态时，状态机综合考虑 2 个条件（当前状态、输入值）后才决定跳转到哪个状态。</p>
-<h2 id="实现一个简单的状态机"><a href="#实现一个简单的状态机" class="headerlink" title="实现一个简单的状态机"></a>实现一个简单的状态机</h2><p>代码参考<a target="_blank" rel="noopener" href="https://github.com/AstarLight/FSM-framework">AstarLight/FSM-framework</a>。</p>
-<p>以小明的一天设计出一个状态机，下图为状态转移图：</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205151353618.png"></p>
-<p>首先，有限状态机的状态是有限的，我们可以定义一天中的状态：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">enum</span></span><br><span class="hljs-class">&#123;</span><br> GET_UP,<br> GO_TO_SCHOOL,<br> HAVE_LUNCH,<br> DO_HOMEWORK,<br> SLEEP,<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>状态机在没有事件的驱动下就是一潭死水，所以我们还需要定义出一些会发生的事件，去驱动状态机的运转：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">enum</span></span><br><span class="hljs-class">&#123;</span><br> EVENT1 = <span class="hljs-number">1</span>,<br> EVENT2,<br> EVENT3,<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>再定义一些在某个状态下需要处理的动作，也就是函数：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C"><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">GetUp</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-comment">// do something</span><br> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;xiao ming gets up!\n&quot;</span>);<br><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Go2School</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-comment">// do something</span><br> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;xiao ming goes to school!\n&quot;</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">HaveLunch</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-comment">// do something</span><br> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;xiao ming has lunch!\n&quot;</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">DoHomework</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-comment">// do something</span><br> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;xiao ming does homework!\n&quot;</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Go2Bed</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-comment">// do something</span><br> <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;xiao ming goes to bed!\n&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>定义一个状态表结构，用来表示一个状态机的状态：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">FsmTable_s</span></span><br><span class="hljs-class">&#123;</span><br> <span class="hljs-keyword">int</span> event;              <span class="hljs-comment">//事件</span><br> <span class="hljs-keyword">int</span> CurState;           <span class="hljs-comment">//当前状态</span><br> <span class="hljs-keyword">void</span> (*eventActFun)();  <span class="hljs-comment">//函数指针</span><br> <span class="hljs-keyword">int</span> NextState;          <span class="hljs-comment">//下一个状态</span><br>&#125;FsmTable_t;<br></code></pre></td></tr></table></figure>
-
-<p>接下来，我们就可以这个结构定义一个状态表，状态机根据这个表进行状态的流转：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C">FsmTable_t XiaoMingTable[] =<br>&#123;<br> <span class="hljs-comment">//&#123;到来的事件，当前的状态，将要要执行的函数，下一个状态&#125;</span><br> &#123; EVENT1,  SLEEP,           GetUp,        GET_UP &#125;,<br> &#123; EVENT2,  GET_UP,          Go2School,    GO_TO_SCHOOL &#125;,<br> &#123; EVENT3,  GO_TO_SCHOOL,    HaveLunch,    HAVE_LUNCH &#125;,<br> &#123; EVENT1,  HAVE_LUNCH,      DoHomework,   DO_HOMEWORK &#125;,<br> &#123; EVENT2,  DO_HOMEWORK,     Go2Bed,       SLEEP &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
-
-<p>定义一个状态机结构，表示一个状态机：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">FSM_s</span></span><br><span class="hljs-class">&#123;</span><br> FsmTable_t* FsmTable;   <span class="hljs-comment">//指向的状态表</span><br> <span class="hljs-keyword">int</span> curState;           <span class="hljs-comment">//FSM当前所处的状态</span><br><br>&#125;FSM_t;<br></code></pre></td></tr></table></figure>
-
-<p>有了这些基本的结构，就可以写主函数了：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br> FSM_t fsm;                        <span class="hljs-comment">// 实例化一个状态机</span><br> InitFsm(&amp;fsm);                    <span class="hljs-comment">// 初始化状态机</span><br> <span class="hljs-keyword">int</span> event = EVENT1;               <span class="hljs-comment">// 初始化事件，为了启动状态机流转，</span><br>                                      <span class="hljs-comment">// 因为状态机只有在有时间发生时才会改变状态</span><br><br> <span class="hljs-comment">//小明的一天,周而复始的一天又一天，进行着相同的活动</span><br> <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)<br> &#123;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;event %d is coming...\n&quot;</span>, event);<br>  FSM_EventHandle(&amp;fsm, event); <span class="hljs-comment">// 有了初始事件，我们就需要处理这个事件，</span><br>                                      <span class="hljs-comment">// 再写一个处理事件的函数</span><br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;fsm current state %d\n&quot;</span>, fsm.curState);<br>  test(&amp;event); <br>  Sleep(<span class="hljs-number">1</span>);                     <span class="hljs-comment">//休眠1秒，方便观察</span><br> &#125;<br><br> <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-comment">// 测试用的，模拟事件的发生</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">test</span><span class="hljs-params">(<span class="hljs-keyword">int</span> *event)</span></span><br><span class="hljs-function"></span>&#123;<br> <span class="hljs-keyword">if</span> (*event == <span class="hljs-number">3</span>)<br> &#123;<br>  *event = <span class="hljs-number">1</span>;<br> &#125;<br> <span class="hljs-keyword">else</span><br> &#123;<br>  (*event)++;<br> &#125;<br> <br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>编写初始化状态机的函数：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">int</span> g_state_max_num = <span class="hljs-number">0</span>; <span class="hljs-comment">// 状态机的状态最大数量，根据状态表的大小来计算</span><br><span class="hljs-comment">// 初始化FSM</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">InitFsm</span><span class="hljs-params">(FSM_t* pFsm)</span></span><br><span class="hljs-function"></span>&#123;<br> g_state_max_num = <span class="hljs-keyword">sizeof</span>(XiaoMingTable) / <span class="hljs-keyword">sizeof</span>(FsmTable_t);<br> pFsm-&gt;curState = SLEEP; <span class="hljs-comment">// 初始状态为睡觉</span><br>    pFsm-&gt;FsmTable = XiaoMingTable;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>编写事件处理函数：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* 事件处理 */</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">FSM_EventHandle</span><span class="hljs-params">(FSM_t* pFsm, <span class="hljs-keyword">int</span> event)</span></span><br><span class="hljs-function"></span>&#123;<br> FsmTable_t* pActTable = pFsm-&gt;FsmTable;<br> <span class="hljs-keyword">void</span> (*eventActFun)() = <span class="hljs-literal">NULL</span>;  <span class="hljs-comment">//函数指针初始化为空</span><br> <span class="hljs-keyword">int</span> NextState;<br> <span class="hljs-keyword">int</span> CurState = pFsm-&gt;curState;<br><br> <span class="hljs-comment">/* 获取当前动作函数 */</span><br> <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i&lt;g_max_num; i++)<br> &#123;<br>  <span class="hljs-comment">//当且仅当当前状态下来个指定的事件，我才执行它</span><br>  <span class="hljs-keyword">if</span> (event == pActTable[i].event &amp;&amp; CurState == pActTable[i].CurState)<br>  &#123;<br>   pActTable[i].eventActFun();                      <span class="hljs-comment">// 执行动作函数</span><br>            FSM_StateTransfer(pFsm, pActTable[i].NextState); <span class="hljs-comment">// 执行状态转移</span><br>   <span class="hljs-keyword">break</span>;<br>  &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>            <span class="hljs-comment">// do nothing</span><br>        &#125;<br> &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">/* 状态迁移 */</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">FSM_StateTransfer</span><span class="hljs-params">(FSM_t* pFsm, <span class="hljs-keyword">int</span> state)</span></span><br><span class="hljs-function"></span>&#123;<br> pFsm-&gt;curState = state;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/skyfsm/p/7071386.html">Linux 编程之有限状态机 FSM 的理解与实现 - Madcola - 博客园</a><br><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2013/09/finite-state_machine_for_javascript.html">JavaScript 与有限状态机 - 阮一峰的网络日志</a><br><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA">有限状态机 - 维基百科，自由的百科全书</a></p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2022/05/08/%E9%93%BE%E6%8E%A5%E8%84%9A%E6%9C%AC%E5%85%A5%E9%97%A8/" itemprop="url">链接脚本入门</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2022-05-08T13:32:23.000Z" itemprop="datePublished">5月 8 2022</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            21 分钟 读完 (约 3176 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h2><p>位置无关编码 (PIC，position independent code)：汇编源文件被编码成二进制可执行程序时编码方式与位置（内存地址）无关。</p>
-<p>位置有关编码：汇编源码编码成二进制可执行程序后和内存地址是有关的。</p>
-<p>我们在设计一个程序时，会给这个程序指定一个运行地址（链接地址）。就是说我们在编译程序时其实心里是知道我们程序将来被运行时的地址（运行地址）的，而且必须给编译器链接器指定这个地址（链接地址）才行。</p>
-<p>最后得到的二进制程序理论上是和你指定的运行地址有关的，将来这个程序被执行时必须放在当时编译链接时给定的那个地址（链接地址）下才行，否则不能运行（就叫位置有关代码）。但是有个别特别的指令他可以跟指定的地址（链接地址）没有关系，也就是说这些代码实际运行时不管放在哪里都能正常运行。</p>
-<p><strong>运行地址</strong>：由运行时决定的（编译链接时是无法绝对确定运行时地址的）。</p>
-<p><strong>链接地址</strong>：由程序员在编译链接的过程中，通过<code>Makefile</code>中<code>-Ttext xxx</code>或者<strong>在链接脚本中指定</strong>的。程序员事先会预知自己的程序的执行要求，并且有一个期望的执行地址，并且会用这个地址来做链接地址。</p>
-<p>举例：Linux 中的应用程序。<code>gcc hello.c -o hello</code>，这时使用默认的链接地址就是<code>0x0</code>，所以应用程序都是链接在<code>0x0</code>地址的。因为应用程序运行在操作系统的一个进程中，在这个进程中这个应用程序独享 4G 的虚拟地址空间。所以应用程序都可以链接到 0 地址，因为每个进程都是从 0 地址开始的。（编译时可以不给定链接地址而都使用<code>0x0</code>）</p>
-<h2 id="编译链接过程"><a href="#编译链接过程" class="headerlink" title="编译链接过程"></a>编译链接过程</h2><h3 id="每个过程的作用"><a href="#每个过程的作用" class="headerlink" title="每个过程的作用"></a>每个过程的作用</h3><ul>
-<li>预编译：预编译器执行。替换宏定义，删除注释等工作。</li>
-<li>编译：编译器来执行。把源码<code>.c .S</code>编程机器码<code>.o</code>文件。</li>
-<li>链接：链接器来执行。把<code>.o</code>文件中的各函数（段）按照一定规则（链接脚本来指定）累积在一起，形成可执行文件。</li>
-<li>strip：strip 是把可执行程序中的符号信息给拿掉，以节省空间。（Debug 版本和 Release 版本）</li>
-<li>objcopy：由可执行程序生成可烧录的镜像<code>bin</code>文件。</li>
-</ul>
-<h3 id="编译后生成的段"><a href="#编译后生成的段" class="headerlink" title="编译后生成的段"></a>编译后生成的段</h3><p>段就是程序的一部分，我们把整个程序的所有东西分成了一个一个的段，给每个段起个名字，然后在链接时就可以用这个名字来指示这些段。也就是说给段命名就是为了在链接脚本中用段名来让段放在合适的位置。</p>
-<p>段名分为 2 种：一种是编译器链接器内部定好的，一种是程序员自己指定的、自定义的段名。<br>已有段名：</p>
-<ul>
-<li>代码段：（.text），又叫文本段，代码段其实就是函数编译后生成的东西</li>
-<li>数据段：（.data），数据段就是 C 语言中有显式初始化为非 0 的全局变量</li>
-<li>bss 段：（.bss），又叫 ZI（zero initial）段，就是零初始化段，对应 C 语言中初始化为 0 的全局变量。</li>
-<li>自定义段名：段名由程序员自己定义，段的属性和特征也由程序员自己定义。</li>
-</ul>
-<blockquote>
-<p>C 语言中全局变量如果未显式初始化，值是 0。本质就是 C 语言把这类全局变量放在了 bss 段，从而保证了为 0。<br>C 运行时环境如何保证显式初始化为非 0 的全局变量的值在 main 之前就被赋值了？就是因为它把这类变量放在了.data 段中，而.data 段会在 main 执行之前被处理（初始化）。</p>
-</blockquote>
-<h2 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a>链接脚本</h2><h3 id="链接脚本做什么事？"><a href="#链接脚本做什么事？" class="headerlink" title="链接脚本做什么事？"></a>链接脚本做什么事？</h3><p>链接脚本其实是个规则文件，他是程序员用来指挥链接器工作的。链接器会参考链接脚本，并且使用其中规定的规则来处理<code>.o</code>文件中那些段，将其链接成一个可执行程序。</p>
-<p>链接脚本的关键内容有 2 部分：段名 + 地址（作为链接地址的内存地址）。把段，放到一个地址的意思。</p>
-<p>链接脚本就像是一个从上到下顺序执行的一个代码</p>
-<ul>
-<li><code>.</code> 表示当前位置</li>
-<li><code>=</code> 表示赋值</li>
-<li><code>*</code> 表示通配符</li>
-</ul>
-<p>链接脚本里的符号，可以在汇编源码里引用。</p>
-<p>一个简易示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs lds">SECTIONS<br>&#123;<br>    . = 0xd0024000; # 当前地址为0xd0024000<br>    <br>    .text : &#123;<br>        start.o<br>        * (.text)   # 所有的text段<br>    &#125;<br>            <br>    .data : &#123;<br>        * (.data)<br>    &#125;<br>    <br>    bss_start = .;  # bss_start的值为当前地址，是执行到这里的地址，不是最上面. = 0xd0024000的地址<br>    .bss : &#123;<br>        * (.bss)<br>    &#125;<br>    <br>    bss_end  = .;    <br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h3 id="怎么做？"><a href="#怎么做？" class="headerlink" title="怎么做？"></a>怎么做？</h3><p><strong>任务：在 SRAM 中将代码从 0xd0020010 重定位到 0xd0024000</strong>。</p>
-<p>第一点：通过链接脚本将代码链接到 0xd0024000<br>    重定位代码的作用就是：在PIC执行完之前（在代码中第一句位置有关码执行之前）必须将整个代码搬移到0xd0024000位置去执行，这就是重定位。</p>
-<p>第二点：dnw 下载时将 bin 文件下载到 0xd0020010<br>    这样就能完成，下载代码与运行代码位置不同。</p>
-<p>第三点：代码执行时通过代码前段的少量位置无关码将整个代码搬移到 0xd0024000。</p>
-<p>第四点：使用一个长跳转跳转到 0xd0024000 处的代码继续执行，重定位完成。</p>
-<p><strong>长跳转</strong>：一种跳转指令，类似于分支指令 B，BL 等作用的指令，跳转指令通过给 PC（r15）赋一个新值来完成代码跳转。当我们执行完重定位后，<strong>实际上 SRAM 中有两份代码的镜像</strong>（一份是我们下载到 0xd0020010 处的，一份是重定位到 0xd0024000 处的），这两份代码内容完全相同。</p>
-<p><strong>短跳转</strong>：短跳转指令可以实现向前或向后 32MB 的地址空间跳转。</p>
-<p>当链接地址和运行地址相同是，短跳转和长跳转实际效果一样。但是当链接地址和运行地址不同时，短跳转和长跳转就有差异了，这时候段跳转执行的是运行地址处的那一份，而长跳转执行的是链接地址的那一份。</p>
-<p>重定位实际就是在运行地址处执行一段位置无关码 PIC，让这段 PIC（也就是重定位代码）从运行地址处把整个程序镜像拷贝一份到链接地址处，完了之后使用一句长跳转指令从运行地址处直接跳转到链接地址处去执行同一个函数（led_blink），这样就实现了重定位之后的无缝连接。</p>
-<p>汇编代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs lds">/*<br> * 文件名：    led.s    <br> * 作者：    朱老师（朱友鹏）<br> * 描述：    演示重定位（在SRAM内部重定位）<br> */<br><br>#define WTCON        0xE2700000<br><br>#define SVC_STACK    0xd0037d80<br><br>.global _start                    // 把_start链接属性改为外部，这样其他文件就可以看见_start了<br>_start:<br>    // 第1步：关看门狗（向WTCON的bit5写入0即可）<br>    ldr r0, =WTCON<br>    ldr r1, =0x0<br>    str r1, [r0]<br>    <br>    // 第2步：设置SVC栈<br>    ldr sp, =SVC_STACK<br>    <br>    // 第3步：开/关icache<br>    mrc p15,0,r0,c1,c0,0;            // 读出cp15的c1到r0中<br>    //bic r0, r0, #(1&lt;&lt;12)            // bit12 置0  关icache<br>    orr r0, r0, #(1&lt;&lt;12)            // bit12 置1  开icache<br>    mcr p15,0,r0,c1,c0,0;<br>    <br>    // 第4步：重定位<br>    adr r0, _start          // adr加载时就叫短加载，此处adr指令用于加载_start当前运行地址，详解见正文    <br>    ldr r1, =_start         // ldr加载时如果目标寄存器是pc就叫长跳转，如果目标寄存器是r1等就叫长加载    <br>                            // 此处ldr指令用于加载_start的链接地址:0xd0024000<br><br>    // bss段的起始地址<br>    ldr r2, =bss_start    // 就是我们重定位代码的结束地址，重定位只需重定位代码段和数据段即可<br>                        // 该符号在链接脚本里定义<br>    cmp r0, r1            // 比较_start的运行时地址和链接地址是否相等<br>    beq clean_bss        // 如果相等说明不需要重定位，所以跳过copy_loop，直接到clean_bss<br>                        // 如果不相等说明需要重定位，那么会顺序执行下面的copy_loop进行重定位<br>                        // 重定位完成后继续执行clean_bss。<br><br>// 用汇编来实现的一个while循环<br>copy_loop:<br>    ldr r3, [r0], #4    // 源   r0内容写入r3，然后r0自增4<br>    str r3, [r1], #4    // 目的 r3内容写入r1，然后r1自增4<br>                        // 这两句代码就完成了4个字节内容的拷贝<br>    cmp r1, r2            // r1和r2都是用ldr加载的，都是链接地址，所以r1不断+4总能等于r2<br>    bne copy_loop<br><br>// 清bss段，其实就是在链接地址处把bss段全部清零<br>clean_bss:<br>    ldr r0, =bss_start                    <br>    ldr r1, =bss_end<br>    cmp r0, r1                // 如果r0等于r1，说明bss段为空，直接继续执行下面的代码<br>    beq run_on_dram            // 清除bss完之后的地址<br>    mov r2, #0<br><br>clear_loop:<br>    str r2, [r0], #4        // 先将r2中的值放入r0所指向的内存地址（r0中的值作为内存地址），<br>    cmp r0, r1                // 然后r0 = r0 + 4<br>    bne clear_loop<br><br>//    清理完bss段后重定位就结束了。然后当前的状况是：<br>//    1、当前运行地址还在0xd0020010开头的（重定位前的）那一份代码中运行着。<br>//    2、此时SRAM中已经有了2份代码，1份在d0020010开头，另一份在d0024000开头的位置。<br>//    然后就要长跳转了。<br><br>run_on_dram:    <br>    // 长跳转到led_blink开始第二阶段<br>    ldr pc, =led_blink                // ldr指令实现长跳转，把led_blink的值，写入pc寄存器<br>    <br>    // 从这里之后就可以开始调用C程序了<br>    //bl led_blink                    // bl指令实现短跳转<br>    <br>    // 汇编最后的这个死循环不能丢<br>    b .<br>    <br></code></pre></td></tr></table></figure>
-
-<p><code>adr</code>与 ldr 伪指令的区别：<code>ldr</code>和<code>adr</code>都是伪指令</p>
-<ul>
-<li><code>adr</code>短加载，指令加载符号地址，加载的是运行时地址；</li>
-<li><code>ldr</code>长加载，指令在加载符号地址时，加载的是链接地址；</li>
-</ul>
-<p>重定位就是汇编代码中的<code>copy_loop</code>函数，代码的作用是使用循环结构来逐句复制代码到链接地址。<br>复制的源地址是 SRAM 的<code>0xd0020010</code>，复制目标地址是 SRAM 的<code>0xd0024000</code>，复制长度是<code>bss_start</code>减去<code>_start</code>，所以复制的长度就是整个重定位需要重定位的长度，也就是整个程序中代码段 + 数据段的长度。<code>bss</code>段（bss 段中就是 0 初始化的全局变量）不需要重定位。</p>
-<p>清除<code>bss</code>段是为了满足 C 语言的运行时要求（C 语言要求显式初始化为 0 的全局变量，或者未显式初始化的全局变量的值为 0，实际上 C 语言编译器就是通过清<code>bss</code>段来实现 C 语言的这个特性的）。一般情况下我们的程序是不需要负责清零<code>bss</code>段的（C 语言编译器和链接器会帮我们的程序自动添加一段头程序，这段程序会在我们的 main 函数之前运行，这段代码就负责清除<code>bss</code>）。但是在我们代码重定位了之后，因为编译器帮我们附加的代码只是帮我们清除了运行地址那一份代码中的<code>bss</code>，而未清除重定位地址处开头的那一份代码的<code>bss</code>，所以重定位之后需要自己去清除<code>bss</code>。</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -1229,7 +1236,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>

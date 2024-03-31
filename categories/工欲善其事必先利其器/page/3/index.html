@@ -132,6 +132,67 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../../../2022/08/13/%E4%BF%9D%E6%8C%81SSH%E8%BF%9E%E6%8E%A5/" itemprop="url">保持 SSH 连接</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-08-13T12:28:57.000Z" itemprop="datePublished">8月 13 2022</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            2 分钟 读完 (约 342 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <p>SSH 总是被强行中断，尤其是用 VSCode 代码写的好好的，突然刷新窗口，不仅效率低，更惹人恼火。</p>
+<p>可以通过配置服务端或客户端的 SSH 来保持 SSH 链接：</p>
+<h2 id="方法一：配置服务端"><a href="#方法一：配置服务端" class="headerlink" title="方法一：配置服务端"></a>方法一：配置服务端</h2><p>可以在服务端配置，让 server 每隔 30 秒向 client 发送一个 keep-alive 包来保持连接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">vim /etc/ssh/sshd_config<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">ClientAliveInterval 30<br>ClientAliveCountMax 60<br></code></pre></td></tr></table></figure>
+
+<p>第二行配置表示如果发送 keep-alive 包数量达到 60 次，客户端依然没有反应，则服务端 sshd 断开连接。如果什么都不操作，该配置可以让连接保持 30s*60，30 min</p>
+<p>重启本地 ssh</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo service ssh restart<br></code></pre></td></tr></table></figure>
+
+<p>如果找不到 ssh,”Failed to restart ssh.service: Unit ssh.service not found.” ，需要安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo apt-get install openssh-server<br></code></pre></td></tr></table></figure>
+
+<h2 id="方法二：配置客户端"><a href="#方法二：配置客户端" class="headerlink" title="方法二：配置客户端"></a>方法二：配置客户端</h2><p>如果服务端没有权限配置，或者无法配置，可以配置客户端 ssh，使客户端发起的所有会话都保持连接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">vim /etc/ssh/ssh_config<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">ServerAliveInterval 30<br>ServerAliveCountMax 60<br></code></pre></td></tr></table></figure>
+
+<p>本地 ssh 每隔 30s 向 server 端 sshd 发送 keep-alive 包，如果发送 60 次，server 无回应断开连接。</p>
+<p>在 VSCode 里可以直接添加配置，效果一样：<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208132040474.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">Host 11.22.33.44<br>  HostName 11.22.33.44<br>  User user<br>  Port 112343<br>  ServerAliveInterval 30<br>  ServerAliveCountMax 60<br></code></pre></td></tr></table></figure>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../../../2022/08/01/%E4%BD%BF%E7%94%A8Syncthing%E5%A4%9A%E7%AB%AF%E4%B8%9D%E6%BB%91%E5%90%8C%E6%AD%A5%E4%B8%8E%E5%A4%87%E4%BB%BD/" itemprop="url">使用 Syncthing 多端丝滑同步与备份</a>
         
     </h1>

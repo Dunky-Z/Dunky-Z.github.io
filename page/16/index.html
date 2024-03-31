@@ -125,6 +125,155 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2022/01/07/C%E8%AF%AD%E8%A8%80typedef%E7%94%A8%E6%B3%95/" itemprop="url">C 语言 typedef 用法</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-01-07T03:51:50.000Z" itemprop="datePublished">1月 7 2022</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            10 分钟 读完 (约 1460 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><code>typedef</code>为 C 语言的关键字，作用是为一种数据类型定义一个新名字。这里的数据类型包括内部数据类型（int,char 等）和自定义的数据类型（struct 等）。在使用语法上类似与<code>static</code>，<code>extern</code>等。<br><code>typedef</code> 行为有点像 <code>#define</code> 宏，用其实际类型替代同义字。不同点是 <code>typedef</code>在编译时被解释，因此让编译器来应付超越预处理器能力的文本替换。</p>
+<h2 id="基本使用方法"><a href="#基本使用方法" class="headerlink" title="基本使用方法"></a>基本使用方法</h2><p>示例 1：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">int</span> a; ———— 传统变量声明表达式<br><span class="hljs-keyword">int</span> <span class="hljs-keyword">myint_t</span>; ———— 使用新的类型名<span class="hljs-keyword">myint_t</span>替换变量名a<br><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">int</span> <span class="hljs-keyword">myint_t</span>; ———— 在语句开头加上<span class="hljs-keyword">typedef</span>关键字，<span class="hljs-keyword">myint_t</span>就是我们定义的新类型<br></code></pre></td></tr></table></figure>
+
+<p>示例 2：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-built_in">void</span> (*pfunA)(<span class="hljs-built_in">int</span> a); ———— 传统变量（函数）声明表达式<br><span class="hljs-built_in">void</span> (*PFUNA)(<span class="hljs-built_in">int</span> a); ———— 使用新的类型名PFUNA替换变量名pfunA<br><span class="hljs-keyword">typedef</span> <span class="hljs-built_in">void</span> (*PFUNA)(<span class="hljs-built_in">int</span> a); ———— 在语句开头加上<span class="hljs-keyword">typedef</span>关键字，PFUNA就是我们定义的新类型<br></code></pre></td></tr></table></figure>
+
+<p>促使我写这篇文章的原因不是如何去用<code>typedef</code>，而是在代码中看不懂如何简化了一个复杂声明。比如上文的</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elm">typedef void (*<span class="hljs-type">PFUNA</span>)(int a);<br></code></pre></td></tr></table></figure>
+
+<p>本以为是将<code>void</code>类型替换成了<code>(*PFUNA)(int a)</code>，但是语法上这明显讲不通啊。现在明白了，这就是将<code>void (*pfunA)(int a);</code>类型名换成了<code>PFUNA</code>。以后就可以用<code>PFUNA</code>来声明变量。比如</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">PFUNA</span> arr[<span class="hljs-number">10</span>]<br></code></pre></td></tr></table></figure>
+
+<p>表示声明了一个大小为<code>10</code>的数组，数组的元素是<code>PFUNA</code>类型。将<code>PFUNA</code>类型展开就是，这是一个函数指针，函数参数为<code>int</code>类型，返回值为<code>void</code>类型。完整的含义就是，<strong>声明了一个大小为<code>10</code>的数组，数组元素是函数指针，函数参数为<code>int</code>类型，返回值为<code>void</code>类型</strong>。</p>
+<h2 id="代码简化"><a href="#代码简化" class="headerlink" title="代码简化"></a>代码简化</h2><p><code>typedef</code>可以为复杂的声明定义一个新的简单的别名。关于复杂声明，可以阅读这篇<a target="_blank" rel="noopener" href="https://dunky-z.github.io/2021/10/22/C%E8%AF%AD%E8%A8%80%E5%A4%8D%E6%9D%82%E5%A3%B0%E6%98%8E/">C 语言复杂声明</a>。<br>方法是：在原来的声明里逐步用别名替换一部分复杂声明，递归操作，把带变量名的部分留到最后替换，得到的就是原声明的最简化版。举例：</p>
+<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs delphi"><span class="hljs-comment">//复杂声明</span><br>void <span class="hljs-comment">(*b[10]) (void (*)</span>());<br></code></pre></td></tr></table></figure>
+
+<p>变量名为<code>b</code>，先替换右边部分括号里的，<code>pFunParam</code>为别名</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elm">typedef void (*pFunParam)();<br></code></pre></td></tr></table></figure>
+
+<p>再替换左边的变量<code>b</code>，<code>pFunx</code>为别名二：</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elm">typedef void (*pFunx)(pFunParam);<br></code></pre></td></tr></table></figure>
+
+<p>简化后的声明：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">pFunx <span class="hljs-selector-tag">b</span><span class="hljs-selector-attr">[10]</span>;<br></code></pre></td></tr></table></figure>
+
+<h2 id="减少错误"><a href="#减少错误" class="headerlink" title="减少错误"></a>减少错误</h2><p>定义一种类型的别名，而不只是简单的宏替换。可以用作同时声明指针型的多个对象。比如：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-regexp">//</span> 这多数不符合我们的意图，它只声明了一个指向字符变量的指针，<br><span class="hljs-regexp">//</span> 和一个字符变量；<br>char* pa, pb;<br></code></pre></td></tr></table></figure>
+
+<p>以下则可行：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">char</span>* PCHAR;<br>PCHAR pa, pb;  <br></code></pre></td></tr></table></figure>
+
+<p>这种用法很有用，特别是<code>char* pa, pb</code>的定义，初学者往往认为是定义了两个字符型指针，其实不是，而用<code>typedef char* PCHAR</code>就不会出现这样的问题，减少了错误的发生。</p>
+<h2 id="直观简洁"><a href="#直观简洁" class="headerlink" title="直观简洁"></a>直观简洁</h2><p>声明<code>struct</code>新对象时，必须要带上<code>struct</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagPOINT1</span></span><br><span class="hljs-class"> &#123;</span><br>    <span class="hljs-keyword">int</span> x;<br>    <span class="hljs-keyword">int</span> y; <br>&#125;;<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagPOINT1</span> <span class="hljs-title">p1</span>;</span><br></code></pre></td></tr></table></figure>
+
+<p>在经常使用这个结构体时，就显得麻烦，可以用<code>typedef</code>简化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tagPOINT</span></span><br><span class="hljs-class">&#123;</span><br>    <span class="hljs-keyword">int</span> x;<br>    <span class="hljs-keyword">int</span> y;<br>&#125;POINT;<br></code></pre></td></tr></table></figure>
+
+<h2 id="定义平台无关的类型"><a href="#定义平台无关的类型" class="headerlink" title="定义平台无关的类型"></a>定义平台无关的类型</h2><p>当跨平台时，只要改下 <code>typedef</code> 本身就行，不用对其他源码做任何修改。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span> u_32t; <br></code></pre></td></tr></table></figure>
+
+<h2 id="掩饰复合类型"><a href="#掩饰复合类型" class="headerlink" title="掩饰复合类型"></a>掩饰复合类型</h2><p><code>typedef</code> 还可以掩饰复合类型，如指针和数组。</p>
+<p>例如，你不用像下面这样重复定义有 81 个字符元素的数组：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">char</span> line[<span class="hljs-number">81</span>];<br></code></pre></td></tr></table></figure>
+
+<p>定义一个 <code>typedef</code>，每当要用到相同类型和大小的数组时，可以这样：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">char</span> Line[<span class="hljs-number">81</span>]; <br></code></pre></td></tr></table></figure>
+
+<p>此时 Line 类型即代表了具有 81 个元素的字符数组，使用方法如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">Line text, secondline; <br></code></pre></td></tr></table></figure>
+
+<p>同样，可以象下面这样隐藏指针语法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">char</span> * pstr;<br></code></pre></td></tr></table></figure>
+
+<p>这里将带我们到达第一个 <code>typedef</code> 陷阱。标准函数 <code>strcmp()</code>有两个<code>const char *</code>类型的参数。因此，它可能会误导人们象下面这样声明 <code>mystrcmp()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">mystrcmp</span><span class="hljs-params">(<span class="hljs-keyword">const</span> pstr, <span class="hljs-keyword">const</span> pstr)</span></span>; <br></code></pre></td></tr></table></figure>
+
+<p>用 GNU 的 gcc 和 g++编译器，是会出现警告的，按照顺序，<code>const pstr</code>被解释为<code>char* const</code>（一个指向 <code>char</code> 的指针常量），两者表达的并非同一意思。为了得到正确的类型，应当如下声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>* pstr;<br></code></pre></td></tr></table></figure>
+
+<h2 id="typedef-和存储类关键字"><a href="#typedef-和存储类关键字" class="headerlink" title="typedef 和存储类关键字"></a>typedef 和存储类关键字</h2><p><code>typedef</code> 就像 <code>auto</code>，<code>extern</code>，<code>mutable</code>，<code>static</code>，和 <code>register</code> 一样，是一个存储类关键字。这并不是说 <code>typedef</code> 会真正影响对象的存储特性；它只是说在语句构成上，<code>typedef</code> 声明看起来象 <code>static</code>，<code>extern</code> 等类型的变量声明。下面将带到第二个陷阱：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">register</span> <span class="hljs-keyword">int</span> FAST_COUNTER; <span class="hljs-comment">// 错误</span><br></code></pre></td></tr></table></figure>
+
+<p>编译通不过。问题出在你不能在声明中有多个存储类关键字。因为符号 <code>typedef</code> 已经占据了存储类关键字的位置，在 <code>typedef</code> 声明中不能用 <code>register</code>（或任何其它存储类关键字）。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/liitdar/article/details/80069638">typedef 介绍_liitdar 的博客-CSDN 博客_typedef</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/wangqiulin123456/article/details/8284939">关于 typedef 的用法总结_IT 民工-CSDN 博客_typedef</a></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2022/01/05/Windows%E6%89%B9%E5%A4%84%E7%90%86%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" itemprop="url">Windows 批处理定时任务</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2022-01-05T14:39:03.000Z" itemprop="datePublished">1月 5 2022</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            4 分钟 读完 (约 584 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h2 id="折腾背景"><a href="#折腾背景" class="headerlink" title="折腾背景"></a>折腾背景</h2><p>一些常用的离线软件在重新安装，重装电脑或者更好环境时，调教好的配置总需要重新设置一遍，甚是麻烦。但是这些设置通常都保存在配置文件里，只要能备份好这些配置文件，下次重装后覆盖就可以恢复所需设置。</p>
+<p>现在的问题就是如何备份这些配置文件，可以选择各类网盘，硬盘等等。但是这些多少都有点炮打蚊子，小题大做。而且定时备份也不是很方便。既然配置文件都很小，其实就是个文本文件，那有个万能免费存储地 GitHub 就派上用场了。我们只要把配置文件定时 push 到 GitHub 即可，以后随时可以 clone 下来。</p>
+<p>首先建立一个私密仓库，用来专门存放配置文件。其次通过批处理命令，将配置文件复制到本地仓库的文件夹下。最后设置定时任务。</p>
+<h2 id="折腾过程"><a href="#折腾过程" class="headerlink" title="折腾过程"></a>折腾过程</h2><h3 id="新建仓库"><a href="#新建仓库" class="headerlink" title="新建仓库"></a>新建仓库</h3><p>这一步不用赘述了，主要就是要勾选私密仓库，保护隐私，一些配置文件可能会包含个人信息。</p>
+<h3 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h3><p>将仓库克隆到本地后就是个文件夹，这一步主要就是如何能把安装在不同位置的软件的配置文件，都汇集到这个仓库下。通过批处理命令可以快速，方便的完成。</p>
+<figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs bat"><span class="hljs-built_in">echo</span> <span class="hljs-built_in">Start</span> backup config files! # 打印这句话<br><br><span class="hljs-built_in">copy</span> D:\Tools\MouseInc\MouseInc.json  D:\Develop\fxxk-config\mouseinc # 将前者复制到后者<br><br><span class="hljs-built_in">copy</span> D:\Tools\JD\Config.ini  D:\Develop\fxxk-config\jd<br><br><span class="hljs-built_in">cd</span>  /d D:\Develop\fxxk-config # 切换目录<br><br># git推送的一些命令<br>git add .   <br>git commit -m &quot;update&quot;<br>git push<br><br># 防止窗口闪退<br><span class="hljs-built_in">pause</span><br></code></pre></td></tr></table></figure>
+
+<p>一些常用命令参考<a target="_blank" rel="noopener" href="https://gist.github.com/675816156/7bcec2bc6f45faa64acdb75acfef6912">WindowDos 批处理指导</a>。</p>
+<h3 id="定时任务"><a href="#定时任务" class="headerlink" title="定时任务"></a>定时任务</h3><p>控制面板-管理工具 - 任务计划程序<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247765.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247153.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052247889.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052248070.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201052248353.png"></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2022/01/05/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/" itemprop="url">解决 unable to install libpng12.so.0</a>
         
     </h1>
@@ -757,166 +906,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2021/12/02/Qt%E8%B7%A8%E7%AA%97%E5%8F%A3%EF%BC%8C%E6%8E%A7%E4%BB%B6%E7%B1%BB%E4%BC%A0%E9%80%92%E6%95%B0%E6%8D%AE/" itemprop="url">Qt 跨窗口，控件类传递数据</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2021-12-02T02:35:14.000Z" itemprop="datePublished">12月 2 2021</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            2 分钟 读完 (约 319 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="问题简介"><a href="#问题简介" class="headerlink" title="问题简介"></a>问题简介</h2><p>本文基于<a target="_blank" rel="noopener" href="https://blog.csdn.net/shihoongbo/article/details/48681979">【Qt】窗体间传递数据（跨控件跨类），三种情况与处理方法</a></p>
-<p>已知三个窗体，A 为 B C 的父控件，B 与 C 互为兄弟控件<br>那么参数传递分三种情况：</p>
-<ol>
-<li>B 向 A（C 向 A）传递参数</li>
-<li>B 向 C（C 向 B）传递参数</li>
-<li>A 向 B（A 向 C）传递参数</li>
-</ol>
-<p>三个空间关系模型参考如下，</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211208122116.png"></p>
-<h2 id="B-向-A（C-向-A）传递参数"><a href="#B-向-A（C-向-A）传递参数" class="headerlink" title="B 向 A（C 向 A）传递参数"></a>B 向 A（C 向 A）传递参数</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//B.h</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">B</span></span><br><span class="hljs-class">&#123;</span><br>signals:<br>    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">toA</span><span class="hljs-params">([ParamList])</span></span>;<br>&#125;<br><br><span class="hljs-comment">//B.cpp</span><br>B::<span class="hljs-built_in">B</span>()<br>&#123;<br>    <span class="hljs-function">emit <span class="hljs-title">toA</span><span class="hljs-params">([ParamList])</span></span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//A.h</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span></span><br><span class="hljs-class">&#123;</span><br><span class="hljs-keyword">private</span>:<br>   B *b;<br><span class="hljs-keyword">private</span> slots:<br>   <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">fromB</span><span class="hljs-params">([ParamList])</span></span>;<br>&#125;<br><br><span class="hljs-comment">//A.cpp</span><br>A::<span class="hljs-built_in">A</span>()<br>&#123;<br>    b = <span class="hljs-keyword">new</span> B;<br>    <span class="hljs-built_in">connect</span>(b, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">toA</span>([ParamList])), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">fromB</span>([ParamList])));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">A::fromB</span><span class="hljs-params">([ParamList])</span></span><br><span class="hljs-function"></span>&#123;<br><span class="hljs-comment">//get[ParamList]</span><br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h2 id="B-向-C（C-向-B）传递参数"><a href="#B-向-C（C-向-B）传递参数" class="headerlink" title="B 向 C（C 向 B）传递参数"></a>B 向 C（C 向 B）传递参数</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//A.h</span><br>&#123;<br><span class="hljs-keyword">private</span>:<br>  B *b;<br>  C *c;<br>&#125;<br><br><span class="hljs-comment">//A.cpp</span><br>A::<span class="hljs-built_in">A</span>()<br>&#123;<br>  b = <span class="hljs-keyword">new</span> B;<br>  c = <span class="hljs-keyword">new</span> C;<br>  <span class="hljs-built_in">connect</span>(b, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">toC</span>([ParamList]), c, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">fromB</span>([ParamList])));<br>&#125;<br><br><span class="hljs-comment">//B.h</span><br>class B<br>&#123;<br>signals:<br> <span class="hljs-keyword">void</span> <span class="hljs-built_in">toC</span>([ParamList]);<br>&#125;<br><br><span class="hljs-comment">//B.cpp</span><br>B::<span class="hljs-built_in">B</span>()<br>&#123;<br>  emit <span class="hljs-built_in">toC</span>([ParamList]);<br>&#125;<br><br><span class="hljs-comment">//C.h</span><br>class C<br>&#123;<br><span class="hljs-keyword">private</span> slots:<br>  <span class="hljs-keyword">void</span> <span class="hljs-built_in">fromB</span>([ParamList]);<br>&#125;<br><br><span class="hljs-comment">//C.cpp</span><br><span class="hljs-keyword">void</span> C::<span class="hljs-built_in">fromB</span>([ParamList])<br>&#123;<br><span class="hljs-comment">//get[ParamList]</span><br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h2 id="A-向-B（A-向-C）传递参数"><a href="#A-向-B（A-向-C）传递参数" class="headerlink" title="A 向 B（A 向 C）传递参数"></a>A 向 B（A 向 C）传递参数</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//B.h</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">B</span></span><br><span class="hljs-class">&#123;</span><br><span class="hljs-keyword">public</span>:<br>   <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">fromA</span><span class="hljs-params">([ParamList])</span></span>;<br>&#125; <br><br><span class="hljs-comment">//B.cpp</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">B::fromA</span><span class="hljs-params">([ParamList])</span></span><br><span class="hljs-function"></span>&#123;<br><span class="hljs-comment">//get[ParamList]</span><br>&#125;<br><br><span class="hljs-comment">//A.h</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span></span><br><span class="hljs-class">&#123;</span><br><span class="hljs-keyword">private</span>:<br>   B *b;<br>&#125;<br><br><span class="hljs-comment">//A.cpp</span><br>A:<span class="hljs-built_in">A</span>()<br>&#123;<br>    b = <span class="hljs-keyword">new</span> B;<br>    b-&gt;<span class="hljs-built_in">fromA</span>([ParamList]);<br>&#125;<br></code></pre></td></tr></table></figure>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2021/12/01/Clang-Format%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%BB%A3%E7%A0%81/" itemprop="url">Clang-Format 格式化代码</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2021-12-01T09:42:45.000Z" itemprop="datePublished">12月 1 2021</time>
-            
-        </span>
-        
-        <span class="column is-narrow article-category">
-            <i class="far fa-folder"></i>
-            <a class="article-category-link" href="../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            16 分钟 读完 (约 2353 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sudo apt-get install clang-format<br></code></pre></td></tr></table></figure>
-
-<h3 id="windows"><a href="#windows" class="headerlink" title="windows"></a>windows</h3><p>每每到这时候就越能感受到用 Linux 作为开发环境的优势，Windows 安装就稍显复杂了。</p>
-<ol>
-<li><p>你可以选择安装完整的 LLVM，在<code>bin</code>目录可以看到<code>clang-format.exe</code>。安装完后，将 <code>bin</code> 目录<strong>添加到环境变量</strong>中。</p>
-</li>
-<li><p>你也可以只下载<code>clang-format.exe</code>，从<a target="_blank" rel="noopener" href="https://llvm.org/builds/">LLVM Snapshot Builds</a>下载安装包。在下载页面的底部。同样你需要将单独下载的文件<strong>加入到环境变量</strong>中。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271559281.png"></p>
-</li>
-</ol>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="入门使用"><a href="#入门使用" class="headerlink" title="入门使用"></a>入门使用</h3><p>Linux 可以直接命令行，使用以 LLVM 代码风格格式化<code>main.cpp</code>, 结果直接写到<code>main.cpp</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">clang g-format -i main.cpp -style=LLVM<br></code></pre></td></tr></table></figure>
-
-<h3 id="进阶配置"><a href="#进阶配置" class="headerlink" title="进阶配置"></a>进阶配置</h3><p>如果每次编码都命令行执行一遍那也太麻烦了，而且每次修改也不止一个文件。最好的方式就是每次保存文件时自动格式化。比如 VSCode 已经内置了<code>Clang-Format</code>稍作配置即可实现，接下来介绍几种常见 IDE 如何配置<code>Clang-Format</code>。</p>
-<h4 id="VSCode"><a href="#VSCode" class="headerlink" title="VSCode"></a>VSCode</h4><p>VSCode 最常用，因为内置了<code>Clang-Format</code>也最容易配置。</p>
-<ul>
-<li>安装<code>C/C++</code>插件，<code>Ctrl+Shift+X</code>打开应用商店，搜索<code>C/C++</code>找到下图插件，安装后会自动安装<code>Clang-Format</code>程序，无需单独下载。默认安装路径为：<br><code>C:\Users\(你的用户名)\.vscode\extensions\ms-vscode.cpptools-1.7.1\LLVM\bin\clang-format.exe</code>。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012311818.png"></li>
-<li>打开设置页面（左下角齿轮 - 设置），搜索<code>format</code>，勾选<code>Format On Save</code>，每次保存文件时自动格式化文档。下方的设置是决定每次格式化是整个文档，还是做过修改的内容。默认是<code>file</code>，对整个文档进行格式化。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012304766.png"></li>
-<li>仍在设置页面搜索<code>Clang</code>，配置如下。<code>.clang-format</code>文件最后详解。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012321838.png"></li>
-<li>效果图<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112012327867.gif"></li>
-</ul>
-<h4 id="QtCreator"><a href="#QtCreator" class="headerlink" title="QtCreator"></a>QtCreator</h4><ul>
-<li>安装<code>Beautifier</code>插件：帮助（<code>Help</code>）-关于插件（<code>About Plugins</code>）- <code>Beautifier</code>勾选，重启 QtCreator。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202183720.png"></li>
-<li>工具（Tool）- <code>Beautifier</code>，配置如图。该配置，保存文档时自动格式化，并选择<code>Clang-Format</code>作为格式化工具。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202184119.png"><br>配置<code>Clang-Format</code>程序路径，如果开头已经<code>apt install</code>安装过，这里会自动补全。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202184247.png"></li>
-<li><code>Use predefined style</code>可以选择内置的一些代码风格，如<code>LLVM</code>，<code>Google</code>等。</li>
-<li><code>Use customized style</code>使用自定义的一些代码风格。点击添加（<code>Add</code>）将配置文件粘贴进去即可，具体配置文件见最后。</li>
-<li>别忘了点击<code>OK</code>保存。</li>
-</ul>
-<h4 id="Eclipse"><a href="#Eclipse" class="headerlink" title="Eclipse"></a>Eclipse</h4><ul>
-<li><p>安装<code>cppstyle</code>插件：Help - Eclipse Marketplace - 搜索<code>cppstyle</code>。</p>
-</li>
-<li><p>下载<code>cpplint</code>。<br>  可以去github上下载<a target="_blank" rel="noopener" href="https://github.com/google/styleguide">cpplint的源码</a>，下载完之后解压放到某个目录下。</p>
-</li>
-<li><p>在<code>Window</code> - <code>Preferences</code> - <code>C/C++</code> - <code>CppStyle</code>页面把<code>clang-format</code>的路径添加进去，然后把<code>cpplint</code>的目录指向刚才下载的<code>styleguide</code>目录下的<code>cpplint/cpplint.py</code>就可以了。勾选下面的<code>Enable cpplint</code>，<code>Run clang-format on file save</code>，然后点击<code>Apply and Close</code>保存修改并退出。如下图所示。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211202190912.png"></p>
-</li>
-<li><p>此时再保存代码，将会出现如下错误，因为我们还未给当前项目编写配置文件<code>.clang-format</code>。将最后一章提到的配置文件放到当前项目的下即可，程序会自动搜索。</p>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">Cannot find .clang-format or _clang-format configuration file under any level parent directories of path.<br>Clang-format will default to Google style.<br></code></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="配置简介"><a href="#配置简介" class="headerlink" title="配置简介"></a>配置简介</h2><p>上文多次提到了<code>.clang-format</code>配置文件，该文件决定了代码如何格式化，现在来介绍如何使用该文件。</p>
-<h3 id="导出-clang-format文件"><a href="#导出-clang-format文件" class="headerlink" title="导出.clang-format文件"></a>导出<code>.clang-format</code>文件</h3><p>如果重新编写一份配置文件，需要考虑的东西太多，<code>clang-format</code>内置了一些常见风格，我们可以根据已有的配置文件稍作修改，形成自己的代码风格。所以我们先导出一份内置的配置文件。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">clang-format -style=可选格式名 -dump-config &gt; .clang-format<br><span class="hljs-comment"># 可选格式最好写预设那那几个写最接近你想要的格式。比如我想要接近 Google C++ style 的。我就写-style=google</span><br></code></pre></td></tr></table></figure>
-
-<h3 id="各个选项的含义"><a href="#各个选项的含义" class="headerlink" title="各个选项的含义"></a>各个选项的含义</h3><p>这里给出了配置的含义，感兴趣也可以查看官方文档，还提供了一些有案例，描述更清晰。</p>
-<p>一些比较明显的代码分格区别</p>
-<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"># 括号是分行，还是不分行，只有当 BreakBeforeBraces 设置为 Custom 时才有效<br>BraceWrapping:<br>  AfterCaseLabel:  <span class="hljs-literal">true</span><br>  # <span class="hljs-keyword">class</span> 定义后面<br>  <span class="hljs-symbol">AfterClass:      <span class="hljs-symbol">true</span></span><br>  # 控制语句后面<br>  <span class="hljs-symbol">AfterControlStatement: <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterEnum:       <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterFunction:   <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterNamespace:  <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterObjCDeclaration: <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterStruct:     <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterUnion:      <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">AfterExternBlock: <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">BeforeCatch:     <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">BeforeElse:      <span class="hljs-symbol">true</span></span><br>  # 缩进大括号，<span class="hljs-symbol">if</span> <span class="hljs-symbol">else</span> 语句后面的括号缩进<br>  <span class="hljs-symbol">IndentBraces:    <span class="hljs-symbol">false</span></span><br>  <span class="hljs-symbol">SplitEmptyFunction: <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">SplitEmptyRecord: <span class="hljs-symbol">true</span></span><br>  <span class="hljs-symbol">SplitEmptyNamespace: <span class="hljs-symbol">true</span></span><br><span class="hljs-symbol">BreakBeforeBinaryOperators: <span class="hljs-symbol">None</span></span><br><span class="hljs-symbol">BreakBeforeBraces: <span class="hljs-symbol">Custom</span></span><br><br># <span class="hljs-symbol">tab</span> 宽度<br><span class="hljs-symbol">TabWidth: <span class="hljs-symbol">4</span></span><br><br># 换行缩进字符数<br><span class="hljs-symbol">IndentWidth:     <span class="hljs-symbol">4</span></span><br><br># 宏定义对齐<br><span class="hljs-symbol">AlignConsecutiveMacros: <span class="hljs-symbol">AcrossEmptyLinesAndComments</span></span><br></code></pre></td></tr></table></figure>
-
-<p>基于LLVM代码风格修改的个人使用版本：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">Language:</span>        <span class="hljs-string">Cpp</span><br><span class="hljs-comment"># BasedOnStyle:  LLVM</span><br><span class="hljs-attr">AccessModifierOffset:</span> <span class="hljs-number">-2</span><br><span class="hljs-attr">AlignAfterOpenBracket:</span> <span class="hljs-string">Align</span><br><span class="hljs-comment"># 宏定义对齐</span><br><span class="hljs-attr">AlignConsecutiveMacros:</span> <span class="hljs-string">AcrossEmptyLinesAndComments</span><br><span class="hljs-attr">AlignConsecutiveAssignments:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AlignConsecutiveDeclarations:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AlignConsecutiveBitFields:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AlignEscapedNewlines:</span> <span class="hljs-string">Right</span><br><span class="hljs-attr">AlignOperands:</span>   <span class="hljs-literal">true</span><br><span class="hljs-attr">AlignTrailingComments:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AllowAllArgumentsOnNextLine:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AllowAllConstructorInitializersOnNextLine:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AllowAllParametersOfDeclarationOnNextLine:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">AllowShortBlocksOnASingleLine:</span> <span class="hljs-string">Never</span><br><span class="hljs-attr">AllowShortCaseLabelsOnASingleLine:</span> <span class="hljs-literal">false</span><br><span class="hljs-comment"># 是否允许短方法单行，只有一行的函数将不会分行，直接写在函数名后</span><br><span class="hljs-attr">AllowShortFunctionsOnASingleLine:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">AllowShortLambdasOnASingleLine:</span> <span class="hljs-string">All</span><br><span class="hljs-attr">AllowShortIfStatementsOnASingleLine:</span> <span class="hljs-string">Never</span><br><span class="hljs-attr">AllowShortLoopsOnASingleLine:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">AlwaysBreakAfterDefinitionReturnType:</span> <span class="hljs-string">None</span><br><span class="hljs-attr">AlwaysBreakAfterReturnType:</span> <span class="hljs-string">None</span><br><span class="hljs-attr">AlwaysBreakBeforeMultilineStrings:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">AlwaysBreakTemplateDeclarations:</span> <span class="hljs-string">MultiLine</span><br><span class="hljs-attr">BinPackArguments:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">BinPackParameters:</span> <span class="hljs-literal">true</span><br><span class="hljs-comment"># 括号是分行，还是不分行，只有当 BreakBeforeBraces 设置为 Custom 时才有效</span><br><span class="hljs-attr">BraceWrapping:</span><br>  <span class="hljs-attr">AfterCaseLabel:</span>  <span class="hljs-literal">true</span><br>  <span class="hljs-comment"># class 定义后面</span><br>  <span class="hljs-attr">AfterClass:</span>      <span class="hljs-literal">true</span><br>  <span class="hljs-comment"># 控制语句后面</span><br>  <span class="hljs-attr">AfterControlStatement:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterEnum:</span>       <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterFunction:</span>   <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterNamespace:</span>  <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterObjCDeclaration:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterStruct:</span>     <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterUnion:</span>      <span class="hljs-literal">true</span><br>  <span class="hljs-attr">AfterExternBlock:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">BeforeCatch:</span>     <span class="hljs-literal">true</span><br>  <span class="hljs-attr">BeforeElse:</span>      <span class="hljs-literal">true</span><br>  <span class="hljs-comment"># 缩进大括号</span><br>  <span class="hljs-attr">IndentBraces:</span>    <span class="hljs-literal">false</span><br>  <span class="hljs-attr">SplitEmptyFunction:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">SplitEmptyRecord:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">SplitEmptyNamespace:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">BreakBeforeBinaryOperators:</span> <span class="hljs-string">None</span><br><span class="hljs-attr">BreakBeforeBraces:</span> <span class="hljs-string">Custom</span><br><span class="hljs-attr">BreakBeforeInheritanceComma:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">BreakInheritanceList:</span> <span class="hljs-string">BeforeColon</span><br><span class="hljs-attr">BreakBeforeTernaryOperators:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">BreakConstructorInitializersBeforeComma:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">BreakConstructorInitializers:</span> <span class="hljs-string">BeforeColon</span><br><span class="hljs-attr">BreakAfterJavaFieldAnnotations:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">BreakStringLiterals:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">ColumnLimit:</span>     <span class="hljs-number">100</span><br><span class="hljs-attr">CommentPragmas:</span>  <span class="hljs-string">&#x27;^ IWYU pragma:&#x27;</span><br><span class="hljs-attr">CompactNamespaces:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">ConstructorInitializerAllOnOneLineOrOnePerLine:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">ConstructorInitializerIndentWidth:</span> <span class="hljs-number">4</span><br><span class="hljs-attr">ContinuationIndentWidth:</span> <span class="hljs-number">4</span><br><span class="hljs-attr">Cpp11BracedListStyle:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">DeriveLineEnding:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">DerivePointerAlignment:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">DisableFormat:</span>   <span class="hljs-literal">false</span><br><span class="hljs-attr">ExperimentalAutoDetectBinPacking:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">FixNamespaceComments:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">ForEachMacros:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">foreach</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Q_FOREACH</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">BOOST_FOREACH</span><br><span class="hljs-attr">IncludeBlocks:</span>   <span class="hljs-string">Preserve</span><br><span class="hljs-attr">IncludeCategories:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">Regex:</span>           <span class="hljs-string">&#x27;^&quot;(llvm|llvm-c|clang|clang-c)/&#x27;</span><br>    <span class="hljs-attr">Priority:</span>        <span class="hljs-number">2</span><br>    <span class="hljs-attr">SortPriority:</span>    <span class="hljs-number">0</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">Regex:</span>           <span class="hljs-string">&#x27;^(&lt;|&quot;(gtest|gmock|isl|json)/)&#x27;</span><br>    <span class="hljs-attr">Priority:</span>        <span class="hljs-number">3</span><br>    <span class="hljs-attr">SortPriority:</span>    <span class="hljs-number">0</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">Regex:</span>           <span class="hljs-string">&#x27;.*&#x27;</span><br>    <span class="hljs-attr">Priority:</span>        <span class="hljs-number">1</span><br>    <span class="hljs-attr">SortPriority:</span>    <span class="hljs-number">0</span><br><span class="hljs-attr">IncludeIsMainRegex:</span> <span class="hljs-string">&#x27;(Test)?$&#x27;</span><br><span class="hljs-attr">IncludeIsMainSourceRegex:</span> <span class="hljs-string">&#x27;&#x27;</span><br><span class="hljs-attr">IndentCaseLabels:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">IndentGotoLabels:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">IndentPPDirectives:</span> <span class="hljs-string">None</span><br><span class="hljs-comment"># 换行缩进字符数</span><br><span class="hljs-attr">IndentWidth:</span>     <span class="hljs-number">4</span><br><span class="hljs-attr">IndentWrappedFunctionNames:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">JavaScriptQuotes:</span> <span class="hljs-string">Leave</span><br><span class="hljs-attr">JavaScriptWrapImports:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">KeepEmptyLinesAtTheStartOfBlocks:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">MacroBlockBegin:</span> <span class="hljs-string">&#x27;&#x27;</span><br><span class="hljs-attr">MacroBlockEnd:</span>   <span class="hljs-string">&#x27;&#x27;</span><br><span class="hljs-attr">MaxEmptyLinesToKeep:</span> <span class="hljs-number">1</span><br><span class="hljs-attr">NamespaceIndentation:</span> <span class="hljs-string">None</span><br><span class="hljs-attr">ObjCBinPackProtocolList:</span> <span class="hljs-string">Auto</span><br><span class="hljs-attr">ObjCBlockIndentWidth:</span> <span class="hljs-number">0</span><br><span class="hljs-attr">ObjCSpaceAfterProperty:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">ObjCSpaceBeforeProtocolList:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">PenaltyBreakAssignment:</span> <span class="hljs-number">2</span><br><span class="hljs-attr">PenaltyBreakBeforeFirstCallParameter:</span> <span class="hljs-number">19</span><br><span class="hljs-attr">PenaltyBreakComment:</span> <span class="hljs-number">300</span><br><span class="hljs-attr">PenaltyBreakFirstLessLess:</span> <span class="hljs-number">120</span><br><span class="hljs-attr">PenaltyBreakString:</span> <span class="hljs-number">1000</span><br><span class="hljs-attr">PenaltyBreakTemplateDeclaration:</span> <span class="hljs-number">10</span><br><span class="hljs-attr">PenaltyExcessCharacter:</span> <span class="hljs-number">1000000</span><br><span class="hljs-attr">PenaltyReturnTypeOnItsOwnLine:</span> <span class="hljs-number">60</span><br><span class="hljs-attr">PointerAlignment:</span> <span class="hljs-string">Right</span><br><span class="hljs-attr">ReflowComments:</span>  <span class="hljs-literal">true</span><br><span class="hljs-attr">SortIncludes:</span>    <span class="hljs-literal">true</span><br><span class="hljs-attr">SortUsingDeclarations:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceAfterCStyleCast:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpaceAfterLogicalNot:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpaceAfterTemplateKeyword:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceBeforeAssignmentOperators:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceBeforeCpp11BracedList:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpaceBeforeCtorInitializerColon:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceBeforeInheritanceColon:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceBeforeParens:</span> <span class="hljs-string">ControlStatements</span><br><span class="hljs-attr">SpaceBeforeRangeBasedForLoopColon:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpaceInEmptyBlock:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpaceInEmptyParentheses:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpacesBeforeTrailingComments:</span> <span class="hljs-number">1</span><br><span class="hljs-attr">SpacesInAngles:</span>  <span class="hljs-literal">false</span><br><span class="hljs-attr">SpacesInConditionalStatement:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpacesInContainerLiterals:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">SpacesInCStyleCastParentheses:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpacesInParentheses:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpacesInSquareBrackets:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">SpaceBeforeSquareBrackets:</span> <span class="hljs-literal">false</span><br><span class="hljs-attr">Standard:</span>        <span class="hljs-string">Latest</span><br><span class="hljs-attr">StatementMacros:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Q_UNUSED</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">QT_REQUIRE_VERSION</span><br><span class="hljs-attr">TabWidth:</span>        <span class="hljs-number">8</span><br><span class="hljs-attr">UseCRLF:</span>         <span class="hljs-literal">false</span><br><span class="hljs-attr">UseTab:</span>          <span class="hljs-string">Never</span><br><span class="hljs-string">...</span><br><br></code></pre></td></tr></table></figure>
-
-<h3 id="格式化最新的commit代码"><a href="#格式化最新的commit代码" class="headerlink" title="格式化最新的commit代码"></a>格式化最新的commit代码</h3><p><code>clang-format</code>还提供一个<code>clang-format-diff.py</code>脚本，用来格式化<code>patch</code>，<code>code review</code>提交代码前，跑一遍下面的代码。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">// 格式化最新的 commit，并直接在原文件上修改<br>git diff -U0 HEAD^ | clang-format-diff.py -i -p1<br></code></pre></td></tr></table></figure>
-
-<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><h4 id="如何看懂官方文档并编写配置文件"><a href="#如何看懂官方文档并编写配置文件" class="headerlink" title="如何看懂官方文档并编写配置文件"></a>如何看懂官方文档并编写配置文件</h4><p><a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/ClangFormatStyleOptions.html">官方文档</a>里有各种设置的示例代码，即使不知道想要的格式化是哪个配置参数，翻一翻官方文档是示例大概率能找到。那么找到了想要的配置参数，如何在文件里配置呢？</p>
-<p>以宏定义对齐为例。我们想要宏定义的值保持对齐的状态，如下一节图片所示。可以翻一遍官方文档，可以发现这个示例代码对应的参数可能是我们想要的，<code>AlignConsecutiveMacros</code>翻译为<strong>对齐连续的宏定义</strong>。那应该八九不离十了。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112202021134.png"></p>
-<p>找到了参数如何编写配置文件呢？可以继续看这个参数下面的更多示例，每一个示例都对应一个配置可能值<code>Possible values</code>。</p>
-<ul>
-<li><p><code>ACS_None</code> (in configuration: <code>None</code>)<br>Do not align macro definitions on consecutive lines.<br><code>ACS_None</code>为这个配置的缩写，<code>None</code>表示在配置文件里的值。该配置表示不对宏定义进行对齐操作，在配置文件里可以添加如下：</p>
-<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-symbol">AlignConsecutiveMacros:</span> None<br></code></pre></td></tr></table></figure></li>
-<li><p><code>ACS_Consecutive</code> (in configuration: <code>Consecutive</code>)<br>Align macro definitions on consecutive lines. This will result in formattings like:</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> SHORT_NAME       42</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> LONGER_NAME      0x007f</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> EVEN_LONGER_NAME (2)</span><br><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> foo(x) (x * x)</span><br><span class="hljs-comment">/* some comment */</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> bar(y, z) (y + z)</span><br></code></pre></td></tr></table></figure>
-
-<p><code>ACS_Consecutive</code>为这个配置的缩写，<code>Consecutive</code>表示在配置文件里的值。该配置表示对连续的宏定义进行对齐，在配置文件里可以添加如下：</p>
-<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-symbol">AlignConsecutiveMacros:</span> Consecutive<br></code></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="宏定义对齐失效"><a href="#宏定义对齐失效" class="headerlink" title="宏定义对齐失效"></a>宏定义对齐失效</h4><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-meta"># 宏定义对齐</span><br><span class="hljs-symbol">AlignConsecutiveMacros:</span> AcrossEmptyLinesAndComments<br></code></pre></td></tr></table></figure>
-
-<p>使用宏定义对齐更详细的配置，可以<a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/ClangFormatStyleOptions.html">参考官方文档</a>。使用该配置一定要使用等宽的字体，否则配置生效但是显示不正确。<br>比如我是用<strong>微软雅黑</strong>字体作为编码字体，因为该字体每个字符不等宽，导致格式化正确，但是显示不正确。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112201954096.png"></p>
-<p>如果将字体换位等宽字体如常用的<strong>Consolas</strong>，就可以正常显示。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112201958869.png"></p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -940,7 +929,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>

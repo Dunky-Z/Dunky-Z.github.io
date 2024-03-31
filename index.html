@@ -125,6 +125,199 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="2024/03/30/BootROM%E4%B8%ADSPI%E5%A6%82%E4%BD%95%E9%80%82%E9%85%8D%E4%B8%8D%E5%90%8C%E5%8E%82%E5%AE%B6%E7%9A%84Flash%E8%8A%AF%E7%89%87/" itemprop="url">BootROM 中 SPI 如何适配不同厂家的 Flash 芯片</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2024-03-30T13:38:10.000Z" itemprop="datePublished">3月 30 2024</time>
+            
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            8 分钟 读完 (约 1210 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <html><head></head><body><h1 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h1><p>一款 SoC 芯片，会支持多种方式启动，比如从 NAND Flash、SPI Flash、eMMC、USB、UART 启动。对于 SPI Flash 启动，BootROM 需要知道 SPI Flash 的型号、容量、页大小、擦除大小等信息，以便正确读取、写入、擦除 SPI Flash。但是，不同厂家的 SPI Flash，这些参数可能不同，而 ROM 中的代码是无法修改的，并且容量有限，如何以最小的代码量，适配不同厂家的 SPI Flash 呢？</p>
+<h1 id="SPI-开发流程"><a href="#SPI-开发流程" class="headerlink" title="SPI 开发流程"></a>SPI 开发流程</h1><ul>
+<li><p>SPI 控制器初始</p>
+<ul>
+<li>SPI 控制器有自己的寄存器，可以配置 SPI 的页，块的擦除时间，是否需要 DMA，是否开启中断，单次读写的大小等等。</li>
+</ul>
+</li>
+<li><p>使用 SPI 对 Flash 进行配置</p>
+<ul>
+<li>BootROM 的 SPI 支持三种模式：Single、Dual、Quad，这不仅要配置 SPI 本身的寄存器，也需要配置 Flash 的寄存器。配置 Flash 的寄存器就需要使用 SPI 来完成。<ul>
+<li>BootROM 中配置 SPI 控制器的 <code>SPIC_CSR_01</code> 寄存器的<code>spi_bus_mode</code> 位可以配置 SPI 的模式；</li>
+<li>查阅 Flash 手册，找到配置总线模式的寄存器以及操作它的命令，如 WINBOND-W25Q128JW 这款 Flash 的配置寄存器为 <code>Status Register-2</code>，Flash 的寄存器是无法直接读写的，所以需要在 Flash 手册中找到操作这个寄存器的命令，在手册的 Instructions 章节可以找到这款 Flash 的配置命令为 <code>Write Status Register-2</code>，命令码为 <code>0x31</code>，只要我们向 Flash 发送 <code>0x31</code>，就可以配置 Flash 的总线模式了。<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png"></li>
+<li>如何向 Flash 发送指令？需要将真正要发送的指令写入 SPI 的寄存器<code>SPIC_CSR_06</code>，该寄存器的各个 Bit 可以配置命令码，命令类型，命令是否有效等信息。我们将之前的命令码<code>0x31</code>写入到<code>SPIC_CSR_06</code>的<code>command_code</code>位，然后将<code>SPIC_CSR_06</code>的<code>command_type</code>位设置为<code>write status register</code>，SPI 就会自动将这些信息发送给 Flash。Flash 接收到命令后，会根据命令码执行配置寄存器的操作。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>SPI 读写 Flash</p>
+<ul>
+<li>和配置 Flash 总线模式一样，读写 Flash 也需要配置 SPI 控制器的寄存器，以及配置 Flash 的寄存器。SPI 控制器的寄存器配置和配置 Flash 总线模式一样，只是命令码和命令类型不同。稍有不同的是需要先配置好 SPI 寄存器，配置读写的大小以及读写的地址，然后再配置<code>SPIC_CSR_06</code>。Flash接收到命令后，会根据命令码执行读写操作。主设备只需要读写 Flash 的指定地址即可读写到数据。</li>
+</ul>
+</li>
+</ul>
+<h1 id="SPI-驱动如何适配不同的-Flash"><a href="#SPI-驱动如何适配不同的-Flash" class="headerlink" title="SPI 驱动如何适配不同的 Flash"></a>SPI 驱动如何适配不同的 Flash</h1><p>在开发流程中我们并未考虑不同厂家的 Flash 如何操作，只是关心了 WINBOND-W25Q128JW 这款 Flash 的操作。在操作过程中我们可以发现，不同厂家的 Flash 的操作基本一致，只是命令码、页大小、擦除大小等参数不同。我们只要针对不同的 Flash，配置不同的参数即可。但是，如何知道当前 Flash 的参数呢？这就需要用到 SFDP 了。</p>
+<p>SFDP 是 JEDEC 发布的 JESD216 的一个新标准，目前的版本号是 V1.0。简而言之，SFDP（Serial Flash Discoverable Parameters）就相当于一张存储了 FLASH 部分属性的表，此表是不占用 FLASH 本身的存储空间的。SFDP 中的信息自出厂就被固定，只供读取，开发人员可通过发送操作指令 0x5A 来读取当前 FLASH 的 SFDP 相关内容，这有利于开发人员了解 FLASH 之间的差异，提高开发效率，缩短整个开发周期。</p>
+<p>也就是只要 Flash 研发时遵循了 JESD216 这个标准，我们都可以通过发送 0x5A 这个命令码，去获取Flash相关参数。最为关键的就是其中会保存 Flash 厂商的 ID，当我们获取到 Flash 厂商的 ID 时，我们就可以根据 ID 执行不同的配置操作。</p>
+<p>对于 WINBOND-W25Q128JW 这款 Flash，在数据手册的Feature里就可以看到它是支持 SFDP 的：<br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png"></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css"></body></html>
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="2024/03/24/GitHub-Copilot-CLI%E5%91%BD%E4%BB%A4%E8%A1%8CAI%E5%B7%A5%E5%85%B7/" itemprop="url">GitHub Copilot CLI命令行AI工具</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2024-03-24T01:44:16.000Z" itemprop="datePublished">3月 24 2024</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            6 分钟 读完 (约 865 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <html><head></head><body><p>GitHub Copilot CLI 是一个命令行工具，它允许你在终端中使用 GitHub Copilot。你可以使用它来获取代码建议，这些建议是由 OpenAI 的 GPT-4 模型生成的。这个工具可以在任何支持命令行的环境中使用，包括 Visual Studio Code 的集成终端。</p>
+<p>参考官方文档：<a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/github-copilot-in-the-cli/using-github-copilot-in-the-cli">Using GitHub Copilot in the CLI - GitHub Docs</a></p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>前提：</p>
+<ol>
+<li><p>需要订阅Github Copilot，每月$10。</p>
+</li>
+<li><p>需要安装GH CLI</p>
+</li>
+</ol>
+<p>订阅自行解决，接下来安装GH CLI：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">mkdir</span> -p -m <span class="token number">755</span> /etc/apt/keyrings <span class="token operator">&amp;&amp;</span> <span class="token function">wget</span> -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /etc/apt/keyrings/githubcli-archive-keyring.gpg <span class="token operator">&gt;</span> /dev/null <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">chmod</span> go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">echo</span> <span class="token string">"deb [arch=<span class="token variable"><span class="token variable">$(</span>dpkg --print-architecture<span class="token variable">)</span></span> signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"</span> <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /etc/apt/sources.list.d/github-cli.list <span class="token operator">&gt;</span> /dev/null <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">apt</span> update <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> gh -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>如果没法安装，可以下载deb文件手动安装。<a target="_blank" rel="noopener" href="https://github.com/cli/cli/releases/tag/v2.46.0">Release GitHub CLI 2.46.0 · cli/cli</a></p>
+<p>安装完GH CLI后，安装Copilot CLI：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh auth login
+<span class="token comment"># 选择登录账号类型为Github.com</span>
+? What account <span class="token keyword">do</span> you want to log into?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> GitHub.com
+  GitHub Enterprise Server
+<span class="token comment"># 选择传输协议为SSH</span>
+? What is your preferred protocol <span class="token keyword">for</span> Git operations on this host?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+  HTTPS
+<span class="token operator">&gt;</span> SSH
+<span class="token comment"># 选择一个本地的公钥，并命名SSH key的名称</span>
+? Title <span class="token keyword">for</span> your SSH key: <span class="token punctuation">(</span>GitHub CLI<span class="token punctuation">)</span> wsl2
+<span class="token comment"># 选择验证方式为使用浏览器验证</span>
+? How would you like to authenticate GitHub CLI?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> Login with a web browser
+  Paste an authentication token
+<span class="token operator">!</span> First copy your one-time code: 7AAA-SA47
+<span class="token comment"># 回车后会弹出浏览器，输入验证码即可</span>
+Press Enter to <span class="token function">open</span> github.com <span class="token keyword">in</span> your browser<span class="token punctuation">..</span>.
+<span class="token operator">!</span> Failed opening a web browser at https://github.com/login/device
+  fork/exec /usr/bin/winchrome: <span class="token builtin class-name">exec</span> <span class="token function">format</span> error
+  Please try entering the URL <span class="token keyword">in</span> your browser manually<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>WSL2 环境下可能会出现无法打开浏览器的情况，可以手动打开浏览器输入地址验证<a target="_blank" rel="noopener" href="https://github.com/login/device%E3%80%82">https://github.com/login/device。</a></p>
+</blockquote>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><p>支持两个命令：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 解释代码</span>
+gh copilot explain
+<span class="token comment"># 获取命令行建议</span>
+gh copilot suggest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>示例：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh copilot explain <span class="token string">"sudo apt-get"</span>
+
+Welcome to GitHub Copilot <span class="token keyword">in</span> the CLI<span class="token operator">!</span>
+version <span class="token number">1.0</span>.1 <span class="token punctuation">(</span><span class="token number">2024</span>-03-22<span class="token punctuation">)</span>
+
+I'm powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For <span class="token function">more</span> information, see https://gh.io/gh-copilot-transparency
+
+Explanation:                                                                                                                                                                       
+                                                                                                                                                                                   
+  • <span class="token function">sudo</span> is used to run a <span class="token builtin class-name">command</span> with elevated rights, typically as a superuser.                                                                                                  
+    • <span class="token function">apt-get</span> is the Ubuntu package manager.                                                                                                                                       
+      • It is used to manage packages on the system, including installing, updating, and removing software packages.                                                               
+      • It requires administrative privileges to perform these operations.                                                                                                         
+      • Additional sub-commands can be used with <span class="token function">apt-get</span> to perform specific tasks, such as install, remove, update, etc.                                                          <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ gh copilot suggest <span class="token string">"Install git"</span>
+Welcome to GitHub Copilot <span class="token keyword">in</span> the CLI<span class="token operator">!</span>
+version <span class="token number">1.0</span>.1 <span class="token punctuation">(</span><span class="token number">2024</span>-03-22<span class="token punctuation">)</span>
+
+I'm powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For <span class="token function">more</span> information, see https://gh.io/gh-copilot-transparency
+
+? What kind of <span class="token builtin class-name">command</span> can I <span class="token builtin class-name">help</span> you with?  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> generic shell <span class="token builtin class-name">command</span>
+  gh <span class="token builtin class-name">command</span>
+  <span class="token function">git</span> <span class="token builtin class-name">command</span>
+Suggestion:                                                                                                                                                                        
+  <span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token function">git</span>                                                                                                                                                     
+? Select an option  <span class="token punctuation">[</span>Use arrows to move, <span class="token builtin class-name">type</span> to filter<span class="token punctuation">]</span>
+<span class="token operator">&gt;</span> Copy <span class="token builtin class-name">command</span> to clipboard
+  Explain <span class="token builtin class-name">command</span>
+  Execute <span class="token builtin class-name">command</span>
+  Revise <span class="token builtin class-name">command</span>
+  Rate response
+  Exit<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>gh copilot 默认提供了这两个命令的别名，无需输入完整命令，可以直接使用：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># ghce 为 gh copilot explain 的别名</span>
+ghce <span class="token string">"sudo apt-get"</span>
+<span class="token comment"># ghcs 为 gh copilot suggest 的别名</span>
+ghcs <span class="token string">"install git"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>为了便于在每个终端中使用 gh copilot cli，将以下配置放到配置文件中：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">'eval "$(gh copilot alias -- zsh)"'</span> <span class="token operator">&gt;&gt;</span> ~/.zshrc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css"></body></html>
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="2024/03/03/RemoteX11-%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95%E5%B8%A6GUI%E5%BA%94%E7%94%A8/" itemprop="url">RemoteX11 远程调试带GUI应用</a>
         
     </h1>
@@ -1098,94 +1291,6 @@ riscv64<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="2023/12/23/%E8%A7%A3%E5%86%B3Adobe-Photoshop%E6%AD%A3%E7%89%88%E5%8D%87%E7%BA%A7%E5%BC%B9%E7%AA%97/" itemprop="url">解决Adobe Photoshop正版升级弹窗</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2023-12-23T04:08:36.000Z" itemprop="datePublished">12月 23 2023</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            4 分钟 读完 (约 590 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>不知什么原因，一直正常使用的Adobe Photoshop 2021突然开始弹窗提示升级，还是日文的（应该是代理到到日本了），可能根据地区不同，弹窗的内容也不同，但是都是提示升级，倒计时10天，不知道十天之后啥情况。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/23/a8b83c2f3e0916e9b2fd92dc7332dc89.png"></p>
-<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>Adobe的其他软件同理，比如我在用的Lightroom也是这样，解决方法也是一样的。以下方式基于Windows 11，其他版本的Windows也是类似的。</p>
-<p><strong>如果没有用代理</strong>，可以直接将Photoshop程序禁止联网。可以通过配置Windows的防火墙来实现，具体方法如下：</p>
-<ol>
-<li><p>打开设置搜索“防火墙”，打开Windows防火墙，选择“高级设置”。</p>
-<p> <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/23/a38bd63b6c184481c797cd3143e3b21d.png"></p>
-</li>
-<li><p>选择“出站规则”，点击“新建规则”，选择规则类型为“程序”，程序选择为Photoshop的安装目录下的Photoshop.exe，然后选择“阻止连接”，一路下一步，最后命名规则为“禁止Photoshop联网”。<br> <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/23/31498beb037fc282838480a3624850cc.png"></p>
-</li>
-</ol>
-<p><strong>如果使用了代理</strong>，防火墙可能会被绕过，Photoshop可能仍然会通过代理访问更新服务器。需要通过配置代理将Photoshop禁止代理。如果不配置，可以在<strong>每次打开Adobe相关软件前关闭代理</strong>，如果配置，这里以Clash for Windows为例，可以通过配置Clash的规则来实现，不用关闭代理。具体方法如下：</p>
-<p>点击“Profiles”，选择自己的订阅，右击选择“Edit”，将以下这些规则添加到配置文件中保存即可：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- PROCESS-NAME,Lightroom.exe,REJECT</span><br><span class="line">- PROCESS-NAME,lightroom.exe,REJECT</span><br><span class="line">- PROCESS-NAME,Photoshop.exe,REJECT</span><br><span class="line">- PROCESS-NAME,photoshop.exe,REJECT</span><br><span class="line">- PROCESS-NAME,Adobe Lightroom CEF Helper.exe,REJECT</span><br><span class="line">- PROCESS-NAME,AdobeIPCBroker.exe,REJECT</span><br><span class="line">- PROCESS-NAME,dynamiclinkmanager.exe,REJECT</span><br><span class="line">- PROCESS-NAME,dynamiclinkmediaserver.exe,REJECT</span><br></pre></td></tr></table></figure>
-
-<p>其他程序你可以自己添加，格式为<code>PROCESS-NAME,程序名,REJECT</code>。表示拒绝这些程序访问网络。</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="2023/12/17/ZWIFT%E4%BD%BF%E7%94%A8Tips/" itemprop="url">ZWIFT使用Tips</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2023-12-17T05:24:55.000Z" itemprop="datePublished">12月 17 2023</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            几秒 读完 (约 84 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/17/0573bf51587d55e549ac5fd4719733b4.png"></p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/17/6fb1f8bb10562bb55eb8b7eddb97a0ce.png"></p>
-<h1 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h1><h2 id="启动后闪退"><a href="#启动后闪退" class="headerlink" title="启动后闪退"></a>启动后闪退</h2><p>将输入法切换为英文模式再重新启动。</p>
-<h2 id="没有其他玩家，只有自己"><a href="#没有其他玩家，只有自己" class="headerlink" title="没有其他玩家，只有自己"></a>没有其他玩家，只有自己</h2><p>挂全局代理重新启动。</p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -1203,7 +1308,7 @@ riscv64<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="page/26/">26</a></li>
+        <li><a class="pagination-link" href="page/27/">27</a></li>
         
     </ul>
 </nav>

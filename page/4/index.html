@@ -125,6 +125,116 @@
         <article class="article content gallery" itemscope itemprop="blogPost">
     <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
         
+            <a href="../../2023/08/20/PhotoPrism%E9%83%A8%E7%BD%B2%E7%A7%81%E4%BA%BA%E7%9B%B8%E5%86%8C/" itemprop="url">PhotoPrism 部署私人相册</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2023-08-20T01:48:13.000Z" itemprop="datePublished">8月 20 2023</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/Self-Hosted/">Self-Hosted</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            5 分钟 读完 (约 759 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h1 id="Docker-compose-启动"><a href="#Docker-compose-启动" class="headerlink" title="Docker-compose 启动"></a>Docker-compose 启动</h1><p>下载官方的 <code>docker-compose.yml</code> 文件，然后修改一下端口和挂载路径，然后启动即可。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.photoprism.app/docker/docker-compose.yml</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果无法下载下载地址可以前往 <a target="_blank" rel="noopener" href="https://docs.photoprism.app/getting-started/docker-compose/">Docker Compose - PhotoPrism</a> 查看最新。</p>
+</blockquote>
+<p>根据自己需要修改以下参数：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3.5&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">photoprism:</span></span><br><span class="line">    <span class="comment">## Use photoprism/photoprism:preview for testing preview builds:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">dockerproxy.com/photoprism/photoprism:latest</span> <span class="comment"># 配置了镜像加速</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;2342:2342&quot;</span> <span class="comment"># HTTP port (host:container)</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">PHOTOPRISM_ADMIN_USER:</span> <span class="string">&quot;admin&quot;</span>                 <span class="comment"># 管理员用户名</span></span><br><span class="line">      <span class="attr">PHOTOPRISM_ADMIN_PASSWORD:</span> <span class="string">&quot;12345678&quot;</span>          <span class="comment"># 管理员密码</span></span><br><span class="line">      <span class="attr">PHOTOPRISM_DETECT_NSFW:</span> <span class="string">&quot;true&quot;</span>                 <span class="comment"># 自动检测 NSFW 图片并标记隐私图片</span></span><br><span class="line">      <span class="attr">PHOTOPRISM_UPLOAD_NSFW:</span> <span class="string">&quot;true&quot;</span>                 <span class="comment"># 运行上传 NSFW 图片   </span></span><br><span class="line">    <span class="comment">## Share hardware devices with FFmpeg and TensorFlow (optional):</span></span><br><span class="line">    <span class="attr">devices:</span></span><br><span class="line">     <span class="bullet">-</span> <span class="string">&quot;/dev/dri:/dev/dri&quot;</span>                           <span class="comment"># 如果有核显或者独显可以配置硬件加速</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;/root/sharedfolder/syncthing/Photo_Album:/photoprism/originals/Photo_Album&quot;</span>               <span class="comment"># 照片存放路径</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;/root/sharedfolder/syncthing/daily:/photoprism/originals/daily&quot;</span>               <span class="comment"># 照片存放路径</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;/root/sharedfolder/syncthing/baby:/photoprism/originals/baby&quot;</span>               <span class="comment"># 照片存放路径</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;./storage:/photoprism/storage&quot;</span>                  <span class="comment"># 不要删除 (DO NOT REMOVE)</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后启动即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<p><strong>初始化需要时间，等待一分钟左右</strong>，然后访问 <code>http://&#123;hostip&#125;:2342</code> 即可看到登录界面。</p>
+<h1 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h1><h2 id="配置中文界面"><a href="#配置中文界面" class="headerlink" title="配置中文界面"></a>配置中文界面</h2><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/20/eca4f02a6f2595302abe05ac41f5c965.png"></p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/20/b4c5c56ab3eb0242e35a09bd5036885e.png"></p>
+<h2 id="索引照片"><a href="#索引照片" class="headerlink" title="索引照片"></a>索引照片</h2><p>这个过程会调用 TensorFlow 进行照片的 AI 识别，然后自动进行分类，照片如果很多会很慢。如果只想索引某一个目录就点击图片中的区域选择指定目录，<strong>选择目录的过程会加载比较慢</strong>，需要等待。</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/20/33a399732f66f9b768007377ffbcb748.png"></p>
+<h1 id="使用相册"><a href="#使用相册" class="headerlink" title="使用相册"></a>使用相册</h1><p>索引完成就可以点击搜索进行查看所有照片了：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/20/c1bc29db426f442362ae17fdd8e29d63.png"></p>
+<p>索引过程会根据照片的 Exif 信息自动分类，包括时间与地点。后悔从相机导出照片时把地点抹去了。</p>
+<p>照片还是得及时整理呀，这成千上万张照片挨个标记还是很麻烦的，就这样吧，做个图片墙也不错。</p>
+<h1 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h1><h2 id="在docker-compose-yml中删除已经索引的volume，为何图片库中还存在缓存"><a href="#在docker-compose-yml中删除已经索引的volume，为何图片库中还存在缓存" class="headerlink" title="在docker-compose.yml中删除已经索引的volume，为何图片库中还存在缓存"></a>在docker-compose.yml中删除已经索引的volume，为何图片库中还存在缓存</h2><p>缓存保存在storage中，如果图片内容不多，可以将该目录删除，重启容器。也可以通过以下命令将缓存删除：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入容器</span></span><br><span class="line">docker <span class="built_in">exec</span> -it photo-prism bash</span><br><span class="line"><span class="comment"># 删除索引</span></span><br><span class="line">photoprism purge</span><br><span class="line"><span class="comment"># 删除文件</span></span><br><span class="line">photoprism cleanup</span><br></pre></td></tr></table></figure>
+
+<h2 id="全选图片，选择多个图片"><a href="#全选图片，选择多个图片" class="headerlink" title="全选图片，选择多个图片"></a>全选图片，选择多个图片</h2><p>可以选择一张图片后按住Shift到最后一张，批量选择图片</p>
+<h2 id="定时索引照片"><a href="#定时索引照片" class="headerlink" title="定时索引照片"></a>定时索引照片</h2><p>可以使用 <code>crontab</code> 定时执行 <code>photoprism index</code> 命令，例如每天凌晨 3 点执行一次：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑定时任务</span></span><br><span class="line">crontab -e</span><br><span class="line"><span class="comment"># 添加以下内容</span></span><br><span class="line">0 3 * * * docker <span class="built_in">exec</span> -i photo-prism photoprism index</span><br></pre></td></tr></table></figure><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
+            <a href="../../2023/08/17/Docker%E9%83%A8%E7%BD%B2Radarr%E5%88%AE%E5%89%8A%E7%94%B5%E5%BD%B1/" itemprop="url">Docker 部署 Radarr 刮削电影</a>
+        
+    </h1>
+    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
+        <span class="column is-narrow">
+            
+                <time datetime="2023-08-17T14:46:26.000Z" itemprop="datePublished">8月 17 2023</time>
+            
+        </span>
+        
+        <span class="column is-narrow article-category">
+            <i class="far fa-folder"></i>
+            <a class="article-category-link" href="../../categories/%E5%B7%A5%E6%AC%B2%E5%96%84%E5%85%B6%E4%BA%8B%E5%BF%85%E5%85%88%E5%88%A9%E5%85%B6%E5%99%A8/">工欲善其事必先利其器</a>
+        </span>
+        
+        
+        <span class="column is-narrow">
+            
+            
+            几秒 读完 (约 90 字)
+        </span>
+        
+    </div>
+    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
+    
+        <h1 id="docker-compose-yml"><a href="#docker-compose-yml" class="headerlink" title="docker-compose.yml"></a>docker-compose.yml</h1><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&quot;3.7&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">radarr:</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">radarr</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">dockerproxy.com/linuxserver/radarr:latest</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;7878:7878&quot;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">PUID=1000</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">PGID=1000</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">UMASK=002</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">TZ=Asia/Shanghai</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/root/sharedfolder/appdata/radarr:/config</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/root/sharedfolder/media:/movies</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/root/sharedfolder/downloads/qbittorrent:/downloads</span></span><br></pre></td></tr></table></figure>
+
+<p>配置中文界面：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/17/9dbfcaa5f918bccfa99ce64cc97a7e16.png"></p>
+<p>导入视频：</p>
+<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/17/81a242b30d3ab2d29b7f4bf92ba246de.png"></p>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
+    
+    </div>
+    
+    
+</article>
+
+
+
+
+    
+        <article class="article content gallery" itemscope itemprop="blogPost">
+    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
+        
             <a href="../../2023/08/12/SSH%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95/" itemprop="url">SSH 免密登录</a>
         
     </h1>
@@ -1116,183 +1226,6 @@
 
 
     
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2023/06/17/Virtual-Box%E7%9A%84%E4%B8%8D%E5%90%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" itemprop="url">Virtual Box 的不同虚拟机网络模式</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2023-06-17T08:48:02.000Z" itemprop="datePublished">6月 17 2023</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            2 分钟 读完 (约 311 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <ul>
-<li>💻 NAT 网络模式<ul>
-<li>NAT 网络以路由器的 NAT 功能为原理，允许虚拟机通过共享主机的 IP 地址访问互联网，但虚拟机之间不能直接通信。通过端口转发可以实现虚拟机之间的连接。</li>
-</ul>
-</li>
-<li>🔗 桥接网络模式<ul>
-<li>桥接网络模式通过虚拟交换机连接虚拟机和主机，使得虚拟机可以通过局域网访问互联网，并允许虚拟机之间直接通信。</li>
-</ul>
-</li>
-<li>🔒 内部网络模式<ul>
-<li>内部网络模式使得虚拟机可以创建一个完全隔离的网络，虚拟机之间可以直接通信，但无法访问互联网或外部网络。</li>
-</ul>
-</li>
-<li>🏠 仅主机网络模式<ul>
-<li>仅主机网络模式允许虚拟机之间可以通信，并且与主机之间也可以通信，但无法访问互联网或外部网络。</li>
-</ul>
-</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>虚拟机 ↔ 虚拟机</th>
-<th>虚拟机 → 宿主机</th>
-<th>宿主机 → 虚拟机</th>
-<th>虚拟机 → 互联网</th>
-<th>互联网 → 虚拟机</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>网络地址转换 NAT</td>
-<td>×</td>
-<td>√</td>
-<td>×</td>
-<td>√</td>
-<td>×</td>
-</tr>
-<tr>
-<td>NAT 网络</td>
-<td>√</td>
-<td>√</td>
-<td>×</td>
-<td>√</td>
-<td>×</td>
-</tr>
-<tr>
-<td>Bridged Adapter 桥接网卡</td>
-<td>√</td>
-<td>√</td>
-<td>√</td>
-<td>√</td>
-<td>√</td>
-</tr>
-</tbody></table>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
-        <article class="article content gallery" itemscope itemprop="blogPost">
-    <h1 class="article-title is-size-3 is-size-4-mobile" itemprop="name">
-        
-            <a href="../../2023/06/11/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82/" itemprop="url">计算机网络 - 数据链路层</a>
-        
-    </h1>
-    <div class="article-meta columns is-variable is-1 is-multiline is-mobile is-size-7-mobile">
-        <span class="column is-narrow">
-            
-                <time datetime="2023-06-11T02:26:10.000Z" itemprop="datePublished">6月 11 2023</time>
-            
-        </span>
-        
-        
-        <span class="column is-narrow">
-            
-            
-            8 分钟 读完 (约 1225 字)
-        </span>
-        
-    </div>
-    <div class="article-entry is-size-6-mobile" itemprop="articleBody">
-    
-        <h2 id="数据链路层"><a href="#数据链路层" class="headerlink" title="数据链路层"></a>数据链路层</h2><h5 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h5><p><strong>结点</strong>：主机，路由器<br><strong>链路</strong>：网络中两个结点之间的<code>物理通道</code>，链路的传输介质主要有双绞线、光纤和微波。分为有线链路、无线链路。<br><strong>数据链路</strong>：网络中两个结点之间的<code>逻辑通道</code>，把实现控制数据传输<code>协议</code>的硬件和软件加到链路上就构成数据链路。<br><strong>帧</strong>：链路层的协议数据单元，封装网络层数据报。</p>
-<p><code>数据链路层负责通过一条链路从一个结点向另一个物理链路直接相连的相邻结点传送数据报。</code></p>
-<h3 id="数据链路层的功能"><a href="#数据链路层的功能" class="headerlink" title="数据链路层的功能"></a>数据链路层的功能</h3><h4 id="功能概述"><a href="#功能概述" class="headerlink" title="功能概述"></a>功能概述</h4><p>数据链路层在物理层提供服务的基础上<code>向网络层提供服务</code>，其最基本的服务是将源自网络层来的数据可靠地传输到相邻节点的目标机网络层。其主要作用是<code>加强物理层传输原始比特流的功能</code>，将物理层提供的可能出错的物理连 接改造成为逻辑上无差错的数据链路，使之对网络层表现为一条无差错的链路。</p>
-<ul>
-<li>为网络层提供服务<ul>
-<li>无确认无连接服务</li>
-<li>有确认无连接服务</li>
-<li>有确认面向连接服务</li>
-</ul>
-</li>
-<li>链路管理<ul>
-<li>连接的建立，维持，释放</li>
-</ul>
-</li>
-<li>组帧</li>
-<li>差错控制</li>
-</ul>
-<h4 id="封装成帧"><a href="#封装成帧" class="headerlink" title="封装成帧"></a>封装成帧</h4><p>封装成帧就是在一段数据的前后部分<code>添加首部和尾部</code>，这样就构成了一个帧。接收端在收到物理层上交的比特流后，就能根据首部和尾部的<code>标记(帧定界符)</code>，从收到的比特流中识别帧的<code>开始</code>和<code>结束</code>。</p>
-<p>首部和尾部包含许多的控制信息，他们的一个重要作用：<code>帧定界</code>（确定帧的界限）。</p>
-<p><strong>帧同步</strong>：接收方应当能从接收到的二进制比特流中<code>区分出帧的起始和终止</code>。</p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/af63ec599debe847b08e6d41fe404e9e.png"></p>
-<p>透明传输</p>
-<h4 id="差错控制"><a href="#差错控制" class="headerlink" title="差错控制"></a>差错控制</h4><p>传输中的差错都是由噪声引起的。</p>
-<ul>
-<li>全局性，由于线路本身电气特性所产生的<code>随机噪声</code></li>
-<li>局部性，由于外界短暂的原因造成的<code>冲击噪声</code></li>
-</ul>
-<p>差错又分为<code>位错</code>和<code>帧错</code></p>
-<ul>
-<li>位错，比特位出错，1 变 0,0 变 1</li>
-<li>帧错，包括丢失，重复，失序</li>
-</ul>
-<p><code>发现差错的帧后就将错误值丢弃，如果没有差错控制，将会浪费大量资源，因为传输过程中一直传输了错误的信息。</code></p>
-<p>差错控制</p>
-<ul>
-<li>检错编码<ul>
-<li>奇偶校验码</li>
-<li>循环冗余 CRC</li>
-</ul>
-</li>
-<li>纠错编码<ul>
-<li>海明码</li>
-</ul>
-</li>
-</ul>
-<p>这里提到的编码和物理层的编码与调制不同，物理层的编码针对单个比特，解决传输同步问题。这里的编码针对的是一组比特，通过冗余码的技术检测传输中是否出错。</p>
-<h5 id="奇偶校验码"><a href="#奇偶校验码" class="headerlink" title="奇偶校验码"></a>奇偶校验码</h5><p>奇校验码：在信息元前加上 1 位后使得 1 的个数为奇数个<br>偶检验码：在信息元前加上 1 位后使得 1 的个数为偶数个</p>
-<p>该检测方式只能检测出奇数个的位错，检错能力为 50%</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">如果一个字符S的ASCI编码从低到高依次为1100101，采用奇校验，在下述收到的传输后字符中，哪种错误不能检测？</span><br><span class="line">A.11000011B.11001010 C.11001100 </span><br><span class="line">D.11010011</span><br><span class="line"></span><br><span class="line">答：因为采用奇校验，所以在首位加上一个1使得所有1个数为奇数变成11100101，ABC选项中1的个数都是偶数个，明显发生了变化，所以能检测出错误，但是D选项的1也是奇数个，将无法判断是否出现差错。</span><br></pre></td></tr></table></figure>
-
-<h5 id="CRC-循环冗余码"><a href="#CRC-循环冗余码" class="headerlink" title="CRC 循环冗余码"></a>CRC 循环冗余码</h5><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/41f5d4aa394ce6d74c8b134c9768ac22.png"></p>
-<p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/7c99a28025636d12adcdf50e5d06e1ce.png"></p>
-<h3 id="链路层的两种信道"><a href="#链路层的两种信道" class="headerlink" title="链路层的两种信道"></a>链路层的两种信道</h3><h3 id="局域网、广域网"><a href="#局域网、广域网" class="headerlink" title="局域网、广域网"></a>局域网、广域网</h3><h3 id="数据链路层的设备"><a href="#数据链路层的设备" class="headerlink" title="数据链路层的设备"></a>数据链路层的设备</h3><h2 id="流量控制与可靠传输"><a href="#流量控制与可靠传输" class="headerlink" title="流量控制与可靠传输"></a>流量控制与可靠传输</h2><h3 id="单帧滑动窗口与停止等待协议"><a href="#单帧滑动窗口与停止等待协议" class="headerlink" title="单帧滑动窗口与停止等待协议"></a>单帧滑动窗口与停止等待协议</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/5d99df99892aa63951510153134014b1.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/fa9be9766df59bc680fd8441e2f21224.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/a2bc7aeff36d97f1670360ab1beed0a9.png"></p>
-<h3 id="SR-选择重传协议"><a href="#SR-选择重传协议" class="headerlink" title="SR 选择重传协议"></a>SR 选择重传协议</h3><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/7aabcc8d17c084dbc9d8082955e37869.png"><br><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/7c6ba4ec2494cf60ed6293173d595530.png"></p>
-<h4 id="滑动窗口最大值"><a href="#滑动窗口最大值" class="headerlink" title="滑动窗口最大值"></a>滑动窗口最大值</h4><p><img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/06/11/0e9683cca18816515bfe2e5df3421954.png"></p>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kity@2.0.4/dist/kity.min.js"></script><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/kityminder-core@1.4.50/dist/kityminder.core.min.js"></script><script defer="true" type="text/javascript" src="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/hexo-simple-mindmap@0.2.0/dist/mindmap.min.css">
-    
-    </div>
-    
-    
-</article>
-
-
-
-
-    
     
         
 <nav class="pagination is-centered is-rounded" role="navigation" aria-label="pagination">
@@ -1316,7 +1249,7 @@
         
         <li><span class="pagination-ellipsis">&hellip;</span></li>
         
-        <li><a class="pagination-link" href="../26/">26</a></li>
+        <li><a class="pagination-link" href="../27/">27</a></li>
         
     </ul>
 </nav>
