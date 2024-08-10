@@ -1,129 +1,68 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>RISCV on PaperMod</title>
-    <link>http://localhost:8888/tags/riscv/</link>
-    <description>Recent content in RISCV on PaperMod</description>
+    <title>RISCV on 夜云泊</title>
+    <link>https://lifeislife.cn/tags/riscv/</link>
+    <description>Recent content in RISCV on 夜云泊</description>
     <generator>Hugo -- 0.131.0</generator>
-    <language>en</language>
+    <language>zh</language>
     <lastBuildDate>Mon, 29 Aug 2022 13:16:03 +0000</lastBuildDate>
-    <atom:link href="http://localhost:8888/tags/riscv/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://lifeislife.cn/tags/riscv/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>RISC-V 入门 - 系统调用</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</link>
       <pubDate>Mon, 29 Aug 2022 13:16:03 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</guid>
-      <description>用户态与内核态 目前为止的学习过程中，所有的程序都是运行在 Machine 模式下，但是在哪决定程序运行在什么模式下的呢？
-在学习抢占式多任务时，我们有了创建任务的概念，在汇编代码中有这么一段，使用到了mstatus寄存器：
-# Notice: default mstatus is 0 # Set mstatus.MPP to 3, so we still run in Machine mode after MRET. # Set mstatus.MPIE to 1, so MRET will enable the interrupt. li t0, 3 &amp;lt;&amp;lt; 11 | 1 &amp;lt;&amp;lt; 7 csrr a1, mstatus # a1 = mstatus or t0, t0, a1 # t0 = t0 | a1 csrw mstatus, t0 # mstatus = t0 j start_kernel # hart 0 jump to c mret返回后，是根据寄存器mstatus的MPP来决定接来来是处于什么模式，我们在上面将MPP配置为3， MPP的功能是 记录 Machine 模式下，前一个，特权级。这里解实现了在mret之后将模式设置为 Machine 模式（3）。</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</guid>
+      <description>用户态与内核态 目前为止的学习过程中，所有的程序都是运行在 Machine 模式下，但是在哪决定程序运行在什么模式下的呢？ 在学习抢占式多任务时，我们有了创建任</description>
     </item>
     <item>
       <title>RISC-V 入门 - 任务切换与锁</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2%E4%B8%8E%E9%94%81/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2%E4%B8%8E%E9%94%81/</link>
       <pubDate>Fri, 26 Aug 2022 15:15:34 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2%E4%B8%8E%E9%94%81/</guid>
-      <description>任务切换 任务简介 多任务与上下文 任务就是一个指令执行流。
-如果有多个 HART，那就可以同时执行多个指令执行流。
-协作式多任务
-协作式环境下，下一个任务被调度的前提是当前任务主动放弃处理器。
-抢占式多任务
-抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其它任务。
-协作式多任务 上下文切换 切换过程需要完成：
-保存上文（保存上一个任务的寄存器信息） 恢复下文（恢复下一个任务的寄存器信息） CPU 中有 32 个寄存器，保存各种状态，在切换过程中我们主要关注两个寄存器：ra(x1) 存放返回地址，mscratch 一个特权寄存器，指向当前处理的任务。
-切换过程 初始化寄存器，根据调用约定，ra都初始化为任务的第一条指令地址。mscratch开始指向 Task A。
-Task A 稳定执行，当他想要放弃 CPU 时，就会执行 call swithc_to指令。执行call的过程中，就会把当前指令的下一条指令的地址放到 CPU 的ra寄存器。
-接下里跳转到swithc_to函数执行，该函数是切换上下文的核心函数。首先保存上文，将 CPU 中的寄存器信息全部保存：
-切换mscratch指针到下一个任务 Task B：
-恢复下文：
-当swithc_to函数执行到return时，接下来执行的指令就是 CPU 中ra保存的那条指令，也就是地址为j指令，这就是 Task B 的第一条指令，这样就完成了任务的切换。
-源码分析 切换核心函数 switch_to switch_to: csrrw t6, mscratch, t6 # swap t6 and mscratch beqz t6, 1f # Notice: previous task may be NULL reg_save t6 # save context of prev task # 把CPU的信息保存到内存 # Save the actual t6 register, which we swapped into # mscratch mv t5, t6 # t5 points to the context of current task csrr t6, mscratch # read t6 back from mscratch sw t6, 120(t5) # save t6 with t5 as base 1: # switch mscratch to point to the context of the next task csrw mscratch, a0 # Restore all GP registers # Use t6 to point to the context of the new task mv t6, a0 reg_restore t6 # 把内存里的信息恢复到CPU # Do actual context switching.</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2%E4%B8%8E%E9%94%81/</guid>
+      <description>任务切换 任务简介 多任务与上下文 任务就是一个指令执行流。 如果有多个 HART，那就可以同时执行多个指令执行流。 协作式多任务 协作式环境下，下一个任</description>
     </item>
     <item>
       <title>RISC-V 入门 - 内存管理</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</link>
       <pubDate>Tue, 23 Aug 2022 22:33:11 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</guid>
-      <description>如何计算堆的大小，只有算出可用空间才能对其管理。
-ENTRY
-功能：用于设置入口点，即程序中执行的第一条指令 symbol 参数是一个符号的名称
-OUTPUT_ARCH
-功能：指定输出文件所适用的计算机体系架构
-为什么用 riscv64-unknown-elf-gcc，但是编译出来的文件是 32 位程序？ riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定
-MEMORY
-功能：用于描述目标机器上内存区域的位置，大小和相关
-MEMORY{/* 内存类型为ROM，起始地址0，长度256K */rom(rx):ORIGIN = 0, LENGTH = 256K/* 内存类型为RAM，起始地址0x40000000，长度4M */ram(!rx):org = 0x40000000, l = 4M} TODO：括号里的 rx 含义是？
-SECTION
-功能：告诉链接器如何将 input sections 映射到 output sections，以及如何将 output sections 放置到内存中。
-SECTION{.=0x0000;.text:{*(.text)}.=0x8000000;.data:{*(.data)}.bss:{*(.bss)}}&amp;gt;ram PROVIDE
-功能：
-可以在 Linker Script 中定义符号（Symbols） 每个符号包括一个名字（name) 和一个对应的地址值（address） 在代码中可以访问这些符号，等同于访问一个地址。 .</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</guid>
+      <description>如何计算堆的大小，只有算出可用空间才能对其管理。 ENTRY 功能：用于设置入口点，即程序中执行的第一条指令 symbol 参数是一个符号的名称 OUTPUT_ARCH 功能：指定输出文件所</description>
     </item>
     <item>
       <title>RISC-V 入门-Trap</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-trap%E5%92%8Cexception/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-trap%E5%92%8Cexception/</link>
       <pubDate>Thu, 30 Dec 2021 13:42:34 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-trap%E5%92%8Cexception/</guid>
-      <description>Trap 简介 控制流（Control Flow）和 Trap 控制流（Control Flow） 从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列 $$a_0,a_1,\dotsb,a_{n-1}$$ 每个$a_k$都是指令的地址，每次从$a_{k}$到$a_{k+1}$的过渡称为控制转移，而这样的控制转移序列叫做处理器的控制流。 异常控制流（Exceptional Control Flow, ECF） 系统也必须能够对系统状态的变化做出反应，这些系统状态不是被内部程序变量捕获的，而且也不一定要和程序的执行相关。比如，一个硬件定时器定期产生信号，这个事件必须得到处理。包到达网络适配器后，必须存放在内存中。程序向磁盘请求数据，然后休眠，直到被通知说数据已就绪。现代系统通过使控制流发生突变来对这些情况做出反应。我们把这些突变称为异常控制流。 exception interrupt RISC-V 把 ECF 统称为 Trap。
-RISC-V Trap 处理中涉及的寄存器 寄存器 全称 用途说明 mtvec Machine Trap-Vector Base-Address 它保存发生异常时处理器需要跳转到的地址。 mepc Machine Exception Program Counter 当 trap 发生时，hart 会将发生 trap 所对应的指令的地址值（pc）保存在 mepc 中。 mcause Machine Cause 当 trap 发生时，hart 会设置该寄存器通知我们 trap 发生的原因。 mtval Machine Trap Value 它保存了 exception 发生时的附加信息：譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身，对于其他异常，它的值为 0。 mstatus Machine Status 用于跟踪和控制 hart 的当前操作状态（特别地，包括关闭和打开全局中断）。 mscratch Machine Scratch Machine 模式下专用寄存器，我们可以自己定义其用法，譬如用该寄存器保存当前在 hart 上运行的 task 的上下文（context）的地址。 mtvec（Machine Trap-Vector Base-Address） WARL: Write Any Values, Read Legal Values</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-trap%E5%92%8Cexception/</guid>
+      <description>Trap 简介 控制流（Control Flow）和 Trap 控制流（Control Flow） 从给处理器加电开始，直到你断电为止，程序计数器假设一个值的序列 $$a_0,a_1,\dotsb,a_{n-1}$$ 每</description>
     </item>
     <item>
       <title>RISC-V 入门-RVOS 系统引导</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-rvos%E7%B3%BB%E7%BB%9F%E5%BC%95%E5%AF%BC/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-rvos%E7%B3%BB%E7%BB%9F%E5%BC%95%E5%AF%BC/</link>
       <pubDate>Wed, 20 Oct 2021 23:13:40 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-rvos%E7%B3%BB%E7%BB%9F%E5%BC%95%E5%AF%BC/</guid>
-      <description>操作系统定义与分类 操作系统（英语：Operating System，缩写：OS）是一组系统软件程序，狭义上就是内核如 Linux，广义上就是内核加一组软件组成的发行包，如 Ubuntu，Debian：
-• 主管并控制计算机操作、运用和运行硬件、软件资源
-• 提供公共服务来组织用户交互。
-硬件的基本概念 Hart Platform 不能说是个板子，应该理解为芯片。早期的板子就是一块芯片加上各种外设，但是随着技术发展，板子越来越小，外设却并没有变少，是因为外设都被集成到了芯片中。当所有外设都被集成，那么芯片就是 platform。 SoC(System on Chip) 片上系统 QEMU 模拟 virt 这个平台，这个平台有八个 Hart。
-地址映射 为了方便访问外设，现在主流的 platform 会对外设的内存地址做一个映射。映射到 platform 的真实物理地址。对真实物理地址进行操作时，就是对外设的地址进行操作。
-物理地址从最低位到最高位都被分配给了各种外设。
-引导过程介绍 通电后，会先到箭头所指的地址，这个地址就是对应的 ROM 外设首地址。ROM 相当于一个小硬盘，断电后不会丢失数据。这里面固化了一些指令。
-主要就是跳转指令，运行到 kernel 段继续执行。
-八核同时会执行这个过程。
-以上是硬件的部分过程，软件该如何写？
-为了简化学习流程和降低调试难度，目前只支持单核，其余七个核处于空转状态。
-如何判断当前 Hart 是不是第一个？ 这些寄存器必须使用以下的指令读写：
-以上指令就是将寄存器值进行一次交换，只不过这个过程是原子性的，不能被打断。
-CSRRW经常会用在伪指令CSRW中，完整指令中，第一步向x0写入数据，就是空操作，第二步将rs写入csr。这个伪指令就是完成了一个写入csr的操作。
-mhartid就是machine hart id。
-学习以上几个指令，就可以完成判断 hart 是否为第一个的工作了，
-csrr t0, mhartid #读寄存器值 mv tp, t0 # bnez t0, park # 跳转指令，不等于 0 就跳转到 park 标签 wfi休眠指令 如何初始化栈空间 如何跳转到 C 语言环境 # start.</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-rvos%E7%B3%BB%E7%BB%9F%E5%BC%95%E5%AF%BC/</guid>
+      <description>操作系统定义与分类 操作系统（英语：Operating System，缩写：OS）是一组系统软件程序，狭义上就是内核如 Linux，广义上就是内核</description>
     </item>
     <item>
       <title>RISC-V 入门-RISC-V 汇编语言编程</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-risc-v%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-risc-v%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/</link>
       <pubDate>Sat, 16 Oct 2021 23:26:42 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-risc-v%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/</guid>
-      <description>汇编语法介绍 一条典型的 RISC-V 汇编语句由三个部分组成[label:][operation][comment]。 后缀.s和.S区别：后者纯汇编。
-label(标号) operation 可以有以下多种类型： instruction (指令) ：直接对应二进制机器指令的宇符串 pseudo-instruction (伪指令) ：为了提高编写代码的效率，可以用一条伪指令指示汇编器产生多条实际的指令 (instructions)。 directive (指示/伪操作) ：通过类似指令的形式(以&amp;quot;.&amp;ldquo;开头),通知汇编器如何控制代码的产生等，不对应具体的指令。 macro：采用.macro/.endm 自定义的宏 例子 .macro do_nothing # directive nop # pseudo-instruction nop # pseudo-instruction .endm # directive .text # directive .global _start # directive _start: # Label li x6, 5 # pseudo-instruction li x7, 4 # pseudo-instruction add x5, x6, x7 # instruction do_nothing # Calling macro stop: j stop # statement in one line .</description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-risc-v%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/</guid>
+      <description>汇编语法介绍 一条典型的 RISC-V 汇编语句由三个部分组成[label:][operation][comment]。 后缀.s和.S区别：后者纯汇编。 la</description>
     </item>
     <item>
       <title>RISC-V 入门 - 计算机基础</title>
-      <link>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</link>
+      <link>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</link>
       <pubDate>Thu, 26 Aug 2021 13:42:34 +0000</pubDate>
-      <guid>http://localhost:8888/posts/risc-v%E5%85%A5%E9%97%A8-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</guid>
-      <description>计算机基础 计算机硬件基础 两大硬件架构
-冯诺依曼架构
-一根总线，开销小，控制逻辑实现简单
-执行效率低
-哈佛架构
-与上一架构相反 程序的存储与执行 .c文件经过编译链接，生成.out文件。加载到内存中，到控制单元运行。进行取值，译码，执行。
-晶振发出脉冲。 语言的设计与进化 上图是冯诺依曼架构，特点就是指令与数据放在一起。黄色部分表示指令，绿色部分表示数据。我们来看看指令是如何执行的。 ProgramCounter指到右图内存的第一条指令，程序开始执行。将第一条 指令读入指令寄存器。然后将指令解码，根据之前的规定，我们可以知道这条指令是将0100(二进制即 5)位置的数据，00(load)到00(Register 0)中。下面的指令一次类推，每次取指，Program Counter移动一次。 </description>
+      <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</guid>
+      <description>计算机基础 计算机硬件基础 两大硬件架构 冯诺依曼架构 一根总线，开销小，控制逻辑实现简单 执行效率低 哈佛架构 与上一架构相反 程序的存储与执行 .c文件经</description>
     </item>
     <item>
       <title>VSCode 调试 RISC-V 程序</title>
-      <link>http://localhost:8888/posts/vscode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/</link>
+      <link>https://lifeislife.cn/posts/vscode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/</link>
       <pubDate>Mon, 23 Aug 2021 15:51:51 +0000</pubDate>
-      <guid>http://localhost:8888/posts/vscode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/</guid>
-      <description>前提 本文主要涉及 VSCode 的相关配置，编译及调试工具需要提前安装好。
-已经安装好riscv-toolchain，包括riscv64-unknown-elf-gcc，riscv64-unknown-elf-gdb 已经安装好qemu，包括riscv32-softmmu,riscv32-linux-user,riscv64-softmmu,riscv64-linux-user 已经安装好g++,gdb 调试流程简介 对于我这样的新手，要调试一个项目源码最怕的就是开始，也就是怎么能把项目跑起来。
-我们以一个简单的test项目，看看在 VSCode 里怎么跑起来。
-拿到源码后，将其以文件夹形式，加入到 VSCode 中，文件 - 打开文件夹 - 选择 test 项目文件夹。项目就会在 VSCode 中打开，但是此时我们还无法编译运行，我们需要在 VSCode 上 构建出一个 C 语言的编译与调试环境。
-首先得安装一个插件C/C++，打开插件中心Ctrl+Shit+X，搜索，安装。
-然后输入F5，会弹出对话框，选择C++(GDB)，继续选择g++。VSCode 会自动创建.vscode文件夹，已经两个文件launch.json和tasks.json。 launch.json用来配置调试环境，tasks.json主要用来配置编译环境，当然也可以配置其他任务。task.json里配置的每个任务其实就相当于多开一个控制台。
-配置tasks.json 因为我们先要编译源码，生成.out或者.exe文件，才能调试，所以先进行编译任务配置。
-自动生成的文件是个配置模板，我们可以根据自己的实际情况进行配置，也有一部分可以保持默认。
-// tasks.json{// https://code.visualstudio.com/docs/editor/tasks&amp;#34;version&amp;#34;: &amp;#34;2.0.0&amp;#34;,&amp;#34;tasks&amp;#34;: [{// 任务的名字，注意是大小写区分的//会在launch中调用这个名字&amp;#34;label&amp;#34;: &amp;#34;C/C++: g++ build active file&amp;#34;, // 任务执行的是shell&amp;#34;type&amp;#34;: &amp;#34;shell&amp;#34;, // 命令是g++&amp;#34;command&amp;#34;: &amp;#34;g++&amp;#34;, //g++ 后面带的参数&amp;#34;args&amp;#34;: [&amp;#34;&amp;#39;-Wall&amp;#39;&amp;#34;,&amp;#34;-g&amp;#34;, // 生成调试信息，否则无法进入断点&amp;#34;&amp;#39;-std=c++17&amp;#39;&amp;#34;, //使用c++17标准编译&amp;#34;&amp;#39;${file}&amp;#39;&amp;#34;, //当前文件名&amp;#34;-o&amp;#34;, //对象名，不进行编译优化&amp;#34;&amp;#39;${fileBasenameNoExtension}.</description>
+      <guid>https://lifeislife.cn/posts/vscode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/</guid>
+      <description>前提 本文主要涉及 VSCode 的相关配置，编译及调试工具需要提前安装好。 已经安装好riscv-toolchain，包括riscv64-unknown-e</description>
     </item>
   </channel>
 </rss>
