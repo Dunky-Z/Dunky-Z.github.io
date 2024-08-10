@@ -1,27 +1,9 @@
 <!doctype html><html lang=zh dir=auto><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>手把手教你向开源社区提 Patch | 夜云泊</title>
-<meta name=keywords content="Git,OpenSBI"><meta name=description content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><meta name=author content="Dominic Zhang"><link rel=canonical href=https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/><link crossorigin=anonymous href=/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as=style><link rel=icon href=https://lifeislife.cn/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://lifeislife.cn/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://lifeislife.cn/favicon-32x32.png><link rel=apple-touch-icon href=https://lifeislife.cn/apple-touch-icon.png><link rel=mask-icon href=https://lifeislife.cn/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=zh href=https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><script async src="https://www.googletagmanager.com/gtag/js?id=G-PS8L2EEEPR"></script><script>var dnt,doNotTrack=!1;if(!1&&(dnt=navigator.doNotTrack||window.doNotTrack||navigator.msDoNotTrack,doNotTrack=dnt=="1"||dnt=="yes"),!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-PS8L2EEEPR")}</script><meta property="og:title" content="手把手教你向开源社区提 Patch"><meta property="og:description" content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><meta property="og:type" content="article"><meta property="og:url" content="https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-11-20T15:11:57+00:00"><meta property="article:modified_time" content="2022-11-20T15:11:57+00:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="手把手教你向开源社区提 Patch"><meta name=twitter:description content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://lifeislife.cn/posts/"},{"@type":"ListItem","position":2,"name":"手把手教你向开源社区提 Patch","item":"https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"手把手教你向开源社区提 Patch","name":"手把手教你向开源社区提 Patch","description":"提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经","keywords":["Git","OpenSBI"],"articleBody":"提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。\n环境准备 下载 OpenSBI 仓库 1 2 git clone https://github.com/riscv-software-src/opensbi.git cd opensbi 安装依赖 要从源代码构建 OpenSBI：\n1 make 注：OpenSBI 的构建是可并行的。上面的命令可以添加-j#参数，如-j12。\n确认要解决的问题 在本文档中，我们将模拟提交一个简单的 Patch，.gitignore文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成.vscode目录，但是这些文件不该被推送至远程，原仓库中的.gitignore文件中没有过滤该文件，我们给他加上。\n为了能够模拟一次发送多个commit的场景，我们将再添加一个.so用来过滤编译过程中生成的.so文件。\n建立工作空间 让我们先建立一个开发分支来进行我们的修改。\n1 git checkout -b update_gitignore origin/master 我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。\n实现代码 过滤 .vscode 打开文件.gitignore，为该文件添加/.vscode/：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 # Object files *.o *.a *.dep #Build \u0026 install directories build/ install/ # Development friendly files tags cscope* /.vscode/ 为以上修改做一次提交：\n1 2 3 4 5 6 7 8 9 10 11 $ git status On branch update_gitignore Your branch is up to date with 'origin/master'. Changes not staged for commit: (use \"git add ...\" to update what will be committed) (use \"git checkout -- ...\" to discard changes in working directory) modified: .gitignore $ git add .gitignore $ git commit -s 执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 Signed-off-by 添加的 trailer。（由上面命令-s参数生成）。\n其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 lib:， platform:, firmware:, docs:, utils: 或者 top:为前缀，修改.gitignore属于top范畴，所以我们需要将其加在主题行上。\n1 2 3 4 5 top: filter .vscode folder Filter the workspace's '.vscode' directory by adding '/.vscode/' to the.gitignore file. Signed-off-by: Dominic Zhang ","wordCount":"6479","inLanguage":"zh","datePublished":"2022-11-20T15:11:57Z","dateModified":"2022-11-20T15:11:57Z","author":{"@type":"Person","name":"Dominic Zhang"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"},"publisher":{"@type":"Organization","name":"夜云泊","logo":{"@type":"ImageObject","url":"https://lifeislife.cn/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add("dark"):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove("dark"):window.matchMedia("(prefers-color-scheme: dark)").matches&&document.body.classList.add("dark")</script><header class=header><nav class=nav><div class=logo><a href=https://lifeislife.cn/ accesskey=h title="夜云泊 (Alt + H)">夜云泊</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=https://lifeislife.cn/archives/ title=归档><span>归档</span></a></li><li><a href=https://lifeislife.cn/tags/ title=标签><span>标签</span></a></li><li><a href=https://lifeislife.cn/categories/ title=分类><span>分类</span></a></li><li><a href=https://lifeislife.cn/search/ title="搜索 (Alt + /)" accesskey=/><span>搜索</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><div class=breadcrumbs><a href=https://lifeislife.cn/>主页</a>&nbsp;»&nbsp;<a href=https://lifeislife.cn/posts/>Posts</a></div><h1 class="post-title entry-hint-parent">手把手教你向开源社区提 Patch</h1><div class=post-meta><span title='2022-11-20 15:11:57 +0000 UTC'>十一月 20, 2022</span>&nbsp;·&nbsp;13 分钟&nbsp;·&nbsp;6479 字&nbsp;·&nbsp;Dominic Zhang</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><span class=details>目录</span></summary><div class=inner><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a><ul><li><a href=#下载-opensbi-仓库>下载 OpenSBI 仓库</a></li><li><a href=#安装依赖>安装依赖</a></li><li><a href=#确认要解决的问题>确认要解决的问题</a></li><li><a href=#建立工作空间>建立工作空间</a></li></ul></li><li><a href=#实现代码>实现代码</a><ul><li><a href=#过滤-vscode>过滤 .vscode</a></li><li><a href=#过滤-cache>过滤 .cache</a></li></ul></li><li><a href=#准备提交补丁>准备提交补丁</a><ul><li><a href=#什么是-cover-letter>什么是 cover letter</a></li><li><a href=#用-git-send-email-发送补丁>用 git send-email 发送补丁</a></li></ul></li></ul></nav></div></details></div><div class=post-content><h1 id=提交补丁的最佳实践>提交补丁的最佳实践<a hidden class=anchor aria-hidden=true href=#提交补丁的最佳实践>#</a></h1><blockquote><p>本文翻译自官方教程<a href=https://git-scm.com/docs/MyFirstContribution>Git - MyFirstContribution</a>，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。</p></blockquote><h2 id=环境准备>环境准备<a hidden class=anchor aria-hidden=true href=#环境准备>#</a></h2><h3 id=下载-opensbi-仓库>下载 OpenSBI 仓库<a hidden class=anchor aria-hidden=true href=#下载-opensbi-仓库>#</a></h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git clone https://github.com/riscv-software-src/opensbi.git
+<meta name=keywords content="Git,OpenSBI"><meta name=description content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><meta name=author content="Dominic Zhang"><link rel=canonical href=https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/><link crossorigin=anonymous href=/assets/css/stylesheet.d31aa50bfd9ffd4f71bf798317bf6ae90a91854facd48984004bb3d8905fbe45.css integrity="sha256-0xqlC/2f/U9xv3mDF79q6QqRhU+s1ImEAEuz2JBfvkU=" rel="preload stylesheet" as=style><link rel=icon href=https://lifeislife.cn/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://lifeislife.cn/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://lifeislife.cn/favicon-32x32.png><link rel=apple-touch-icon href=https://lifeislife.cn/apple-touch-icon.png><link rel=mask-icon href=https://lifeislife.cn/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=zh href=https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Noto+Sans+SC:wght@100..900&display=swap" rel=stylesheet><script async src="https://www.googletagmanager.com/gtag/js?id=G-PS8L2EEEPR"></script><script>var dnt,doNotTrack=!1;if(!1&&(dnt=navigator.doNotTrack||window.doNotTrack||navigator.msDoNotTrack,doNotTrack=dnt=="1"||dnt=="yes"),!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-PS8L2EEEPR")}</script><meta property="og:title" content="手把手教你向开源社区提 Patch"><meta property="og:description" content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><meta property="og:type" content="article"><meta property="og:url" content="https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-11-20T15:11:57+00:00"><meta property="article:modified_time" content="2022-11-20T15:11:57+00:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="手把手教你向开源社区提 Patch"><meta name=twitter:description content="提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://lifeislife.cn/posts/"},{"@type":"ListItem","position":2,"name":"手把手教你向开源社区提 Patch","item":"https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"手把手教你向开源社区提 Patch","name":"手把手教你向开源社区提 Patch","description":"提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经","keywords":["Git","OpenSBI"],"articleBody":"提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。\n环境准备 下载 OpenSBI 仓库 git clone https://github.com/riscv-software-src/opensbi.git cd opensbi 安装依赖 要从源代码构建 OpenSBI：\nmake 注：OpenSBI 的构建是可并行的。上面的命令可以添加-j#参数，如-j12。\n确认要解决的问题 在本文档中，我们将模拟提交一个简单的 Patch，.gitignore文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成.vscode目录，但是这些文件不该被推送至远程，原仓库中的.gitignore文件中没有过滤该文件，我们给他加上。\n为了能够模拟一次发送多个commit的场景，我们将再添加一个.so用来过滤编译过程中生成的.so文件。\n建立工作空间 让我们先建立一个开发分支来进行我们的修改。\ngit checkout -b update_gitignore origin/master 我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。\n实现代码 过滤 .vscode 打开文件.gitignore，为该文件添加/.vscode/：\n# Object files *.o *.a *.dep #Build \u0026 install directories build/ install/ # Development friendly files tags cscope* /.vscode/ 为以上修改做一次提交：\n$ git status On branch update_gitignore Your branch is up to date with 'origin/master'. Changes not staged for commit: (use \"git add ...\" to update what will be committed) (use \"git checkout -- ...\" to discard changes in working directory) modified: .gitignore $ git add .gitignore $ git commit -s 执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 Signed-off-by 添加的 trailer。（由上面命令-s参数生成）。\n其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 lib:， platform:, firmware:, docs:, utils: 或者 top:为前缀，修改.gitignore属于top范畴，所以我们需要将其加在主题行上。\ntop: filter .vscode folder Filter the workspace's '.vscode' directory by adding '/.vscode/' to the.gitignore file. Signed-off-by: Dominic Zhang ","wordCount":"6163","inLanguage":"zh","datePublished":"2022-11-20T15:11:57Z","dateModified":"2022-11-20T15:11:57Z","author":{"@type":"Person","name":"Dominic Zhang"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/"},"publisher":{"@type":"Organization","name":"夜云泊","logo":{"@type":"ImageObject","url":"https://lifeislife.cn/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add("dark"):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove("dark"):window.matchMedia("(prefers-color-scheme: dark)").matches&&document.body.classList.add("dark")</script><header class=header><nav class=nav><div class=logo><a href=https://lifeislife.cn/ accesskey=h title="夜云泊 (Alt + H)">夜云泊</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=https://lifeislife.cn/archives/ title=归档><span>归档</span></a></li><li><a href=https://lifeislife.cn/tags/ title=标签><span>标签</span></a></li><li><a href=https://lifeislife.cn/categories/ title=分类><span>分类</span></a></li><li><a href=https://lifeislife.cn/search/ title="搜索 (Alt + /)" accesskey=/><span>搜索</span></a></li><li><a href=https://www.travellings.cn/go.html title=开往><span>开往</span>&nbsp;<svg fill="none" shape-rendering="geometricPrecision" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><div class=breadcrumbs><a href=https://lifeislife.cn/>主页</a>&nbsp;»&nbsp;<a href=https://lifeislife.cn/posts/>Posts</a></div><h1 class="post-title entry-hint-parent">手把手教你向开源社区提 Patch</h1><div class=post-meta><span title='2022-11-20 15:11:57 +0000 UTC'>十一月 20, 2022</span>&nbsp;·&nbsp;13 分钟&nbsp;·&nbsp;6163 字&nbsp;·&nbsp;Dominic Zhang</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><span class=details>目录</span></summary><div class=inner><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a><ul><li><a href=#下载-opensbi-仓库>下载 OpenSBI 仓库</a></li><li><a href=#安装依赖>安装依赖</a></li><li><a href=#确认要解决的问题>确认要解决的问题</a></li><li><a href=#建立工作空间>建立工作空间</a></li></ul></li><li><a href=#实现代码>实现代码</a><ul><li><a href=#过滤-vscode>过滤 .vscode</a></li><li><a href=#过滤-cache>过滤 .cache</a></li></ul></li><li><a href=#准备提交补丁>准备提交补丁</a><ul><li><a href=#什么是-cover-letter>什么是 cover letter</a></li><li><a href=#用-git-send-email-发送补丁>用 git send-email 发送补丁</a></li></ul></li></ul></nav></div></details></div><div class=post-content><h1 id=提交补丁的最佳实践>提交补丁的最佳实践<a hidden class=anchor aria-hidden=true href=#提交补丁的最佳实践>#</a></h1><blockquote><p>本文翻译自官方教程<a href=https://git-scm.com/docs/MyFirstContribution>Git - MyFirstContribution</a>，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。</p></blockquote><h2 id=环境准备>环境准备<a hidden class=anchor aria-hidden=true href=#环境准备>#</a></h2><h3 id=下载-opensbi-仓库>下载 OpenSBI 仓库<a hidden class=anchor aria-hidden=true href=#下载-opensbi-仓库>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git clone https://github.com/riscv-software-src/opensbi.git
 </span></span><span class=line><span class=cl><span class=nb>cd</span> opensbi
-</span></span></code></pre></td></tr></table></div></div><h3 id=安装依赖>安装依赖<a hidden class=anchor aria-hidden=true href=#安装依赖>#</a></h3><p>要从源代码构建 OpenSBI：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>make
-</span></span></code></pre></td></tr></table></div></div><blockquote><p>注：OpenSBI 的构建是可并行的。上面的命令可以添加<code>-j#</code>参数，如<code>-j12</code>。</p></blockquote><h3 id=确认要解决的问题>确认要解决的问题<a hidden class=anchor aria-hidden=true href=#确认要解决的问题>#</a></h3><p>在本文档中，我们将模拟提交一个简单的 Patch，<code>.gitignore</code>文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成<code>.vscode</code>目录，但是这些文件不该被推送至远程，原仓库中的<code>.gitignore</code>文件中没有过滤该文件，我们给他加上。</p><p>为了能够模拟一次发送多个<code>commit</code>的场景，我们将再添加一个<code>.so</code>用来过滤编译过程中生成的<code>.so</code>文件。</p><h3 id=建立工作空间>建立工作空间<a hidden class=anchor aria-hidden=true href=#建立工作空间>#</a></h3><p>让我们先建立一个开发分支来进行我们的修改。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git checkout -b update_gitignore origin/master
-</span></span></code></pre></td></tr></table></div></div><p>我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。</p><h2 id=实现代码>实现代码<a hidden class=anchor aria-hidden=true href=#实现代码>#</a></h2><h3 id=过滤-vscode>过滤 .vscode<a hidden class=anchor aria-hidden=true href=#过滤-vscode>#</a></h3><p>打开文件<code>.gitignore</code>，为该文件添加<code>/.vscode/</code>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Object files</span>
+</span></span></code></pre></div><h3 id=安装依赖>安装依赖<a hidden class=anchor aria-hidden=true href=#安装依赖>#</a></h3><p>要从源代码构建 OpenSBI：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>make
+</span></span></code></pre></div><blockquote><p>注：OpenSBI 的构建是可并行的。上面的命令可以添加<code>-j#</code>参数，如<code>-j12</code>。</p></blockquote><h3 id=确认要解决的问题>确认要解决的问题<a hidden class=anchor aria-hidden=true href=#确认要解决的问题>#</a></h3><p>在本文档中，我们将模拟提交一个简单的 Patch，<code>.gitignore</code>文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成<code>.vscode</code>目录，但是这些文件不该被推送至远程，原仓库中的<code>.gitignore</code>文件中没有过滤该文件，我们给他加上。</p><p>为了能够模拟一次发送多个<code>commit</code>的场景，我们将再添加一个<code>.so</code>用来过滤编译过程中生成的<code>.so</code>文件。</p><h3 id=建立工作空间>建立工作空间<a hidden class=anchor aria-hidden=true href=#建立工作空间>#</a></h3><p>让我们先建立一个开发分支来进行我们的修改。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git checkout -b update_gitignore origin/master
+</span></span></code></pre></div><p>我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。</p><h2 id=实现代码>实现代码<a hidden class=anchor aria-hidden=true href=#实现代码>#</a></h2><h3 id=过滤-vscode>过滤 .vscode<a hidden class=anchor aria-hidden=true href=#过滤-vscode>#</a></h3><p>打开文件<code>.gitignore</code>，为该文件添加<code>/.vscode/</code>：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Object files</span>
 </span></span><span class=line><span class=cl>*.o
 </span></span><span class=line><span class=cl>*.a
 </span></span><span class=line><span class=cl>*.dep
@@ -35,18 +17,7 @@
 </span></span><span class=line><span class=cl>cscope*
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>/.vscode/
-</span></span></code></pre></td></tr></table></div></div><p>为以上修改做一次提交：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git status
+</span></span></code></pre></div><p>为以上修改做一次提交：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git status
 </span></span><span class=line><span class=cl>On branch update_gitignore
 </span></span><span class=line><span class=cl>Your branch is up to date with <span class=s1>&#39;origin/master&#39;</span>.
 </span></span><span class=line><span class=cl>
@@ -57,37 +28,12 @@
 </span></span><span class=line><span class=cl>        modified:   .gitignore
 </span></span><span class=line><span class=cl>$ git add .gitignore
 </span></span><span class=line><span class=cl>$ git commit -s
-</span></span></code></pre></td></tr></table></div></div><p>执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 <code>Signed-off-by</code> 添加的 trailer。（由上面命令<code>-s</code>参数生成）。</p><p>其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 <code>lib:</code>， <code>platform:</code>, <code>firmware:</code>, <code>docs:</code>, <code>utils:</code> 或者 <code>top:</code>为前缀，修改<code>.gitignore</code>属于<code>top</code>范畴，所以我们需要将其加在主题行上。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=err>top:</span> <span class=err>filter</span> <span class=err>.vscode</span> <span class=err>folder</span>
+</span></span></code></pre></div><p>执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 <code>Signed-off-by</code> 添加的 trailer。（由上面命令<code>-s</code>参数生成）。</p><p>其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 <code>lib:</code>， <code>platform:</code>, <code>firmware:</code>, <code>docs:</code>, <code>utils:</code> 或者 <code>top:</code>为前缀，修改<code>.gitignore</code>属于<code>top</code>范畴，所以我们需要将其加在主题行上。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=err>top:</span> <span class=err>filter</span> <span class=err>.vscode</span> <span class=err>folder</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=err>Filter</span> <span class=err>the</span> <span class=err>workspace&#39;s</span> <span class=err>&#39;.vscode&#39;</span> <span class=err>directory</span> <span class=err>by</span> <span class=err>adding</span> <span class=err>&#39;/.vscode/&#39;</span> <span class=err>to</span> <span class=err>the.gitignore</span> <span class=err>file.</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=err>Signed-off-by:</span> <span class=err>Dominic</span> <span class=err>Zhang</span> <span class=err>&lt;Dominic</span> <span class=err>Zhang@gmail.com&gt;</span>
-</span></span></code></pre></td></tr></table></div></div><p>继续用 <code>git show</code> 检查您的新提交。尤其不要出现不需要在本次提交的内容。通常使用不同的 IDE 都可能会无意间生成一些配置文件等，请注意将其剔除。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>commit 5dc340c29979d4c5d8c4d5a6e881348239714434 (HEAD -&gt; update_gitignore)
+</span></span></code></pre></div><p>继续用 <code>git show</code> 检查您的新提交。尤其不要出现不需要在本次提交的内容。通常使用不同的 IDE 都可能会无意间生成一些配置文件等，请注意将其剔除。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>commit 5dc340c29979d4c5d8c4d5a6e881348239714434 (HEAD -&gt; update_gitignore)
 </span></span><span class=line><span class=cl>Author: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date:   Fri Nov 18 16:06:21 2022 +0800
 </span></span><span class=line><span class=cl>
@@ -107,22 +53,7 @@
 </span></span><span class=line><span class=cl> cscope*
 </span></span><span class=line><span class=cl>+
 </span></span><span class=line><span class=cl>+/.vscode/
-</span></span></code></pre></td></tr></table></div></div><h3 id=过滤-cache>过滤 .cache<a hidden class=anchor aria-hidden=true href=#过滤-cache>#</a></h3><p>与上一节步骤类似，我们在<code>.gitignore</code>文件中再添加一个<code>/.cache/</code>字段用来过滤<code>.cache</code>文件夹。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Object files</span>
+</span></span></code></pre></div><h3 id=过滤-cache>过滤 .cache<a hidden class=anchor aria-hidden=true href=#过滤-cache>#</a></h3><p>与上一节步骤类似，我们在<code>.gitignore</code>文件中再添加一个<code>/.cache/</code>字段用来过滤<code>.cache</code>文件夹。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Object files</span>
 </span></span><span class=line><span class=cl>*.o
 </span></span><span class=line><span class=cl>*.a
 </span></span><span class=line><span class=cl>*.dep
@@ -137,37 +68,16 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>/.vscode/
 </span></span><span class=line><span class=cl>/.cache/
-</span></span></code></pre></td></tr></table></div></div><p>添加完我们就即使保存工作进度，新生成一个<code>commit</code>。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
+</span></span></code></pre></div><p>添加完我们就即使保存工作进度，新生成一个<code>commit</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
 </span></span><span class=line><span class=cl>git commit -s
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>top: filter .cache folder
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>top: filter .cache folder
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>Filter the workspace&#39;s &#39;.cache&#39; directory by adding &#39;/.cache/&#39; to the.gitignore file.
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
-</span></span></code></pre></td></tr></table></div></div><p>以上我们就已经准备好所有的代码了，在大部分场景下可能修改的是<code>.c</code>或者<code>.h</code>等源文件，这就需要我们能够使代码编译、运行并且测试通过后再提交。</p><p>这里为了演示提交流程，就没有涉及这些步骤。接下来我们就要准备提交的补丁文件了。</p><h2 id=准备提交补丁>准备提交补丁<a hidden class=anchor aria-hidden=true href=#准备提交补丁>#</a></h2><p>OpenSBI 项目是通过电子邮件发送补丁来进行代码审查的，当补丁准备好并得到社区认可后，维护者就会应用（Apply）这些补丁。OpenSBI 项目不接受来自 Pull Request 的贡献，而且通过电子邮件发送的补丁需要以指定的方式进行审核。</p><p>在研究如何将你的提交转化为电子邮件的补丁之前，让我们先分析一下最终的结果，即<strong>补丁系列</strong>（Patch Series）是什么样子。下面是 OpenSBI 邮件列表存档的网页界面上的补丁系列的摘要视图的一个例子。</p><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png alt></p><p>我们可以注意几点：</p><ul><li>每次提交都是以单独的邮件形式发送，提交信息的标题为主题，前缀为<code>[PATCH i/n]</code>，代表<code>n</code>个提交系列中的第 <code>i</code> 个提交。</li><li>每个补丁都是作为对<code>cover letter</code>的回复，<code>cover letter</code>的前缀为<code>[PATCH 0/n]</code>，序号为 0 的标题。</li><li>补丁系列的后续迭代被标记为 <code>PATCH v2</code>、<code>PATCH v3</code>，等等，以代替 <code>PATCH</code>。例如，<code>[PATCH v2 1/3]</code>将是第二次迭代中三个补丁的第一个补丁。每次迭代都有一个新的<code>cover letter</code>（如上面的<code>[PATCH v2 0/3]</code>），本身就是对前一次迭代的<code>cover letter</code>的回复（下面会有更多介绍）。</li></ul><blockquote><p>注：单一补丁的主题是以<code>[PATCH]</code>、<code>[PATCH v2]</code>等发送的，没有 <code>i/n</code> 编号。如上图中的第四个 Patch，就是一个单一补丁。</p></blockquote><h3 id=什么是-cover-letter>什么是 cover letter<a hidden class=anchor aria-hidden=true href=#什么是-cover-letter>#</a></h3><p>除了给每个补丁发一封邮件外，OpenSBI 社区还希望你的补丁能附带一封 cover letter。这是修改提交的一个重要组成部分，因为它概括了你想要做什么，以及为什么要这样做，比仅仅看你的补丁更明显。</p><p>你的 cover letter 的标题应该是能简洁地涵盖你整个主题分支的目的。就像我们的提交信息标题一样。下面是我们的系列标题。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Update gitignore ---
-</span></span></code></pre></td></tr></table></div></div><p>cover letter 的正文是用来给评审员提供额外的背景。一定要解释任何你的补丁自己没有说清楚的东西，但要记住，由于 cover letter 没有记录在提交历史中，任何可能对未来版本库历史的读者有用的东西也应该在你的提交信息中出现。</p><p>下文我们将介绍如何生成 cover letter 以及如何填写 cover letter。</p><h3 id=用-git-send-email-发送补丁>用 git send-email 发送补丁<a hidden class=anchor aria-hidden=true href=#用-git-send-email-发送补丁>#</a></h3><h4 id=前提条件---设置-git-send-email>前提条件 - 设置 git send-email<a hidden class=anchor aria-hidden=true href=#前提条件---设置-git-send-email>#</a></h4><p>对 <code>send-email</code> 的配置会根据你的操作系统和电子邮件供应商而有所不同，配置可以参考文档<a href=http://lifeislife.cn/2022/09/28/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8git-send-mail%E7%BB%99%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90%E4%BA%A4Patch/>如何使用 git-send-mail 给开源社区提交 Patch - 如云泊</a>。</p><h4 id=准备初始补丁集>准备初始补丁集<a hidden class=anchor aria-hidden=true href=#准备初始补丁集>#</a></h4><p>在准备邮件本身之前，你需要准备补丁。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git format-patch --cover-letter -o update_gitignore/ --base<span class=o>=</span>auto  update_gitignore@<span class=o>{</span>u<span class=o>}</span>..update_gitignore
-</span></span></code></pre></td></tr></table></div></div><ul><li><code>--cover-letter</code> 选项告诉 <code>format-patch</code> 为你创建一个 <code>cover letter</code> 模板。在你准备发送之前，你将需要填写该模板。</li><li><code>-o update_gitignore/</code> 选项告诉 <code>format-patch</code> 把补丁文件放到目录<code>update_gitignore</code>中。这样发送多个<code>commit</code>时就可以使用命令一次性发送，因为 <code>git send-email</code> 可以接收一个目录并从那里发送所有补丁。</li><li><code>--base=auto</code> 选项告诉命令记录”基本提交”，接收者将在此基础上应用补丁系列。自动值将使 <code>format-patch</code> 自动计算基本提交，即远程跟踪分支的最新提交和指定修订范围的合并基数。</li><li><code>update_gitignore@{u}..update_gitignore</code> 选项告诉 <code>format-patch</code> 为你在 <code>update_gitignore</code> 分支上创建的提交生成补丁，因为它是从上游分叉出来的。<code>@{u}</code>的意思就是从分叉开始到最新的提交。</li></ul><p>执行完该命令我们看看生成了哪些内容。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git status
+</span></span></code></pre></div><p>以上我们就已经准备好所有的代码了，在大部分场景下可能修改的是<code>.c</code>或者<code>.h</code>等源文件，这就需要我们能够使代码编译、运行并且测试通过后再提交。</p><p>这里为了演示提交流程，就没有涉及这些步骤。接下来我们就要准备提交的补丁文件了。</p><h2 id=准备提交补丁>准备提交补丁<a hidden class=anchor aria-hidden=true href=#准备提交补丁>#</a></h2><p>OpenSBI 项目是通过电子邮件发送补丁来进行代码审查的，当补丁准备好并得到社区认可后，维护者就会应用（Apply）这些补丁。OpenSBI 项目不接受来自 Pull Request 的贡献，而且通过电子邮件发送的补丁需要以指定的方式进行审核。</p><p>在研究如何将你的提交转化为电子邮件的补丁之前，让我们先分析一下最终的结果，即<strong>补丁系列</strong>（Patch Series）是什么样子。下面是 OpenSBI 邮件列表存档的网页界面上的补丁系列的摘要视图的一个例子。</p><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png alt></p><p>我们可以注意几点：</p><ul><li>每次提交都是以单独的邮件形式发送，提交信息的标题为主题，前缀为<code>[PATCH i/n]</code>，代表<code>n</code>个提交系列中的第 <code>i</code> 个提交。</li><li>每个补丁都是作为对<code>cover letter</code>的回复，<code>cover letter</code>的前缀为<code>[PATCH 0/n]</code>，序号为 0 的标题。</li><li>补丁系列的后续迭代被标记为 <code>PATCH v2</code>、<code>PATCH v3</code>，等等，以代替 <code>PATCH</code>。例如，<code>[PATCH v2 1/3]</code>将是第二次迭代中三个补丁的第一个补丁。每次迭代都有一个新的<code>cover letter</code>（如上面的<code>[PATCH v2 0/3]</code>），本身就是对前一次迭代的<code>cover letter</code>的回复（下面会有更多介绍）。</li></ul><blockquote><p>注：单一补丁的主题是以<code>[PATCH]</code>、<code>[PATCH v2]</code>等发送的，没有 <code>i/n</code> 编号。如上图中的第四个 Patch，就是一个单一补丁。</p></blockquote><h3 id=什么是-cover-letter>什么是 cover letter<a hidden class=anchor aria-hidden=true href=#什么是-cover-letter>#</a></h3><p>除了给每个补丁发一封邮件外，OpenSBI 社区还希望你的补丁能附带一封 cover letter。这是修改提交的一个重要组成部分，因为它概括了你想要做什么，以及为什么要这样做，比仅仅看你的补丁更明显。</p><p>你的 cover letter 的标题应该是能简洁地涵盖你整个主题分支的目的。就像我们的提交信息标题一样。下面是我们的系列标题。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Update gitignore ---
+</span></span></code></pre></div><p>cover letter 的正文是用来给评审员提供额外的背景。一定要解释任何你的补丁自己没有说清楚的东西，但要记住，由于 cover letter 没有记录在提交历史中，任何可能对未来版本库历史的读者有用的东西也应该在你的提交信息中出现。</p><p>下文我们将介绍如何生成 cover letter 以及如何填写 cover letter。</p><h3 id=用-git-send-email-发送补丁>用 git send-email 发送补丁<a hidden class=anchor aria-hidden=true href=#用-git-send-email-发送补丁>#</a></h3><h4 id=前提条件---设置-git-send-email>前提条件 - 设置 git send-email<a hidden class=anchor aria-hidden=true href=#前提条件---设置-git-send-email>#</a></h4><p>对 <code>send-email</code> 的配置会根据你的操作系统和电子邮件供应商而有所不同，配置可以参考文档<a href=http://lifeislife.cn/2022/09/28/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8git-send-mail%E7%BB%99%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90%E4%BA%A4Patch/>如何使用 git-send-mail 给开源社区提交 Patch - 如云泊</a>。</p><h4 id=准备初始补丁集>准备初始补丁集<a hidden class=anchor aria-hidden=true href=#准备初始补丁集>#</a></h4><p>在准备邮件本身之前，你需要准备补丁。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git format-patch --cover-letter -o update_gitignore/ --base<span class=o>=</span>auto  update_gitignore@<span class=o>{</span>u<span class=o>}</span>..update_gitignore
+</span></span></code></pre></div><ul><li><code>--cover-letter</code> 选项告诉 <code>format-patch</code> 为你创建一个 <code>cover letter</code> 模板。在你准备发送之前，你将需要填写该模板。</li><li><code>-o update_gitignore/</code> 选项告诉 <code>format-patch</code> 把补丁文件放到目录<code>update_gitignore</code>中。这样发送多个<code>commit</code>时就可以使用命令一次性发送，因为 <code>git send-email</code> 可以接收一个目录并从那里发送所有补丁。</li><li><code>--base=auto</code> 选项告诉命令记录”基本提交”，接收者将在此基础上应用补丁系列。自动值将使 <code>format-patch</code> 自动计算基本提交，即远程跟踪分支的最新提交和指定修订范围的合并基数。</li><li><code>update_gitignore@{u}..update_gitignore</code> 选项告诉 <code>format-patch</code> 为你在 <code>update_gitignore</code> 分支上创建的提交生成补丁，因为它是从上游分叉出来的。<code>@{u}</code>的意思就是从分叉开始到最新的提交。</li></ul><p>执行完该命令我们看看生成了哪些内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git status
 </span></span><span class=line><span class=cl>On branch update_gitignore
 </span></span><span class=line><span class=cl>Your branch is ahead of <span class=s1>&#39;origin/master&#39;</span> by <span class=m>2</span> commits.
 </span></span><span class=line><span class=cl>  <span class=o>(</span>use <span class=s2>&#34;git push&#34;</span> to publish your <span class=nb>local</span> commits<span class=o>)</span>
@@ -179,25 +89,7 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>$ ls update_gitignore 
 </span></span><span class=line><span class=cl>0000-cover-letter.patch  0001-top-filter-.vscode-folder.patch  0002-top-filter-.cache-folder.patch
-</span></span></code></pre></td></tr></table></div></div><p>该命令将为每次提交制作一个补丁文件。运行后，您可以用您喜欢的文本编辑器看一下每个补丁，确保一切正常。可以看到创建了一个<code>-o</code>参数中的<code>update_gitignore</code>文件夹，该文件夹下有三个文件，分别是 cover letter 和上文我们做的两次提交对应的补丁文件。</p><p>分别打开他们，结果如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><p>该命令将为每次提交制作一个补丁文件。运行后，您可以用您喜欢的文本编辑器看一下每个补丁，确保一切正常。可以看到创建了一个<code>-o</code>参数中的<code>update_gitignore</code>文件夹，该文件夹下有三个文件，分别是 cover letter 和上文我们做的两次提交对应的补丁文件。</p><p>分别打开他们，结果如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 16:41:32 +0800
 </span></span><span class=line><span class=cl>Subject: [PATCH 0/2] *** SUBJECT HERE ***
@@ -215,32 +107,7 @@
 </span></span><span class=line><span class=cl>base-commit: 880685586dcee950d209088a461443449a1693ce
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span><span class=lnt>22
-</span><span class=lnt>23
-</span><span class=lnt>24
-</span><span class=lnt>25
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 5dc340c29979d4c5d8c4d5a6e881348239714434 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 5dc340c29979d4c5d8c4d5a6e881348239714434 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 16:06:21 +0800
 </span></span><span class=line><span class=cl>Subject: [PATCH 1/2] top: filter .vscode folder
@@ -265,34 +132,7 @@
 </span></span><span class=line><span class=cl>\ No newline at end of file
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span><span class=lnt>22
-</span><span class=lnt>23
-</span><span class=lnt>24
-</span><span class=lnt>25
-</span><span class=lnt>26
-</span><span class=lnt>27
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 16:20:37 +0800
 </span></span><span class=line><span class=cl>Subject: [PATCH 2/2] top: filter .cache folder
@@ -319,25 +159,7 @@
 </span></span><span class=line><span class=cl>\ No newline at end of file
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><blockquote><p>注：另外，你也可以使用 <code>--rfc</code> 参数，在你的补丁主题前加上<code>[RFC PATCH]</code>，而不是<code>[PATCH]</code>。RFC 是”请求评论”的意思，表示虽然你的代码还没有准备好提交，但你想开始代码审查过程。你也可能在列表中看到标有”WIP”的补丁，这意味着他们还没有完成，但希望审查者能看看他们目前的成果。你可以用<code>--subject-prefix=WIP</code>来添加这个标志。</p></blockquote><p>检查并确保你的补丁和 cover letter 模板存在于你指定的目录中，这就完成所有准备了。</p><h4 id=准备邮件>准备邮件<a hidden class=anchor aria-hidden=true href=#准备邮件>#</a></h4><p>由于你在调用 <code>format-patch</code> 时使用了<code>--cover-letter</code>，你已经准备好了一个 cover letter 模板。在你喜欢的编辑器中打开它。</p><p>你应该看到已经有一些标题存在。检查你的<code>From:</code>标题是否正确。然后修改你的<code>Subject:</code>。</p><p>确保保留<code>[PATCH 0/X]</code>的部分；这是向 Git 社区表明这封邮件是一个补丁系列的开始，许多审查者会根据这种类型的标记过滤他们的邮件。</p><p>接下来，你必须填写你的 cover letter 的正文。同样，关于应包括哪些内容，见上文。</p><p>最后，信中会包括用于生成补丁的 Git 的版本。你可以不用管这个字符串。</p><p>完善后的 cover letter 如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><blockquote><p>注：另外，你也可以使用 <code>--rfc</code> 参数，在你的补丁主题前加上<code>[RFC PATCH]</code>，而不是<code>[PATCH]</code>。RFC 是”请求评论”的意思，表示虽然你的代码还没有准备好提交，但你想开始代码审查过程。你也可能在列表中看到标有”WIP”的补丁，这意味着他们还没有完成，但希望审查者能看看他们目前的成果。你可以用<code>--subject-prefix=WIP</code>来添加这个标志。</p></blockquote><p>检查并确保你的补丁和 cover letter 模板存在于你指定的目录中，这就完成所有准备了。</p><h4 id=准备邮件>准备邮件<a hidden class=anchor aria-hidden=true href=#准备邮件>#</a></h4><p>由于你在调用 <code>format-patch</code> 时使用了<code>--cover-letter</code>，你已经准备好了一个 cover letter 模板。在你喜欢的编辑器中打开它。</p><p>你应该看到已经有一些标题存在。检查你的<code>From:</code>标题是否正确。然后修改你的<code>Subject:</code>。</p><p>确保保留<code>[PATCH 0/X]</code>的部分；这是向 Git 社区表明这封邮件是一个补丁系列的开始，许多审查者会根据这种类型的标记过滤他们的邮件。</p><p>接下来，你必须填写你的 cover letter 的正文。同样，关于应包括哪些内容，见上文。</p><p>最后，信中会包括用于生成补丁的 Git 的版本。你可以不用管这个字符串。</p><p>完善后的 cover letter 如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 16:41:32 +0800
 </span></span><span class=line><span class=cl>Subject: [PATCH 0/2] Update gitignore
@@ -355,30 +177,10 @@
 </span></span><span class=line><span class=cl>base-commit: 880685586dcee950d209088a461443449a1693ce
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><h4 id=发送邮件>发送邮件<a hidden class=anchor aria-hidden=true href=#发送邮件>#</a></h4><p>到这里，你应该有一个目录 <code>update_gitignore/</code>，里面包含你的补丁和一封 cover letter。是时候把它发出去了！你可以像这样发送。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git send-email --to<span class=o>=</span>target@example.com update_gitignore/*.patch
-</span></span></code></pre></td></tr></table></div></div><blockquote><p>注：请查看 <code>git help send-email</code> 中的一些其他选项，你可能会发现这些选项很有价值，比如改变回复地址或添加更多的抄送地址或密送地址。</p></blockquote><blockquote><p>注：当你发送一个真正的补丁时，它将被发送到 <code>opensbi@lists.infradead.org</code> - 但请不要把你的补丁集从教程中发送到真正的邮件列表中！现在你可以把它发送给你自己，以确保你了解它的形式。</p></blockquote><p>在你运行上面的命令后，你会为每个即将发出的补丁看到一个交互提示。这给了你最后一次机会来编辑或放弃发送一些东西（但还是那句话，不要用这种方式编辑代码）。一旦你在这些提示下按下 <code>y</code> 或 <code>a</code>，你的邮件就会被发送出去！Congratulation!</p><h4 id=发送补丁的更新版本>发送补丁的更新版本<a hidden class=anchor aria-hidden=true href=#发送补丁的更新版本>#</a></h4><p>本节将重点介绍如何发送你的补丁集的 v2 版。我们将在 v2 版中重新使用我们的 <code>update_gitignore</code> 分支。在我们做任何改动之前，我们先新建一个名为<code>update_gitignore-v1</code>的分支，这个分支是我们没有做新的改动的分支。这样在后面我们就可以方便的进行对比差异。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git checkout update_gitignore
+</span></span></code></pre></div><h4 id=发送邮件>发送邮件<a hidden class=anchor aria-hidden=true href=#发送邮件>#</a></h4><p>到这里，你应该有一个目录 <code>update_gitignore/</code>，里面包含你的补丁和一封 cover letter。是时候把它发出去了！你可以像这样发送。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git send-email --to<span class=o>=</span>target@example.com update_gitignore/*.patch
+</span></span></code></pre></div><blockquote><p>注：请查看 <code>git help send-email</code> 中的一些其他选项，你可能会发现这些选项很有价值，比如改变回复地址或添加更多的抄送地址或密送地址。</p></blockquote><blockquote><p>注：当你发送一个真正的补丁时，它将被发送到 <code>opensbi@lists.infradead.org</code> - 但请不要把你的补丁集从教程中发送到真正的邮件列表中！现在你可以把它发送给你自己，以确保你了解它的形式。</p></blockquote><p>在你运行上面的命令后，你会为每个即将发出的补丁看到一个交互提示。这给了你最后一次机会来编辑或放弃发送一些东西（但还是那句话，不要用这种方式编辑代码）。一旦你在这些提示下按下 <code>y</code> 或 <code>a</code>，你的邮件就会被发送出去！Congratulation!</p><h4 id=发送补丁的更新版本>发送补丁的更新版本<a hidden class=anchor aria-hidden=true href=#发送补丁的更新版本>#</a></h4><p>本节将重点介绍如何发送你的补丁集的 v2 版。我们将在 v2 版中重新使用我们的 <code>update_gitignore</code> 分支。在我们做任何改动之前，我们先新建一个名为<code>update_gitignore-v1</code>的分支，这个分支是我们没有做新的改动的分支。这样在后面我们就可以方便的进行对比差异。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git checkout update_gitignore
 </span></span><span class=line><span class=cl>git branch update_gitignore-v1
-</span></span></code></pre></td></tr></table></div></div><p>在更新补丁时，我们可能会遇到两种情况，一种是社区的意见只让修改最新的一个提交，一种是修改历史记录中的 commit。我们分别来处理这两种情况。</p><h5 id=如何修改最新的提交>如何修改最新的提交<a hidden class=anchor aria-hidden=true href=#如何修改最新的提交>#</a></h5><p>比如只需要修改<code>top: filter .cache folder</code>这个 commit。因为它在我们的修改中是最新的 commit，所以我们可以直接对代码修改。比如我们做一个简单的修改，给修改的内容<code>/.cache</code>加个注释。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># Object files
+</span></span></code></pre></div><p>在更新补丁时，我们可能会遇到两种情况，一种是社区的意见只让修改最新的一个提交，一种是修改历史记录中的 commit。我们分别来处理这两种情况。</p><h5 id=如何修改最新的提交>如何修改最新的提交<a hidden class=anchor aria-hidden=true href=#如何修改最新的提交>#</a></h5><p>比如只需要修改<code>top: filter .cache folder</code>这个 commit。因为它在我们的修改中是最新的 commit，所以我们可以直接对代码修改。比如我们做一个简单的修改，给修改的内容<code>/.cache</code>加个注释。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># Object files
 </span></span><span class=line><span class=cl>*.o
 </span></span><span class=line><span class=cl>*.a
 </span></span><span class=line><span class=cl>*.dep
@@ -395,34 +197,10 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl># Cache file
 </span></span><span class=line><span class=cl>/.cache/
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
 </span></span><span class=line><span class=cl>git commit --amend
-</span></span></code></pre></td></tr></table></div></div><p><strong>注意</strong>！我们不需要生成新的<code>commit</code>，所以使用 <code>--amend</code>参数修改最新的<code>commit message</code>即可。执行这条命令会弹出编辑窗口，因为修改内容已经很明确，我们不需要在<code>commit message</code>里再做额外说明，直接保存退出即可。如果修改内容比较大，需要重新编写<code>commit message</code>。</p><p>以上我们就完成了一次更新。</p><h5 id=如何修改历史记录中的提交>如何修改历史记录中的提交<a hidden class=anchor aria-hidden=true href=#如何修改历史记录中的提交>#</a></h5><p>如果很不巧，社区要求修改的是<code>top: filter .vscode folder</code>这个提交的内容，那怎么办，因为它不是最新的提交，而是上一个提交，我们无法使用<code>git commit --amend</code>来直接对他修改，好在 Git 十分强大，不需要我们<code>reset</code>就可以完成这样的工作。</p><p>同样我们也做一个简单的修改，为<code>/.vscode/</code>也添加一个注释。首先我们需要使用到<code>git rebase</code>这个强大的命令。本文只介绍使用到的功能，其他功能需要大家自行摸索。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git rebase -i
-</span></span></code></pre></td></tr></table></div></div><p>这条命令会弹出编辑窗口，<code>-i</code>参数表示以交互式方式进行变基（rebase）操作。弹出窗口内容如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pick <span class=m>7175772</span> top: filter .vscode folder
+</span></span></code></pre></div><p><strong>注意</strong>！我们不需要生成新的<code>commit</code>，所以使用 <code>--amend</code>参数修改最新的<code>commit message</code>即可。执行这条命令会弹出编辑窗口，因为修改内容已经很明确，我们不需要在<code>commit message</code>里再做额外说明，直接保存退出即可。如果修改内容比较大，需要重新编写<code>commit message</code>。</p><p>以上我们就完成了一次更新。</p><h5 id=如何修改历史记录中的提交>如何修改历史记录中的提交<a hidden class=anchor aria-hidden=true href=#如何修改历史记录中的提交>#</a></h5><p>如果很不巧，社区要求修改的是<code>top: filter .vscode folder</code>这个提交的内容，那怎么办，因为它不是最新的提交，而是上一个提交，我们无法使用<code>git commit --amend</code>来直接对他修改，好在 Git 十分强大，不需要我们<code>reset</code>就可以完成这样的工作。</p><p>同样我们也做一个简单的修改，为<code>/.vscode/</code>也添加一个注释。首先我们需要使用到<code>git rebase</code>这个强大的命令。本文只介绍使用到的功能，其他功能需要大家自行摸索。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git rebase -i
+</span></span></code></pre></div><p>这条命令会弹出编辑窗口，<code>-i</code>参数表示以交互式方式进行变基（rebase）操作。弹出窗口内容如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pick <span class=m>7175772</span> top: filter .vscode folder
 </span></span><span class=line><span class=cl>pick 52b63f3 top: filter .cache folder
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=c1># Rebase 8806855..52b63f3 onto 8806855 (2 commands)</span>
@@ -443,19 +221,9 @@
 </span></span><span class=line><span class=cl><span class=c1># However, if you remove everything, the rebase will be aborted.</span>
 </span></span><span class=line><span class=cl><span class=c1>#</span>
 </span></span><span class=line><span class=cl><span class=c1># Note that empty commits are commented out</span>
-</span></span></code></pre></td></tr></table></div></div><p>窗口会显示所有未提交到远程的 commit，下面的注释也告诉了我们该如何使用。我们找到<code>edit</code>的行，可以看到解释为使用当前的 commit，但是在变基过程中会停下来让我们修改。这正是我们想要的。我们编辑当前的内容如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>edit <span class=m>7175772</span> top: filter .vscode folder
+</span></span></code></pre></div><p>窗口会显示所有未提交到远程的 commit，下面的注释也告诉了我们该如何使用。我们找到<code>edit</code>的行，可以看到解释为使用当前的 commit，但是在变基过程中会停下来让我们修改。这正是我们想要的。我们编辑当前的内容如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>edit <span class=m>7175772</span> top: filter .vscode folder
 </span></span><span class=line><span class=cl>pick 52b63f3 top: filter .cache folder
-</span></span></code></pre></td></tr></table></div></div><p>表示我们需要编辑历史记录中的<code>top: filter .vscode folder</code>提交，但是另一个 commit 我们不做改变。保存并退出当前窗口后，会有如下提示。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>Stopped at 7175772...  top: filter .vscode folder
+</span></span></code></pre></div><p>表示我们需要编辑历史记录中的<code>top: filter .vscode folder</code>提交，但是另一个 commit 我们不做改变。保存并退出当前窗口后，会有如下提示。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>Stopped at 7175772...  top: filter .vscode folder
 </span></span><span class=line><span class=cl>You can amend the commit now, with
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>  git commit --amend 
@@ -463,22 +231,7 @@
 </span></span><span class=line><span class=cl>Once you are satisfied with your changes, run
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>  git rebase --continue
-</span></span></code></pre></td></tr></table></div></div><p>根据提示，我们可以进行一系列修改了，修改完使用<code>git commit --amend</code>保存，如果一切符合自己要求了，再使用<code>git rebase --continue</code>完成变基操作。</p><p>我们先修改代码，可以看到代码已经回到了没有<code>/.cache/</code>的状态，我们添加一行注释：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># Object files
+</span></span></code></pre></div><p>根据提示，我们可以进行一系列修改了，修改完使用<code>git commit --amend</code>保存，如果一切符合自己要求了，再使用<code>git rebase --continue</code>完成变基操作。</p><p>我们先修改代码，可以看到代码已经回到了没有<code>/.cache/</code>的状态，我们添加一行注释：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl># Object files
 </span></span><span class=line><span class=cl>*.o
 </span></span><span class=line><span class=cl>*.a
 </span></span><span class=line><span class=cl>*.dep
@@ -493,37 +246,14 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl># VSCode config file
 </span></span><span class=line><span class=cl>/.vscode/
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git add .gitignore
 </span></span><span class=line><span class=cl>git commit --amend
-</span></span></code></pre></td></tr></table></div></div><p>同样弹出窗口后我们直接保存退出，如果修改幅度较大，可以进一步补充说明。然后使用以下命令继续完成变基。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git rebase --continue
-</span></span></code></pre></td></tr></table></div></div><p>此时我们可以看到我们不仅修改了历史记录中的 commit，还保证了最新的 commit 没有丢失或者更改。</p><h5 id=准备更新版本的补丁集>准备更新版本的补丁集<a hidden class=anchor aria-hidden=true href=#准备更新版本的补丁集>#</a></h5><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> $ git format-patch -v2 --cover-letter -o update_gitignore/   master..update_gitignore-v1
+</span></span></code></pre></div><p>同样弹出窗口后我们直接保存退出，如果修改幅度较大，可以进一步补充说明。然后使用以下命令继续完成变基。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git rebase --continue
+</span></span></code></pre></div><p>此时我们可以看到我们不仅修改了历史记录中的 commit，还保证了最新的 commit 没有丢失或者更改。</p><h5 id=准备更新版本的补丁集>准备更新版本的补丁集<a hidden class=anchor aria-hidden=true href=#准备更新版本的补丁集>#</a></h5><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> $ git format-patch -v2 --cover-letter -o update_gitignore/   master..update_gitignore-v1
 </span></span><span class=line><span class=cl>update_gitignore/v2-0000-cover-letter.patch
 </span></span><span class=line><span class=cl>update_gitignore/v2-0001-top-filter-.vscode-folder.patch
 </span></span><span class=line><span class=cl>update_gitignore/v2-0002-top-filter-.cache-folder.patch
-</span></span></code></pre></td></tr></table></div></div><p><code>--range-diff master..update_gitignore-v1</code> 参数告诉 <code>format-patch</code> 在 cover letter 中包括 <code>update_gitignore-v1</code> 和 <code>update_gitignore</code> 两个分支之间的差异。这有助于告诉评审人你的 v1 和 v2 补丁之间的差异。</p><p><code>-v2</code> 参数告诉 <code>format-patch</code> 将你的补丁输出为 <code>v2</code> 版本。例如，你可能注意到你的 v2 版补丁都被命名为 <code>v2-000n-my-commit-subject.patch</code>。<code>-v2</code> 也会将你的补丁格式化，在前面加上<code>[PATCH v2]</code>，而不是<code>[PATCH]</code>。</p><p>运行此命令后，<code>format-patch</code> 会将补丁输出到 <code>update_gitignore/</code> 目录，与 v1 版的补丁一起。使用一个目录可以方便在校对 v2 补丁时参考旧的 v1 补丁，但你需要注意只发送 v2 补丁。我们将使用 <code>update_gitignore/v2-.patch</code>这样的模式（而不是 <code>update_gitignore/.patch</code>，这将匹配 v1 和 v2 补丁）。</p><p>再次编辑你的 cover letter。现在是一个很好的时间来提及你的上一个版本和现在有什么不同，如果它是重要的东西。你不需要在你的第二封 cover letter 中使用完全相同的内容；重点是向审查人员解释你所做的可能不那么明显的变化。</p><p>我们就简单的写一下添加了注释。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><p><code>--range-diff master..update_gitignore-v1</code> 参数告诉 <code>format-patch</code> 在 cover letter 中包括 <code>update_gitignore-v1</code> 和 <code>update_gitignore</code> 两个分支之间的差异。这有助于告诉评审人你的 v1 和 v2 补丁之间的差异。</p><p><code>-v2</code> 参数告诉 <code>format-patch</code> 将你的补丁输出为 <code>v2</code> 版本。例如，你可能注意到你的 v2 版补丁都被命名为 <code>v2-000n-my-commit-subject.patch</code>。<code>-v2</code> 也会将你的补丁格式化，在前面加上<code>[PATCH v2]</code>，而不是<code>[PATCH]</code>。</p><p>运行此命令后，<code>format-patch</code> 会将补丁输出到 <code>update_gitignore/</code> 目录，与 v1 版的补丁一起。使用一个目录可以方便在校对 v2 补丁时参考旧的 v1 补丁，但你需要注意只发送 v2 补丁。我们将使用 <code>update_gitignore/v2-.patch</code>这样的模式（而不是 <code>update_gitignore/.patch</code>，这将匹配 v1 和 v2 补丁）。</p><p>再次编辑你的 cover letter。现在是一个很好的时间来提及你的上一个版本和现在有什么不同，如果它是重要的东西。你不需要在你的第二封 cover letter 中使用完全相同的内容；重点是向审查人员解释你所做的可能不那么明显的变化。</p><p>我们就简单的写一下添加了注释。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 19:35:06 +0800
 </span></span><span class=line><span class=cl>Subject: [PATCH v2 0/2] Update gitignore
@@ -539,26 +269,8 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><p>发送更新版本时你需要将新版本抄送给提出建议的人，你可以在你的 cover letter 中直接添加这些抄送行，在 Subject 行上面写上这样一行。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>CC: Name &lt;name@example.com&gt;
-</span></span></code></pre></td></tr></table></div></div><p>例如，把更新的邮件抄送给我自己：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span></code></pre></div><p>发送更新版本时你需要将新版本抄送给提出建议的人，你可以在你的 cover letter 中直接添加这些抄送行，在 Subject 行上面写上这样一行。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>CC: Name &lt;name@example.com&gt;
+</span></span></code></pre></div><p>例如，把更新的邮件抄送给我自己：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
 </span></span><span class=line><span class=cl>From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>CC: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>Date: Fri, 18 Nov 2022 19:35:06 +0800
@@ -575,39 +287,16 @@
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>-- 
 </span></span><span class=line><span class=cl>2.17.1
-</span></span></code></pre></td></tr></table></div></div><p>现在再次发送电子邮件，注意你传入的参数。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>git send-email --to target@example.com update_gitignore/v2-*.patch
-</span></span></code></pre></td></tr></table></div></div><p>恭喜你完成了一次补丁版本更新。</p><hr><p>对于一些社区，要求更新的版本需要在同一个 thread 上进行。如下示例这样：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>[PATCH 0/2] Here is what I did...
+</span></span></code></pre></div><p>现在再次发送电子邮件，注意你传入的参数。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>git send-email --to target@example.com update_gitignore/v2-*.patch
+</span></span></code></pre></div><p>恭喜你完成了一次补丁版本更新。</p><hr><p>对于一些社区，要求更新的版本需要在同一个 thread 上进行。如下示例这样：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>[PATCH 0/2] Here is what I did...
 </span></span><span class=line><span class=cl>  [PATCH 1/2] Clean up and tests
 </span></span><span class=line><span class=cl>  [PATCH 2/2] Implementation
 </span></span><span class=line><span class=cl>  [PATCH v2 0/3] Here is a reroll
 </span></span><span class=line><span class=cl>    [PATCH v2 1/3] Clean up
 </span></span><span class=line><span class=cl>    [PATCH v2 2/3] New tests
 </span></span><span class=line><span class=cl>    [PATCH v2 3/3] Implementation
-</span></span></code></pre></td></tr></table></div></div><p>就是更新的版本需要关联到之前的版本，而不能作为单独的一个列表。</p><p>你还需要去找到你之前的 cover letter 的 Message-Id。你可以在发送第一个补丁系列时，从 <code>git send-email</code> 的输出中记下它。
-例如：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git send-email --to Dominic Zhang@gmail.com update_gitignore/v2-*.patch 
+</span></span></code></pre></div><p>就是更新的版本需要关联到之前的版本，而不能作为单独的一个列表。</p><p>你还需要去找到你之前的 cover letter 的 Message-Id。你可以在发送第一个补丁系列时，从 <code>git send-email</code> 的输出中记下它。
+例如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git send-email --to Dominic Zhang@gmail.com update_gitignore/v2-*.patch 
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>update_gitignore/v2-0000-cover-letter.patch
 </span></span><span class=line><span class=cl>update_gitignore/v2-0001-top-filter-.vscode-folder.patch
@@ -622,18 +311,13 @@
 </span></span><span class=line><span class=cl>Date: Fri, <span class=m>18</span> Nov <span class=m>2022</span> 19:54:54 +0800
 </span></span><span class=line><span class=cl>Message-Id: &lt;20221118115456.2242-1-Dominic Zhang@gmail.com&gt;
 </span></span><span class=line><span class=cl>X-Mailer: git-send-email 2.17.1
-</span></span></code></pre></td></tr></table></div></div><p>你也可以从社区的邮箱列表中找到 Message ID，因为 OpenSBI 不要求在同一个 thread 回复，所以没有相关信息，这里以<a href=https://lore.kernel.org/git/cover-00.12-00000000000-20221118T112205Z-avarab@gmail.com/T/#t>Git 社区</a>的邮箱列表为例。随便点击一个补丁主题，在页面中找到<code>permalink</code>或者<code>raw</code>，点击打开即可找到 Message ID 信息。</p><p>它的格式一般如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Message-Id: &lt;foo.12345.author@example.com&gt;
-</span></span></code></pre></td></tr></table></div></div><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png alt></p><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png alt></p><p>如果要发送更新版本，那么我们就需要找到上一版本的 Message ID。如发送的是 V3 版本，那么我们需要找到 V2 版本的 Message ID。并且在发送邮件时添加如下参数：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git send-email --to Dominic Zhang@gmail.com 
+</span></span></code></pre></div><p>你也可以从社区的邮箱列表中找到 Message ID，因为 OpenSBI 不要求在同一个 thread 回复，所以没有相关信息，这里以<a href=https://lore.kernel.org/git/cover-00.12-00000000000-20221118T112205Z-avarab@gmail.com/T/#t>Git 社区</a>的邮箱列表为例。随便点击一个补丁主题，在页面中找到<code>permalink</code>或者<code>raw</code>，点击打开即可找到 Message ID 信息。</p><p>它的格式一般如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Message-Id: &lt;foo.12345.author@example.com&gt;
+</span></span></code></pre></div><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png alt></p><p><img loading=lazy src=https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png alt></p><p>如果要发送更新版本，那么我们就需要找到上一版本的 Message ID。如发送的是 V3 版本，那么我们需要找到 V2 版本的 Message ID。并且在发送邮件时添加如下参数：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ git send-email --to Dominic Zhang@gmail.com 
 </span></span><span class=line><span class=cl>                 --in-reply-to<span class=o>=</span><span class=s2>&#34;&lt;foo.12345.author@example.com&gt;&#34;</span> 
 </span></span><span class=line><span class=cl>                 update_gitignore/v2-*.patch 
-</span></span></code></pre></td></tr></table></div></div><h4 id=只有一个-patch-的更改>只有一个 Patch 的更改<a hidden class=anchor aria-hidden=true href=#只有一个-patch-的更改>#</a></h4><p>在某些情况下，你的非常小的变化可能只包括一个补丁。这时，你只需要发送一封邮件。你的提交信息应该已经很有意义了，你只需要生成补丁文件就可以发送了。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git format-patch -o update_gitignore/  HEAD^
-</span></span></code></pre></td></tr></table></div></div><ul><li><code>HEAD^</code>参数表示生成与上一个提交之间的差异。</li></ul></div><footer class=post-footer><ul class=post-tags><li><a href=https://lifeislife.cn/tags/git/>Git</a></li><li><a href=https://lifeislife.cn/tags/opensbi/>OpenSBI</a></li></ul><nav class=paginav><a class=prev href=https://lifeislife.cn/posts/git-clone%E4%B8%8B%E6%9D%A5%E7%9A%84%E5%88%86%E6%94%AF%E4%B8%8D%E5%AE%8C%E6%95%B4/><span class=title>« 上一页</span><br><span>Git clone下来的分支不完整</span>
-</a><a class=next href=https://lifeislife.cn/posts/linux%E6%9B%B4%E6%8D%A2debian%E8%BD%AF%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%BA%90/><span class=title>下一页 »</span><br><span>更换 Debian 软件更新源</span></a></nav><ul class=share-buttons><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on x" href="https://x.com/intent/tweet/?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&amp;hashtags=Git%2cOpenSBI"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446C483.971.0 512 28.03 512 62.554zM269.951 190.75 182.567 75.216H56L207.216 272.95 63.9 436.783h61.366L235.9 310.383l96.667 126.4H456L298.367 228.367l134-153.151H371.033zM127.633 110h36.468l219.38 290.065H349.5z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&amp;title=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;summary=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;source=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM160.461 423.278V197.561h-75.04v225.717h75.04zm270.539.0V293.839c0-69.333-37.018-101.586-86.381-101.586-39.804.0-57.634 21.891-67.617 37.266v-31.958h-75.021c.995 21.181.0 225.717.0 225.717h75.02V297.222c0-6.748.486-13.492 2.474-18.315 5.414-13.475 17.767-27.434 38.494-27.434 27.135.0 38.007 20.707 38.007 51.037v120.768H431zM123.448 88.722C97.774 88.722 81 105.601 81 127.724c0 21.658 16.264 39.002 41.455 39.002h.484c26.165.0 42.452-17.344 42.452-39.002-.485-22.092-16.241-38.954-41.943-39.002z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on reddit" href="https://reddit.com/submit?url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&title=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM446 265.638c0-22.964-18.616-41.58-41.58-41.58-11.211.0-21.361 4.457-28.841 11.666-28.424-20.508-67.586-33.757-111.204-35.278l18.941-89.121 61.884 13.157c.756 15.734 13.642 28.29 29.56 28.29 16.407.0 29.706-13.299 29.706-29.701.0-16.403-13.299-29.702-29.706-29.702-11.666.0-21.657 6.792-26.515 16.578l-69.105-14.69c-1.922-.418-3.939-.042-5.585 1.036-1.658 1.073-2.811 2.761-3.224 4.686l-21.152 99.438c-44.258 1.228-84.046 14.494-112.837 35.232-7.468-7.164-17.589-11.591-28.757-11.591-22.965.0-41.585 18.616-41.585 41.58.0 16.896 10.095 31.41 24.568 37.918-.639 4.135-.99 8.328-.99 12.576.0 63.977 74.469 115.836 166.33 115.836s166.334-51.859 166.334-115.836c0-4.218-.347-8.387-.977-12.493 14.564-6.47 24.735-21.034 24.735-38.001zM326.526 373.831c-20.27 20.241-59.115 21.816-70.534 21.816-11.428.0-50.277-1.575-70.522-21.82-3.007-3.008-3.007-7.882.0-10.889 3.003-2.999 7.882-3.003 10.885.0 12.777 12.781 40.11 17.317 59.637 17.317 19.522.0 46.86-4.536 59.657-17.321 3.016-2.999 7.886-2.995 10.885.008 3.008 3.011 3.003 7.882-.008 10.889zm-5.23-48.781c-16.373.0-29.701-13.324-29.701-29.698.0-16.381 13.328-29.714 29.701-29.714 16.378.0 29.706 13.333 29.706 29.714.0 16.374-13.328 29.698-29.706 29.698zM160.91 295.348c0-16.381 13.328-29.71 29.714-29.71 16.369.0 29.689 13.329 29.689 29.71.0 16.373-13.32 29.693-29.689 29.693-16.386.0-29.714-13.32-29.714-29.693z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on facebook" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H342.978V319.085h66.6l12.672-82.621h-79.272v-53.617c0-22.603 11.073-44.636 46.58-44.636H425.6v-70.34s-32.71-5.582-63.982-5.582c-65.288.0-107.96 39.569-107.96 111.204v62.971h-72.573v82.621h72.573V512h-191.104c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on whatsapp" href="https://api.whatsapp.com/send?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch%20-%20https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zm-58.673 127.703c-33.842-33.881-78.847-52.548-126.798-52.568-98.799.0-179.21 80.405-179.249 179.234-.013 31.593 8.241 62.428 23.927 89.612l-25.429 92.884 95.021-24.925c26.181 14.28 55.659 21.807 85.658 21.816h.074c98.789.0 179.206-80.413 179.247-179.243.018-47.895-18.61-92.93-52.451-126.81zM263.976 403.485h-.06c-26.734-.01-52.954-7.193-75.828-20.767l-5.441-3.229-56.386 14.792 15.05-54.977-3.542-5.637c-14.913-23.72-22.791-51.136-22.779-79.287.033-82.142 66.867-148.971 149.046-148.971 39.793.014 77.199 15.531 105.329 43.692 28.128 28.16 43.609 65.592 43.594 105.4-.034 82.149-66.866 148.983-148.983 148.984zm81.721-111.581c-4.479-2.242-26.499-13.075-30.604-14.571-4.105-1.495-7.091-2.241-10.077 2.241-2.986 4.483-11.569 14.572-14.182 17.562-2.612 2.988-5.225 3.364-9.703 1.12-4.479-2.241-18.91-6.97-36.017-22.23C231.8 264.15 222.81 249.484 220.198 245s-.279-6.908 1.963-9.14c2.016-2.007 4.48-5.232 6.719-7.847 2.24-2.615 2.986-4.484 4.479-7.472 1.493-2.99.747-5.604-.374-7.846-1.119-2.241-10.077-24.288-13.809-33.256-3.635-8.733-7.327-7.55-10.077-7.688-2.609-.13-5.598-.158-8.583-.158-2.986.0-7.839 1.121-11.944 5.604-4.105 4.484-15.675 15.32-15.675 37.364.0 22.046 16.048 43.342 18.287 46.332 2.24 2.99 31.582 48.227 76.511 67.627 10.685 4.615 19.028 7.371 25.533 9.434 10.728 3.41 20.492 2.929 28.209 1.775 8.605-1.285 26.499-10.833 30.231-21.295 3.732-10.464 3.732-19.431 2.612-21.298-1.119-1.869-4.105-2.99-8.583-5.232z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on telegram" href="https://telegram.me/share/url?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="2 2 28 28" height="30" width="30" fill="currentcolor"><path d="M26.49 29.86H5.5a3.37 3.37.0 01-2.47-1 3.35 3.35.0 01-1-2.47V5.48A3.36 3.36.0 013 3 3.37 3.37.0 015.5 2h21A3.38 3.38.0 0129 3a3.36 3.36.0 011 2.46V26.37a3.35 3.35.0 01-1 2.47 3.38 3.38.0 01-2.51 1.02zm-5.38-6.71a.79.79.0 00.85-.66L24.73 9.24a.55.55.0 00-.18-.46.62.62.0 00-.41-.17q-.08.0-16.53 6.11a.59.59.0 00-.41.59.57.57.0 00.43.52l4 1.24 1.61 4.83a.62.62.0 00.63.43.56.56.0 00.4-.17L16.54 20l4.09 3A.9.9.0 0021.11 23.15zM13.8 20.71l-1.21-4q8.72-5.55 8.78-5.55c.15.0.23.0.23.16a.18.18.0 010 .06s-2.51 2.3-7.52 6.8z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on ycombinator" href="https://news.ycombinator.com/submitlink?t=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&u=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg width="30" height="30" viewBox="0 0 512 512" fill="currentcolor" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><path d="M449.446.0C483.971.0 512 28.03 512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446zM183.8767 87.9921h-62.034L230.6673 292.4508V424.0079h50.6655V292.4508L390.1575 87.9921H328.1233L256 238.2489z"/></svg></a></li></ul></footer></article></main><footer class=footer><span>&copy; 2024 <a href=https://lifeislife.cn/>夜云泊</a></span> ·
+</span></span></code></pre></div><h4 id=只有一个-patch-的更改>只有一个 Patch 的更改<a hidden class=anchor aria-hidden=true href=#只有一个-patch-的更改>#</a></h4><p>在某些情况下，你的非常小的变化可能只包括一个补丁。这时，你只需要发送一封邮件。你的提交信息应该已经很有意义了，你只需要生成补丁文件就可以发送了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git format-patch -o update_gitignore/  HEAD^
+</span></span></code></pre></div><ul><li><code>HEAD^</code>参数表示生成与上一个提交之间的差异。</li></ul></div><footer class=post-footer><ul class=post-tags><li><a href=https://lifeislife.cn/tags/git/>Git</a></li><li><a href=https://lifeislife.cn/tags/opensbi/>OpenSBI</a></li></ul><nav class=paginav><a class=prev href=https://lifeislife.cn/posts/git-clone%E4%B8%8B%E6%9D%A5%E7%9A%84%E5%88%86%E6%94%AF%E4%B8%8D%E5%AE%8C%E6%95%B4/><span class=title>« 上一页</span><br><span>Git clone下来的分支不完整</span>
+</a><a class=next href=https://lifeislife.cn/posts/linux%E6%9B%B4%E6%8D%A2debian%E8%BD%AF%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%BA%90/><span class=title>下一页 »</span><br><span>更换 Debian 软件更新源</span></a></nav><ul class=share-buttons><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on x" href="https://x.com/intent/tweet/?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&amp;hashtags=Git%2cOpenSBI"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446C483.971.0 512 28.03 512 62.554zM269.951 190.75 182.567 75.216H56L207.216 272.95 63.9 436.783h61.366L235.9 310.383l96.667 126.4H456L298.367 228.367l134-153.151H371.033zM127.633 110h36.468l219.38 290.065H349.5z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&amp;title=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;summary=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;source=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM160.461 423.278V197.561h-75.04v225.717h75.04zm270.539.0V293.839c0-69.333-37.018-101.586-86.381-101.586-39.804.0-57.634 21.891-67.617 37.266v-31.958h-75.021c.995 21.181.0 225.717.0 225.717h75.02V297.222c0-6.748.486-13.492 2.474-18.315 5.414-13.475 17.767-27.434 38.494-27.434 27.135.0 38.007 20.707 38.007 51.037v120.768H431zM123.448 88.722C97.774 88.722 81 105.601 81 127.724c0 21.658 16.264 39.002 41.455 39.002h.484c26.165.0 42.452-17.344 42.452-39.002-.485-22.092-16.241-38.954-41.943-39.002z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on reddit" href="https://reddit.com/submit?url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f&title=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM446 265.638c0-22.964-18.616-41.58-41.58-41.58-11.211.0-21.361 4.457-28.841 11.666-28.424-20.508-67.586-33.757-111.204-35.278l18.941-89.121 61.884 13.157c.756 15.734 13.642 28.29 29.56 28.29 16.407.0 29.706-13.299 29.706-29.701.0-16.403-13.299-29.702-29.706-29.702-11.666.0-21.657 6.792-26.515 16.578l-69.105-14.69c-1.922-.418-3.939-.042-5.585 1.036-1.658 1.073-2.811 2.761-3.224 4.686l-21.152 99.438c-44.258 1.228-84.046 14.494-112.837 35.232-7.468-7.164-17.589-11.591-28.757-11.591-22.965.0-41.585 18.616-41.585 41.58.0 16.896 10.095 31.41 24.568 37.918-.639 4.135-.99 8.328-.99 12.576.0 63.977 74.469 115.836 166.33 115.836s166.334-51.859 166.334-115.836c0-4.218-.347-8.387-.977-12.493 14.564-6.47 24.735-21.034 24.735-38.001zM326.526 373.831c-20.27 20.241-59.115 21.816-70.534 21.816-11.428.0-50.277-1.575-70.522-21.82-3.007-3.008-3.007-7.882.0-10.889 3.003-2.999 7.882-3.003 10.885.0 12.777 12.781 40.11 17.317 59.637 17.317 19.522.0 46.86-4.536 59.657-17.321 3.016-2.999 7.886-2.995 10.885.008 3.008 3.011 3.003 7.882-.008 10.889zm-5.23-48.781c-16.373.0-29.701-13.324-29.701-29.698.0-16.381 13.328-29.714 29.701-29.714 16.378.0 29.706 13.333 29.706 29.714.0 16.374-13.328 29.698-29.706 29.698zM160.91 295.348c0-16.381 13.328-29.71 29.714-29.71 16.369.0 29.689 13.329 29.689 29.71.0 16.373-13.32 29.693-29.689 29.693-16.386.0-29.714-13.32-29.714-29.693z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on facebook" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H342.978V319.085h66.6l12.672-82.621h-79.272v-53.617c0-22.603 11.073-44.636 46.58-44.636H425.6v-70.34s-32.71-5.582-63.982-5.582c-65.288.0-107.96 39.569-107.96 111.204v62.971h-72.573v82.621h72.573V512h-191.104c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on whatsapp" href="https://api.whatsapp.com/send?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch%20-%20https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentcolor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zm-58.673 127.703c-33.842-33.881-78.847-52.548-126.798-52.568-98.799.0-179.21 80.405-179.249 179.234-.013 31.593 8.241 62.428 23.927 89.612l-25.429 92.884 95.021-24.925c26.181 14.28 55.659 21.807 85.658 21.816h.074c98.789.0 179.206-80.413 179.247-179.243.018-47.895-18.61-92.93-52.451-126.81zM263.976 403.485h-.06c-26.734-.01-52.954-7.193-75.828-20.767l-5.441-3.229-56.386 14.792 15.05-54.977-3.542-5.637c-14.913-23.72-22.791-51.136-22.779-79.287.033-82.142 66.867-148.971 149.046-148.971 39.793.014 77.199 15.531 105.329 43.692 28.128 28.16 43.609 65.592 43.594 105.4-.034 82.149-66.866 148.983-148.983 148.984zm81.721-111.581c-4.479-2.242-26.499-13.075-30.604-14.571-4.105-1.495-7.091-2.241-10.077 2.241-2.986 4.483-11.569 14.572-14.182 17.562-2.612 2.988-5.225 3.364-9.703 1.12-4.479-2.241-18.91-6.97-36.017-22.23C231.8 264.15 222.81 249.484 220.198 245s-.279-6.908 1.963-9.14c2.016-2.007 4.48-5.232 6.719-7.847 2.24-2.615 2.986-4.484 4.479-7.472 1.493-2.99.747-5.604-.374-7.846-1.119-2.241-10.077-24.288-13.809-33.256-3.635-8.733-7.327-7.55-10.077-7.688-2.609-.13-5.598-.158-8.583-.158-2.986.0-7.839 1.121-11.944 5.604-4.105 4.484-15.675 15.32-15.675 37.364.0 22.046 16.048 43.342 18.287 46.332 2.24 2.99 31.582 48.227 76.511 67.627 10.685 4.615 19.028 7.371 25.533 9.434 10.728 3.41 20.492 2.929 28.209 1.775 8.605-1.285 26.499-10.833 30.231-21.295 3.732-10.464 3.732-19.431 2.612-21.298-1.119-1.869-4.105-2.99-8.583-5.232z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on telegram" href="https://telegram.me/share/url?text=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&amp;url=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg viewBox="2 2 28 28" height="30" width="30" fill="currentcolor"><path d="M26.49 29.86H5.5a3.37 3.37.0 01-2.47-1 3.35 3.35.0 01-1-2.47V5.48A3.36 3.36.0 013 3 3.37 3.37.0 015.5 2h21A3.38 3.38.0 0129 3a3.36 3.36.0 011 2.46V26.37a3.35 3.35.0 01-1 2.47 3.38 3.38.0 01-2.51 1.02zm-5.38-6.71a.79.79.0 00.85-.66L24.73 9.24a.55.55.0 00-.18-.46.62.62.0 00-.41-.17q-.08.0-16.53 6.11a.59.59.0 00-.41.59.57.57.0 00.43.52l4 1.24 1.61 4.83a.62.62.0 00.63.43.56.56.0 00.4-.17L16.54 20l4.09 3A.9.9.0 0021.11 23.15zM13.8 20.71l-1.21-4q8.72-5.55 8.78-5.55c.15.0.23.0.23.16a.18.18.0 010 .06s-2.51 2.3-7.52 6.8z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share 手把手教你向开源社区提 Patch on ycombinator" href="https://news.ycombinator.com/submitlink?t=%e6%89%8b%e6%8a%8a%e6%89%8b%e6%95%99%e4%bd%a0%e5%90%91%e5%bc%80%e6%ba%90%e7%a4%be%e5%8c%ba%e6%8f%90%20Patch&u=https%3a%2f%2flifeislife.cn%2fposts%2f%25E6%2589%258B%25E6%258A%258A%25E6%2589%258B%25E6%2595%2599%25E4%25BD%25A0%25E5%2590%2591%25E5%25BC%2580%25E6%25BA%2590%25E7%25A4%25BE%25E5%258C%25BA%25E6%258F%2590patch%2f"><svg width="30" height="30" viewBox="0 0 512 512" fill="currentcolor" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"><path d="M449.446.0C483.971.0 512 28.03 512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446zM183.8767 87.9921h-62.034L230.6673 292.4508V424.0079h50.6655V292.4508L390.1575 87.9921H328.1233L256 238.2489z"/></svg></a></li></ul></footer><div id=disqus_thread></div><script>(function(){var e=document,t=e.createElement("script");t.src="https://lifeislife-1.disqus.com/embed.js",t.setAttribute("data-timestamp",+new Date),(e.head||e.body).appendChild(t)})()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript></article></main><footer class=footer><span>&copy; 2024 <a href=https://lifeislife.cn/>夜云泊</a></span> ·
 <span>Powered by
 <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
         <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
