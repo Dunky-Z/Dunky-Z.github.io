@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=8888&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>uCore-实验第 1 章 - 应用程序与基本执行环境 | PaperMod</title>
+<meta name="keywords" content="RISC-V, OS, uCore, Lab, Linux">
+<meta name="description" content="了解系统调用 操作系统的系统调用（syscall）是操作系统提供给应用程序使用的一种接口。它允许应用程序通过向操作系统发送请求，来执行一些必须由操作系统来完成的任务，例如读取文件、创建进程、分配内存等。
+通俗地说，可以把操作系统看作一个巨大的服务员，而应用程序就像是顾客。应用程序不能直接访问硬件或执行特权操作，因为这样可能会导致系统不稳定或不安全。所以，应用程序需要通过系统调用来与操作系统进行交互，请求操作系统代表它完成某些任务。
+当应用程序需要操作系统执行特定的功能时，它会调用适当的系统调用函数，并传递参数给它。然后操作系统会接收到这个请求，并根据请求的类型和参数来执行相应的操作。完成后，操作系统会将执行结果返回给应用程序。
+在 RISC-V 架构中，系统调用是通过使用特定的指令来实现的。具体来说，RISC-V 架构提供了一个称为 ecall（environment call）的指令来触发系统调用。
+要使用 syscall，在 RISC-V 汇编代码中可以通过以下步骤来完成：
+将系统调用编号（syscall number）放入寄存器 a7 中，该编号对应于所需的系统调用功能。 将系统调用所需的参数放入其他相应的寄存器中。例如，参数传递给文件读取系统调用可能需要将文件描述符放入 a0 寄存器，缓冲区地址放入 a1 寄存器，以及读取的字节数放入 a2 寄存器。 执行 ecall 指令。这会触发操作系统处理当前运行的程序的系统调用请求。 操作系统接收到系统调用请求后，根据寄存器 a7 中的系统调用编号和其他寄存器中的参数来执行相应的操作。 当操作系统完成系统调用请求时，它将结果放入适当的寄存器中，通常是 a0 寄存器。 程序继续执行，可以检查结果并进行后续的处理。 需要注意的是，具体的系统调用编号以及参数的传递方式会根据操作系统的实现而有所不同。所以在编写 RISC-V 汇编代码时，需要参考操作系统的相关文档来了解具体的系统调用接口和参数传递方式。
+makr run 之后发生了什么？ 当执行make run命令后，以下是运行流程的概述：
+内核代码编译：执行make run会触发 Makefile 中的相应规则，从而编译生成内核（kernel）二进制文件。
+加载 kernel 并启动 QEMU：根据 QEMUOPTS 变量指定的参数，QEMU 加载生成的 kernel 二进制文件，并启动模拟器。
+引导代码执行：在模拟器启动后，CPU 的通用寄存器被清零，程序计数器（PC）指向 0x1000 的位置，这里有硬件固化的一小段引导代码。该引导代码会迅速跳转到 0x80000000 处的 RustSBI（Rust Supervisor Binary Interface）。
+RustSBI 完成硬件初始化：RustSBI 是一个用于与操作系统进行交互的接口层。在跳转到 RustSBI 之后，它会完成必要的硬件初始化工作。">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:8888/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:8888/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:8888/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:8888/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:8888/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:8888/" accesskey="h" title="PaperMod (Alt + H)">PaperMod</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:8888/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:8888/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:8888/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      uCore-实验第 1 章 - 应用程序与基本执行环境
+    </h1>
+    <div class="post-meta"><span title='2023-09-08 10:45:14 +0000 UTC'>September 8, 2023</span>&nbsp;·&nbsp;8 min
+
+</div>
+  </header> 
+  <div class="post-content"><h1 id="了解系统调用">了解系统调用<a hidden class="anchor" aria-hidden="true" href="#了解系统调用">#</a></h1>
+<p>操作系统的系统调用（syscall）是操作系统提供给应用程序使用的一种接口。它允许应用程序通过向操作系统发送请求，来执行一些必须由操作系统来完成的任务，例如读取文件、创建进程、分配内存等。</p>
+<p>通俗地说，可以把操作系统看作一个巨大的服务员，而应用程序就像是顾客。应用程序不能直接访问硬件或执行特权操作，因为这样可能会导致系统不稳定或不安全。所以，应用程序需要通过系统调用来与操作系统进行交互，请求操作系统代表它完成某些任务。</p>
+<p>当应用程序需要操作系统执行特定的功能时，它会调用适当的系统调用函数，并传递参数给它。然后操作系统会接收到这个请求，并根据请求的类型和参数来执行相应的操作。完成后，操作系统会将执行结果返回给应用程序。</p>
+<p><strong>在 RISC-V 架构中</strong>，系统调用是通过使用特定的指令来实现的。具体来说，RISC-V 架构提供了一个称为 <code>ecall</code>（environment call）的指令来触发系统调用。</p>
+<p>要使用 syscall，在 RISC-V 汇编代码中可以通过以下步骤来完成：</p>
+<ol>
+<li>将系统调用编号（syscall number）放入寄存器 a7 中，该编号对应于所需的系统调用功能。</li>
+<li>将系统调用所需的参数放入其他相应的寄存器中。例如，参数传递给文件读取系统调用可能需要将文件描述符放入 a0 寄存器，缓冲区地址放入 a1 寄存器，以及读取的字节数放入 a2 寄存器。</li>
+<li>执行 ecall 指令。这会触发操作系统处理当前运行的程序的系统调用请求。</li>
+<li>操作系统接收到系统调用请求后，根据寄存器 a7 中的系统调用编号和其他寄存器中的参数来执行相应的操作。</li>
+<li>当操作系统完成系统调用请求时，它将结果放入适当的寄存器中，通常是 a0 寄存器。</li>
+<li>程序继续执行，可以检查结果并进行后续的处理。</li>
+</ol>
+<p>需要注意的是，具体的系统调用编号以及参数的传递方式会根据操作系统的实现而有所不同。所以在编写 RISC-V 汇编代码时，需要参考操作系统的相关文档来了解具体的系统调用接口和参数传递方式。</p>
+<h1 id="makr-run-之后发生了什么">makr run 之后发生了什么？<a hidden class="anchor" aria-hidden="true" href="#makr-run-之后发生了什么">#</a></h1>
+<p>当执行<code>make run</code>命令后，以下是运行流程的概述：</p>
+<ol>
+<li>
+<p>内核代码编译：执行<code>make run</code>会触发 Makefile 中的相应规则，从而编译生成内核（kernel）二进制文件。</p>
+</li>
+<li>
+<p>加载 kernel 并启动 QEMU：根据 QEMUOPTS 变量指定的参数，QEMU 加载生成的 kernel 二进制文件，并启动模拟器。</p>
+</li>
+<li>
+<p>引导代码执行：在模拟器启动后，CPU 的通用寄存器被清零，程序计数器（PC）指向 0x1000 的位置，这里有硬件固化的一小段引导代码。该引导代码会迅速跳转到 0x80000000 处的 RustSBI（Rust Supervisor Binary Interface）。</p>
+</li>
+<li>
+<p>RustSBI 完成硬件初始化：RustSBI 是一个用于与操作系统进行交互的接口层。在跳转到 RustSBI 之后，它会完成必要的硬件初始化工作。</p>
+</li>
+<li>
+<p>执行操作系统第一条指令：RustSBI 在完成硬件初始化后，会跳转到 kernel 二进制文件所在内存位置 0x80200000 处，并开始执行我们操作系统的第一条指令。</p>
+</li>
+</ol>
+<p>综上所述，执行<code>make run</code>命令会完成内核的编译和加载，启动 QEMU 虚拟机，并经过引导代码和 RustSBI 的处理，最终开始执行操作系统的第一条指令。</p>
+<h1 id="了解链接脚本">了解链接脚本<a hidden class="anchor" aria-hidden="true" href="#了解链接脚本">#</a></h1>
+<pre tabindex="0"><code class="language-lds" data-lang="lds"># kernel.ld
+BASE_ADDRESS = 0x80200000;
+SECTIONS
+{
+   . = BASE_ADDRESS;
+   skernel = .;
+
+   stext = .;
+   .text : {
+      *(.text.entry)   # 第一行代码
+      *(.text .text.*)
+   }
+
+   ...
+}
+</code></pre><h2 id="kernelld-中的-base_address--0x80200000-指定了内核的加载地址这个地址哪来的">kernel.ld 中的 <code>BASE_ADDRESS = 0x80200000</code> 指定了内核的加载地址，这个地址哪来的？<a hidden class="anchor" aria-hidden="true" href="#kernelld-中的-base_address--0x80200000-指定了内核的加载地址这个地址哪来的">#</a></h2>
+<p>以下内容摘自参考<a href="https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter1/3first-instruction-in-kernel1.html">rCore-Tutorial-Book-v3 3.6.0-alpha.1 文档</a>：</p>
+<p>在 Qemu 模拟的 virt 硬件平台上，物理内存的起始物理地址为 <code>0x80000000</code>，物理内存的默认大小为 128MiB，它可以通过 <code>-m</code> 选项进行配置。如果使用默认配置的 128MiB 物理内存则对应的物理地址区间为 <code>[0x80000000,0x88000000)</code> 。如果使用上面给出的命令启动 Qemu，那么在 Qemu 开始执行任何指令之前，首先把两个文件加载到 Qemu 的物理内存中：即作把作为 bootloader 的 rustsbi-qemu.bin 加载到物理内存以物理地址 <code>0x80000000</code> 开头的区域上，同时把内核镜像 <code>os.bin</code> 加载到以物理地址 <code>0x80200000</code> 开头的区域上。</p>
+<p>为什么加载到这两个位置呢？这与 Qemu 模拟计算机加电启动后的运行流程有关。一般来说，计算机加电之后的启动流程可以分成若干个阶段，每个阶段均由一层软件或 固件 负责，每一层软件或固件的功能是进行它应当承担的初始化工作，并在此之后跳转到下一层软件或固件的入口地址，也就是将计算机的控制权移交给了下一层软件或固件。Qemu 模拟的启动流程则可以分为三个阶段：第一个阶段由固化在 Qemu 内的一小段汇编程序负责；第二个阶段由 bootloader 负责；第三个阶段则由内核镜像负责。</p>
+<p>第一阶段：将必要的文件载入到 Qemu 物理内存之后，Qemu CPU 的程序计数器（PC, Program Counter）会被初始化为 0x1000，因此 Qemu 实际执行的第一条指令位于物理地址 0x1000，接下来它将执行寥寥数条指令并跳转到物理地址 <code>0x80000000</code> 对应的指令处并进入第二阶段。从后面的调试过程可以看出，该地址 <code>0x80000000</code> 被固化在 Qemu 中，作为 Qemu 的使用者，我们在不触及 Qemu 源代码的情况下无法进行更改。</p>
+<p>第二阶段：由于 Qemu 的第一阶段固定跳转到 <code>0x80000000</code>，我们需要将负责第二阶段的 bootloader rustsbi-qemu.bin 放在以物理地址 <code>0x80000000</code> 开头的物理内存中，这样就能保证 <code>0x80000000</code> 处正好保存 bootloader 的第一条指令。在这一阶段，bootloader 负责对计算机进行一些初始化工作，并跳转到下一阶段软件的入口，在 Qemu 上即可实现将计算机控制权移交给我们的内核镜像 os.bin。这里需要注意的是，对于不同的 bootloader 而言，下一阶段软件的入口不一定相同，而且获取这一信息的方式和时间点也不同：入口地址可能是一个预先约定好的固定的值，也有可能是在 bootloader 运行期间才动态获取到的值。我们选用的 RustSBI 则是将下一阶段的入口地址预先约定为固定的 0x80200000，在 RustSBI 的初始化工作完成之后，它会跳转到该地址并将计算机控制权移交给下一阶段的软件——也即我们的内核镜像。</p>
+<p>第三阶段：为了正确地和上一阶段的 RustSBI 对接，我们需要保证内核的第一条指令位于物理地址 <code>0x80200000</code> 处。为此，我们需要将内核镜像预先加载到 Qemu 物理内存以地址 0x80200000 开头的区域上。一旦 CPU 开始执行内核的第一条指令，证明计算机的控制权已经被移交给我们的内核，也就达到了本节的目标。</p>
+<blockquote>
+<p>以上过程是 QEMU 中的启动流程，真实计算机的加电启动流程大致如下：
+第一阶段：加电后 CPU 的 PC 寄存器被设置为计算机内部只读存储器（ROM，Read-only Memory）的物理地址，随后 CPU 开始运行 ROM 内的软件。我们一般将该软件称为固件（Firmware），它的功能是对 CPU 进行一些初始化操作，将后续阶段的 bootloader 的代码、数据从硬盘载入到物理内存，最后跳转到适当的地址将计算机控制权转移给 bootloader。它大致对应于 Qemu 启动的第一阶段，即在物理地址 0x1000 处放置的若干条指令。可以看到 Qemu 上的固件非常简单，因为它并不需要负责将 bootloader 从硬盘加载到物理内存中，这个任务此前已经由 Qemu 自身完成了。
+第二阶段：bootloader 同样完成一些 CPU 的初始化工作，将操作系统镜像从硬盘加载到物理内存中，最后跳转到适当地址将控制权转移给操作系统。可以看到一般情况下 bootloader 需要完成一些数据加载工作，这也就是它名字中 loader 的来源。它对应于 Qemu 启动的第二阶段。在 Qemu 中，我们使用的 RustSBI 功能较弱，它并没有能力完成加载的工作，内核镜像实际上是和 bootloader 一起在 Qemu 启动之前加载到物理内存中的。
+第三阶段：控制权被转移给操作系统。由于篇幅所限后面我们就不再赘述了。
+值得一提的是，为了让计算机的启动更加灵活，bootloader 目前可能非常复杂：它可能也分为多个阶段，并且能管理一些硬件资源，从复杂性上它已接近一个传统意义上的操作系统。</p>
+</blockquote>
+<h1 id="终端是如何控制颜色的">终端是如何控制颜色的？<a hidden class="anchor" aria-hidden="true" href="#终端是如何控制颜色的">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> LOG_COLOR {
+</span></span><span style="display:flex;"><span>	RED <span style="color:#f92672">=</span> <span style="color:#ae81ff">31</span>,
+</span></span><span style="display:flex;"><span>	GREEN <span style="color:#f92672">=</span> <span style="color:#ae81ff">32</span>,
+</span></span><span style="display:flex;"><span>	BLUE <span style="color:#f92672">=</span> <span style="color:#ae81ff">34</span>,
+</span></span><span style="display:flex;"><span>	GRAY <span style="color:#f92672">=</span> <span style="color:#ae81ff">90</span>,
+</span></span><span style="display:flex;"><span>	YELLOW <span style="color:#f92672">=</span> <span style="color:#ae81ff">93</span>,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#if defined(USE_LOG_ERROR)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define errorf(fmt, ...)                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	do {                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		int tid = threadid();                                          \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		printf(&#34;\x1b[%dm[%s %d]&#34; fmt &#34;\x1b[0m\n&#34;, RED, &#34;ERROR&#34;, tid,   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		       ##__VA_ARGS__);                                         \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	} while (0)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#else
+</span></span></span></code></pre></div><p>ANSI 转义码是一种用于控制终端输出的特殊字符序列。它们由<code>\x1b</code>（或<code>\033</code>）开头，后面跟着一系列数字和分号组成。</p>
+<p>ANSI 转义码中的数字部分用于指定不同的控制操作，如设置文本颜色、背景颜色、光标位置等等。其中，用于设置颜色的转义码包括三个主要的部分：<code>\x1b[颜色代码m</code>。</p>
+<p>具体来说，<code>\x1b[</code>表示开始使用控制序列，接下来的数字代表不同的颜色代码，最后的<code>m</code>表示结束控制序列。例如，<code>\x1b[31m</code>表示将文本颜色设置为红色，而<code>\x1b[0m</code>用于重置所有属性为默认值。</p>
+<p>当终端遇到这样的转义序列时，它会解析并执行相应的控制操作，从而实现对文本颜色、背景颜色和其他属性的控制。</p>
+<p>需要注意的是，不同的终端可能支持不同的 ANSI 转义码，并且不同操作系统也可能有不同的实现。因此，在编写使用 ANSI 转义码的代码时，建议先测试并确保其在目标终端上正常工作。</p>
+<p>更多详细解释可以参考文章：<a href="https://www.jianshu.com/p/790fc612aaa5">终端颜色控制 - 简书</a>。</p>
+<h1 id="应用程序输出字符会调用-sbi-服务sbi-中发生了什么">应用程序输出字符会调用 SBI 服务，SBI 中发生了什么？<a hidden class="anchor" aria-hidden="true" href="#应用程序输出字符会调用-sbi-服务sbi-中发生了什么">#</a></h1>
+<blockquote>
+<p>因为对 Rust 语言不熟悉，所以这里的分析是基于 C 语言的 OpenSBI 来分析的，他们的逻辑是一样的。如果有熟悉 Rust 的可以查看 <a href="https://github.com/rustsbi/rustsbi/blob/main/src/instance.rs">RustSBI 源码</a></p>
+</blockquote>
+<p>根据指导书中的解释以及阅读代码，我们知道调用了 <code>printf</code> 最终实际上是调用了 <code>sbi_call</code>。那么 <code>sbi_call</code> 是如何实现的呢？因为我是做驱动开发以及固件开发的，也经常需要使用 OpenSBI，所想多问一句，OpenSBI 是如何实现的呢？OpenSBI 是如何提供服务的呢？它是如何打印出字符的呢？</p>
+<h2 id="内核中的-sbi-调用">内核中的 SBI 调用<a hidden class="anchor" aria-hidden="true" href="#内核中的-sbi-调用">#</a></h2>
+<p>我们先看一下内核中的 <code>sbi_call</code> 都做了写啥。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// uCore-Tutorial-Code-2023S/os/sbi.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> uint64 SBI_CONSOLE_PUTCHAR <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">console_putchar</span>(<span style="color:#66d9ef">int</span> c)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">sbi_call</span>(SBI_CONSOLE_PUTCHAR, c, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// uCore-Tutorial-Code-2023S/os/sbi.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">inline</span> <span style="color:#a6e22e">sbi_call</span>(uint64 which, uint64 arg0, uint64 arg1, uint64 arg2)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 使用寄存器变量来保存参数值和系统调用编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">register</span> uint64 a0 <span style="color:#66d9ef">asm</span>(<span style="color:#e6db74">&#34;a0&#34;</span>) <span style="color:#f92672">=</span> arg0;  <span style="color:#75715e">// 将 &#39;arg0&#39; 的值保存在寄存器 &#39;a0&#39; 中
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">register</span> uint64 a1 <span style="color:#66d9ef">asm</span>(<span style="color:#e6db74">&#34;a1&#34;</span>) <span style="color:#f92672">=</span> arg1;  <span style="color:#75715e">// 将 &#39;arg1&#39; 的值保存在寄存器 &#39;a1&#39; 中
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">register</span> uint64 a2 <span style="color:#66d9ef">asm</span>(<span style="color:#e6db74">&#34;a2&#34;</span>) <span style="color:#f92672">=</span> arg2;  <span style="color:#75715e">// 将 &#39;arg2&#39; 的值保存在寄存器 &#39;a2&#39; 中
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">register</span> uint64 a7 <span style="color:#66d9ef">asm</span>(<span style="color:#e6db74">&#34;a7&#34;</span>) <span style="color:#f92672">=</span> which; <span style="color:#75715e">// 将 &#39;which&#39; 的值保存在寄存器 &#39;a7&#39; 中
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 内联汇编代码使用 ecall 指令进行系统调用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">asm</span> <span style="color:#66d9ef">volatile</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;ecall&#34;</span>  <span style="color:#75715e">// 使用 ecall 指令进行系统调用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// 在这段代码中，指令 &#34;ecall&#34; 的输入参数是寄存器 a0 a1 a2 和 a7，输出参数是寄存器 a0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;=r&#34;</span>(a0)  <span style="color:#75715e">// 输出操作数：将返回值存储在变量 &#39;a0&#39; 中
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;r&#34;</span>(a0), <span style="color:#e6db74">&#34;r&#34;</span>(a1), <span style="color:#e6db74">&#34;r&#34;</span>(a2), <span style="color:#e6db74">&#34;r&#34;</span>(a7)  <span style="color:#75715e">// 输入操作数：传递参数和系统调用编号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;memory&#34;</span>  <span style="color:#75715e">//  &#34;memory&#34; 标志告诉编译器，这条指令可能会修改内存中的数据，需要进行内存屏障操作来保证数据的正确性。 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> a0;  <span style="color:#75715e">// 返回存储在变量 &#39;a0&#39; 中的值
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>那么 OpenSBI 如何提供服务？在<code>include/sbi/sbi_ecall.h</code>这种定义了每个<code>ecall</code>服务全局变量。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//include/sbi/sbi_ecall.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_base;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_legacy;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_time;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_rfence;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_ipi;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_vendor;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_hsm;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_srst;
+</span></span></code></pre></div><p>在<code>lib/sbi/sbi_ecall.c</code>中注册了所有的<code>ecall</code>服务，并将其加到链表<code>ecall_exts_list</code>中。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sbi_ecall_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> ret;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> sbi_ecall_extension <span style="color:#f92672">*</span>ext;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> i;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> sbi_ecall_exts_size; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>		ext <span style="color:#f92672">=</span> sbi_ecall_exts[i];
+</span></span><span style="display:flex;"><span>		ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_ecall_register_extension</span>(ext);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (ret)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sbi_ecall_register_extension</span>(<span style="color:#66d9ef">struct</span> sbi_ecall_extension <span style="color:#f92672">*</span>ext)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> sbi_ecall_extension <span style="color:#f92672">*</span>t;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>ext <span style="color:#f92672">||</span> (ext<span style="color:#f92672">-&gt;</span>extid_end <span style="color:#f92672">&lt;</span> ext<span style="color:#f92672">-&gt;</span>extid_start) <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>ext<span style="color:#f92672">-&gt;</span>handle)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> SBI_EINVAL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">sbi_list_for_each_entry</span>(t, <span style="color:#f92672">&amp;</span>ecall_exts_list, head) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> start <span style="color:#f92672">=</span> t<span style="color:#f92672">-&gt;</span>extid_start;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> end <span style="color:#f92672">=</span> t<span style="color:#f92672">-&gt;</span>extid_end;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (end <span style="color:#f92672">&lt;</span> ext<span style="color:#f92672">-&gt;</span>extid_start <span style="color:#f92672">||</span> ext<span style="color:#f92672">-&gt;</span>extid_end <span style="color:#f92672">&lt;</span> start)
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">/* no overlap */</span>;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> SBI_EINVAL;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">SBI_INIT_LIST_HEAD</span>(<span style="color:#f92672">&amp;</span>ext<span style="color:#f92672">-&gt;</span>head);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">sbi_list_add_tail</span>(<span style="color:#f92672">&amp;</span>ext<span style="color:#f92672">-&gt;</span>head, <span style="color:#f92672">&amp;</span>ecall_exts_list);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Iterate over list of given type
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param pos the type * to use as a loop cursor.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param head the head for your list.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param member the name of the list_struct within the struct.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define sbi_list_for_each_entry(pos, head, member) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	for (pos = sbi_list_entry((head)-&gt;next, typeof(*pos), member);	\
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	     &amp;pos-&gt;member != (head); 	\
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	     pos = sbi_list_entry(pos-&gt;member.next, typeof(*pos), member))
+</span></span></span></code></pre></div><p>那么服务 id 如何和相对应的服务绑定的呢？以<code>ecall_time</code>为例，查看其结构体原型<code>struct sbi_ecall_extension</code> ：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// include/sbi/sbi_ecall.h: 23
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> sbi_ecall_extension {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> sbi_dlist head;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extid_start;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extid_end;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span> probe)(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extid, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>out_val);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span> handle)(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extid, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> funcid,
+</span></span><span style="display:flex;"><span>		       <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> sbi_trap_regs <span style="color:#f92672">*</span>regs,
+</span></span><span style="display:flex;"><span>		       <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>out_val,
+</span></span><span style="display:flex;"><span>		       <span style="color:#66d9ef">struct</span> sbi_trap_info <span style="color:#f92672">*</span>out_trap);
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>可以看到有 <code>extid_start</code>、<code>extid_end</code> 和 <code>handle</code>。</p>
+<p>目前 OpenSBI 逐步将每个服务的实现都放在了<code>lib/sbi</code>单独文件中，以<code>ecall_time</code>为例，其实现在<code>lib/sbi/sbi_ecall_time.c</code>中。单独为其绑定回调处理函数<code>sbi_ecall_time_handler</code>。但是还有很多服务的实现还是放在了<code>lib/sbi/sbi_ecall_legacy.c</code>中，后续应该会逐步迁移。我们上文使用的<code>SBI_CONSOLE_PUTCHAR</code>服务就是在这里实现的。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// lib/sbi/sbi_ecall_legacy.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> sbi_ecall_extension ecall_legacy <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>	.extid_start <span style="color:#f92672">=</span> SBI_EXT_0_1_SET_TIMER,
+</span></span><span style="display:flex;"><span>	.extid_end <span style="color:#f92672">=</span> SBI_EXT_0_1_SHUTDOWN,
+</span></span><span style="display:flex;"><span>	.handle <span style="color:#f92672">=</span> sbi_ecall_legacy_handler,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sbi_ecall_legacy_handler</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extid, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> funcid,
+</span></span><span style="display:flex;"><span>				    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> sbi_trap_regs <span style="color:#f92672">*</span>regs,
+</span></span><span style="display:flex;"><span>				    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>out_val,
+</span></span><span style="display:flex;"><span>				    <span style="color:#66d9ef">struct</span> sbi_trap_info <span style="color:#f92672">*</span>out_trap)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> sbi_tlb_info tlb_info;
+</span></span><span style="display:flex;"><span>	u32 source_hart <span style="color:#f92672">=</span> <span style="color:#a6e22e">current_hartid</span>();
+</span></span><span style="display:flex;"><span>	ulong hmask <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> (extid) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> SBI_EXT_0_1_SET_TIMER:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">sbi_timer_event_start</span>((u64)regs<span style="color:#f92672">-&gt;</span>a0);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> SBI_EXT_0_1_CONSOLE_PUTCHAR:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">sbi_putc</span>(regs<span style="color:#f92672">-&gt;</span>a0);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> SBI_EXT_0_1_CONSOLE_GETCHAR:
+</span></span><span style="display:flex;"><span>		ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_getc</span>();
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这就把 <code>id</code> 与相应的服务函数绑定。一个<code>extid</code>对应一个<code>handler</code>。</p>
+<p>我们可以在找到<code>SBI_EXT_0_1_CONSOLE_PUTCHAR</code>的值，是与 Linux 内核里定义的值是一致的。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// include/sbi/sbi_ecall_interface.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">/* SBI Extension IDs */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define SBI_EXT_0_1_CONSOLE_PUTCHAR		0x1
+</span></span></span></code></pre></div><h2 id="ecall-服务调用流程">ecall 服务调用流程<a hidden class="anchor" aria-hidden="true" href="#ecall-服务调用流程">#</a></h2>
+<ol>
+<li>
+<p>在 <code>firmware/fw_base.S</code> 中注册了 <code>Machine Mode</code> 的 <code>trap handler</code>，即 <code>sbi_trap_handler</code>；</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>_start_warm:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Setup trap handler */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">la</span>	<span style="color:#66d9ef">a4</span>, <span style="color:#66d9ef">_trap_handler</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">csrw</span>	<span style="color:#66d9ef">CSR_MTVEC</span>, <span style="color:#66d9ef">a4</span>  <span style="color:#75715e">/* CSR_MTVEC = _trap_handler */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>_trap_handler:
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_SAVE_AND_SETUP_SP_T0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_SAVE_MEPC_MSTATUS</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_CALL_C_ROUTINE</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_RESTORE_MEPC_MSTATUS</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TRAP_RESTORE_SP_T0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mret</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">.macro</span>	<span style="color:#66d9ef">TRAP_CALL_C_ROUTINE</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Call C routine */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">add</span>	<span style="color:#66d9ef">a0</span>, <span style="color:#66d9ef">sp</span>, <span style="color:#66d9ef">zero</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">call</span>	<span style="color:#66d9ef">sbi_trap_handler</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">.endm</span>
+</span></span></code></pre></div></li>
+<li>
+<p>在 <code>lib/sbi/sbi_trap.c</code> 中定义了 <code>sbi_trap_handler</code>，处理各种 <code>mcause</code>，比如 <code>Illegal Instructions</code>，<code>Misaligned Load &amp; Store</code>, <code>Supervisor &amp; Machine Ecall</code> 等。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// lib/sbi/sbi_trap.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">sbi_trap_handler</span>(<span style="color:#66d9ef">struct</span> sbi_trap_regs <span style="color:#f92672">*</span>regs)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (mcause) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> CAUSE_ILLEGAL_INSTRUCTION:
+</span></span><span style="display:flex;"><span>        rc  <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_illegal_insn_handler</span>(mtval, regs);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> CAUSE_MISALIGNED_LOAD:
+</span></span><span style="display:flex;"><span>        rc <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_misaligned_load_handler</span>(mtval, mtval2, mtinst, regs);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> CAUSE_MISALIGNED_STORE:
+</span></span><span style="display:flex;"><span>        rc  <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_misaligned_store_handler</span>(mtval, mtval2, mtinst, regs);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> CAUSE_SUPERVISOR_ECALL:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> CAUSE_MACHINE_ECALL:
+</span></span><span style="display:flex;"><span>        rc  <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_ecall_handler</span>(regs);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* If the trap came from S or U mode, redirect it there */</span>
+</span></span><span style="display:flex;"><span>        trap.epc <span style="color:#f92672">=</span> regs<span style="color:#f92672">-&gt;</span>mepc;
+</span></span><span style="display:flex;"><span>        trap.cause <span style="color:#f92672">=</span> mcause;
+</span></span><span style="display:flex;"><span>        trap.tval <span style="color:#f92672">=</span> mtval;
+</span></span><span style="display:flex;"><span>        trap.tval2 <span style="color:#f92672">=</span> mtval2;
+</span></span><span style="display:flex;"><span>        trap.tinst <span style="color:#f92672">=</span> mtinst;
+</span></span><span style="display:flex;"><span>        rc <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_trap_redirect</span>(regs, <span style="color:#f92672">&amp;</span>trap);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ...
+</span></span></code></pre></div></li>
+<li>
+<p>在 <code>lib/sbi/sbi_ecall.c</code> 中定义了处理 <code>ecall mcause</code> 的 <code>sbi_ecall_handler</code>，它遍历上面 <code>ecall_exts_list</code> 中注册的各种 <code>ecall</code> 服务。</p>
+</li>
+<li>
+<p><code>sbi_ecall_handler</code> 根据 Linux 内核传递的 <code>ext (extension id)</code> 找到链表中对应的 <code>ecall</code> 服务，执行其中的 <code>handle</code> 函数，该函数根据 <code>fid</code> 执行具体的服务内容。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// lib/sbi/sbi_ecall.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sbi_ecall_handler</span>(<span style="color:#66d9ef">struct</span> sbi_trap_regs <span style="color:#f92672">*</span>regs)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> extension_id <span style="color:#f92672">=</span> regs<span style="color:#f92672">-&gt;</span>a7;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> func_id <span style="color:#f92672">=</span> regs<span style="color:#f92672">-&gt;</span>a6;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> sbi_trap_info trap <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>};
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> out_val <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 遍历所有 ecall 服务
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    ext <span style="color:#f92672">=</span> <span style="color:#a6e22e">sbi_ecall_find_extension</span>(extension_id);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ext <span style="color:#f92672">&amp;&amp;</span> ext<span style="color:#f92672">-&gt;</span>handle) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 如果找到了就执行
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        ret <span style="color:#f92672">=</span> ext<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">handle</span>(extension_id, func_id,
+</span></span><span style="display:flex;"><span>                regs, <span style="color:#f92672">&amp;</span>out_val, <span style="color:#f92672">&amp;</span>trap);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (extension_id <span style="color:#f92672">&gt;=</span> SBI_EXT_0_1_SET_TIMER <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>            extension_id <span style="color:#f92672">&lt;=</span> SBI_EXT_0_1_SHUTDOWN)
+</span></span><span style="display:flex;"><span>            is_0_1_spec <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        ret <span style="color:#f92672">=</span> SBI_ENOTSUPP;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>我们可以发现 <code>extension_id</code> 就是 a7 寄存器，他和我们在 uCore OS 中定义的 <code>SBI_EXT_0_1_CONSOLE_PUTCHAR</code> 是一致的。</p>
+</li>
+</ol>
+<h1 id="程序的内存布局与编译流程">程序的内存布局与编译流程<a hidden class="anchor" aria-hidden="true" href="#程序的内存布局与编译流程">#</a></h1>
+<h2 id="程序的内存布局">程序的内存布局<a hidden class="anchor" aria-hidden="true" href="#程序的内存布局">#</a></h2>
+<h1 id="ucore-的编译系统">uCore 的编译系统<a hidden class="anchor" aria-hidden="true" href="#ucore-的编译系统">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span><span style="color:#a6e22e">.PHONY</span><span style="color:#f92672">:</span> clean build user
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 设置伪目标clean、build和user，可以通过命令make来执行这些目标
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">all</span><span style="color:#f92672">:</span> build_kernel
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 默认目标为build_kernel，即执行build_kernel目标下的指令
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>LOG <span style="color:#f92672">?=</span> error
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量LOG，默认值是error
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>K <span style="color:#f92672">=</span> os
+</span></span><span style="display:flex;"><span>TOOLPREFIX <span style="color:#f92672">=</span> riscv64-unknown-elf-
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>CC <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>gcc
+</span></span><span style="display:flex;"><span>AS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>gcc
+</span></span><span style="display:flex;"><span>LD <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>ld
+</span></span><span style="display:flex;"><span>OBJCOPY <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>objcopy
+</span></span><span style="display:flex;"><span>OBJDUMP <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>objdump
+</span></span><span style="display:flex;"><span>PY <span style="color:#f92672">=</span> python3
+</span></span><span style="display:flex;"><span>GDB <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>TOOLPREFIX<span style="color:#66d9ef">)</span>gdb
+</span></span><span style="display:flex;"><span>CP <span style="color:#f92672">=</span> cp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>MKDIR_P <span style="color:#f92672">=</span> mkdir -p
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>BUILDDIR <span style="color:#f92672">=</span> build
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>C_SRCS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>wildcard $K/*.c<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量C_SRCS，使用wildcard函数匹配所有以.c为后缀的文件，并存储在$K目录下
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>AS_SRCS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>wildcard $K/*.S<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量AS_SRCS，使用wildcard函数匹配所有以.S为后缀的文件，并存储在$K目录下
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>C_OBJS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>addprefix <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/, <span style="color:#66d9ef">$(</span>addsuffix .o, <span style="color:#66d9ef">$(</span>basename <span style="color:#66d9ef">$(</span>C_SRCS<span style="color:#66d9ef">))))</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量C_OBJS，通过addprefix和addsuffix函数将$(C_SRCS)中的路径替换为$(BUILDDIR)，并将后缀修改为.o
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>AS_OBJS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>addprefix <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/, <span style="color:#66d9ef">$(</span>addsuffix .o, <span style="color:#66d9ef">$(</span>basename <span style="color:#66d9ef">$(</span>AS_SRCS<span style="color:#66d9ef">))))</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量AS_OBJS，通过addprefix和addsuffix函数将$(AS_SRCS)中的路径替换为$(BUILDDIR)，并将后缀修改为.o
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>OBJS <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>C_OBJS<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>AS_OBJS<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量OBJS，其值为$(C_OBJS)和$(AS_OBJS)的组合
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>HEADER_DEP <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>addsuffix .d, <span style="color:#66d9ef">$(</span>basename <span style="color:#66d9ef">$(</span>C_OBJS<span style="color:#66d9ef">)))</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量HEADER_DEP，通过addsuffix函数将$(C_OBJS)中的后缀修改为.d
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">-include</span> <span style="color:#66d9ef">$(</span>HEADER_DEP<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 包含$(HEADER_DEP)中的.d文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">=</span> -Wall -Werror -O -fno-omit-frame-pointer -ggdb
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量CFLAGS，并赋值为-Wall -Werror -O -fno-omit-frame-pointer -ggdb
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -MD
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 将-MD选项追加到CFLAGS变量中，用于自动生成依赖关系文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -mcmodel<span style="color:#f92672">=</span>medany
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 将-mcmodel=medany选项追加到CFLAGS变量中，用于指定内存模型
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -ffreestanding -fno-common -nostdlib -mno-relax
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 将-ffreestanding -fno-common -nostdlib -mno-relax选项追加到CFLAGS变量中，用于编译无操作系统环境下的程序
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -I$K
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 将-I$K选项追加到CFLAGS变量中，用于指定头文件搜索路径为$K目录下
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> <span style="color:#66d9ef">$(</span>shell <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> -fno-stack-protector -E -x c /dev/null &gt;/dev/null 2&gt;&amp;<span style="color:#ae81ff">1</span> <span style="color:#f92672">&amp;&amp;</span> echo -fno-stack-protector<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 将$(CC) -fno-stack-protector -E -x c /dev/null &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo -fno-stack-protector命令执行结果追加到CFLAGS变量中，用于禁用栈保护机制
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>LOG<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#960050;background-color:#1e0010">error)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -D LOG_LEVEL_ERROR
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">else</span> <span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>LOG<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#960050;background-color:#1e0010">warn)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -D LOG_LEVEL_WARN
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">else</span> <span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>LOG<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#960050;background-color:#1e0010">info)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -D LOG_LEVEL_INFO
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">else</span> <span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>LOG<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#960050;background-color:#1e0010">debug)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -D LOG_LEVEL_DEBUG
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">else</span> <span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>LOG<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#960050;background-color:#1e0010">trace)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -D LOG_LEVEL_TRACE
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 根据$(LOG)变量的值，向CFLAGS变量追加相应的预处理器选项，相当于添加了一个宏定义，log.h中的LOG_LEVEL_ERROR等宏定义会根据这个宏定义来决定是否生效
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Disable PIE when possible (for Ubuntu 16.10 toolchain)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">ifneq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>shell <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> -dumpspecs 2&gt;/dev/null | grep -e &#39;[^f]no-pie&#39;<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -fno-pie -no-pie
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifneq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>shell <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> -dumpspecs 2&gt;/dev/null | grep -e &#39;[^f]nopie&#39;<span style="color:#66d9ef">)</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span>CFLAGS <span style="color:#f92672">+=</span> -fno-pie -nopie
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 根据系统环境判断是否支持PIE（位置无关执行）选项，并根据情况向CFLAGS变量追加相应的选项
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>LDFLAGS <span style="color:#f92672">=</span> -z max-page-size<span style="color:#f92672">=</span><span style="color:#ae81ff">4096</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个变量LDFLAGS，并赋值为-z max-page-size=4096
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">$(AS_OBJS)</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/$K/%.o : $K/%.S
+</span></span><span style="display:flex;"><span>    @mkdir -p <span style="color:#66d9ef">$(</span>@D<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>CFLAGS<span style="color:#66d9ef">)</span> -c $&lt; -o $@
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 规则：生成$(AS_OBJS)目标所需的依赖文件$(BUILDDIR)/$K/%.o，依赖于$K/%.S，并通过$(CC)命令编译生成目标文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">$(C_OBJS)</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/$K/%.o : $K/%.c  <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/$K/%.d
+</span></span><span style="display:flex;"><span>    @mkdir -p <span style="color:#66d9ef">$(</span>@D<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>CFLAGS<span style="color:#66d9ef">)</span> -c $&lt; -o $@
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 规则：生成$(C_OBJS)目标所需的依赖文件$(BUILDDIR)/$K/%.o，依赖于$K/%.c和$(BUILDDIR)/$K/%.d，并通过$(CC)命令编译生成目标文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">$(HEADER_DEP)</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/$K/%.d : $K/%.c
+</span></span><span style="display:flex;"><span>    @mkdir -p <span style="color:#66d9ef">$(</span>@D<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>    @set -e; rm -f $@; <span style="color:#66d9ef">$(</span>CC<span style="color:#66d9ef">)</span> -MM $&lt; <span style="color:#66d9ef">$(</span>INCLUDEFLAGS<span style="color:#66d9ef">)</span> &gt; $@.$$$$; <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        sed <span style="color:#e6db74">&#39;s,\($*\)\.o[ :]*,\1.o $@ : ,g&#39;</span> &lt; $@.$$$$ &gt; $@; <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        rm -f $@.$$$$
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 规则：生成$(HEADER_DEP)目标所需的依赖文件$(BUILDDIR)/$K/%.d，依赖于$K/%.c，并通过$(CC)命令生成依赖关系文件
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">build</span><span style="color:#f92672">:</span> build/kernel
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 定义一个目标build，其依赖于build/kernel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">build/kernel</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>OBJS<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">$(</span>LD<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>LDFLAGS<span style="color:#66d9ef">)</span> -T os/kernel.ld -o <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/kernel <span style="color:#66d9ef">$(</span>OBJS<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">$(</span>OBJDUMP<span style="color:#66d9ef">)</span> -S <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/kernel &gt; <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/kernel.asm
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">$(</span>OBJDUMP<span style="color:#66d9ef">)</span> -t <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/kernel | sed <span style="color:#e6db74">&#39;1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d&#39;</span> &gt; <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>/kernel.sym
+</span></span><span style="display:flex;"><span>    @echo <span style="color:#e6db74">&#39;Build kernel done&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 规则：生成build/kernel目标，依赖于$(OBJS)，通过$(LD)命令连接生成kernel，并通过$(OBJDUMP)命令生成汇编文件和符号表
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">clean</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    rm -rf <span style="color:#66d9ef">$(</span>BUILDDIR<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># BOARD
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>BOARD		<span style="color:#f92672">?=</span> qemu
+</span></span><span style="display:flex;"><span>SBI			<span style="color:#f92672">?=</span> rustsbi
+</span></span><span style="display:flex;"><span>BOOTLOADER	<span style="color:#f92672">:=</span> ./bootloader/rustsbi-qemu.bin
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>QEMU <span style="color:#f92672">=</span> qemu-system-riscv64
+</span></span><span style="display:flex;"><span>QEMUOPTS <span style="color:#f92672">=</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	-nographic <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	-machine virt <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	-bios <span style="color:#66d9ef">$(</span>BOOTLOADER<span style="color:#66d9ef">)</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	-kernel build/kernel	<span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">run</span><span style="color:#f92672">:</span> build/kernel
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>QEMU<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>QEMUOPTS<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># QEMU&#39;s gdb stub command line changed in 0.11
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>QEMUGDB <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>shell <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">$(</span>QEMU<span style="color:#66d9ef">)</span> -help | grep -q <span style="color:#e6db74">&#39;^-gdb&#39;</span>; <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	<span style="color:#66d9ef">then</span> echo <span style="color:#e6db74">&#34;-gdb tcp::15234&#34;</span>; <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>	<span style="color:#66d9ef">else</span> echo <span style="color:#e6db74">&#34;-s -p 15234&#34;</span>; <span style="color:#66d9ef">fi</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 启动QEMU并通过GDB调试，此时QEMu会进入后台运行，并暂停执行，等待GDB连接
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"># 连接的GDB端口为15234
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">debug</span><span style="color:#f92672">:</span> build/kernel .gdbinit
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>QEMU<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>QEMUOPTS<span style="color:#66d9ef">)</span> -S <span style="color:#66d9ef">$(</span>QEMUGDB<span style="color:#66d9ef">)</span> &amp;
+</span></span><span style="display:flex;"><span>	sleep <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>GDB<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p>编译、运行 uCore 的一些常用命令有如下一些，涉及了后续章节中引入的测试用例中的命令：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>make run
+</span></span><span style="display:flex;"><span>make debug
+</span></span><span style="display:flex;"><span>make clean
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 编译测试用例的前四章</span>
+</span></span><span style="display:flex;"><span>make user CHAPTER<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span> LOG<span style="color:#f92672">=</span>trace
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 编译测试用例的第四章</span>
+</span></span><span style="display:flex;"><span>make user CHAPTER<span style="color:#f92672">=</span>4_only LOG<span style="color:#f92672">=</span>trace
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 只运行测试用例的第四章</span>
+</span></span><span style="display:flex;"><span>make test CHAPTER<span style="color:#f92672">=</span>4_only    
+</span></span></code></pre></div><h1 id="附录">附录<a hidden class="anchor" aria-hidden="true" href="#附录">#</a></h1>
+<p>makefile 和 qemu</p>
+<p>AS = $(TOOLPREFIX)gas  &gt; AS = $(TOOLPREFIX)as</p>
+<h1 id="参考资料">参考资料<a hidden class="anchor" aria-hidden="true" href="#参考资料">#</a></h1>
+<ul>
+<li><a href="https://www.jianshu.com/p/790fc612aaa5">终端颜色控制 - 简书</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:8888/tags/risc-v/">RISC-V</a></li>
+      <li><a href="http://localhost:8888/tags/os/">OS</a></li>
+      <li><a href="http://localhost:8888/tags/ucore/">UCore</a></li>
+      <li><a href="http://localhost:8888/tags/lab/">Lab</a></li>
+      <li><a href="http://localhost:8888/tags/linux/">Linux</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>uCore-实验第 0 章 - 实验环境搭建</span>
+  </a>
+  <a class="next" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">
+    <span class="title">Next »</span>
+    <br>
+    <span>uCore 实验第 5 章 - 进程及进程管理</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on x"
+            href="https://x.com/intent/tweet/?text=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f&amp;hashtags=RISC-V%2cOS%2cuCore%2cLab%2cLinux">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f&amp;title=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83&amp;summary=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83&amp;source=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f&title=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on whatsapp"
+            href="https://api.whatsapp.com/send?text=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83%20-%20http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on telegram"
+            href="https://telegram.me/share/url?text=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore-实验第 1 章 - 应用程序与基本执行环境 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=uCore-%e5%ae%9e%e9%aa%8c%e7%ac%ac%201%20%e7%ab%a0%20-%20%e5%ba%94%e7%94%a8%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%9f%ba%e6%9c%ac%e6%89%a7%e8%a1%8c%e7%8e%af%e5%a2%83&u=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC1%25E7%25AB%25A0-%25E5%25BA%2594%25E7%2594%25A8%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%259F%25BA%25E6%259C%25AC%25E6%2589%25A7%25E8%25A1%258C%25E7%258E%25AF%25E5%25A2%2583%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:8888/">PaperMod</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

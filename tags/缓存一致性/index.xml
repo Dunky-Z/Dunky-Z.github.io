@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>缓存一致性 on PaperMod</title>
+    <link>http://localhost:8888/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/</link>
+    <description>Recent content in 缓存一致性 on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 10 Jul 2022 10:43:17 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CPU Cache 高速缓存</title>
+      <link>http://localhost:8888/posts/cpu-cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</link>
+      <pubDate>Sun, 10 Jul 2022 10:43:17 +0000</pubDate>
+      <guid>http://localhost:8888/posts/cpu-cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</guid>
+      <description>存储器的层次结构 从 Cache、内存，到 SSD 和 HDD 硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU 并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache 是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到 CPUCache 中，而是先加载到内存，再从内存加载到 Cache 中。
+这样，各个存储器只和相邻的一层存储器打交道，并且随着一层层向下，存储器的容量逐层增大，访问速度逐层变慢，而单位存储成本也逐层下降，也就构成了我们日常所说的存储器层次结构。
+高速缓存 缓存不是 CPU 的专属功能，可以把它当成一种策略，任何时候想要增加数据传输性能，都可以通过加一层缓存试试。
+存储器层次结构的中心思想是，对于每个$k$，位于$k$层的更快更小的存储设备作为位于$k+1$层的更大更慢的存储设备的缓存。下图展示了存储器层次结构中缓存的一般性概念。
+数据总是以块block为单位，在层与层之间来回复制。
+说回高速缓存，按照摩尔定律，CPU 的访问速度每 18 个月便会翻一翻，相当于每年增长 60%。内存的访问速度虽然不断增长，却远没有那么快，每年只增长 7% 左右。这样就导致 CPU 性能和内存访问的差距不断拉大。为了弥补两者之间差异，现代 CPU 引入了高速缓存。
+CPU 的读（load）实质上就是从缓存中读取数据到寄存器（register）里，在多级缓存的架构中，如果缓存中找不到数据（Cache miss），就会层层读取二级缓存三级缓存，一旦所有的缓存里都找不到对应的数据，就要去内存里寻址了。寻址到的数据首先放到寄存器里，其副本会驻留到 CPU 的缓存中。
+CPU 的写（store）也是针对缓存作写入。并不会直接和内存打交道，而是通过某种机制实现数据从缓存到内存的写回（write back）。
+缓存到底如何与 CPU 和主存数据交换的？CPU 如何从缓存中读写数据的？缓存中没有读的数据，或者缓存写满了怎么办？我们先从 CPU 如何读取数据说起。
+缓存读取 CPU 发起一个读取请求后，返回的结果会有如下几种情况：
+缓存命中 (cache hit) 要读取的数据刚好在缓存中，叫做缓存命中。 缓存不命中 (cache miss) 发送缓存不命中，缓存就得执行一直放置策略(placement policy)，比如 LRU。来决定从主存中取出的数据放到哪里。 强制性不命中(compulsory miss)/冷不命中(cold miss)：缓存中没有要读取的数据，需要从主存读取数据，并将数据放入缓存。 冲突不命中(conflict miss)：缓存中有要读的数据，在采取放置策略时，从主存中取数据放到缓存时发生了冲突，这叫做冲突不命中。 高速缓存存储器组织结构 整个 Cache 被划分为 1 个或多个组 (Set)，$S$ 表示组的个数。每个组包含 1 个或多个缓存行(Cache line)，$E$ 表示一个组中缓存行的行数。每个缓存行由三部分组成：有效位(valid)，标记位（tag），数据块（cache block）。</description>
+    </item>
+    <item>
+      <title>volatile 能否解决缓存一致性问题</title>
+      <link>http://localhost:8888/posts/volatile%E8%83%BD%E5%90%A6%E8%A7%A3%E5%86%B3%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/</link>
+      <pubDate>Fri, 08 Jul 2022 09:10:27 +0000</pubDate>
+      <guid>http://localhost:8888/posts/volatile%E8%83%BD%E5%90%A6%E8%A7%A3%E5%86%B3%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98/</guid>
+      <description>volatile 能否解决缓存一致性问题 为何会产生这样的疑问，还得从一个工作中的 Bug 说起。在使用 PMP（Physical Memory Protect）对物理内存进行保护时，无法成功保护，简单来说 PMP 可以对一段物理内存设置保护，如保护这段内存不可写。测试时，先对这段内存写入0x1234，再读取这段内存。如果读取的值为0x0表示保护成功，但实际总能成功读取0x1234。
+volatile int test; test = read(0xFF740000); print(&amp;#34;Before = %x\n&amp;#34;, test); // 保护之前数据 Before = 0x1111 PMP(0xFF740000, 0x400); // 保护这段内存不可写 write(0xFF740000, 0x1234); // 写入数据 test = read(0xFF740000); print(&amp;#34;After = %x\n&amp;#34;, test); // 预期读取为0x0，实际总能成功读取0x1234 因为读取的变量test设置为volatile，所以按照以往的理解，系统总是重新从它所在的内存读取数据，这里应该能正确读取出数据。
+但是忽略了一点，当使用volatile变量时，CPU 只是不再使用寄存器中的值，直接去内存中读取数据，这里的内存实际上是包括 Cache 的。
+所以当数据被 Cached 之后，当再次读取时，CPU 可能会直接读取 Cached 的数据，而不是去读取真正内存中的数据。因此，volatile 不能解决缓存一致性问题。
+关于 Cache 的详细信息，请参考CPU Cache 高速缓存 - 如云泊。</description>
+    </item>
+  </channel>
+</rss>

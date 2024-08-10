@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Embedded on PaperMod</title>
+    <link>http://localhost:8888/tags/embedded/</link>
+    <description>Recent content in Embedded on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 25 Sep 2022 22:35:16 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/embedded/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>嵌入式 Shell 基础</title>
+      <link>http://localhost:8888/posts/%E5%B5%8C%E5%85%A5%E5%BC%8Fshell%E5%9F%BA%E7%A1%80/</link>
+      <pubDate>Sun, 25 Sep 2022 22:35:16 +0000</pubDate>
+      <guid>http://localhost:8888/posts/%E5%B5%8C%E5%85%A5%E5%BC%8Fshell%E5%9F%BA%E7%A1%80/</guid>
+      <description>脚本语言 常用的脚本语言有 sh、bash、csh、ksh、perl、python； 在 Linux 下常用的脚本语言其实就是 bash、sh； 脚本语言一般在嵌入式中应用，主要是用来做配置。（一个复杂的嵌入式程序都是可配置的，配置过程就是用脚本语言来实现的）自然不会使用过于复杂的脚本语言特性，因此只需要针对性的学习即可。 shell 脚本的运行机制 C/C++ 语言这种编写过程是：编写出源代码（源代码是不能直接运行的）然后编译链接形成可执行二进制程序，然后才能运行；而脚本程序不同，脚本程序编写好后源代码即可直接运行（没有编译链接过程）； shell 程序是解释运行的，所谓解释运行就是说当我们执行一个 shell 程序时，shell 解析器会逐行的解释 shell 程序代码，然后一行一行的去运行。（顺序结构） CPU 实际只认识二进制代码，根本不认识源代码。脚本程序源代码其实也不是二进制代码，CPU 也不认识，也不能直接执行。只不过脚本程序的编译链接过程不是以脚本程序源代码为单位进行的，而是在脚本运行过程中逐行的解释执行时才去完成脚本程序源代码转成二进制的过程（不一定是编译链接，因为这行脚本程序可能早就编译连接好了，这里我们只是调用它）。 动手写第一个 shell 编辑器与编译器 shell 程序是文本格式的，只要是文本编辑器都可以。但是因为我们的 shell 是要在 Linux 系统下运行的，所以换行符必须是\n，而 Windows 下的换行符是\r\n，因此 Windows 中的编辑器写的 shell 不能在 Linux 下运行。 编译器不涉及，因为 shell 是解释性语言，直接编辑完就可以运行。 shell 程序运行的运行的三种方法 ./xx.sh，和运行二进制可执行程序方法一样。这样运行 shell 要求 shell 程序必须具有可执行权限。chmod a+x xx.sh 来添加可执行权限。 source xx.sh，source 是 Linux 的一个命令，这个命令就是用来执行脚本程序的。这样运行不需要脚本具有可执行权限。 bash xx.sh，bash 是一个脚本程序解释器，本质上是一个可执行程序。这样执行相当于我们执行了 bash 程序，然后把 xx.sh 作为 argv[1] 传给他运行。 hello world 程序和解释 shell 程序的第一行一般都是以#!</description>
+    </item>
+    <item>
+      <title>定时器 Timer 基础</title>
+      <link>http://localhost:8888/posts/%E5%AE%9A%E6%97%B6%E5%99%A8timer%E5%9F%BA%E7%A1%80/</link>
+      <pubDate>Wed, 15 Dec 2021 12:22:18 +0000</pubDate>
+      <guid>http://localhost:8888/posts/%E5%AE%9A%E6%97%B6%E5%99%A8timer%E5%9F%BA%E7%A1%80/</guid>
+      <description>概念 定时器（Timer），又叫计时器，顾名思义，它的主要功能就是计时。因为 CPU 计时会占用大量资源，而定时器独立于 CPU，专门用来计时。单核 CPU 好比人的大脑，一心不可二用，它只能知道自己当前要干什么。人可以用闹钟来提醒自己某个时间需要做某件事，而 CPU 就需要定时器来完成这样的工作。
+当定时器被开启后，里面的计数器就以计数器时钟的频率开始运行，内部的计数值不断增加。例如一个时钟为1MHz的定时器，被开启后每隔1us计数值就会加 1。但计数值不可能无限增加，最大值比如65535。将这个十进制数转为二进制数后应该是一个 16 位的二进制数1111 1111 1111 1111。所以我们需要有一个 16 位大小的存储空间来存储它。那这就是一个 16 位定时器。
+功能 定时器可以让 SoC 在执行主程序的同时，可以 (通过定时器) 具有计时功能，到了一定时间 (计时结束) 后，定时器会产生中断提醒 CPU，CPU 会去处理中断并执行定时器中断的 ISR，从而去执行预先设定好的事件。打个比方，定时器就像一个秘书，CPU 就是老板。老板每天都有很多事要做，具体时间安排不想操心，就安排给秘书。秘书每天就是盯着表，到点就提醒老板要做某事。
+原理 外设的工作频率是与它所挂载在的外设总线的时钟频率相同的。但工作频率不是时钟频率，工作频率到时钟频率需要进行一次分频。这个可调节的分频值使得定时器的计时更加灵活。这个分频值就是需要设置的第一个参数预分频系数。
+$$ 计数器时钟频率 = 工作频率/(预分频系数+1) $$
+$$ 定时频率 = 计时器时钟频率/(自动重载值+1) $$
+假设定时器时钟频率为1MHz，那定时1ms该如何做？计数 1000 次即可。最大的计数值就是自动重载值，是我们需要设置的第二个参数。定时器被打开后，计数值就增加，一旦达到自动重载值就会出发定时器溢出中断，就实现了定时1ms。
+计数模式 中心计数：计数器从 0 开始计数到自动装入的值 -1，产生一个计数器溢出事件，0 然后向下计数到 1 并且产生一个计数器溢出事件，然后再从 0 开始重新计数。
+向上计数：计数器从 0 计数到自动加载值 (TIMx_ARR) ，然后重新从 0 开始计数并且产生一个计数器溢出事件。
+向下计数：计数器从自动装入的值 (TIMx_ARR) 开始向下计数到 0，然后从自动装入的值重新开始，并产生一个计数器向下溢出事件。</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=8888&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>QEMU 源码分析-虚拟 CPU 创建 | PaperMod</title>
+<meta name="keywords" content="QEMU, Linux">
+<meta name="description" content="流程图 先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。
+qemu_add_opts解析 qemu 的命令行 qemu_init函数中下面这一长串内容，就是在解析命令行的参数。
+qemu add opts (&amp;qemu drive opts); qemu add drive opts(&amp;qemu Legacy drive opts); qemu add drive opts (&amp;qemu common drive opts); qemu add drive opts (&amp;qemu drive opts); qemu add drive opts (sbdry runtime opts); qemu add opts (qemu chardev opts); qemu add opts (&amp;qemu device opts); qemu add opts (&amp;qemu netdev opts); qemu add opts (&amp;qemu nic opts); qemu add opts (sqemu net opts qemu add opts (&amp;qemu rtc opts) qemu add opts (&amp;qemu global_opts); qemu add opts (&amp;qemu mon opts); qemu add opts (sqemu trace opts); .">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:8888/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9Fcpu%E5%88%9B%E5%BB%BA/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:8888/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:8888/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:8888/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:8888/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:8888/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:8888/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9Fcpu%E5%88%9B%E5%BB%BA/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:8888/" accesskey="h" title="PaperMod (Alt + H)">PaperMod</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:8888/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:8888/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:8888/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      QEMU 源码分析-虚拟 CPU 创建
+    </h1>
+    <div class="post-meta"><span title='2021-09-01 18:22:14 +0000 UTC'>September 1, 2021</span>&nbsp;·&nbsp;6 min
+
+</div>
+  </header> 
+  <div class="post-content"><h2 id="流程图">流程图<a hidden class="anchor" aria-hidden="true" href="#流程图">#</a></h2>
+<p>先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg" alt=""  />
+</p>
+<h2 id="qemu_add_opts解析-qemu-的命令行"><code>qemu_add_opts</code>解析 qemu 的命令行<a hidden class="anchor" aria-hidden="true" href="#qemu_add_opts解析-qemu-的命令行">#</a></h2>
+<p><code>qemu_init</code>函数中下面这一长串内容，就是在解析命令行的参数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu drive opts);
+</span></span><span style="display:flex;"><span>qemu add drive <span style="color:#a6e22e">opts</span>(<span style="color:#f92672">&amp;</span>qemu Legacy drive opts);
+</span></span><span style="display:flex;"><span>qemu add drive <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu common drive opts);
+</span></span><span style="display:flex;"><span>qemu add drive <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu drive opts);
+</span></span><span style="display:flex;"><span>qemu add drive <span style="color:#a6e22e">opts</span> (sbdry runtime opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (qemu chardev opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu device opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu netdev opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu nic opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (sqemu net opts
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu rtc opts)
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu global_opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (<span style="color:#f92672">&amp;</span>qemu mon opts);
+</span></span><span style="display:flex;"><span>qemu add <span style="color:#a6e22e">opts</span> (sqemu trace opts);
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>.
+</span></span></code></pre></div><p>为什么有这么多的 <code>opts</code>呢？这是因为，实际运行中创建的<code>kvm</code>参数会复杂<code>N</code>倍。这里我们贴一个开源云平台软件 <code>OpenStack</code> 创建出来的<code>KVM</code>的参数，如下所示。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>qemu-system-x86_64
+</span></span><span style="display:flex;"><span>-enable-kvm
+</span></span><span style="display:flex;"><span>-name instance-00000024
+</span></span><span style="display:flex;"><span>-machine pc-i440fx-trusty,accel<span style="color:#f92672">=</span>kvm,usb<span style="color:#f92672">=</span>off
+</span></span><span style="display:flex;"><span>-cpu SandyBridge,+erms,+smep,+fsgsbase,+pdpe1gb,+rdrand,+f16c,+osxsave,+dca,+pcid,+pdcm,+xtpr,+tm2,+est,+smx,+vmx,+ds_cpl,+monitor,+dtes64,+pbe,+tm,+ht,+ss,+acpi,+ds,+vme
+</span></span><span style="display:flex;"><span>-m <span style="color:#ae81ff">2048</span>
+</span></span><span style="display:flex;"><span>-smp 1,sockets<span style="color:#f92672">=</span>1,cores<span style="color:#f92672">=</span>1,threads<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>......
+</span></span><span style="display:flex;"><span>-rtc base<span style="color:#f92672">=</span>utc,driftfix<span style="color:#f92672">=</span>slew
+</span></span><span style="display:flex;"><span>-drive file<span style="color:#f92672">=</span>/var/lib/nova/instances/1f8e6f7e-5a70-4780-89c1-464dc0e7f308/disk,if<span style="color:#f92672">=</span>none,id<span style="color:#f92672">=</span>drive-virtio-disk0,format<span style="color:#f92672">=</span>qcow2,cache<span style="color:#f92672">=</span>none
+</span></span><span style="display:flex;"><span>-device virtio-blk-pci,scsi<span style="color:#f92672">=</span>off,bus<span style="color:#f92672">=</span>pci.0,addr<span style="color:#f92672">=</span>0x4,drive<span style="color:#f92672">=</span>drive-virtio-disk0,id<span style="color:#f92672">=</span>virtio-disk0,bootindex<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>-netdev tap,fd<span style="color:#f92672">=</span>32,id<span style="color:#f92672">=</span>hostnet0,vhost<span style="color:#f92672">=</span>on,vhostfd<span style="color:#f92672">=</span><span style="color:#ae81ff">37</span>
+</span></span><span style="display:flex;"><span>-device virtio-net-pci,netdev<span style="color:#f92672">=</span>hostnet0,id<span style="color:#f92672">=</span>net0,mac<span style="color:#f92672">=</span>fa:16:3e:d1:2d:99,bus<span style="color:#f92672">=</span>pci.0,addr<span style="color:#f92672">=</span>0x3
+</span></span><span style="display:flex;"><span>-chardev file,id<span style="color:#f92672">=</span>charserial0,path<span style="color:#f92672">=</span>/var/lib/nova/instances/1f8e6f7e-5a70-4780-89c1-464dc0e7f308/console.log
+</span></span><span style="display:flex;"><span>-vnc 0.0.0.0:12
+</span></span><span style="display:flex;"><span>-device cirrus-vga,id<span style="color:#f92672">=</span>video0,bus<span style="color:#f92672">=</span>pci.0,addr<span style="color:#f92672">=</span>0x2
+</span></span></code></pre></div><ul>
+<li>
+<p><code>-enable-kvm</code>：表示启用硬件辅助虚拟化。</p>
+</li>
+<li>
+<p><code>-name instance-00000024</code>：表示虚拟机的名称。</p>
+</li>
+<li>
+<p><code>-machine pc-i440fx-trusty,accel=kvm,usb=off</code>：machine 是什么呢？其实就是计算机体系结构。不知道什么是体系结构的话，可以订阅极客时间的另一个专栏《深入浅出计算机组成原理》。
+qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32 位或者 64 位的体系结构、Mac 电脑 PowerPC 的体系结构、Sun 的体系结构、MIPS 的体系结构，精简指令集。如果使用 KVM hardware-assisted virtualization，也即 BIOS 中 VD-T 是打开的，则参数中 <code>accel=kvm</code>。如果不使用 <code>hardware-assisted virtualization</code>，用的是纯模拟，则有参数 <code>accel = tcg</code>，<code>-no-kvm</code>。</p>
+</li>
+<li>
+<p><code>-cpu SandyBridge,+erms,+smep,+fsgsbase,+pdpe1gb,+rdrand,+f16c,+osxsave,+dca,+pcid,+pdcm,+xtpr,+tm2,+est,+smx,+vmx,+ds_cpl,+monitor,+dtes64,+pbe,+tm,+ht,+ss,+acpi,+ds,+vme</code>：表示设置 CPU，SandyBridge 是 Intel 处理器，后面的加号都是添加的 CPU 的参数，这些参数会显示在 /proc/cpuinfo 里面。</p>
+</li>
+<li>
+<p><code>-m 2048</code>：表示内存。</p>
+</li>
+<li>
+<p><code>-smp 1,sockets=1,cores=1,threads=1</code>：<code>SMP</code> 我们解析过，叫对称多处理器，和<code>NUMA</code> 对应。qemu 仿真了一个具有 1 个 <code>vcpu</code>，一个 <code>socket</code>，一个 <code>core</code>，一个 <code>threads</code> 的处理器。
+<code>socket</code>、<code>core</code>、<code>threads</code> 是什么概念呢？<code>socket</code> 就是主板上插 CPU 的槽的数目，也即常说的“路”，<code>core</code> 就是我们平时说的“核”，即双核、4 核等。<code>thread</code> 就是每个 core 的硬件线程数，即超线程。举个具体的例子，某个服务器是：2 路 4 核超线程（一般默认为 2 个线程），通过 <code>cat /proc/cpuinfo</code>，我们看到的是 242=16 个<code>processor</code>，很多人也习惯成为 16 核了。</p>
+</li>
+<li>
+<p><code>-rtc base=utc,driftfix=slew</code>：表示系统时间由参数 <code>-rtc</code> 指定。</p>
+</li>
+<li>
+<p><code>-device cirrus-vga,id=video0,bus=pci.0,addr=0x2</code>：表示显示器用参数 <code>-vga</code> 设置，默认为 <code>cirrus</code>，它模拟了 <code>CL-GD5446PCI VGA card</code>。</p>
+</li>
+<li>
+<p>有关网卡，使用 <code>-net</code> 参数和 <code>-device</code>。</p>
+</li>
+<li>
+<p>从 HOST 角度：<code>-netdev tap,fd=32,id=hostnet0,vhost=on,vhostfd=37</code>。</p>
+</li>
+<li>
+<p>从 GUEST 角度：<code>-device virtio-net-pci,netdev=hostnet0,id=net0,mac=fa:16:3e:d1:2d:99,bus=pci.0,addr=0x3</code>。</p>
+</li>
+<li>
+<p>有关硬盘，使用 <code>-hda -hdb</code>，或者使用 <code>-drive</code> 和 <code>-device</code>。</p>
+</li>
+<li>
+<p>从 HOST 角度：<code>-drive file=/var/lib/nova/instances/1f8e6f7e-5a70-4780-89c1-464dc0e7f308/disk,if=none,id=drive-virtio-disk0,format=qcow2,cache=none</code></p>
+</li>
+<li>
+<p>从 GUEST 角度：<code>-device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x4,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1</code></p>
+</li>
+<li>
+<p><code>-vnc 0.0.0.0:12</code>：设置 VNC。</p>
+</li>
+</ul>
+<h2 id="module_call_init初始化所有模块"><code>module_call_init</code>初始化所有模块<a hidden class="anchor" aria-hidden="true" href="#module_call_init初始化所有模块">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span><span style="color:#f92672">--&gt;</span> <span style="color:#a6e22e">qemu_init</span>()
+</span></span><span style="display:flex;"><span><span style="color:#f92672">--&gt;</span> <span style="color:#a6e22e">qemu_init_subsystems</span>()
+</span></span><span style="display:flex;"><span><span style="color:#f92672">--&gt;</span> <span style="color:#a6e22e">module_call_init</span>()
+</span></span></code></pre></div><p>当虚拟机真的要使用物理资源的时候，对下面的物理机上的资源要进行请求，所以它的工作模式有点儿类似操作系统对接驱动。驱动要符合一定的格式，才能算操作系统的一个模块。同理，qemu 为了模拟各种各样的设备，也需要管理各种各样的模块，这些模块也需要符合一定的格式。</p>
+<p>定义一个 qemu 模块会调用 <code>type_init</code>。例如，<code>kvm</code> 的模块要在 <code>accel/kvm/kvm-all.c</code> 文件里面实现。在这个文件里面，有一行下面的代码：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo kvm_accel_type <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> TYPE_KVM_ACCEL,
+</span></span><span style="display:flex;"><span>    .parent <span style="color:#f92672">=</span> TYPE_ACCEL,
+</span></span><span style="display:flex;"><span>    .instance_init <span style="color:#f92672">=</span> kvm_accel_instance_init,
+</span></span><span style="display:flex;"><span>    .class_init <span style="color:#f92672">=</span> kvm_accel_class_init,
+</span></span><span style="display:flex;"><span>    .instance_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(KVMState),
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">kvm_type_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type_register_static</span>(<span style="color:#f92672">&amp;</span>kvm_accel_type);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">type_init</span>(kvm_type_init);
+</span></span></code></pre></div><p>找到<code>type_init</code>的定义</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define type_init(function) module_init(function, MODULE_INIT_QOM)
+</span></span></span></code></pre></div><p>从代码里面的定义我们可以看出来，<code>type_init</code> 后面的参数是一个函数，调用 <code>type_init</code> 就相当于调用 <code>module_init</code>，在这里函数就是 <code>kvm_type_init</code>，类型就是 <code>MODULE_INIT_QOM</code>。</p>
+<p>再查看一下<code>module_init</code>的定义</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//include/qemu/module.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define module_init(function, type)                                         \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">static void __attribute__((constructor)) do_qemu_init_ ## function(void)    \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">{                                                                           \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    register_module_init(function, type);                                   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">}
+</span></span></span></code></pre></div><p><code>module_init</code> 最终要调用 <code>register_module_init</code>。属于 <code>MODULE_INIT_QOM</code> 这种类型的，有一个 <code>Module</code> 列表 <code>ModuleTypeList</code>，列表里面是一项一项的 <code>ModuleEntry</code>。<code>KVM</code> 就是其中一项，并且会初始化每一项的 <code>init</code> 函数为参数表示的函数 <code>fn</code>，也即 <code>KVM</code> 这个 <code>module</code> 的 <code>init</code> 函数就是 <code>kvm_type_init</code>。</p>
+<p>当然，<code>MODULE_INIT_QOM</code> 这种类型会有很多很多的 <code>module</code>，从后面的代码我们可以看到，所有调用 <code>type_init</code> 的地方都注册了一个 <code>MODULE_INIT_QOM</code> 类型的 <code>Module</code>。</p>
+<p>了解了 <code>Module</code> 的注册机制，我们继续回到 <code>qemu_init_subsystems</code> 函数中 <code>module_call_init</code> 的调用。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">qemu_init_subsystems</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    Error <span style="color:#f92672">*</span>err;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">os_set_line_buffering</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">module_call_init</span>(MODULE_INIT_TRACE);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">qemu_init_cpu_list</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">qemu_init_cpu_loop</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">qemu_mutex_lock_iothread</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">atexit</span>(qemu_run_exit_notifiers);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">module_call_init</span>(MODULE_INIT_QOM);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">module_call_init</span>(MODULE_INIT_MIGRATION);
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// utils/module.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">module_call_init</span>(module_init_type type)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ModuleTypeList <span style="color:#f92672">*</span>l;
+</span></span><span style="display:flex;"><span>    ModuleEntry <span style="color:#f92672">*</span>e;
+</span></span><span style="display:flex;"><span>    l <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_type</span>(type);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">QTAILQ_FOREACH</span>(e, l, node) {
+</span></span><span style="display:flex;"><span>        e<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">init</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在 <code>module_call_init</code> 中，我们会找到 <code>MODULE_INIT_QOM</code> 这种类型对应的 <code>ModuleTypeList</code>，找出列表中所有的 <code>ModuleEntry</code>，然后调用每个 <code>ModuleEntry</code> 的 <code>init</code> 函数。这里需要注意的是，在 <code>module_call_init</code> 调用的这一步，所有 <code>Module</code> 的 <code>init</code> 函数都已经被调用过了。</p>
+<p>后面我们会看到很多的 <code>Module</code>，当我们后面再次遇到时，需要意识到，它的 <code>init</code> 函数在这里也被调用过了。这里我们还是以对于 <code>kvm</code> 这个 <code>module</code> 为例子，看看它的 <code>init</code> 函数都做了哪些事情。我们会发现，其实它调用的是 <code>kvm_type_init</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">kvm_type_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type_register_static</span>(<span style="color:#f92672">&amp;</span>kvm_accel_type);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>TypeImpl <span style="color:#f92672">*</span><span style="color:#a6e22e">type_register_static</span>(<span style="color:#66d9ef">const</span> TypeInfo <span style="color:#f92672">*</span>info)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">type_register</span>(info);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>TypeImpl <span style="color:#f92672">*</span><span style="color:#a6e22e">type_register</span>(<span style="color:#66d9ef">const</span> TypeInfo <span style="color:#f92672">*</span>info)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(info<span style="color:#f92672">-&gt;</span>parent);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">type_register_internal</span>(info);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> TypeImpl <span style="color:#f92672">*</span><span style="color:#a6e22e">type_register_internal</span>(<span style="color:#66d9ef">const</span> TypeInfo <span style="color:#f92672">*</span>info)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    TypeImpl <span style="color:#f92672">*</span>ti;
+</span></span><span style="display:flex;"><span>    ti <span style="color:#f92672">=</span> <span style="color:#a6e22e">type_new</span>(info);
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type_table_add</span>(ti);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ti;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> TypeImpl <span style="color:#f92672">*</span><span style="color:#a6e22e">type_new</span>(<span style="color:#66d9ef">const</span> TypeInfo <span style="color:#f92672">*</span>info)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    TypeImpl <span style="color:#f92672">*</span>ti <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_malloc0</span>(<span style="color:#66d9ef">sizeof</span>(<span style="color:#f92672">*</span>ti));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> i;
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">type_table_lookup</span>(info<span style="color:#f92672">-&gt;</span>name) <span style="color:#f92672">!=</span> NULL) {
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>name <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_strdup</span>(info<span style="color:#f92672">-&gt;</span>name);
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>parent <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_strdup</span>(info<span style="color:#f92672">-&gt;</span>parent);
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>class_size <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>class_size;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>instance_size <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>instance_size;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>class_init <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>class_init;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>class_base_init <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>class_base_init;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>class_data <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>class_data;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>instance_init <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>instance_init;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>instance_post_init <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>instance_post_init;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>instance_finalize <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>instance_finalize;
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>abstract <span style="color:#f92672">=</span> info<span style="color:#f92672">-&gt;</span>abstract;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; info<span style="color:#f92672">-&gt;</span>interfaces <span style="color:#f92672">&amp;&amp;</span> info<span style="color:#f92672">-&gt;</span>interfaces[i].type; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        ti<span style="color:#f92672">-&gt;</span>interfaces[i].<span style="color:#66d9ef">typename</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_strdup</span>(info<span style="color:#f92672">-&gt;</span>interfaces[i].type);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ti<span style="color:#f92672">-&gt;</span>num_interfaces <span style="color:#f92672">=</span> i;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ti;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">type_table_add</span>(TypeImpl <span style="color:#f92672">*</span>ti)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#f92672">!</span>enumerating_types);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">g_hash_table_insert</span>(<span style="color:#a6e22e">type_table_get</span>(), (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)ti<span style="color:#f92672">-&gt;</span>name, ti);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> GHashTable <span style="color:#f92672">*</span><span style="color:#a6e22e">type_table_get</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">static</span> GHashTable <span style="color:#f92672">*</span>type_table;
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (type_table <span style="color:#f92672">==</span> NULL) {
+</span></span><span style="display:flex;"><span>        type_table <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_hash_table_new</span>(g_str_hash, g_str_equal);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> type_table;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo kvm_accel_type <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> TYPE_KVM_ACCEL,
+</span></span><span style="display:flex;"><span>    .parent <span style="color:#f92672">=</span> TYPE_ACCEL,
+</span></span><span style="display:flex;"><span>    .class_init <span style="color:#f92672">=</span> kvm_accel_class_init,
+</span></span><span style="display:flex;"><span>    .instance_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(KVMState),
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>调用流程如下：虚线表示返回</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
+</p>
+<p>每一个 <code>Module</code> 既然要模拟某种设备，那应该定义一种类型 <code>TypeImpl</code> 来表示这些设备，这其实是一种<code>面向对象编程</code>的思路，只不过这里用的是纯 C 语言的实现，所以需要变相实现一下类和对象。</p>
+<p><code>kvm_type_init</code> 会注册 <code>kvm_accel_type</code>，定义上面的代码，我们可以认为这样动态定义了一个类。这个类的名字是 <code>TYPE_KVM_ACCEL</code>，这个类有父类 <code>TYPE_ACCEL</code>，这个类的初始化应该调用函数 <code>kvm_accel_class_init</code>。如果用这个类声明一个对象，对象的大小应该是 <code>instance_size</code>。</p>
+<p>在 <code>type_register_internal</code> 中，我们会根据 <code>kvm_accel_type</code> 这个 <code>TypeInfo</code>，创建一个<code>TypeImpl</code> 来表示这个新注册的类，也就是说，<code>TypeImpl</code> 才是我们想要声明的那个 <code>class</code>。在 qemu 里面，有一个全局的哈希表 <code>type_table</code>，用来存放所有定义的类。在 <code>type_new</code> 里面，我们先从全局表里面根据名字<code>type_table_lookup</code>查找找这个类。如果找到，说明这个类曾经被注册过，就报错；如果没有找到，说明这是一个新的类，则将 <code>TypeInfo</code> 里面信息填到 <code>TypeImpl</code> 里面。<code>type_table_add</code> 会将这个类注册到全局的表里面。到这里，我们注意，<code>class_init</code> 还没有被调用，也即这个类现在还处于纸面的状态。</p>
+<p>这点更加像 Java 的反射机制了。在 Java 里面，对于一个类，首先我们写代码的时候要写一个 <code>class xxx</code> 的定义，编译好就放在<code>.class</code> 文件中，这也是出于纸面的状态。然后，Java 会有一个 <code>Class</code> 对象，用于读取和表示这个纸面上的 <code>class xxx</code>，可以生成真正的对象。</p>
+<p>相同的过程在后面的代码中我们也可以看到，<code>class_init</code> 会生成<code>XXXClass</code>，就相当于 Java 里面的 <code>Class</code>对象，<code>TypeImpl</code> 还会有一个 <code>instance_init</code> 函数，相当于构造函数，用于根据 <code>XXXClass</code> 生成 <code>Object</code>，这就相当于 Java 反射里面最终创建的对象。和构造函数对应的还有 <code>instance_finalize</code>，相当于析构函数。</p>
+<p>这一套反射机制放在 <code>qom</code> 文件夹下面，全称 <code>QEMU Object Model</code>，也即用 C 实现了一套<strong>面向对象的反射机制</strong>。</p>
+<h2 id="初始化-machine">初始化 machine<a hidden class="anchor" aria-hidden="true" href="#初始化-machine">#</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210913115046.svg" alt=""  />
+</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//vl.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">qemu_create_machine</span> (<span style="color:#a6e22e">select_machine</span>());
+</span></span></code></pre></div><p>在创建 machine 之前，先要通过<code>select_machine</code>确定一个<code>machine</code>。<code>select_machine</code>又是怎么确定的呢，这就和我们命令行的输入有关，比如我们<code>-m spike</code>，那么这里就会选择<code>spike</code>作为<code>machine</code>。它的定义在<code>hw/riscv/spike.c</code>中。</p>
+<p>在源码最后有这么一句，会和我们上面解析的<code>type_init</code> 是一样的，在全局的表里面注册了一个全局的名字是<code>spike</code>的纸面上的 <code>class</code>，也即 <code>TypeImpl</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">type_init</span>(spike_machine_init_reqister_types)
+</span></span></code></pre></div><p>现在全局表中有这个纸面上的 <code>class</code> 了。我们回到 <code>select_machine</code>。</p>
+<p>在 <code>select_machine</code> 中，有两种方式可以生成 <code>MachineClass</code>。一种方式是 <code>find_default_machine</code>，找一个默认的；另一种方式是 <code>machine_parse</code>，通过解析参数生成 <code>MachineClass</code>。无论哪种方式，都会调用 <code>object_class_get_list</code> 获得一个 <code>MachineClass</code> 的列表，然后在里面找。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> MachineClass <span style="color:#f92672">*</span><span style="color:#a6e22e">select_machine</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    GSList <span style="color:#f92672">*</span>machines <span style="color:#f92672">=</span> <span style="color:#a6e22e">object_class_get_list</span>(TYPE_MACHINE, false);
+</span></span><span style="display:flex;"><span>    MachineClass <span style="color:#f92672">*</span>machine_class <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_default_machine</span>(machines);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>optarg;
+</span></span><span style="display:flex;"><span>    QemuOpts <span style="color:#f92672">*</span>opts;
+</span></span><span style="display:flex;"><span>    Location loc;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">loc_push_none</span>(<span style="color:#f92672">&amp;</span>loc);
+</span></span><span style="display:flex;"><span>    opts <span style="color:#f92672">=</span> <span style="color:#a6e22e">qemu_get_machine_opts</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">qemu_opts_loc_restore</span>(opts);
+</span></span><span style="display:flex;"><span>    optarg <span style="color:#f92672">=</span> <span style="color:#a6e22e">qemu_opt_get</span>(opts, <span style="color:#e6db74">&#34;type&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (optarg) {
+</span></span><span style="display:flex;"><span>        machine_class <span style="color:#f92672">=</span> <span style="color:#a6e22e">machine_parse</span>(optarg, machines);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>machine_class) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">error_report</span>(<span style="color:#e6db74">&#34;No machine specified, and there is no default&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">error_printf</span>(<span style="color:#e6db74">&#34;Use -machine help to list supported machines</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">loc_pop</span>(<span style="color:#f92672">&amp;</span>loc);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">g_slist_free</span>(machines);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> machine_class;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> MachineClass <span style="color:#f92672">*</span><span style="color:#a6e22e">find_default_machine</span>(GSList <span style="color:#f92672">*</span>machines)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    GSList <span style="color:#f92672">*</span>el;
+</span></span><span style="display:flex;"><span>    MachineClass <span style="color:#f92672">*</span>default_machineclass <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (el <span style="color:#f92672">=</span> machines; el; el <span style="color:#f92672">=</span> el<span style="color:#f92672">-&gt;</span>next) {
+</span></span><span style="display:flex;"><span>        MachineClass <span style="color:#f92672">*</span>mc <span style="color:#f92672">=</span> el<span style="color:#f92672">-&gt;</span>data;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (mc<span style="color:#f92672">-&gt;</span>is_default) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">assert</span>(default_machineclass <span style="color:#f92672">==</span> NULL <span style="color:#f92672">&amp;&amp;</span> <span style="color:#e6db74">&#34;Multiple default machines&#34;</span>);
+</span></span><span style="display:flex;"><span>            default_machineclass <span style="color:#f92672">=</span> mc;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> default_machineclass;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> MachineClass <span style="color:#f92672">*</span><span style="color:#a6e22e">machine_parse</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>name, GSList <span style="color:#f92672">*</span>machines)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    MachineClass <span style="color:#f92672">*</span>mc;
+</span></span><span style="display:flex;"><span>    GSList <span style="color:#f92672">*</span>el;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_help_option</span>(name)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Supported machines are:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        machines <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_slist_sort</span>(machines, machine_class_cmp);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (el <span style="color:#f92672">=</span> machines; el; el <span style="color:#f92672">=</span> el<span style="color:#f92672">-&gt;</span>next) {
+</span></span><span style="display:flex;"><span>            MachineClass <span style="color:#f92672">*</span>mc <span style="color:#f92672">=</span> el<span style="color:#f92672">-&gt;</span>data;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (mc<span style="color:#f92672">-&gt;</span>alias) {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%-20s %s (alias of %s)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mc<span style="color:#f92672">-&gt;</span>alias, mc<span style="color:#f92672">-&gt;</span>desc, mc<span style="color:#f92672">-&gt;</span>name);
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%-20s %s%s%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mc<span style="color:#f92672">-&gt;</span>name, mc<span style="color:#f92672">-&gt;</span>desc,
+</span></span><span style="display:flex;"><span>                   mc<span style="color:#f92672">-&gt;</span>is_default <span style="color:#f92672">?</span> <span style="color:#e6db74">&#34; (default)&#34;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;&#34;</span>,
+</span></span><span style="display:flex;"><span>                   mc<span style="color:#f92672">-&gt;</span>deprecation_reason <span style="color:#f92672">?</span> <span style="color:#e6db74">&#34; (deprecated)&#34;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;&#34;</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    mc <span style="color:#f92672">=</span> <span style="color:#a6e22e">find_machine</span>(name, machines);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>mc) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">error_report</span>(<span style="color:#e6db74">&#34;unsupported machine type&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">error_printf</span>(<span style="color:#e6db74">&#34;Use -machine help to list supported machines</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> mc;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>object_class_get_list</code> 定义如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>GSList <span style="color:#f92672">*</span><span style="color:#a6e22e">object_class_get_list</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>implements_type,<span style="color:#66d9ef">bool</span> include_abstract)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    GSList <span style="color:#f92672">*</span>list <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">object_class_foreach</span>(object_class_get_list_tramp,
+</span></span><span style="display:flex;"><span>                         implements_type, include_abstract, <span style="color:#f92672">&amp;</span>list);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> list;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">object_class_foreach</span>(<span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>fn)(ObjectClass <span style="color:#f92672">*</span>klass, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>opaque),
+</span></span><span style="display:flex;"><span>                          <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>implements_type, <span style="color:#66d9ef">bool</span> include_abstract,
+</span></span><span style="display:flex;"><span>                          <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>opaque)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    OCFData data <span style="color:#f92672">=</span> { fn, implements_type, include_abstract, opaque };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    enumerating_types <span style="color:#f92672">=</span> true;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">g_hash_table_foreach</span>(<span style="color:#a6e22e">type_table_get</span>(), object_class_foreach_tramp, <span style="color:#f92672">&amp;</span>data);
+</span></span><span style="display:flex;"><span>    enumerating_types <span style="color:#f92672">=</span> false;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在全局表 <code>type_table_get()</code> 中，对于每一项 <code>TypeImpl</code>，我们都执行 <code>object_class_foreach_tramp</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">object_class_foreach_tramp</span>(gpointer key, gpointer value,
+</span></span><span style="display:flex;"><span>                                       gpointer opaque)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    OCFData <span style="color:#f92672">*</span>data <span style="color:#f92672">=</span> opaque;
+</span></span><span style="display:flex;"><span>    TypeImpl <span style="color:#f92672">*</span>type <span style="color:#f92672">=</span> value;
+</span></span><span style="display:flex;"><span>    ObjectClass <span style="color:#f92672">*</span>k;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type_initialize</span>(type);
+</span></span><span style="display:flex;"><span>    k <span style="color:#f92672">=</span> type<span style="color:#f92672">-&gt;</span>class;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>data<span style="color:#f92672">-&gt;</span>include_abstract <span style="color:#f92672">&amp;&amp;</span> type<span style="color:#f92672">-&gt;</span>abstract) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (data<span style="color:#f92672">-&gt;</span>implements_type <span style="color:#f92672">&amp;&amp;</span> 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">!</span><span style="color:#a6e22e">object_class_dynamic_cast</span>(k, data<span style="color:#f92672">-&gt;</span>implements_type)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    data<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">fn</span>(k, data<span style="color:#f92672">-&gt;</span>opaque);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在 <code>object_class_foreach_tramp</code> 中，会调用将 <code>type_initialize</code>，这里面会调用 <code>class_init</code> 将纸面上的 <code>class</code> 也即 <code>TypeImpl</code> 变为 <code>ObjectClass</code>，<code>ObjectClass</code> 是所有<code>Class</code> 类的祖先，<code>MachineClass</code> 是它的子类。</p>
+<p>因为在 <code>machine</code> 的命令行里面，我们指定了名字为<code>spike</code>，就肯定能够找到我们注册过了的 <code>TypeImpl</code>，并调用它的 <code>class_init</code> 函数。</p>
+<p>所以，当 <code>select_machine</code> 执行完毕后，就有一个 <code>MachineClass</code> 了。</p>
+<p>接着，我们回到 <code>qemu_create_machine</code> 中的<code>object_new_with_class</code>。这就很好理解了，<code>MachineClass</code> 是一个 <code>Class</code> 类，接下来应该通过它生成一个 <code>Instance</code>，也即对象，这就是 <code>object_new_with_class</code> 的作用。</p>
+<p><code>object_new_with_class</code> 中，<code>TypeImpl</code> 的 <code>instance_init</code> 会被调用，创建一个对象。<code>current_machine</code> 就是这个对象，它的类型是<code>MachineState</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Object <span style="color:#f92672">*</span><span style="color:#a6e22e">object_new_with_class</span>(ObjectClass <span style="color:#f92672">*</span>klass)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">object_new_with_type</span>(klass<span style="color:#f92672">-&gt;</span>type);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> Object <span style="color:#f92672">*</span><span style="color:#a6e22e">object_new_with_type</span>(Type type)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    Object <span style="color:#f92672">*</span>obj;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type_initialize</span>(type);
+</span></span><span style="display:flex;"><span>    obj <span style="color:#f92672">=</span> <span style="color:#a6e22e">g_malloc</span>(type<span style="color:#f92672">-&gt;</span>instance_size);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">object_initialize_with_type</span>(obj, type<span style="color:#f92672">-&gt;</span>instance_size, type);
+</span></span><span style="display:flex;"><span>    obj<span style="color:#f92672">-&gt;</span>free <span style="color:#f92672">=</span> g_free;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> obj;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到<code>current_machine</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220308180036.png" alt=""  />
+</p>
+<h2 id="参考">参考<a hidden class="anchor" aria-hidden="true" href="#参考">#</a></h2>
+<p><a href="https://www.cnblogs.com/nm90/p/15661202.html">Qemu CPU 虚拟化 - 人生一世，草木一秋。 - 博客园</a>
+<a href="https://www.cnblogs.com/LoyenWang/p/13796537.html">【原创】Linux 虚拟化 KVM-Qemu 分析（四）之 CPU 虚拟化（2） - LoyenWang - 博客园</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:8888/tags/qemu/">QEMU</a></li>
+      <li><a href="http://localhost:8888/tags/linux/">Linux</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:8888/posts/%E8%A7%A3%E5%86%B3fatal-error-bits-libc-header-start-hno-such-file/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>解决 fatal error: bits/libc-header-start.h：no such file</span>
+  </a>
+  <a class="next" href="http://localhost:8888/posts/qt%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Qt 文件系统</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on x"
+            href="https://x.com/intent/tweet/?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f&amp;hashtags=QEMU%2cLinux">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f&amp;title=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba&amp;summary=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba&amp;source=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f&title=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on whatsapp"
+            href="https://api.whatsapp.com/send?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba%20-%20http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on telegram"
+            href="https://telegram.me/share/url?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-虚拟 CPU 创建 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-%e8%99%9a%e6%8b%9f%20CPU%20%e5%88%9b%e5%bb%ba&u=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-%25E8%2599%259A%25E6%258B%259Fcpu%25E5%2588%259B%25E5%25BB%25BA%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:8888/">PaperMod</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

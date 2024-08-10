@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>FRP，内网穿透 on PaperMod</title>
+    <link>http://localhost:8888/tags/frp%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</link>
+    <description>Recent content in FRP，内网穿透 on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 01 Apr 2024 21:08:03 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/frp%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>FRP 内网穿透</title>
+      <link>http://localhost:8888/posts/frp%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</link>
+      <pubDate>Mon, 01 Apr 2024 21:08:03 +0000</pubDate>
+      <guid>http://localhost:8888/posts/frp%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</guid>
+      <description>懒得自己搭建了，还要准备一台公网服务器，直接找第三方服务商。签到免费送流量，不过流量不多，不过用来穿透个小服务还是够的。
+https://chickfrp.com?affcode=2649EJBPNQ https://console.openfrp.net/ 创建隧道，下载配置文件如下：
+[common] protocol=tcp server_addr=ali-shanghai-a.chickfrp.com server_port=7000 user=xxxxxxxxx token=xxxxxxxx tcp_mux=true [ openai ] type= tcp remote_port= 10006 local_ip= 192.168.1.9 local_port= 3322 use_compression=false use_encryption=false 配置客户端，下面以 Linux 为例，因为需要配置 Docker 服务，所以做个简单记录。
+# 下载 frp 应用，解压后 frpc 是客户端，frps 是服务端，今天我们只用到 frpc wget https://github.com/fatedier/frp/releases/download/v0.56.0/frp_0.56.0_linux_amd64.tar.gz tar zxvf frp_0.56.0_linux_amd64.tar.gz 将服务商提供的配置文件复制到frpc.toml中。服务商提供的可能是旧版本的 frp 配置，是ini格式，需要转换成toml格式。有能力可以自己稍微改一下格式就行，不会的话，可以用在线转换工具，比如：https://toml.info/zh/ini-to-toml。
+简单启动：
+./frpc -c ./frpc.toml 2024-04-01 21:04:29.326 [I] [client/control.go:170] [19341bf77b5454753237] [SDSDasdaderf.openai] start proxy success 配置 Docker-compose 一键启动，将配置文件frpc.toml映射到容器中。
+version: &amp;#34;3.7&amp;#34; services: frp: image: stilleshan/frpc:latest container_name: frp volumes: - /path/to/frpc.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>MESI on PaperMod</title>
+    <link>http://localhost:8888/tags/mesi/</link>
+    <description>Recent content in MESI on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 29 May 2022 15:04:59 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/mesi/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CPU 缓存一致性 MESI 协议</title>
+      <link>http://localhost:8888/posts/cpu%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7mesi%E5%8D%8F%E8%AE%AE/</link>
+      <pubDate>Sun, 29 May 2022 15:04:59 +0000</pubDate>
+      <guid>http://localhost:8888/posts/cpu%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7mesi%E5%8D%8F%E8%AE%AE/</guid>
+      <description>为什么需要缓存一致 目前主流电脑的 CPU 都是多核心的，多核心的有点就是在不能提升 CPU 主频后，通过增加核心来提升 CPU 吞吐量。每个核心都有自己的 L1 Cache 和 L2 Cache，只是共用 L3 Cache 和主内存。每个核心操作是独立的，每个核心的 Cache 就不是同步更新的，这样就会带来缓存一致性（Cache Coherence）的问题。
+举个例子，如图： 有 2 个 CPU，主内存里有个变量x=0。CPU A 中有个需要将变量x加1。CPU A 就将变量x加载到自己的缓存中，然后将变量x加1。因为此时 CPU A 还未将缓存数据写回主内存，CPU B 再读取变量x时，变量x的值依然是0。
+这里的问题就是所谓的缓存一致性问题，因为 CPU A 的缓存与 CPU B 的缓存是不一致的。
+如何解决缓存一致性问题 通过在总线加 LOCK 锁的方式 在锁住总线上加一个 LOCK 标识，CPU A 进行读写操作时，锁住总线，其他 CPU 此时无法进行内存读写操作，只有等解锁了才能进行操作。
+该方式因为锁住了整个总线，所以效率低。
+缓存一致性协议 MESI 该方式对单个缓存行的数据进行加锁，不会影响到内存其他数据的读写。
+在学习 MESI 协议之前，简单了解一下总线嗅探机制（Bus Snooping）。要对自己的缓存加锁，需要通知其他 CPU，多个 CPU 核心之间的数据传播问题。最常见的一种解决方案就是总线嗅探。
+这个策略，本质上就是把所有的读写请求都通过总线广播给所有的 CPU 核心，然后让各个核心去“嗅探”这些请求，再根据本地的情况进行响应。MESI 就是基于总线嗅探机制的缓存一致性协议。
+MESI 协议的由来是对 Cache Line 的四个不同的标记，分别是：</description>
+    </item>
+  </channel>
+</rss>

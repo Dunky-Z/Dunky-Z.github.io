@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>SSH on PaperMod</title>
+    <link>http://localhost:8888/tags/ssh/</link>
+    <description>Recent content in SSH on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 12 Aug 2023 09:22:56 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/ssh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SSH 免密登录</title>
+      <link>http://localhost:8888/posts/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95/</link>
+      <pubDate>Sat, 12 Aug 2023 09:22:56 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95/</guid>
+      <description>生成密钥对 宿主机任意下目录执行：
+$ ssh-keygen -t rsa Generating public/private rsa key pair. Enter file in which to save the key (/home/user/.ssh/id_rsa): host2servera_id_rsa Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in host2servera_id_rsa. Your public key has been saved in host2servera_id_rsa.pub. The key fingerprint is: SHA256:OkWcw+R3x6Z2mzeYQuG033H3N9qIeym3TZKzz6YD8tQ user@ubuntu18 The key&amp;#39;s randomart image is: +---[RSA 2048]----+ | . | | = . . | | B .o. + | | .</description>
+    </item>
+    <item>
+      <title>保持 SSH 连接</title>
+      <link>http://localhost:8888/posts/%E4%BF%9D%E6%8C%81ssh%E8%BF%9E%E6%8E%A5/</link>
+      <pubDate>Sat, 13 Aug 2022 20:28:57 +0000</pubDate>
+      <guid>http://localhost:8888/posts/%E4%BF%9D%E6%8C%81ssh%E8%BF%9E%E6%8E%A5/</guid>
+      <description>SSH 总是被强行中断，尤其是用 VSCode 代码写的好好的，突然刷新窗口，不仅效率低，更惹人恼火。
+可以通过配置服务端或客户端的 SSH 来保持 SSH 链接：
+方法一：配置服务端 可以在服务端配置，让 server 每隔 30 秒向 client 发送一个 keep-alive 包来保持连接：
+vim /etc/ssh/sshd_config ClientAliveInterval 30 ClientAliveCountMax 60 第二行配置表示如果发送 keep-alive 包数量达到 60 次，客户端依然没有反应，则服务端 sshd 断开连接。如果什么都不操作，该配置可以让连接保持 30s*60，30 min
+重启本地 ssh
+sudo service ssh restart 如果找不到 ssh,”Failed to restart ssh.service: Unit ssh.service not found.” ，需要安装
+sudo apt-get install openssh-server 方法二：配置客户端 如果服务端没有权限配置，或者无法配置，可以配置客户端 ssh，使客户端发起的所有会话都保持连接：
+vim /etc/ssh/ssh_config ServerAliveInterval 30 ServerAliveCountMax 60 本地 ssh 每隔 30s 向 server 端 sshd 发送 keep-alive 包，如果发送 60 次，server 无回应断开连接。</description>
+    </item>
+  </channel>
+</rss>

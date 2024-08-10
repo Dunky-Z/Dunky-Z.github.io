@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>嵌入式 on PaperMod</title>
+    <link>http://localhost:8888/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/</link>
+    <description>Recent content in 嵌入式 on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 14 Aug 2022 14:17:26 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>DEBUG 原理</title>
+      <link>http://localhost:8888/posts/debug%E5%8E%9F%E7%90%86/</link>
+      <pubDate>Sun, 14 Aug 2022 14:17:26 +0000</pubDate>
+      <guid>http://localhost:8888/posts/debug%E5%8E%9F%E7%90%86/</guid>
+      <description>了解调试原理时看到了一个质量比较高的视频，【蛋饼嵌入式】一起探究调试原理。UP 通俗，形象地讲解了 DEBUG 的一些原理，值得反复观看，但是视频不如文字查阅效率高，遂记录了以下文稿内容。
+什么是 JTAG 1985 年，几家半导体厂商为了解决板级测试的问题，成立了 Joint Test Action Group（JTAG）联合测试行动小组，他们希望将测试点和测试电路集成在芯片内部引脚处。同时，留出一个统一协议的接口，大家都能通过这个接口来访问芯片的输入与输出状态。这样就省去了板级测试是的物理接触，同时还能进行逻辑性调试。后来 IEEE 组织，将这个方案制定成了标准 IEEE 1149.1，这就是现在我们常听到的 JTAG 调试。
+边界扫描技术 实现 JTAG 调试最重要的一个技术就是边界扫描技术，核心思想是给芯片的每一个输入输出引脚，添加一个移位寄存器单元，也称为边界扫描单元（Boundary Scan Cell，BSC）。通过它一边可以实现对芯片输出数据的截取，另一边可以完成对输入数据的替代。正常运行状态下，这些寄存器又是透明般的存在。
+这些位于引脚边界的移位寄存器，还可以串在一起，形成一条边界扫描链，以串行的方式从外部更新扫描单元上的数据，以及对外输出边界扫描单元捕获的数据。如果板上有多个这样的芯片，他们还能以菊花链的形式串联在一起，这样就大大方便了测试的过程。
+要实现对内部移位寄存器单元或者说对整个扫描链的访问和操作，便依赖于 JTAG 调试协议和相应的物理接口。JTAG 标准接口包括以下几个部分：
+TDI(Test Data In) TDO(Test Data Out) TCLK(Test Clock) TMS(Test Mode Select) TRST(Test Reset)：可选，用于复位 调试逻辑的实现，是通过芯片内部的 TAP（Test Access Port）来完成的。模式状态信号 TMS 配合测试时钟信号 TCLK，以一定的时序进入到 TAP 控制器后，由 TAP 控制器内部的状态机转化为相应的控制动作。从而完成数据的移位，引脚状态的捕获和更新。
+设备 ID 寄存器构成的扫描链，板卡一连上调试器，通过对这条扫描链的访问，就能够识别到被调试芯片的信号。存放调试机制相关配置的数据寄存器，所构成的扫描链，后面断点和单步调试时就会用到。以及移位的 BYPASS 寄存器，当调试链路上有多个芯片连接时，来减少总调试链路的长度。
+以上都属于数据寄存器构成扫描链，因为想要在他们之间进行切换，需要引入另外的指令寄存器，以及对应的扫描链，这样调试主机将不同的调试命令写到指令寄存器中，就可以选通需要调试的数据链路。数据与指令寄存器两种链路的切换，就通过 TAP 控制器完成。
+补充： 如果芯片支持 JTAG 调试，那么芯片上就必须有上述的四个接口，TDI，TDO，TCLK，TMS。 芯片外有个 Adapter 与之 Pin to Pin 连接，负责协议转换，把 USB 的 JTAG 控制信息按 JTAG 协议转换输出，满足协议定义的电气特性。 Adapter 与 Host 连接，Host 可以是我们的 PC，也可以是另一个嵌入式调试器。 Host 上通常需要运行一些软件，如 OpenOCD，负责把 GDB 的高级别命令转换成 JTAG 命令，并通过特定 Adapter 的要求进行打包，调用 OS 提供的 USB/ETH/PCI 驱动发送出去。 GDB 与 OpenOCD 通过一些远程协议，如 TCP/IP，进行通信。这样就能够调试 Chip。</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=8888&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>QEMU 源码分析-QOM | PaperMod</title>
+<meta name="keywords" content="QEMU, Linux">
+<meta name="description" content="QOM 简介 QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。
+这个模型主要包含四个结构体：
+Object: 是所有对象的 基类 Base Object ObjectClass: 是所有类对象的基类 TypeInfo：是用户用来定义一个 Type 的工具型的数据结构 TypeImpl：TypeInfo 抽象数据结构，TypeInfo 的属性与 TypeImpl 的属性对应 在 QEMU 里要初始化一个对象需要完成四步：
+将 TypeInfo 注册 TypeImpl 实例化 Class（ObjectClass） 实例化 Object 添加 Property QOM 中的面向对象 继承 在 QEMU 中通过 TypeInfo 来定义一个类。
+例如 x86_base_cpu_type_info 就是一个 class，
+static const TypeInfo x86_base_cpu_type_info = { .name = X86_CPU_TYPE_NAME(&#34;base&#34;), .parent = TYPE_X86_CPU, .class_init = x86_cpu_base_class_init, }; 利用结构体包含来实现继承。这应该是所有的语言实现继承的方法，在 C&#43;&#43; 中，结构体包含的操作被语言内部实现了，而 C 语言需要自己实现。">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:8888/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-qom/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:8888/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:8888/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:8888/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:8888/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:8888/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:8888/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-qom/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:8888/" accesskey="h" title="PaperMod (Alt + H)">PaperMod</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:8888/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:8888/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:8888/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      QEMU 源码分析-QOM
+    </h1>
+    <div class="post-meta"><span title='2022-03-09 16:02:19 +0000 UTC'>March 9, 2022</span>&nbsp;·&nbsp;5 min
+
+</div>
+  </header> 
+  <div class="post-content"><h2 id="qom-简介">QOM 简介<a hidden class="anchor" aria-hidden="true" href="#qom-简介">#</a></h2>
+<p>QOM(QEMU Object Model) 是 QEMU 的一个模块，用于描述虚拟机的结构，包括虚拟机的 CPU、内存、硬盘、网络、输入输出设备等。QEMU 为了方便整个系统的构建，实现了自己的一套的面向对象机制，也就是 QOM(QEMU Object Model)。它能够方便的表示各个设备（Device）与总线（Bus）之间的关系。</p>
+<p>这个模型主要包含四个结构体：</p>
+<ul>
+<li>Object: 是所有对象的 基类 Base Object</li>
+<li>ObjectClass: 是所有类对象的基类</li>
+<li>TypeInfo：是用户用来定义一个 Type 的工具型的数据结构</li>
+<li>TypeImpl：TypeInfo 抽象数据结构，TypeInfo 的属性与 TypeImpl 的属性对应</li>
+</ul>
+<p>在 QEMU 里要初始化一个对象需要完成四步：</p>
+<ul>
+<li>将 TypeInfo 注册 TypeImpl</li>
+<li>实例化 Class（ObjectClass）</li>
+<li>实例化 Object</li>
+<li>添加 Property</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" alt=""  />
+</p>
+<h2 id="qom-中的面向对象">QOM 中的面向对象<a hidden class="anchor" aria-hidden="true" href="#qom-中的面向对象">#</a></h2>
+<h3 id="继承">继承<a hidden class="anchor" aria-hidden="true" href="#继承">#</a></h3>
+<p>在 QEMU 中通过 <strong>TypeInfo</strong> 来定义一个类。</p>
+<p>例如 <code>x86_base_cpu_type_info</code> 就是一个 <code>class</code>，</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo x86_base_cpu_type_info <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        .name <span style="color:#f92672">=</span> <span style="color:#a6e22e">X86_CPU_TYPE_NAME</span>(<span style="color:#e6db74">&#34;base&#34;</span>),
+</span></span><span style="display:flex;"><span>        .parent <span style="color:#f92672">=</span> TYPE_X86_CPU,
+</span></span><span style="display:flex;"><span>        .class_init <span style="color:#f92672">=</span> x86_cpu_base_class_init,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p><strong>利用结构体包含来实现继承</strong>。这应该是所有的语言实现继承的方法，在 C++ 中，结构体包含的操作被语言内部实现了，而 C 语言需要自己实现。</p>
+<p>例如 <code>x86_cpu_type_info</code> 的 <code>parent</code> 是 <code>cpu_type_info</code>, 他们的结构体分别是 <code>X86CPU</code> 和 <code>CPUState</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo x86_cpu_type_info <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> TYPE_X86_CPU,
+</span></span><span style="display:flex;"><span>    .parent <span style="color:#f92672">=</span> TYPE_CPU,
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    .instance_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(X86CPU),
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo cpu_type_info <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> TYPE_CPU,
+</span></span><span style="display:flex;"><span>    .parent <span style="color:#f92672">=</span> TYPE_DEVICE,
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    .instance_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(CPUState),
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>在 <code>X86CPU</code> 中包含一个 <code>CPUState</code>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> X86CPU {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/*&lt; private &gt;*/</span>
+</span></span><span style="display:flex;"><span>    CPUState parent_obj;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/*&lt; public &gt;*/</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    CPUNegativeOffsetState neg;
+</span></span></code></pre></div><h3 id="静态成员">静态成员<a hidden class="anchor" aria-hidden="true" href="#静态成员">#</a></h3>
+<p>静态成员变量可以在类的多个对象中访问，但是要在类外声明。<strong>不同对象访问的其实是同一个实体，静态成员变量被多个对象共享</strong>。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> TypeInfo x86_cpu_type_info <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> TYPE_X86_CPU,
+</span></span><span style="display:flex;"><span>    .parent <span style="color:#f92672">=</span> TYPE_CPU,
+</span></span><span style="display:flex;"><span>    .instance_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(X86CPU),
+</span></span><span style="display:flex;"><span>    .instance_init <span style="color:#f92672">=</span> x86_cpu_initfn,
+</span></span><span style="display:flex;"><span>    .instance_post_init <span style="color:#f92672">=</span> x86_cpu_post_initfn,
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    .abstract <span style="color:#f92672">=</span> true,
+</span></span><span style="display:flex;"><span>    .class_size <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(X86CPUClass),
+</span></span><span style="display:flex;"><span>    .class_init <span style="color:#f92672">=</span> x86_cpu_common_class_init,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>其中 <code>X86CPU</code> 描述的是非静态成员，而 <code>X86CPUClass</code> 描述的是静态的成员。也就是说<code>class_init</code>初始化静态成员，<code>instance_init</code>初始化非静态成员。</p>
+<p>那么何时初始化静态成员呢？首先得告诉系统，咱有<code>class_init</code>这个初始化函数，等需要的时候随时可以调用它初始化，所有先解决如何将这个初始化函数注册到系统中？</p>
+<p>在<code>target/i386/cpu.c</code>最后使用了<code>type_init</code>。在<code>qemu/include/qemu/module.h</code>中有一个<code>type_init</code>宏定义，除了<code>type_init</code>还有其他宏，比如<code>block_init</code>，<code>opts_init</code>等。每个宏都表示一类<code>module</code>，通过<code>module_init</code>构造出来。我们展开这个宏，</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">__attribute__</span>((constructor))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">do_qemu_init_x86_cpu_register_types</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">register_module_init</span>(x86_cpu_register_types, MODULE_INIT_QOM);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>通过 <code>gcc</code> 扩展属性<code>__attribute__((constructor))</code>可以让 <code>do_qemu_init_x86_cpu_register_types</code> 在运行 <code>main</code> 函数之前运行。 <code>register_module_init</code> 会让 <code>x86_cpu_register_types</code> 这个函数挂载到 <code>init_type_list[MODULE_INIT_QOM]</code> 这个链表上。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
+</p>
+<p>到底，所有的 <code>TypeInfo</code> 通过 <code>type_init</code> 都被放到 <code>type_table</code> 上了，之后通过 <code>Typeinfo</code> 的名称调用 <code>type_table_lookup</code> 获取到 <code>TypeImpl</code> 了。</p>
+<p>到这里，将<code>TYPE_X86_CPU</code>注册进类系统，包括其初始化函数，这部分也就是 QEMU 中类型的构造。那么何时调用静态成员初始化函数呢？也就是类型的初始化。</p>
+<p>静态成员是所有的对象公用的，其初始化显然要发生在所有的对象初始化之前。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>main
+</span></span><span style="display:flex;"><span>    qemu_init 
+</span></span><span style="display:flex;"><span>        select_machine 
+</span></span><span style="display:flex;"><span>            object_class_get_list 
+</span></span><span style="display:flex;"><span>                object_class_foreach 
+</span></span><span style="display:flex;"><span>                    g_hash_table_foreach 
+</span></span><span style="display:flex;"><span>                        object_class_foreach_tramp 
+</span></span><span style="display:flex;"><span>                            type_initialize 
+</span></span><span style="display:flex;"><span>                                type_initialize 
+</span></span><span style="display:flex;"><span>                                    x86_cpu_common_class_init 
+</span></span></code></pre></div><p><code>select_machine</code> 需要获取所有的 <code>TYPE_MACHINE</code> 的 <code>class</code>, 其首先会调用所有的<code>class_list</code>，其会遍历 <code>type_table</code>，遍历的过程中会顺带 <code>type_initialize</code> 所有的 <code>TypeImpl</code> 进而调用的 <code>class_init</code>。</p>
+<p>说完类型的初始化，再讲一下对象的初始化，也就是初始化非静态成员，也就是<code>instance_init</code>在何时被调用？</p>
+<p>对象初始化，通过调用 <code>object_new</code> 来实现初始化。</p>
+<ul>
+<li><code>object_initialize_with_type</code>
+<ul>
+<li>初始化一个空的 :<code>Object::properties</code></li>
+<li><code>object_init_with_type</code>
+<ul>
+<li>如果 <code>object</code> 有 <code>parent</code>，那么调用 <code>object_init_with_type</code> 首先初始化 <code>parent</code> 的</li>
+<li>调用<code>TypeImpl::instance_init</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>main 
+</span></span><span style="display:flex;"><span>    qemu_init 
+</span></span><span style="display:flex;"><span>        qmp_x_exit_preconfig 
+</span></span><span style="display:flex;"><span>            qemu_init_board 
+</span></span><span style="display:flex;"><span>                machine_run_board_init 
+</span></span><span style="display:flex;"><span>                    pc_init_v6_1 
+</span></span><span style="display:flex;"><span>                        pc_init1 
+</span></span><span style="display:flex;"><span>                            x86_cpus_init 
+</span></span><span style="display:flex;"><span>                                x86_cpu_new 
+</span></span><span style="display:flex;"><span>                                    object_new 
+</span></span><span style="display:flex;"><span>                                        object_new_with_type 
+</span></span><span style="display:flex;"><span>                                            object_initialize_with_type 
+</span></span><span style="display:flex;"><span>                                                object_init_with_type 
+</span></span><span style="display:flex;"><span>                                                    x86_cpu_initfn 
+</span></span></code></pre></div><h3 id="多态">多态<a hidden class="anchor" aria-hidden="true" href="#多态">#</a></h3>
+<p>多态是指同一操作作用于不同的对象，可以有不同的解释，产生不同的执行结果。为了实现多态，QOM 实现了一个非常重要的功能，就是动态类型转换。我们可以使用相关的函数，将一个<code>Object</code>的指针在运行时转换为子类对象的指针，可以将一个<code>ObjectClass</code>的指针在运行时转换为子类的指针。这样就可以调用子类中定义的函数指针来完成相应的功能。</p>
+<p>QEMU 定义了一些列的宏封来进行动态类型转换：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">//include/qom/object.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * DECLARE_INSTANCE_CHECKER:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @InstanceType: instance struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @OBJ_NAME: the object name in uppercase with underscore separators
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @TYPENAME: type name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Direct usage of this macro should be avoided, and the complete
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_DECLARE_TYPE macro is recommended instead.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * This macro will provide the instance type cast functions for a
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * QOM type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    static inline G_GNUC_UNUSED InstanceType * \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    OBJ_NAME(const void *obj) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    { return OBJECT_CHECK(InstanceType, obj, TYPENAME); }
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * DECLARE_CLASS_CHECKERS:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @ClassType: class struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @OBJ_NAME: the object name in uppercase with underscore separators
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @TYPENAME: type name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Direct usage of this macro should be avoided, and the complete
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_DECLARE_TYPE macro is recommended instead.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * This macro will provide the class type cast functions for a
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * QOM type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    static inline G_GNUC_UNUSED ClassType * \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    OBJ_NAME##_GET_CLASS(const void *obj) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    { return OBJECT_GET_CLASS(ClassType, obj, TYPENAME); } \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    static inline G_GNUC_UNUSED ClassType * \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    OBJ_NAME##_CLASS(const void *klass) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    { return OBJECT_CLASS_CHECK(ClassType, klass, TYPENAME); }
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * DECLARE_OBJ_CHECKERS:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @InstanceType: instance struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @ClassType: class struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @OBJ_NAME: the object name in uppercase with underscore separators
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @TYPENAME: type name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Direct usage of this macro should be avoided, and the complete
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_DECLARE_TYPE macro is recommended instead.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * This macro will provide the three standard type cast functions for a
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * QOM type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DECLARE_OBJ_CHECKERS(InstanceType, ClassType, OBJ_NAME, TYPENAME) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    DECLARE_INSTANCE_CHECKER(InstanceType, OBJ_NAME, TYPENAME) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    DECLARE_CLASS_CHECKERS(ClassType, OBJ_NAME, TYPENAME)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_DECLARE_TYPE:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @InstanceType: instance struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @ClassType: class struct name
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @MODULE_OBJ_NAME: the object name in uppercase with underscore separators
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * This macro is typically used in a header file, and will:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *   - create the typedefs for the object and class structs
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *   - register the type for use with g_autoptr
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *   - provide three standard type cast functions
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * The object struct and class struct need to be declared manually.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT_DECLARE_TYPE(InstanceType, ClassType, MODULE_OBJ_NAME) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    typedef struct InstanceType InstanceType; \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    typedef struct ClassType ClassType; \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    G_DEFINE_AUTOPTR_CLEANUP_FUNC(InstanceType, object_unref) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    DECLARE_OBJ_CHECKERS(InstanceType, ClassType, \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                         MODULE_OBJ_NAME, TYPE_##MODULE_OBJ_NAME)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @obj: A derivative of #Object
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Converts an object to a #Object.  Since all objects are #Objects,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * this function will always succeed.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT(obj) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    ((Object *)(obj))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_CLASS:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @class: A derivative of #ObjectClass.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * Converts a class to an #ObjectClass.  Since all objects are #Objects,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * this function will always succeed.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT_CLASS(class) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    ((ObjectClass *)(class))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_CHECK:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @type: The C type to use for the return value.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @obj: A derivative of @type to cast.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @name: The QOM typename of @type
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * A type safe version of @object_dynamic_cast_assert.  Typically each class
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * will define a macro based on this type to perform type safe dynamic_casts to
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * this object type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * If an invalid object is passed to this function, a run time assert will be
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * generated.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT_CHECK(type, obj, name) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    ((type *)object_dynamic_cast_assert(OBJECT(obj), (name), \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                        __FILE__, __LINE__, __func__))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_CLASS_CHECK:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @class_type: The C type to use for the return value.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @class: A derivative class of @class_type to cast.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @name: the QOM typename of @class_type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * A type safe version of @object_class_dynamic_cast_assert.  This macro is
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * typically wrapped by each type to perform type safe casts of a class to a
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * specific class type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT_CLASS_CHECK(class_type, class, name) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    ((class_type *)object_class_dynamic_cast_assert(OBJECT_CLASS(class), (name), \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                               __FILE__, __LINE__, __func__))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * OBJECT_GET_CLASS:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @class: The C type to use for the return value.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @obj: The object to obtain the class for.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @name: The QOM typename of @obj.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * This function will return a specific class for a given object.  Its generally
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * used by each type to provide a type safe macro to get a specific class type
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * from an object.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define OBJECT_GET_CLASS(class, obj, name) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    OBJECT_CLASS_CHECK(class, object_get_class(OBJECT(obj)), name)
+</span></span></span></code></pre></div><p>以<code>OBJECT_DECLARE_TYPE(X86CPU, X86CPUClass, X86_CPU)</code>为例，宏展开如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> X86CPU X86CPU;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> X86CPUClass X86CPUClass;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">G_DEFINE_AUTOPTR_CLEANUP_FUNC</span>(X86CPU, object_unref)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> G_GNUC_UNUSED X86CPU <span style="color:#f92672">*</span><span style="color:#a6e22e">X86_CPU</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>obj) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> ((X86CPU <span style="color:#f92672">*</span>)<span style="color:#a6e22e">object_dynamic_cast_assert</span>(
+</span></span><span style="display:flex;"><span>      ((Object <span style="color:#f92672">*</span>)(obj)), (TYPE_X86_CPU),
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;~/core/vn/docs/qemu/res/qom-macros.c&#34;</span>, <span style="color:#ae81ff">64</span>, __func__));
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> G_GNUC_UNUSED X86CPUClass <span style="color:#f92672">*</span><span style="color:#a6e22e">X86_CPU_GET_CLASS</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>obj) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> ((X86CPUClass <span style="color:#f92672">*</span>)<span style="color:#a6e22e">object_class_dynamic_cast_assert</span>(
+</span></span><span style="display:flex;"><span>      ((ObjectClass <span style="color:#f92672">*</span>)(<span style="color:#a6e22e">object_get_class</span>(((Object <span style="color:#f92672">*</span>)(obj))))), (TYPE_X86_CPU),
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;~/core/vn/docs/qemu/res/qom-macros.c&#34;</span>, <span style="color:#ae81ff">64</span>, __func__));
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> G_GNUC_UNUSED X86CPUClass <span style="color:#f92672">*</span><span style="color:#a6e22e">X86_CPU_CLASS</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>klass) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> ((X86CPUClass <span style="color:#f92672">*</span>)<span style="color:#a6e22e">object_class_dynamic_cast_assert</span>(
+</span></span><span style="display:flex;"><span>      ((ObjectClass <span style="color:#f92672">*</span>)(klass)), (TYPE_X86_CPU),
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;~/core/vn/docs/qemu/res/qom-macros.c&#34;</span>, <span style="color:#ae81ff">64</span>, __func__));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>OBJECT_DECLARE_TYPE</code>通常在头文件中使用，效果是：</p>
+<ul>
+<li>创建了<code>X86CPU</code>和<code>X86CPUClass</code>的<code>typedef</code></li>
+<li>用<code>G_DEFINE_AUTOPTR_CLEANUP_FUNC</code>注册类型</li>
+<li>创建了三个类型转换函数
+<ul>
+<li><code>X86_CPU</code> : 将任何一个 <code>object</code> 指针 转换为 <code>X86CPU</code>（Object 转子对象）</li>
+<li><code>X86_CPU_GET_CLASS</code> : 根据 <code>object</code> 指针获取到 <code>X86CPUClass</code></li>
+<li><code>X86_CPU_CLASS</code> : 根据 <code>ObjectClass</code> 指针转换到 <code>X86CPUClass</code>（基类转子类）</li>
+</ul>
+</li>
+</ul>
+<p>这里的转换依赖内存布局，子类型的第一个成员总是基类型。子类转基类就很容易，只需要强制类型转换就可以实现。</p>
+<h2 id="参考">参考<a hidden class="anchor" aria-hidden="true" href="#参考">#</a></h2>
+<p><a href="https://martins3.github.io/qemu/qom.html#init">QEMU 中的面向对象 : QOM | Deep Dark Fantasy</a>
+<a href="https://www.jianshu.com/p/4a9d26abb44d">浅谈 QEMU 的对象系统 - 简书</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:8888/tags/qemu/">QEMU</a></li>
+      <li><a href="http://localhost:8888/tags/linux/">Linux</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:8888/posts/qt%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E7%A8%8B%E5%BA%8F%E6%94%BE%E5%88%B0%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E5%B1%8F%E8%94%BDqdebug%E8%BE%93%E5%87%BA/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Qt 编译后的程序放到指定目录，屏蔽 qDebug 输出</span>
+  </a>
+  <a class="next" href="http://localhost:8888/posts/rgb%E4%B8%8Eyuv%E9%A2%9C%E8%89%B2%E7%A9%BA%E9%97%B4/">
+    <span class="title">Next »</span>
+    <br>
+    <span>RGB 与 YUV 颜色空间</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on x"
+            href="https://x.com/intent/tweet/?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f&amp;hashtags=QEMU%2cLinux">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f&amp;title=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM&amp;summary=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM&amp;source=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f&title=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on whatsapp"
+            href="https://api.whatsapp.com/send?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM%20-%20http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on telegram"
+            href="https://telegram.me/share/url?text=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share QEMU 源码分析-QOM on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=QEMU%20%e6%ba%90%e7%a0%81%e5%88%86%e6%9e%90-QOM&u=http%3a%2f%2flocalhost%3a8888%2fposts%2fqemu%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590-qom%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:8888/">PaperMod</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

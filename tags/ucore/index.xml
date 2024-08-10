@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>UCore on PaperMod</title>
+    <link>http://localhost:8888/tags/ucore/</link>
+    <description>Recent content in UCore on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 08 Sep 2023 10:46:20 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/ucore/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>uCore-实验第 0 章 - 实验环境搭建</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link>
+      <pubDate>Fri, 08 Sep 2023 10:46:20 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid>
+      <description>本次实验是清华大学操作系统课程的课程实验，实验内容是基于 RISC-V 架构的 uCore 操作系统。本次实验的目的是搭建实验环境，为后续实验做准备。指导书参考uCore-Tutorial-Guide-2023S 文档。本系列文章内容主要是指导书的补充以及我在实验过程的一些理解。
+本章没有什么需要特别说明的，指导手册十分详细，按照指导手册的步骤一步步来就可以了。因为平时也在用 WSL2 开发，所以配置十分顺利，没有遇到什么问题。这篇文章就当占坑了，如果后续有什么需要补充的再来更新。</description>
+    </item>
+    <item>
+      <title>uCore-实验第 1 章 - 应用程序与基本执行环境</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/</link>
+      <pubDate>Fri, 08 Sep 2023 10:45:14 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC1%E7%AB%A0-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%9F%BA%E6%9C%AC%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83/</guid>
+      <description>了解系统调用 操作系统的系统调用（syscall）是操作系统提供给应用程序使用的一种接口。它允许应用程序通过向操作系统发送请求，来执行一些必须由操作系统来完成的任务，例如读取文件、创建进程、分配内存等。
+通俗地说，可以把操作系统看作一个巨大的服务员，而应用程序就像是顾客。应用程序不能直接访问硬件或执行特权操作，因为这样可能会导致系统不稳定或不安全。所以，应用程序需要通过系统调用来与操作系统进行交互，请求操作系统代表它完成某些任务。
+当应用程序需要操作系统执行特定的功能时，它会调用适当的系统调用函数，并传递参数给它。然后操作系统会接收到这个请求，并根据请求的类型和参数来执行相应的操作。完成后，操作系统会将执行结果返回给应用程序。
+在 RISC-V 架构中，系统调用是通过使用特定的指令来实现的。具体来说，RISC-V 架构提供了一个称为 ecall（environment call）的指令来触发系统调用。
+要使用 syscall，在 RISC-V 汇编代码中可以通过以下步骤来完成：
+将系统调用编号（syscall number）放入寄存器 a7 中，该编号对应于所需的系统调用功能。 将系统调用所需的参数放入其他相应的寄存器中。例如，参数传递给文件读取系统调用可能需要将文件描述符放入 a0 寄存器，缓冲区地址放入 a1 寄存器，以及读取的字节数放入 a2 寄存器。 执行 ecall 指令。这会触发操作系统处理当前运行的程序的系统调用请求。 操作系统接收到系统调用请求后，根据寄存器 a7 中的系统调用编号和其他寄存器中的参数来执行相应的操作。 当操作系统完成系统调用请求时，它将结果放入适当的寄存器中，通常是 a0 寄存器。 程序继续执行，可以检查结果并进行后续的处理。 需要注意的是，具体的系统调用编号以及参数的传递方式会根据操作系统的实现而有所不同。所以在编写 RISC-V 汇编代码时，需要参考操作系统的相关文档来了解具体的系统调用接口和参数传递方式。
+makr run 之后发生了什么？ 当执行make run命令后，以下是运行流程的概述：
+内核代码编译：执行make run会触发 Makefile 中的相应规则，从而编译生成内核（kernel）二进制文件。
+加载 kernel 并启动 QEMU：根据 QEMUOPTS 变量指定的参数，QEMU 加载生成的 kernel 二进制文件，并启动模拟器。
+引导代码执行：在模拟器启动后，CPU 的通用寄存器被清零，程序计数器（PC）指向 0x1000 的位置，这里有硬件固化的一小段引导代码。该引导代码会迅速跳转到 0x80000000 处的 RustSBI（Rust Supervisor Binary Interface）。
+RustSBI 完成硬件初始化：RustSBI 是一个用于与操作系统进行交互的接口层。在跳转到 RustSBI 之后，它会完成必要的硬件初始化工作。</description>
+    </item>
+    <item>
+      <title>uCore 实验第 5 章 - 进程及进程管理</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</link>
+      <pubDate>Fri, 08 Sep 2023 10:01:20 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</guid>
+      <description>首先，.section .data 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，_app_num 是一个标签，表示一个 64 位的整数，初始值为 23。接下来是一系列的标签，分别代表了应用程序的起始地址，每个标签都是 64 位的整数。
+接着，.section .data 后面又出现了一个标签 _app_names，它是一个字符串数组，包含了一组字符串，分别命名为 &amp;ldquo;ch2b_exit&amp;rdquo;、&amp;ldquo;ch2b_hello_world&amp;rdquo;、&amp;ldquo;ch2b_power&amp;rdquo; 等等。这些字符串名字对应了前面定义的应用程序的起始地址。
+再往下，出现了一个标签 INIT_PROC，它是一个字符串，表示初始化进程的名称，值为 &amp;ldquo;usershell&amp;rdquo;。
+之后，每个应用程序都有自己的标签和段名，比如 app_0_start、app_1_start 等等。每个标签都包含一个指令 .incbin，它用于将一个二进制文件（以字符串形式指定文件路径）插入到当前段中。
+进程初始化分析 scheduler() fetch_task() // 获取下一个要执行的进程 swtch(&amp;amp;curenv-&amp;gt;context, nextenv-&amp;gt;context) // 切换到下一个进程上下文 // Per-process state struct proc { enum procstate state; // 进程状态 int pid; // 进程 ID uint64 ustack; // 进程用户栈虚拟地址 (用户页表) uint64 kstack; // 进程内核栈虚拟地址 (内核页表) struct trapframe *trapframe; // 进程中断帧 struct context context; // 用于保存进程内核态的寄存器信息，进程切换时使用 pagetable_t pagetable; // User page table uint64 max_page; uint64 program_brk; uint64 heap_bottom; struct proc * parent; // Parent process uint64 exit_code; struct file * files[FD_BUFFER_SIZE]; uint32 syscall_times[MAX_SYSCALL_NUM]; // 系统调用次数统计 uint64 start_time; // 进程开始运行时间 struct vma vmas[NVMA]; // 虚拟内存区域 }; wait 系统调用的功能 wait 系统调用是用于处理子进程终止状态的系统调用。其主要功能是等待子进程的终止，并获取子进程的退出状态信息。在操作系统中，当一个父进程创建了一个子进程后，通常会使用 wait 来等待子进程的终止，以便进行后续的处理，如回收子进程的资源或获取其运行结果。</description>
+    </item>
+    <item>
+      <title>uCore 实验第 4 章 - 地址空间</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/</link>
+      <pubDate>Mon, 04 Sep 2023 11:11:48 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/</guid>
+      <description>为何指定 TRAMPOLINE 和 TRAPFRAME 在 va 的最高位？ TRAMPOLINE 和 TRAPFRAME 被定义在最高的虚拟内存地址上，是因为它们在操作系统的内存布局中起着重要作用。 TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发生异常或中断时，处理器将从用户模式切换到内核模式，并将控制权转移到内核中预定义的位置，也就是陷阱处理程序。TRAMPOLINE 页面被映射到最高虚拟地址，以便处理器能够在这个转换过程中方便地引用它。通过将其放置在最高地址，确保了无论系统的具体内存布局如何，它始终是可访问的。 另一方面，TRAPFRAME 用于在发生异常或中断时存储机器状态。它包含寄存器、标志和其他操作系统处理异常所需的信息。TRAPFRAME 也被放置在最高的虚拟地址上，以确保它易于访问，并且陷阱处理程序可以高效地访问它。 通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。
+如何确定分页方案 - satp 在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。
+转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的虚拟地址的长度。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。
+如何开启分页机制呢？RISC-V 的分页机制是通过 satp（Supervisor address translation and protection）寄存器来开启的。satp 寄存器字段分布如下：
+Mode 字段可以决定是否开启分页以及分页级数。Mode=0 时，不开启分页；Mode=8 时，开启 Sv39 分页机制。 ASID（Address Space Identifier，地址空间标识符）域是可选的，它可以用来降低上下文切换的开销。目前我们暂不考虑这个字段的作用。 PPN（Physical Page Number，物理页号），保存了根页表的物理地址。 SV39 多级页表机制 页表项描述 Sv39 页表项（page-table entry，PTE）的布局，从左到右分别包含如下所述的域：</description>
+    </item>
+    <item>
+      <title>uCore 实验第 3 章 - 多道程序与分时多任务</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/</link>
+      <pubDate>Sat, 02 Sep 2023 16:03:02 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/</guid>
+      <description>// 启动时初始化进程表 void proc_init(void) { struct proc *p; for (p = pool; p &amp;lt; &amp;amp;pool[NPROC]; p++) { p-&amp;gt;state = UNUSED; // p - pool 是 p 指向的 proc 在 pool 中的下标，因此 p - pool 变化情况是 0, 1, 2, ..., NPROC - 1 p-&amp;gt;kstack = (uint64)kstack[p - pool]; p-&amp;gt;ustack = (uint64)ustack[p - pool]; p-&amp;gt;trapframe = (struct trapframe *)trapframe[p - pool]; /* * LAB1: you may need to initialize your new fields of proc here */ } idle.</description>
+    </item>
+    <item>
+      <title>uCore 实验第 2 章 - 批处理系统</title>
+      <link>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC2%E7%AB%A0-%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Thu, 31 Aug 2023 23:16:38 +0000</pubDate>
+      <guid>http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC2%E7%AB%A0-%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F/</guid>
+      <description>flowchart TBsubgraph entry.S_entry[_entry]endsubgraph link_app.S_app_num[_app_num]endsubgraph main.cmain[main]endsubgraph loader.cloader_init[loader_init]run_next_app[run_next_app]load_app[load_app]end_entry --&amp;gt; mainmain --&amp;gt; loader_initmain --&amp;gt; run_next_apprun_next_app --&amp;gt; load_apploader_init --&amp;gt; _app_num </description>
+    </item>
+  </channel>
+</rss>

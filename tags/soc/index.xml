@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>SoC on PaperMod</title>
+    <link>http://localhost:8888/tags/soc/</link>
+    <description>Recent content in SoC on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 19 Aug 2022 14:16:29 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/soc/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>IIC 协议</title>
+      <link>http://localhost:8888/posts/iic%E5%8D%8F%E8%AE%AE/</link>
+      <pubDate>Fri, 19 Aug 2022 14:16:29 +0000</pubDate>
+      <guid>http://localhost:8888/posts/iic%E5%8D%8F%E8%AE%AE/</guid>
+      <description>IIC 概述 IIC（Inter-Integrated Circuit），也叫 I2C（Inter-IC Communication）总线，是一种串行通信协议，由 Philips 公司在 1980 年代初开发。IIC 总线用于连接微控制器、传感器和其他集成电路，它具有以下特点：
+双线制结构简单：由一条数据线（SDA）和一条时钟线（SCL）组成。 多主机并行通信：多个 Master 设备可同时接入同一条 IIC 总线上进行数据交换。 硬件资源占用少：只要两根线就可以连接多个器件。 数据传输速率快：现代 IIC 总线的最高传输速率可达到 400Kbps。 低功耗设计：使用者可以通过软件控制设备进入睡眠模式以减少功耗。 传输协议 写操作 主机要发出一个起始信号 主机发出一个设备地址用来确定是往那一个芯片写数据，以及写标记（0） 从设备回应（用来确定这个设备是香存在，然后就可以传输数据） 主设备发送一个字节数据给从设备，并等待回应 每传输一字节故据，接收方要有一个回应信号（确定故据是否接受完成），然后再传输下一个故据。 数据发送完之后，主机就会发送一个停止信号。 读操作 主机要发出一个起始信号 主机发出一个设备地址用来确定是往那一个芯片读数据，以及读标记（1） 从设备回应（用来确定这个设备是否存在），然后就可以传输数据 从设备发送一个字节放据给主设备，并等待回应 每传输一字节数据，接收方要有一个回应信号（确定数据是否接受完成），然后再传输下一个放据。 数据发送完之后，主芯片就会发送一个停止信号。 状态 空闲状态 SCL 和 SDA 都为高电平 此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。
+起始状态 SCL 为高电平，SDA 由高电平变为低电平 标志着一次数据传输的开始。起始信号是由主控器主动建立的，在建立该信号之前 I2C 总线必须处于空闲状态。
+结束状态 SCL 为高电平，SDA 由低电平变为高电平 数据传输状态 SCL 高电平期间，SDL 保持稳定 SDL 为高电平表示 1，低电平表示 0 在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 0xaa 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</description>
+    </item>
+    <item>
+      <title>SPI 协议</title>
+      <link>http://localhost:8888/posts/spi%E5%8D%8F%E8%AE%AE/</link>
+      <pubDate>Tue, 19 Jul 2022 14:23:40 +0000</pubDate>
+      <guid>http://localhost:8888/posts/spi%E5%8D%8F%E8%AE%AE/</guid>
+      <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。
+4 线制 SPI 四个信号：
+SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：片选信号，由主设备产生，用于选择从设备。 MOSI：主设备输出，从设备输入，用于主设备向从设备传输数据。 MISO：主设备输入，从设备输出，用于从设备向主设备传输数据。 除了四线式 SPI 总线之外，还有三线式 SPI 总线和双线式 SPI 总线。
+四线式 SPI 总线，也称为标准 SPI 总线，由 SCLK、MOSI、MISO 和 SS（Slave Select）四个信号线组成。其中，SCLK 是时钟信号线；MOSI 是主设备向从设备发送数据的信号线；MISO 是从设备向主设备发送数据的信号线；SS 是从设备的片选信号线，用于选择要通信的从设备。
+三线式 SPI 总线将 MOSI 和 MISO 合并为单一的信号线。这种 SPI 总线有一个专门的叫做 MOMI 的信号线，既可以作为主设备向从设备发送数据的信号线，又可以作为从设备向主设备发送数据的信号线。
+双线式 SPI 总线（也称为 MICROWIRE 或 uWire），由一个串行数据线和一个时钟线组成。在这种 SPI 总线上，没有单独的片选信号线，而是使用一个帧选择控制位来选择相应的从设备。
+他们传输速率有差别吗？ 是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。 SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</description>
+    </item>
+    <item>
+      <title>NOC(net-on-chip) 总线互联构架</title>
+      <link>http://localhost:8888/posts/noc-net-on-chip-%E6%80%BB%E7%BA%BF%E4%BA%92%E8%81%94%E6%9E%84%E6%9E%B6/</link>
+      <pubDate>Tue, 12 Jul 2022 23:13:51 +0000</pubDate>
+      <guid>http://localhost:8888/posts/noc-net-on-chip-%E6%80%BB%E7%BA%BF%E4%BA%92%E8%81%94%E6%9E%84%E6%9E%B6/</guid>
+      <description>技术背景 转载自^[片上网络（NoC）技术的背景、意义以及发展_碎碎思的博客-CSDN 博客]
+在过去的几十年里，集成电路制造工艺技术、封装与测试技术、设计方法学和 EDA 工具等微电子相关技术始终保持着快速的发展。根据国际半导体技术发展路线图（International Technology Roadmap for Semiconductors, ITRS）预测，到 2024 年 IC 制造技术将达到 2 nm。但是，全局互连线的性能提升程度明显低于晶体管性能提升程度。受到亚阈值漏电流功耗、动态功耗、器件可靠性以及全局互连线等影响，通过提升单个处理器核的性能来提升系统整体性能已变得非常难以实现，同时芯片设计的难度和复杂度也在进一步增加。片上系统（System on Chip, SoC）具有集成度高、功耗低、成本低、体积小等优点，已经成为超大规模集成电路系统设计的主流方向。随着片上系统 SoC 的应用需求越来越丰富、越来越复杂，片上多核 MPSoC (MultiprocessorSystem on Chip, MPSoC) 已经成为发展的必然趋势，同时 MPSoC 上集成的 IP 核数量也将会按照摩尔定律继续发展。目前，MPSoC 已经逐渐应用于网络通信、多媒体等嵌入式电子设备中。半导体工艺技术的快速发展为集成电路设计提供了很大的发展空间，同时也带来了一系列新的问题和挑战，如芯片的性能、功耗、可靠性、可扩展性等等。
+随着系统性能需求越来越高，处理器核之间的互连架构必须能够提供具有较低延迟和高吞吐率的服务，并且具有良好的可扩展性。传统的基于总线的集中式互连架构已经难以满足现今系统的性能需求，而基于报文交换的**片上网络（Network on Chip, NoC）**逐渐成为片上多核间通讯的首选互连架构。在 NoC 中，路由节点之间通过局部互连线相连接，每一个路由节点通过网络接口 NI 与一个本地 IP 核相连接，源路由节点和目的路由节点之间的数据通讯需要经过多个跳步来实现。因此，NoC 技术的出现使得片上系统 SoC 的设计也将从以计算为中心逐渐过渡到以通讯为中心。
+传统的 SoC 系统采用总线互连结构，如 所示。虽然人们已经提出了很多改进的总线结构，例如将共享总线改进为桥接多总线结构、层次化总线结构等更复杂的结构。但是当进入 MPSoC 时代，单芯片上集成的处理器核数越来越多时，总线结构在通讯性能、功耗、全局时钟同步、信号完整性以及信号可靠性等方面面临着巨大的挑战，这些复杂的改进型总线结构仍无法解决片上多核间通信所面临的问题。因此，MPSoC 上多核间的通讯问题已经成为制约系统性能提升的主要瓶颈。
+NoC 的概念是由 Agarwal（1999 年）、Guerrier 和 Greiner（2000 年）、Dally 和 Towles（2001 年）、Benini 和 Micheli（2002 年）、Jantsch 和 Tenhunen（2003 年）等人逐步提出的。目前，对于 NoC 还没有一个统一的定义，大多数 NoC 研究者认为 NoC 是 SoC 系统的通讯子集，并且应该引入互联网络技术来解决片上多核的通讯问题。</description>
+    </item>
+    <item>
+      <title>SoC 存储器比较</title>
+      <link>http://localhost:8888/posts/soc%E5%AD%98%E5%82%A8%E5%99%A8%E6%AF%94%E8%BE%83/</link>
+      <pubDate>Sat, 21 May 2022 17:13:33 +0000</pubDate>
+      <guid>http://localhost:8888/posts/soc%E5%AD%98%E5%82%A8%E5%99%A8%E6%AF%94%E8%BE%83/</guid>
+      <description>内存 也就是内部存储器，主要用来运行程序的，典型的就是 RAM 随机存储器（Random Access Memory），那么随机是什么意思？所谓随机，指的是当存储器中的数据被读取或写入时，所需要的时间与这段信息所在的位置无关（任何位置读写速度一样）。
+DRAM（Dynamic Random Access Memory，动态随机存储器）是最为常见的系统内存。我们使用的电脑和手机的运行内存都是 DRAM。DRAM 使用电容存储，DRAM 只能将数据保持很短的时间。为了保持数据，所以必须隔一段时间刷新（refresh）一次，如果存储单元没有被刷新，存储的信息就会丢失。数据的存储，请参考数据存储模型。我们知道，电容中的电荷很容易变化，所以随着时间推移，电容中的电荷数会增加或减少，为了确保数据不会丢失，DRAM 每隔一段时间会给电容刷新（充电或放电）。动态：定时刷新数据
+SRAM（Static Random Access Memory，静态随机存储器），它是一种具有静止存取功能的内存，其内部机构比 DRAM 复杂，可以做到不刷新电路即能保存它内部存储的数据。静态：不需要刷新
+DDR SDRAM（Double Data Rate SDRAM）：为双信道同步动态随机存取内存，是新一代的 SDRAM 技术。DDR 内存芯片的数据预取宽度（Prefetch）为 2 bit（SDRAM 的两倍）。
+DDR2 SDRAM（Double Data Rate Two SDRAM）：为双信道两次同步动态随机存取内存。DDR2 内存 Prefetch 又再度提升至 4 bit（DDR 的两倍）
+DDR3 SDRAM（Double Data Rate Three SDRAM）：为双信道三次同步动态随机存取内存。DDR3 内存 Prefetch 提升至 8 bit，即每次会存取 8 bits 为一组的数据。运算频率介于 800MHz -1600MHz 之间。
+外存 外部存储器，通常用来存储文件的，一般也叫 ROM（Read-only memory）只读存储器。
+CPU 连接内存和外存的连接方式不同。内存需要直接地址访问，所以是通过地址总线&amp;amp;数据总线的总线式访问方式连接的（好处是直接访问，随机访问；坏处是占用 CPU 的地址空间，大小受限）；外存是通过 CPU 的外存接口来连接的（好处是不占用 CPU 的地址空间，坏处是访问速度没有总线式快，访问时序较复杂）</description>
+    </item>
+  </channel>
+</rss>

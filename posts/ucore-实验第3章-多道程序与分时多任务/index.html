@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=8888&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>uCore 实验第 3 章 - 多道程序与分时多任务 | PaperMod</title>
+<meta name="keywords" content="RISC-V, OS, uCore, Lab, Linux">
+<meta name="description" content="// 启动时初始化进程表 void proc_init(void) { struct proc *p; for (p = pool; p &lt; &amp;pool[NPROC]; p&#43;&#43;) { p-&gt;state = UNUSED; // p - pool 是 p 指向的 proc 在 pool 中的下标，因此 p - pool 变化情况是 0, 1, 2, ..., NPROC - 1 p-&gt;kstack = (uint64)kstack[p - pool]; p-&gt;ustack = (uint64)ustack[p - pool]; p-&gt;trapframe = (struct trapframe *)trapframe[p - pool]; /* * LAB1: you may need to initialize your new fields of proc here */ } idle.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:8888/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:8888/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:8888/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:8888/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:8888/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC3%E7%AB%A0-%E5%A4%9A%E9%81%93%E7%A8%8B%E5%BA%8F%E4%B8%8E%E5%88%86%E6%97%B6%E5%A4%9A%E4%BB%BB%E5%8A%A1/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:8888/" accesskey="h" title="PaperMod (Alt + H)">PaperMod</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:8888/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:8888/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:8888/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:8888/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      uCore 实验第 3 章 - 多道程序与分时多任务
+    </h1>
+    <div class="post-meta"><span title='2023-09-02 16:03:02 +0000 UTC'>September 2, 2023</span>&nbsp;·&nbsp;8 min
+
+</div>
+  </header> 
+  <div class="post-content"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 启动时初始化进程表
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (p <span style="color:#f92672">=</span> pool; p <span style="color:#f92672">&lt;</span> <span style="color:#f92672">&amp;</span>pool[NPROC]; p<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        p<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">=</span> UNUSED;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// p - pool 是 p 指向的 proc 在 pool 中的下标，因此 p - pool 变化情况是 0, 1, 2, ..., NPROC - 1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        p<span style="color:#f92672">-&gt;</span>kstack    <span style="color:#f92672">=</span> (uint64)kstack[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span>        p<span style="color:#f92672">-&gt;</span>ustack    <span style="color:#f92672">=</span> (uint64)ustack[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span>        p<span style="color:#f92672">-&gt;</span>trapframe <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> trapframe <span style="color:#f92672">*</span>)trapframe[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		* LAB1: you may need to initialize your new fields of proc here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		*/</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    idle.kstack  <span style="color:#f92672">=</span> (uint64)boot_stack_top;
+</span></span><span style="display:flex;"><span>    idle.pid     <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    current_proc <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>idle;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><blockquote>
+<p>p - pool 表示什么？
+假设我们有一个名为 pool 的数组，其中包含了多个类型为 struct proc 的元素，并且有一个指针 p 指向其中的某个元素。
+当 p 指向 pool 数组的第一个元素时，p - pool 的结果将是 0，因为指针相对于数组首地址的偏移量为 0。
+当 p 指向 pool 数组的第二个元素时，p - pool 的结果将是 1，因为指针相对于数组首地址的偏移量为 1。
+以此类推，当 p 指向 pool 数组的第 N 个元素时，p - pool 的结果将是 N-1，因为指针相对于数组首地址的偏移量为 N-1。
+总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。</p>
+</blockquote>
+<p>原调度函数每次都会从 pool 数组的第一个元素开始遍历，这样会导致每次都是从第一个进程开始运行，而不是从上次运行的进程开始运行。需要修改为如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// 调度程序永不返回。它循环执行以下操作：
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//  - 选择要运行的进程。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//  - 切换以启动运行该进程。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//  - 最终，该进程通过切换将控制权
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">//    传递回调度程序。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scheduler</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>last_checked_proc <span style="color:#f92672">=</span> pool; <span style="color:#75715e">// 初始化指针为 pool
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (;;) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (p <span style="color:#f92672">=</span> last_checked_proc; p <span style="color:#f92672">&lt;</span> <span style="color:#f92672">&amp;</span>pool[NPROC];
+</span></span><span style="display:flex;"><span>             p<span style="color:#f92672">++</span>) { <span style="color:#75715e">// 将 p 初始化为 last_checked_proc
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> RUNNABLE) {
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                * LAB1：你可能需要在这里初始化进程的起始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                */</span>
+</span></span><span style="display:flex;"><span>                p<span style="color:#f92672">-&gt;</span>state     <span style="color:#f92672">=</span> RUNNING;
+</span></span><span style="display:flex;"><span>                current_proc <span style="color:#f92672">=</span> p;
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">swtch</span>(<span style="color:#f92672">&amp;</span>idle.context, <span style="color:#f92672">&amp;</span>p<span style="color:#f92672">-&gt;</span>context);
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        last_checked_proc <span style="color:#f92672">=</span> pool <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; <span style="color:#75715e">// 更新 last_checked_proc 的值为下一个位置
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="lab1">LAB1<a hidden class="anchor" aria-hidden="true" href="#lab1">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#f92672">---</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>loader.c           <span style="color:#f92672">|</span>   <span style="color:#ae81ff">5</span> <span style="color:#f92672">+-</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>proc.c             <span style="color:#f92672">|</span>  <span style="color:#ae81ff">15</span> <span style="color:#f92672">+-</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>proc.h             <span style="color:#f92672">|</span>  <span style="color:#ae81ff">23</span> <span style="color:#f92672">+-</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>syscall.c          <span style="color:#f92672">|</span>  <span style="color:#ae81ff">55</span> <span style="color:#f92672">++++-</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>syscall_ids.h      <span style="color:#f92672">|</span>   <span style="color:#ae81ff">5</span> <span style="color:#f92672">+-</span>
+</span></span><span style="display:flex;"><span> os<span style="color:#f92672">/</span>timer.h            <span style="color:#f92672">|</span>   <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span> <span style="color:#ae81ff">9</span> files changed, <span style="color:#ae81ff">374</span> <span style="color:#a6e22e">insertions</span>(<span style="color:#f92672">+</span>), <span style="color:#ae81ff">291</span> <span style="color:#a6e22e">deletions</span>(<span style="color:#f92672">-</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>loader.c b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>loader.c
+</span></span><span style="display:flex;"><span>index b45e85d..b21b0a4 <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>loader.c
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>loader.c
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;loader.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;defs.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;trap.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>include <span style="color:#f92672">&lt;</span>string.h<span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">static</span> uint64  app_num;
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">static</span> uint64 <span style="color:#f92672">*</span>app_info_ptr;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">49</span>,<span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">50</span>,<span style="color:#ae81ff">10</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">run_all_app</span>()
+</span></span><span style="display:flex;"><span>         trapframe<span style="color:#f92672">-&gt;</span>sp  <span style="color:#f92672">=</span> (uint64)p<span style="color:#f92672">-&gt;</span>ustack <span style="color:#f92672">+</span> USER_STACK_SIZE;
+</span></span><span style="display:flex;"><span>         p<span style="color:#f92672">-&gt;</span>state       <span style="color:#f92672">=</span> RUNNABLE;
+</span></span><span style="display:flex;"><span>         <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-		* LAB1: you may need to initialize your new fields of proc here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+		* LAB1: 初始化系统调用数以及进程开始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 		*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        <span style="color:#a6e22e">memset</span>(p<span style="color:#f92672">-&gt;</span>syscall_times, <span style="color:#ae81ff">0</span>, MAX_SYSCALL_NUM <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(uint32));
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        p<span style="color:#f92672">-&gt;</span>start_time <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>     }
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">\</span> No newline at end of file
+</span></span><span style="display:flex;"><span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.c b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.c
+</span></span><span style="display:flex;"><span>index fee3886.<span style="color:#ae81ff">.0</span>c69ae5 <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.c
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.c
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;defs.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;loader.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;trap.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>include <span style="color:#e6db74">&#34;timer.h&#34;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">struct</span> proc pool[NPROC];
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">char</span>        kstack[NPROC][PAGE_SIZE];
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">33</span>,<span style="color:#ae81ff">9</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">34</span>,<span style="color:#ae81ff">8</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">proc_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>         p<span style="color:#f92672">-&gt;</span>kstack    <span style="color:#f92672">=</span> (uint64)kstack[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span>         p<span style="color:#f92672">-&gt;</span>ustack    <span style="color:#f92672">=</span> (uint64)ustack[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span>         p<span style="color:#f92672">-&gt;</span>trapframe <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> trapframe <span style="color:#f92672">*</span>)trapframe[p <span style="color:#f92672">-</span> pool];
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span>        <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-		* LAB1: you may need to initialize your new fields of proc here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-		*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        <span style="color:#a6e22e">memset</span>(p<span style="color:#f92672">-&gt;</span>syscall_times, <span style="color:#ae81ff">0</span>, MAX_SYSCALL_NUM <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(uint32));
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        p<span style="color:#f92672">-&gt;</span>start_time <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>     }
+</span></span><span style="display:flex;"><span>     idle.kstack  <span style="color:#f92672">=</span> (uint64)boot_stack_top;
+</span></span><span style="display:flex;"><span>     idle.pid     <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">47</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">47</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">allocpid</span>()
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> PID <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">return</span> PID<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">// 在进程表中寻找一个未使用的进程。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">// 如果找到，则初始化在内核中运行所需的状态。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">// 如果没有空闲的进程，或者内存分配失败，则返回 0。
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">80</span>,<span style="color:#ae81ff">14</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">81</span>,<span style="color:#ae81ff">18</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">scheduler</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span> {
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>last_checked_proc <span style="color:#f92672">=</span> pool; <span style="color:#75715e">// 初始化指针为 pool
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">-</span>
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">for</span> (;;) {
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">for</span> (p <span style="color:#f92672">=</span> last_checked_proc; p <span style="color:#f92672">&lt;</span> <span style="color:#f92672">&amp;</span>pool[NPROC];
+</span></span><span style="display:flex;"><span>              p<span style="color:#f92672">++</span>) { <span style="color:#75715e">// 将 p 初始化为 last_checked_proc
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>             <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> RUNNABLE) {
+</span></span><span style="display:flex;"><span>                 <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-                * LAB1：你可能需要在这里初始化进程的起始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+                * LAB1：在这里初始化进程的开始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>                <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>start_time <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>                    uint64 cycle <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_cycle</span>();
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>                    p<span style="color:#f92672">-&gt;</span>start_time <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>                        (cycle <span style="color:#f92672">%</span> CPU_FREQ) <span style="color:#f92672">*</span> MILLISECONDS_PER_SECOND <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>                }
+</span></span><span style="display:flex;"><span>                 p<span style="color:#f92672">-&gt;</span>state     <span style="color:#f92672">=</span> RUNNING;
+</span></span><span style="display:flex;"><span>                 current_proc <span style="color:#f92672">=</span> p;
+</span></span><span style="display:flex;"><span>                 <span style="color:#a6e22e">swtch</span>(<span style="color:#f92672">&amp;</span>idle.context, <span style="color:#f92672">&amp;</span>p<span style="color:#f92672">-&gt;</span>context);
+</span></span><span style="display:flex;"><span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.h b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.h
+</span></span><span style="display:flex;"><span>index d208c5d.<span style="color:#ae81ff">.53576</span>bf <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.h
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>proc.h
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">7</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">8</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span><span style="color:#960050;background-color:#1e0010">#</span>define <span style="color:#a6e22e">NPROC</span> (<span style="color:#ae81ff">16</span>)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>define <span style="color:#a6e22e">NPROC</span>           (<span style="color:#ae81ff">16</span>)  <span style="color:#75715e">// 最大进程数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>define <span style="color:#a6e22e">MAX_SYSCALL_NUM</span> (<span style="color:#ae81ff">500</span>) <span style="color:#75715e">// 最大系统调用数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> 
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">// Saved registers for kernel context switches.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#66d9ef">struct</span> context {
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">42</span>,<span style="color:#ae81ff">14</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">43</span>,<span style="color:#ae81ff">28</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">struct</span> proc {
+</span></span><span style="display:flex;"><span>     uint64            kstack;    <span style="color:#75715e">// 进程内核栈虚拟地址 (内核页表)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     <span style="color:#66d9ef">struct</span> trapframe <span style="color:#f92672">*</span>trapframe; <span style="color:#75715e">// 进程中断帧
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     <span style="color:#66d9ef">struct</span> context    context; <span style="color:#75715e">// 用于保存进程内核态的寄存器信息，进程切换时使用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">-</span>                               <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-	* LAB1: you may need to add some new fields here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+    /*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+	* LAB1: 添加一些新的成员用于新的 sys_task_info 系统调用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 	*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    uint32 syscall_times[MAX_SYSCALL_NUM]; <span style="color:#75715e">// 系统调用次数统计 TODO: 后续改为指针
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span>    uint64 start_time;                     <span style="color:#75715e">// 进程开始运行时间
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> };
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-* LAB1: you may need to define struct for TaskInfo here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+* LAB1: 定义 TaskInfo 结构体
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">enum</span> {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    UnInit,
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    Ready,
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    Running,
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    Exited,
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>} TaskStatus;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    TaskStatus status;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    uint32     syscall_times[MAX_SYSCALL_NUM];
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">int</span>        time; <span style="color:#75715e">// 进程运行时间统计
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span>} TaskInfo;
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span><span style="color:#a6e22e">curr_proc</span>();
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">void</span>         <span style="color:#a6e22e">exit</span>(<span style="color:#66d9ef">int</span>);
+</span></span><span style="display:flex;"><span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall.c b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall.c
+</span></span><span style="display:flex;"><span>index <span style="color:#ae81ff">1</span>cc5aeb..f54ed86 <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall.c
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall.c
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;syscall_ids.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;timer.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;trap.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>include <span style="color:#e6db74">&#34;proc.h&#34;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> uint64 <span style="color:#a6e22e">sys_write</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>str, uint len)
+</span></span><span style="display:flex;"><span> {
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">31</span>,<span style="color:#ae81ff">14</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">32</span>,<span style="color:#ae81ff">46</span> <span style="color:#960050;background-color:#1e0010">@@</span> uint64 <span style="color:#a6e22e">sys_sched_yield</span>()
+</span></span><span style="display:flex;"><span> uint64 <span style="color:#a6e22e">sys_gettimeofday</span>(TimeVal <span style="color:#f92672">*</span>val, <span style="color:#66d9ef">int</span> _tz)
+</span></span><span style="display:flex;"><span> {
+</span></span><span style="display:flex;"><span>     uint64 cycle <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_cycle</span>();
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span>    val<span style="color:#f92672">-&gt;</span>sec     <span style="color:#f92672">=</span> cycle <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span>    val<span style="color:#f92672">-&gt;</span>usec    <span style="color:#f92672">=</span> (cycle <span style="color:#f92672">%</span> CPU_FREQ) <span style="color:#f92672">*</span> MICROSECONDS_PER_SECOND <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#a6e22e">tracef</span>(<span style="color:#e6db74">&#34;sys_gettimeofday cycle = %d&#34;</span>, cycle);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    val<span style="color:#f92672">-&gt;</span>sec  <span style="color:#f92672">=</span> cycle <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    val<span style="color:#f92672">-&gt;</span>msec <span style="color:#f92672">=</span> (cycle <span style="color:#f92672">%</span> CPU_FREQ) <span style="color:#f92672">*</span> MILLISECONDS_PER_SECOND <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    val<span style="color:#f92672">-&gt;</span>usec <span style="color:#f92672">=</span> (cycle <span style="color:#f92672">%</span> CPU_FREQ) <span style="color:#f92672">*</span> MICROSECONDS_PER_SECOND <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span> }
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">-</span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-* LAB1: you may need to define sys_task_info here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#75715e">/** 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+ * LAB1：此处定义 sys_task_info 函数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+ * 查询当前正在执行的任务信息，任务信息包括任务控制块相关信息（任务状态）、任务使用的系统调用次数、任务总运行时长。 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+ */</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sys_task_info</span>(TaskInfo <span style="color:#f92672">*</span>ti)
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>{
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>proc <span style="color:#f92672">=</span> <span style="color:#a6e22e">curr_proc</span>();
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#75715e">// TODO: proc 检查为空
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> MAX_SYSCALL_NUM; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>syscall_times[i] <span style="color:#f92672">=</span> proc<span style="color:#f92672">-&gt;</span>syscall_times[i];
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    }
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    uint64 cycle <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_cycle</span>();
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    uint64 current_time <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        (cycle <span style="color:#f92672">%</span> CPU_FREQ) <span style="color:#f92672">*</span> MILLISECONDS_PER_SECOND <span style="color:#f92672">/</span> CPU_FREQ;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#a6e22e">infof</span>(<span style="color:#e6db74">&#34;sys_task_info current_time = %d&#34;</span>, current_time);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#a6e22e">infof</span>(<span style="color:#e6db74">&#34;proc-&gt;start_time = %d&#34;</span>, proc<span style="color:#f92672">-&gt;</span>start_time);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#a6e22e">infof</span>(<span style="color:#e6db74">&#34;ti-&gt;time = %d&#34;</span>, current_time <span style="color:#f92672">-</span> proc<span style="color:#f92672">-&gt;</span>start_time);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">if</span> (proc<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> RUNNING) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>status <span style="color:#f92672">=</span> Running;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (proc<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> RUNNABLE) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>status <span style="color:#f92672">=</span> Ready;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (proc<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> SLEEPING) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>status <span style="color:#f92672">=</span> Ready;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (proc<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> ZOMBIE) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>status <span style="color:#f92672">=</span> Exited;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (proc<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">==</span> UNUSED) {
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ti<span style="color:#f92672">-&gt;</span>status <span style="color:#f92672">=</span> UnInit;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    }
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    ti<span style="color:#f92672">-&gt;</span>time <span style="color:#f92672">=</span> current_time <span style="color:#f92672">-</span> proc<span style="color:#f92672">-&gt;</span>start_time;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>}
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">char</span> trap_page[];
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">51</span>,<span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">84</span>,<span style="color:#ae81ff">9</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">syscall</span>()
+</span></span><span style="display:flex;"><span>     <span style="color:#a6e22e">tracef</span>(<span style="color:#e6db74">&#34;syscall %d args = [%x, %x, %x, %x, %x, %x]&#34;</span>, id, args[<span style="color:#ae81ff">0</span>], args[<span style="color:#ae81ff">1</span>],
+</span></span><span style="display:flex;"><span>            args[<span style="color:#ae81ff">2</span>], args[<span style="color:#ae81ff">3</span>], args[<span style="color:#ae81ff">4</span>], args[<span style="color:#ae81ff">5</span>]);
+</span></span><span style="display:flex;"><span>     <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-	* LAB1: you may need to update syscall counter for task info here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+	* LAB1: 更新系统调用次数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 	*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#a6e22e">curr_proc</span>()<span style="color:#f92672">-&gt;</span>syscall_times[id]<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">switch</span> (id) {
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">case</span> SYS_write:
+</span></span><span style="display:flex;"><span>         ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">sys_write</span>(args[<span style="color:#ae81ff">0</span>], (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)args[<span style="color:#ae81ff">1</span>], args[<span style="color:#ae81ff">2</span>]);
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">67</span>,<span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">101</span>,<span style="color:#ae81ff">15</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">syscall</span>()
+</span></span><span style="display:flex;"><span>         ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">sys_gettimeofday</span>((TimeVal <span style="color:#f92672">*</span>)args[<span style="color:#ae81ff">0</span>], args[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>     <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-	* LAB1: you may need to add SYS_taskinfo case here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">+	* LAB1: 在此处添加 SYS_task_info 的系统调用处理情况
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 	*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">case</span> SYS_task_info:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">sys_task_info</span>((TaskInfo <span style="color:#f92672">*</span>)args[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>    <span style="color:#66d9ef">case</span> SYS_getpid:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        <span style="color:#a6e22e">infof</span>(<span style="color:#e6db74">&#34;SYS_getpid %d&#34;</span>, SYS_getpid);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">curr_proc</span>()<span style="color:#f92672">-&gt;</span>pid;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>         ret <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>         <span style="color:#a6e22e">errorf</span>(<span style="color:#e6db74">&#34;unknown syscall %d&#34;</span>, id);
+</span></span><span style="display:flex;"><span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall_ids.h b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall_ids.h
+</span></span><span style="display:flex;"><span>index <span style="color:#ae81ff">05</span>a6cb9.<span style="color:#ae81ff">.3</span>c1a5a9 <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall_ids.h
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>syscall_ids.h
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">277</span>,<span style="color:#ae81ff">9</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">277</span>,<span style="color:#ae81ff">8</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#define SYS_io_pgetevents          292
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#define SYS_rseq                   293
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#define SYS_kexec_file_load        294
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">-</span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-* LAB1: you may need to define SYS_task_info here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">-*/</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#75715e">// LAB1：添加 SYS_task_info 的系统调用号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>define SYS_task_info          <span style="color:#ae81ff">410</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#define SYS_pidfd_send_signal  424
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#define SYS_io_uring_setup     425
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#define SYS_io_uring_enter     426
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>diff <span style="color:#f92672">--</span>git a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>timer.h b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>timer.h
+</span></span><span style="display:flex;"><span>index c6ebd14.<span style="color:#ae81ff">.63</span>ab45c <span style="color:#ae81ff">100644</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">---</span> a<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>timer.h
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+++</span> b<span style="color:#f92672">/</span>os<span style="color:#f92672">/</span>timer.h
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span>
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#define TICKS_PER_SEC (100)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">// QEMU
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#75715e">#define CPU_FREQ                (12500000)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span><span style="color:#960050;background-color:#1e0010">#</span>define <span style="color:#a6e22e">MILLISECONDS_PER_SECOND</span> (<span style="color:#ae81ff">1000</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#75715e">#define MICROSECONDS_PER_SECOND (1000000)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> 
+</span></span><span style="display:flex;"><span> uint64 <span style="color:#a6e22e">get_cycle</span>();
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>,<span style="color:#ae81ff">6</span> <span style="color:#f92672">+</span><span style="color:#ae81ff">15</span>,<span style="color:#ae81ff">7</span> <span style="color:#960050;background-color:#1e0010">@@</span> <span style="color:#66d9ef">void</span>   <span style="color:#a6e22e">set_next_timer</span>();
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>     uint64 sec;  <span style="color:#75715e">// 自 Unix 纪元起的秒数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">+</span>    uint64 msec; <span style="color:#75715e">// 毫秒数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>     uint64 usec; <span style="color:#75715e">// 微秒数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> } TimeVal;
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">--</span> 
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2.34.1</span>
+</span></span></code></pre></div><h1 id="问答作业">问答作业<a hidden class="anchor" aria-hidden="true" href="#问答作业">#</a></h1>
+<h2 id="问题一">问题一<a hidden class="anchor" aria-hidden="true" href="#问题一">#</a></h2>
+<p>正确进入 U 态后，程序的特征还应有：使用 S 态特权指令，访问 S 态寄存器后会报错。请同学们可以自行测试这些内容（参考 前三个测例，描述程序出错行为，同时注意注明你使用的 sbi 及其版本。</p>
+<p>测试前三个测试用例指的是<code>uCore-Tutorial-Code-2023S/user/src/</code> 目录下的三个<code>bad</code>测试用例，查看<code>user</code>项目的 Makefile 可以发现在编译时修改<code>CHAPTER</code>参数值为<code>2_bad</code>即可编译运行这些测试用例。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> RustSBI version 0.3.0-alpha.2, adapting to RISC-V SBI v1.0.0
+</span></span><span style="display:flex;"><span>.______       __    __      _______.___________.  _______..______   __
+</span></span><span style="display:flex;"><span>|   _  <span style="color:#ae81ff">\ </span>    |  |  |  |    /       |           | /       <span style="color:#f92672">||</span>   _  <span style="color:#ae81ff">\ </span>|  |
+</span></span><span style="display:flex;"><span>|  |_<span style="color:#f92672">)</span>  |    |  |  |  |   |   <span style="color:#f92672">(</span>----<span style="color:#e6db74">`</span>---|  |----<span style="color:#e6db74">`</span>|   <span style="color:#f92672">(</span>----<span style="color:#e6db74">`</span>|  |_<span style="color:#f92672">)</span>  <span style="color:#f92672">||</span>  |
+</span></span><span style="display:flex;"><span>|      /     |  |  |  |    <span style="color:#ae81ff">\ </span>  <span style="color:#ae81ff">\ </span>      |  |      <span style="color:#ae81ff">\ </span>  <span style="color:#ae81ff">\ </span>   |   _  &lt; |  |
+</span></span><span style="display:flex;"><span>|  |<span style="color:#ae81ff">\ </span> <span style="color:#ae81ff">\-</span>---.|  <span style="color:#e6db74">`</span>--<span style="color:#960050;background-color:#1e0010">&#39;</span>  |.----<span style="color:#f92672">)</span>   |      |  |  .----<span style="color:#f92672">)</span>   |   |  |_<span style="color:#f92672">)</span>  <span style="color:#f92672">||</span>  |
+</span></span><span style="display:flex;"><span>| _| <span style="color:#e6db74">`</span>._____| <span style="color:#ae81ff">\_</span>_____/ |_______/       |__|  |_______/    |______/ |__|
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Implementation     : RustSBI-QEMU Version 0.2.0-alpha.2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Platform Name      : riscv-virtio,qemu
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Platform SMP       : <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Platform Memory    : 0x80000000..0x88000000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Boot HART          : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Device Tree Region : 0x87000000..0x87000ef2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Firmware Address   : 0x80000000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> Supervisor Address : 0x80200000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> pmp01: 0x00000000..0x80000000 <span style="color:#f92672">(</span>-wr<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> pmp02: 0x80000000..0x80200000 <span style="color:#f92672">(</span>---<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> pmp03: 0x80200000..0x88000000 <span style="color:#f92672">(</span>xwr<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>rustsbi<span style="color:#f92672">]</span> pmp04: 0x88000000..0x00000000 <span style="color:#f92672">(</span>-wr<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>TRACE 0<span style="color:#f92672">]</span>load app <span style="color:#ae81ff">0</span> at 0x0000000080400000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>TRACE 0<span style="color:#f92672">]</span>load app <span style="color:#ae81ff">1</span> at 0x0000000080420000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>TRACE 0<span style="color:#f92672">]</span>load app <span style="color:#ae81ff">2</span> at 0x0000000080440000
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>INFO 0<span style="color:#f92672">]</span>start scheduler!
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>ERROR 1<span style="color:#f92672">]</span>unknown trap: 0x0000000000000007, stval <span style="color:#f92672">=</span> 0x0000000000000000
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>INFO 1<span style="color:#f92672">]</span>进程 <span style="color:#ae81ff">1</span> 以代码 -1 退出
+</span></span><span style="display:flex;"><span>IllegalInstruction in application, core dumped.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>INFO 2<span style="color:#f92672">]</span>进程 <span style="color:#ae81ff">2</span> 以代码 -3 退出
+</span></span><span style="display:flex;"><span>IllegalInstruction in application, core dumped.
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>INFO 3<span style="color:#f92672">]</span>进程 <span style="color:#ae81ff">3</span> 以代码 -3 退出
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>PANIC 3<span style="color:#f92672">]</span> os/loader.c:15: all apps over
+</span></span></code></pre></div><p>第一个进程测试用例如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>)<span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在您提供的代码中，将空指针分配给指针变量*p 后，试图对其进行解引用并将值 0 赋给该指针。由于用户模式下禁止直接访问物理内存，操作系统会检测到这个非法操作并触发异常。因此，该程序 IllegalInstruction in application, core dumped.</p>
+<p>在 RISC-V 架构中，U 模式是最低的用户模式，用户程序无法直接访问物理内存或其他特权级别资源。这种限制是为了确保操作系统的安全性和稳定性。</p>
+<p>第二个进程测试用例如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">asm</span> <span style="color:#66d9ef">volatile</span>(<span style="color:#e6db74">&#34;sret&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>试图使用汇编语言执行 sret 指令，该指令用于从中断或异常处理程序返回。由于用户模式下禁止直接访问特权级别寄存器，操作系统会检测到这个非法操作并触发异常。因此，该程序 IllegalInstruction in application, core dumped。</p>
+<p>第三个进程测试用例如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	uint64 x;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">asm</span> <span style="color:#66d9ef">volatile</span>(<span style="color:#e6db74">&#34;csrr %0, sstatus&#34;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;=r&#34;</span>(x));
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>原因同上，试图使用汇编语言执行 csrr 指令，该指令用于从特权级别寄存器中读取值。由于用户模式下禁止直接访问特权级别寄存器，操作系统会检测到这个非法操作并触发异常。因此，该程序 IllegalInstruction in application, core dumped。</p>
+<p>在操作系统代码中，触发异常后会进入<code>void usertrap()</code> 函数，该函数会根据 <code>scause</code> 寄存器的值判断异常类型，用例中的结果进入了<code>case IllegalInstruction</code>，其中 <code>IllegalInstruction = 2</code>。我们查阅手册 <code>riscv-privileged.pdf</code> ，可以查到 <code>IllegalInstruction</code> 的值为 2，与预期相符。</p>
+<h2 id="问题二">问题二<a hidden class="anchor" aria-hidden="true" href="#问题二">#</a></h2>
+<p>请结合用例理解 trampoline.S 中两个函数 <code>userret</code> 和 <code>uservec</code> 的作用，并回答如下几个问题：</p>
+<h3 id="l79-刚进入-userret-时a0a1-分别代表了什么值">L79: 刚进入 <code>userret</code> 时，<code>a0</code>、<code>a1</code> 分别代表了什么值。<a hidden class="anchor" aria-hidden="true" href="#l79-刚进入-userret-时a0a1-分别代表了什么值">#</a></h3>
+<p>在进入<code>userret</code>函数时，<code>a0</code>和<code>a1</code>分别代表以下值：</p>
+<ul>
+<li><code>a0</code>: TRAPFRAME 的地址，指向当前进程的陷阱帧（trapframe）结构体。</li>
+<li><code>a1</code>: 用户页表的地址，即进程的页表（pagetable）。这个地址会被写入到<code>satp</code>寄存器中，用于切换到用户模式的页表。</li>
+</ul>
+<h3 id="l87-l88-sfence-指令有何作用为什么要执行该指令当前章节中删掉该指令会导致错误吗">L87-L88: <code>sfence</code> 指令有何作用？为什么要执行该指令，当前章节中，删掉该指令会导致错误吗？<a hidden class="anchor" aria-hidden="true" href="#l87-l88-sfence-指令有何作用为什么要执行该指令当前章节中删掉该指令会导致错误吗">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">csrw</span> <span style="color:#66d9ef">satp</span>, <span style="color:#66d9ef">a1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sfence.vma</span> <span style="color:#66d9ef">zero</span>, <span style="color:#66d9ef">zero</span>
+</span></span></code></pre></div><p><code>sfence</code>指令（Store Fence）的作用是确保之前的存储操作完成，并且对其他处理器上的核心可见。</p>
+<p>执行<code>sfence</code>指令的主要目的是为了保证内存访问的顺序性和一致性。在多核处理器系统中，不同的核心可能会有自己的缓存，当一个核心修改了共享内存中的数据时，为了保证其他核心能够看到这个修改，需要使用<code>sfence</code>指令来刷新缓存并将修改写回共享内存。</p>
+<p>在代码中，<code>sfence</code>指令被用于确保对用户页表的修改对其他处理器上的核心可见。因为目前我只使用了单核处理器，所以不会出现多核处理器的情况，因此<code>sfence</code>指令的作用是确保对用户页表的修改对当前核心可见。</p>
+<p>因此，当前章节中，<strong>删掉该指令不会导致错误</strong>。</p>
+<h3 id="l96-l125-为何注释中说要除去-a0哪一个地址代表-a0现在-a0-的值存在何处">L96-L125: 为何注释中说要除去 <code>a0</code>？哪一个地址代表 <code>a0</code>？现在 <code>a0</code> 的值存在何处？<a hidden class="anchor" aria-hidden="true" href="#l96-l125-为何注释中说要除去-a0哪一个地址代表-a0现在-a0-的值存在何处">#</a></h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly"># restore all but a0 from TRAPFRAME
+ld ra, 40(a0)
+ld sp, 48(a0)
+ld t5, 272(a0)
+ld t6, 280(a0)
+</code></pre><p><code>a0</code> 是<strong>保存在 <code>sscratch</code> 寄存器中的</strong>，首先，该代码通过 <code>ld</code> 指令从 <code>TRAPFRAME</code> 中加载各个寄存器的值。然后，这些值被存储在相应的寄存器中，以便在恢复用户上下文时使用。</p>
+<p>接下来，代码使用 <code>csrrw</code> 指令将 sscratch 寄存器的值与 <code>a0</code>（即 <code>TRAPFRAME</code>）进行交换。这样做是为了将用户的 <code>a0</code>（<code>TRAPFRAME</code>）保存在 <code>sscratch</code> 寄存器中，以便后续步骤可以正确地恢复用户上下文。</p>
+<p>最后，通过 <code>sret</code> 指令返回到用户模式，并将控制权交给用户代码。在执行 <code>sret</code> 指令后，处理器将根据用户上下文中的 <code>sepc</code> 寄存器的值跳转到用户代码的指令地址。返回的同时，处理器还会自动恢复 <code>sstatus</code> 寄存器的值，以确保正确的特权级别和中断状态。</p>
+<h3 id="userret中发生状态切换在哪一条指令为何执行之后会进入用户态"><code>userret</code>：中发生状态切换在哪一条指令？为何执行之后会进入用户态？<a hidden class="anchor" aria-hidden="true" href="#userret中发生状态切换在哪一条指令为何执行之后会进入用户态">#</a></h3>
+<p>在<code>userret</code>函数中，发生状态切换的指令是<code>sret</code>指令。</p>
+<p><code>sret</code>指令用于从内核模式切换到用户模式，并将控制权交给用户代码。执行<code>sret</code>指令后，处理器会根据用户上下文中的<code>sepc</code>寄存器的值跳转到用户代码的指令地址。</p>
+<p>执行<code>sret</code>指令之后进入用户态的原因是，该指令会自动恢复<code>sstatus</code>寄存器的值，以确保正确的特权级别和中断状态。当<code>sret</code>指令执行后，处理器将从内核态切换回用户态，程序将继续执行用户代码。这意味着<code>userret</code>函数成功完成了从内核切换到用户模式的过程。</p>
+<h3 id="l29执行之后a0-和-sscratch-中各是什么值为什么">L29：执行之后，a0 和 sscratch 中各是什么值，为什么？<a hidden class="anchor" aria-hidden="true" href="#l29执行之后a0-和-sscratch-中各是什么值为什么">#</a></h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">csrrw a0, sscratch, a0     
+</code></pre><p>在执行指令后，<code>a0</code>和<code>sscratch</code>中的值发生了互换。</p>
+<p>假设原始<code>a0</code>寄存器中的值为 X，而<code>sscratch</code>寄存器中的值为 Y。执行<code>csrrw a0, sscratch, a0</code>指令后，<code>a0</code>寄存器中的值变为 Y，而<code>sscratch</code>寄存器中的值变为 X。</p>
+<p>这是因为<code>csrrw</code>指令是一个特权指令，用于将某个 CSR（Control and Status Register）的值读取到目标寄存器，然后将目标寄存器的值写回到该 CSR 中。在这里，<code>csrrw a0, sscratch, a0</code>指令将<code>sscratch</code>寄存器的值读取到<code>a0</code>寄存器中，同时将<code>a0</code>寄存器中的值写回到<code>sscratch</code>寄存器中，从而实现了两者之间的数据交换。</p>
+<h3 id="l32-l61-从-trapframe-第几项开始保存为什么是否从该项开始保存了所有的值如果不是为什么">L32-L61: 从 trapframe 第几项开始保存？为什么？是否从该项开始保存了所有的值，如果不是，为什么？<a hidden class="anchor" aria-hidden="true" href="#l32-l61-从-trapframe-第几项开始保存为什么是否从该项开始保存了所有的值如果不是为什么">#</a></h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">
+sd ra, 40(a0)
+sd sp, 48(a0)
+...
+sd t5, 272(a0)
+sd t6, 280(a0)
+</code></pre><h3 id="进入-s-态是哪一条指令发生的">进入 S 态是哪一条指令发生的？<a hidden class="anchor" aria-hidden="true" href="#进入-s-态是哪一条指令发生的">#</a></h3>
+<h3 id="l75-l76-ld-t0-16a0-执行之后t0中的值是什么解释该值的由来">L75-L76: <code>ld t0, 16(a0)</code> 执行之后，<code>t0</code>中的值是什么，解释该值的由来？<a hidden class="anchor" aria-hidden="true" href="#l75-l76-ld-t0-16a0-执行之后t0中的值是什么解释该值的由来">#</a></h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">ld t0, 16(a0)
+jr t0
+</code></pre><p><code>ld t0, 16(a0)</code>就是从 <code>trapframe</code> 中恢复 <code>t0</code>寄存器值，<code>t0</code>保存了<code>kernel_trap</code>的入口地址。使用 <code>jr t0</code>，就跳转到了我们早先设定在 <code>trapframe-&gt;kernel_trap</code> 中的地址，也就是 <code>trap.c</code> 之中的 <code>usertrap</code> 函数。这个函数在 <code>main</code> 的初始化之中已经调用了。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:8888/tags/risc-v/">RISC-V</a></li>
+      <li><a href="http://localhost:8888/tags/os/">OS</a></li>
+      <li><a href="http://localhost:8888/tags/ucore/">UCore</a></li>
+      <li><a href="http://localhost:8888/tags/lab/">Lab</a></li>
+      <li><a href="http://localhost:8888/tags/linux/">Linux</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:8888/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC4%E7%AB%A0-%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>uCore 实验第 4 章 - 地址空间</span>
+  </a>
+  <a class="next" href="http://localhost:8888/posts/yq%E4%B8%BAyaml%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E6%8E%92%E5%BA%8F/">
+    <span class="title">Next »</span>
+    <br>
+    <span>yq 为 yaml 文件内容排序</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on x"
+            href="https://x.com/intent/tweet/?text=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f&amp;hashtags=RISC-V%2cOS%2cuCore%2cLab%2cLinux">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f&amp;title=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1&amp;summary=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1&amp;source=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f&title=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on whatsapp"
+            href="https://api.whatsapp.com/send?text=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1%20-%20http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on telegram"
+            href="https://telegram.me/share/url?text=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1&amp;url=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share uCore 实验第 3 章 - 多道程序与分时多任务 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=uCore%20%e5%ae%9e%e9%aa%8c%e7%ac%ac%203%20%e7%ab%a0%20-%20%e5%a4%9a%e9%81%93%e7%a8%8b%e5%ba%8f%e4%b8%8e%e5%88%86%e6%97%b6%e5%a4%9a%e4%bb%bb%e5%8a%a1&u=http%3a%2f%2flocalhost%3a8888%2fposts%2fucore-%25E5%25AE%259E%25E9%25AA%258C%25E7%25AC%25AC3%25E7%25AB%25A0-%25E5%25A4%259A%25E9%2581%2593%25E7%25A8%258B%25E5%25BA%258F%25E4%25B8%258E%25E5%2588%2586%25E6%2597%25B6%25E5%25A4%259A%25E4%25BB%25BB%25E5%258A%25A1%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:8888/">PaperMod</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

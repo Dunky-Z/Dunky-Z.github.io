@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>DevOps on PaperMod</title>
+    <link>http://localhost:8888/tags/devops/</link>
+    <description>Recent content in DevOps on PaperMod</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 17 Jan 2024 21:32:04 +0000</lastBuildDate>
+    <atom:link href="http://localhost:8888/tags/devops/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>repo源配置解析</title>
+      <link>http://localhost:8888/posts/repo%E6%BA%90%E9%85%8D%E7%BD%AE%E8%A7%A3%E6%9E%90/</link>
+      <pubDate>Wed, 17 Jan 2024 21:32:04 +0000</pubDate>
+      <guid>http://localhost:8888/posts/repo%E6%BA%90%E9%85%8D%E7%BD%AE%E8%A7%A3%E6%9E%90/</guid>
+      <description>repo 源配置解析 openEuler 的软件源配置文件位于/etc/yum.repos.d/目录下，以.repo 为后缀名，文件名可以任意取，但是必须以.repo 结尾。
+#generic-repos is licensed under the Mulan PSL v2. #You can use this software according to the terms and conditions of the Mulan PSL v2. #You may obtain a copy of Mulan PSL v2 at: # http://license.coscl.org.cn/MulanPSL2 #THIS SOFTWARE IS PROVIDED ON AN &amp;#34;AS IS&amp;#34; BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR #IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR #PURPOSE.</description>
+    </item>
+    <item>
+      <title>x86 平台使用 Gitea Actions 构建多架构应用 (binfmt_misc)</title>
+      <link>http://localhost:8888/posts/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8gitea-actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</link>
+      <pubDate>Wed, 10 Jan 2024 11:10:04 +0000</pubDate>
+      <guid>http://localhost:8888/posts/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8gitea-actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</guid>
+      <description>binfmt_misc 简介 binfmt_misc 是 Linux 内核提供的一个机制，它允许用户空间定义新的二进制格式，并将它们与相应的解释器关联起来。这个机制使得在 Linux 上能够动态地注册并运行不同架构的二进制可执行文件，从而支持交叉编译和多架构环境。
+具体来说，binfmt_misc 的功能可以通过 /proc/sys/fs/binfmt_misc/ 目录下的文件系统接口实现。这个目录下的文件用于注册和管理二进制格式和相应解释器之间的关联关系。
+下面是一些与 binfmt_misc 相关的重要概念和文件：
+注册表文件： 在 /proc/sys/fs/binfmt_misc/ 目录下，每个注册的二进制格式都有一个对应的注册表文件。这些文件的命名通常遵循格式 &amp;lt;格式名称&amp;gt;，例如 qemu-riscv64。 注册和注销： 用户空间可以通过在注册表目录下创建文件来注册新的二进制格式。这可以通过写入注册表文件的方式完成。相反，通过删除这些文件，可以注销二进制格式的支持。 解释器： 对于每种注册的二进制格式，需要指定相应的解释器，即用于执行这种格式的程序。在注册表文件中，通过 interpreter 字段指定解释器的路径。 参数： 除了解释器，还可以为每个注册的格式指定一些参数。这些参数可以影响如何运行二进制文件。 内核如何通过 binfmt_misc 机制添加新架构的支持？ 可以通过向 /proc/sys/fs/binfmt_misc/register 文件写入注册信息来注册新的二进制格式。告诉内核某一格式的文件用什么解释器来执行。写入的格式如下：
+:name:type:offset:magic:mask:interpreter:flags 各个字段以冒号分隔，部分字段可以缺省，但是冒号需要保留。
+字段含义如下：
+name：二进制格式的名称，比如qemu-riscv64。
+type：类型为 E 或 M。
+如果是 E，可执行文件格式由其文件扩展名标识：magic 是要与二进制格式相关联的文件扩展名；offset 和 mask 将被忽略。 如果是 M，格式由文件中绝对偏移（默认为 0）处的魔数标识，并且 mask 是一个位掩码（默认为全 0xFF），表示数字中哪些位是有效的。 interpreter：是要作为匹配文件的参数运行的解释器，使用解释器的绝对路径，比如/usr/bin/qemu-riscv64-static。
+flags：可选字段，控制 interpreter 打开文件的行为。共支持 POCF 四种 flag。
+P 表示 preserve-argv[0]，保留原始的 argv[0] 参数。 O 表示 open-binary，binfmt-misc 默认会传递文件的路径，而启用这个参数时，binfmt-misc 会打开文件，传递文件描述符。 C 表示 credentials，即会传递文件的 setuid 等权限，这个选项也隐含了 O。 F 表示 fix binary，binfmt-misc 默认的行为在 spwan 进程时会延迟，这种方式可能会受到 mount 命名空间和 chroot 的影响，设置 F 时会立刻打开二进制文件。 举个例子，如果要在 x86_64 架构的系统上运行 RISC-V 架构的二进制文件，可以通过以下方式注册 RISC-V 二进制格式：</description>
+    </item>
+    <item>
+      <title>Nexus搭建内部镜像</title>
+      <link>http://localhost:8888/posts/nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</link>
+      <pubDate>Sat, 16 Dec 2023 12:16:34 +0000</pubDate>
+      <guid>http://localhost:8888/posts/nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</guid>
+      <description>Docker-Compose version: &amp;#34;3.8&amp;#34; services: nexus: image: sonatype/nexus3 container_name: nexus restart: always ports: - 8081:8081 volumes: - /srv/nexus/data:/nexus-data 修改/srv/nexus目录的所有者为当前用户：
+sudo chown -R username:username /srv/nexus 修改data目录有最高权限，否则无法启动成功：
+sudo chmod -R 777 /srv/nexus/data 代理Docker Hub 登录WEB页面 登录WEB页面，地址为：http://192.168.1.9:8081。 用户名为：admin，密码通过命令获取：
+docker exec nexus3 cat /nexus-data/admin.password 创建Blob 在 Nexus Repository Manager 中，Blob Store（二进制大对象存储）是一个用于存储仓库数据的核心组件。Blob Store 主要用于存储各种二进制文件，例如软件包、依赖库、构建产物等，这些文件通常被称为“blob”。
+Blob Store 的作用包括：
+存储二进制文件： Blob Store 被设计用来安全、可靠地存储二进制文件。这些文件可以是各种形式的构建产物、软件包、依赖库等。Blob Store 是 Nexus 仓库管理系统的核心，它为这些文件提供了一个中央存储位置。
+支持不同类型的存储后端： Nexus 支持不同类型的 Blob Store，例如本地文件系统、云存储（如Amazon S3、Google Cloud Storage）等。这使得用户可以根据需求选择不同的存储后端，并根据实际情况进行扩展或迁移。
+提供存储策略： Blob Store 允许你定义存储策略，以确定何时以及如何清理或删除不再需要的文件。这对于管理仓库的存储空间非常重要，可以根据策略自动清理不再需要的快照或旧版本。</description>
+    </item>
+    <item>
+      <title>Tunasync 搭建私有镜像站</title>
+      <link>http://localhost:8888/posts/tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</link>
+      <pubDate>Thu, 14 Dec 2023 14:15:54 +0000</pubDate>
+      <guid>http://localhost:8888/posts/tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</guid>
+      <description>Tunasync 项目简介 Tunasync 是一个开源的镜像站点镜像工具，可以帮助你快速搭建一个镜像站点，也可以帮助你快速的同步镜像站点的镜像。我们所熟知的清华大学镜像站就是使用 Tunasync 来同步镜像的。
+准备 workspace 创建目录用于存放 Tunasync 的程序、配置文件和数据库文件：
+mkdir /home/username/tunasync mkdir /home/username/tunasync/conf mkdir /home/username/tunasync/db 创建目录用于存放镜像文件：
+sudo mkdir /srv/mirrors srv 目录需要 root 权限，将 mirrors 目录的所有者改为当前用户：
+sudo chown -R username:username /srv/mirrors 下载 Tunasync 可以从 Tunasync 项目的 Github releases 编译好的程序直接使用。
+cd /home/username/tunasync wget https://github.com/tuna/tunasync/releases/download/v0.8.0/tunasync-linux-amd64-bin.tar.gz tar -zxvf tunasync-linux-amd64-bin.tar.gz 配置 Tunasync Manager 配置 创建配置文件/home/username/tunasync/conf/manager.conf，并添加以下内容：
+debug = false [server] addr = &amp;#34;127.0.0.1&amp;#34; port = 12345 ssl_cert = &amp;#34;&amp;#34; ssl_key = &amp;#34;&amp;#34; [files] db_type = &amp;#34;bolt&amp;#34; db_file = &amp;#34;/home/username/tunasync/db/manager.</description>
+    </item>
+    <item>
+      <title>使用Gitea部署个人代码仓库</title>
+      <link>http://localhost:8888/posts/%E4%BD%BF%E7%94%A8gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</link>
+      <pubDate>Sat, 18 Nov 2023 18:17:42 +0000</pubDate>
+      <guid>http://localhost:8888/posts/%E4%BD%BF%E7%94%A8gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</guid>
+      <description>docker-compose 部署 version: &amp;#34;3.7&amp;#34; services: postgres: image: postgres:latest container_name: postgres ports: - 5432:5432 networks: - br-net-gitea environment: POSTGRES_USER: user POSTGRES_PASSWORD: 123456 POSTGRES_DB: gitea volumes: - ./postgresql:/var/lib/postgresql - ./data:/var/lib/postgresql/data gitea: image: gitea/gitea:1.20.5 container_name: gitea environment: - USER_UID=1000 - USER_GID=1000 - GITEA__database__DB_TYPE=postgres - GITEA__database__HOST=192.168.1.9:5432 - GITEA__database__NAME=gitea - GITEA__database__USER=user - GITEA__database__PASSWD=123456 restart: always networks: - br-net-gitea volumes: - ./data:/data - /etc/timezone:/etc/timezone:ro - /etc/localtime:/etc/localtime:ro - /home/git/.ssh/:/data/git/.ssh ports: - 3000:3000 - &amp;#34;127.0.0.1:2222:22&amp;#34; depends_on: - postgres act_runner: image: gitea/act_runner:latest environment: - GITEA_INSTANCE_URL=http://192.</description>
+    </item>
+  </channel>
+</rss>
