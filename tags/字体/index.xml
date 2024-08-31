@@ -14,6 +14,30 @@
       <pubDate>Sun, 11 Sep 2022 22:20:02 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3latex%E7%BC%96%E8%AF%91missing-character-there-is-no-u-00a0-u-00a0-in-font/</guid>
       <description>保留现场 在 LaTeX 编译中报错：Missing character: There is no (U+00A0) (U+00A0) in font JetBrains Mono。 探究原因 如果要搞清楚具体原因，就得从字符与字符编码说起了。解决办法直接跳到</description>
+      <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
+<p>在 LaTeX 编译中报错：Missing character: There is no   (U+00A0) (U+00A0) in font JetBrains Mono。</p>
+<h2 id="探究原因">探究原因</h2>
+<p>如果要搞清楚具体原因，就得从字符与字符编码说起了。解决办法直接跳到下一节吧。</p>
+<p><strong>字符</strong>，就是“a”，“A”，“你”等书写符号。</p>
+<p><strong>字符集</strong>，通常就是某种语言字符集合，比如英语就是<strong>ASCII 字符集</strong>，中文有<strong>GBK 字符集</strong>等</p>
+<blockquote>
+<p>注意，不是每种语言只对应一种字符集（比如 GB2312，GBK，GB18030 都包含了常用汉字，后者是前者的超集），而且字符集也不是只对应一种语言，例如 Unicode 字符集就包含所有语言字符，字符集只是设计者为了给字符编码（Code Point/Numbering）设计编码时，为了收录到命名的字符集合，但是通常设计者都为字符集设计了对应的编码规范。</p>
+</blockquote>
+<p><strong>字符编码</strong>,给字符集里的字符编号。</p>
+<p><strong>编码页</strong>，在 unicode 发明之前，各个地区都用 2 字节编码自己的字符集，相同的编码对应不同的字符，为了本地化，Windows 发明了编码页，来对应不同的字符集。</p>
+<p><strong>字符编码</strong>，对给定的字符编码编码成字节表示。</p>
+<blockquote>
+<p>早期，字符被编号后，存储时就按照编号的方式存储，没有 encoding 的过程，后来发明 Unicode 后，发现如果按照 Unicode 的编号直接存储的话，对于英文字符就有很大存储浪费，因为任意字符都需要 2 字节存储，后来人们发明 UTF-8 这种编码方式，这样 UTF-8 就可以一个字节表示英文字符，2 个以上字节表示汉字字符。</p>
+</blockquote>
+<p><strong>字体</strong>，定义了字符的图形表示，现在的软件展示字符时用 Unicode 表示，字体是 Unicode 编码和字符图形的映射，而以往比如 WindowsCMD 控制台，没有对应 Unicode，则用编码页来区分，所以字体就是字符编码金和代码页到字符图形的映射。</p>
+<p>文本文件存储在磁盘上，都是一系列的字节流，如果不告诉文本编辑器该文件的编码方式，编辑器会尝试用默认的编码（依赖于操作系统设置）又或者自己探测（detect，比如文件开头有 FFEF 或者 EFFF 字节就表明 UTF-16 编码，有很多 10，110 开头的字节，很可能是 UTF-8 编码）并尝试解码，<strong>如果没有猜对，那就会显示乱码</strong>。</p>
+<p>回到出错的问题，提示我们在<strong>字体 JetBrains Mono</strong>中没有<strong>U+00A0</strong>，我们搜索一下就知道这是一个 Unicode 字符<strong>NO-BREAK SPACE</strong>。我们通过上面的了解也知道了，字体就是字符编码到字符图像的映射，但是一个字体尤其是一些有专门用途的字体（比如 JetBrains Mono 设计初衷是为软件工程显示代码用的），它不会映射所有的字符，JetBrains Mono 这个字体里就没有映射 U+00A0。<strong>这就导致在 LaTeX 编译时无法在字体中找到对应的字符图像显示</strong>。</p>
+<p>所有解决办法就是要不替换掉这个字符，要不换个字体。</p>
+<h2 id="解决方法">解决方法</h2>
+<p>VSCode 正则搜索<code>\U00A0</code>即可搜索到相关字符，将其替换成空格。</p>
+<h2 id="参考">参考</h2>
+<p><a href="https://www.jianshu.com/p/d7edb679cd3d">字符，字符集，字符编码，编码页，字体 - 简书</a></p>
+]]></content:encoded>
     </item>
     <item>
       <title>编码字体与阅读字体推荐</title>
@@ -21,6 +45,95 @@
       <pubDate>Sat, 27 Aug 2022 19:59:58 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E7%BC%96%E7%A0%81%E5%AD%97%E4%BD%93%E4%B8%8E%E9%98%85%E8%AF%BB%E5%AD%97%E4%BD%93%E6%8E%A8%E8%8D%90/</guid>
       <description>编码字体 编码字体首要原则：等宽，等宽，还是 TMD 等宽！ JetBrains Mono Hack Source Code Pro Fira Mono Consolas 保底字体，基本上 Windows 电脑都有预装。 阅读字体 看多了黑体，其实有衬线的宋体才能</description>
+      <content:encoded><![CDATA[<h1 id="编码字体">编码字体</h1>
+<p>编码字体首要原则：等宽，等宽，还是 TMD 等宽！</p>
+<h2 id="jetbrains-monohttpswwwjetbrainscomlpmono"><a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-50-54-1fe539cd3cb0a6bc28936cb76fd28644-20220827205054-dccd39.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-50-54-1fe539cd3cb0a6bc28936cb76fd28644-20220827205054-dccd39.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-50-54-1fe539cd3cb0a6bc28936cb76fd28644-20220827205054-dccd39.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="hackhttpsgithubcomsource-foundryhack"><a href="https://github.com/source-foundry/Hack">Hack</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-53-57-e5174c7461a1d5b578a44d71f4a201c9-20220827205356-b71842.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-53-57-e5174c7461a1d5b578a44d71f4a201c9-20220827205356-b71842.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-53-57-e5174c7461a1d5b578a44d71f4a201c9-20220827205356-b71842.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="source-code-prohttpsgithubcomadobe-fontssource-code-pro"><a href="https://github.com/adobe-fonts/source-code-pro">Source Code Pro</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-56-21-f7612e14d8fb5807c91fe60f58f8fe9a-20220827205620-929922.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-56-21-f7612e14d8fb5807c91fe60f58f8fe9a-20220827205620-929922.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-56-21-f7612e14d8fb5807c91fe60f58f8fe9a-20220827205620-929922.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="fira-monohttpswwwfontsquirrelcomfontsfira-mono"><a href="https://www.fontsquirrel.com/fonts/fira-mono">Fira Mono</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-59-31-38634f74a936c0f1f7dc300197f7d11e-20220827205931-947b4e.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-59-31-38634f74a936c0f1f7dc300197f7d11e-20220827205931-947b4e.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-59-31-38634f74a936c0f1f7dc300197f7d11e-20220827205931-947b4e.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="consolas">Consolas</h2>
+<p>保底字体，基本上 Windows 电脑都有预装。</p>
+<h1 id="阅读字体">阅读字体</h1>
+<p>看多了黑体，其实有衬线的宋体才能体现中文文字之美。</p>
+<h2 id="思源宋体httpssourcetypekitcomsource-han-serifcn"><a href="https://source.typekit.com/source-han-serif/cn/">思源宋体</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-26-41-695d3a7666fbd2ed815e7c967d96365d-20220827212640-9611e9.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-26-41-695d3a7666fbd2ed815e7c967d96365d-20220827212640-9611e9.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-26-41-695d3a7666fbd2ed815e7c967d96365d-20220827212640-9611e9.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="华文中宋httpsfreefontstopfont60a7867598e5f44356ad7ee1"><a href="https://freefonts.top/font/60a7867598e5f44356ad7ee1">华文中宋</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-31-18-d36a343840db1e78db06989d4f3db6b5-20220827213118-3bcd07.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-31-18-d36a343840db1e78db06989d4f3db6b5-20220827213118-3bcd07.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-31-18-d36a343840db1e78db06989d4f3db6b5-20220827213118-3bcd07.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="中文等宽字体">中文等宽字体</h1>
+<p>对于既想要满足编程字体又想要中文书写的，有几款等宽中文字体也不错。</p>
+<h2 id="sarasa-gothic--更纱黑体httpsgithubcombe5invissarasa-gothic"><a href="https://github.com/be5invis/Sarasa-Gothic">Sarasa Gothic / 更纱黑体</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-28-37-15a7fa4c37074eb4fa50ef88561894ae-20220827212836-43865f.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-28-37-15a7fa4c37074eb4fa50ef88561894ae-20220827212836-43865f.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-28-37-15a7fa4c37074eb4fa50ef88561894ae-20220827212836-43865f.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="思源黑体source-han-sanshttpsgithubcomadobe-fontssource-han-sanstreerelease"><a href="https://github.com/adobe-fonts/source-han-sans/tree/release">思源黑体/Source Han Sans</a></h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-29-56-e35563edf446e892ac4ed5c1e2478108-20220827212956-fbc90d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-29-56-e35563edf446e892ac4ed5c1e2478108-20220827212956-fbc90d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-29-56-e35563edf446e892ac4ed5c1e2478108-20220827212956-fbc90d.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

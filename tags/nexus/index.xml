@@ -14,6 +14,349 @@
       <pubDate>Sat, 16 Dec 2023 12:16:34 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</guid>
       <description>Docker-Compose version: &amp;#34;3.8&amp;#34; services: nexus: image: sonatype/nexus3 container_name: nexus restart: always ports: - 8081:8081 volumes: - /srv/nexus/data:/nexus-data 修改/srv/nexus目录的所有者为当前用户： sudo chown -R username:username /srv/nexus 修改data目录有最高权限，否则无法启动成功： sudo</description>
+      <content:encoded><![CDATA[<h1 id="docker-compose">Docker-Compose</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.8&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">nexus</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">sonatype/nexus3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">nexus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">8081</span><span class="p">:</span><span class="m">8081</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/srv/nexus/data:/nexus-data</span><span class="w">
+</span></span></span></code></pre></div><p>修改/srv/nexus目录的所有者为当前用户：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chown -R username:username /srv/nexus
+</span></span></code></pre></div><p>修改data目录有最高权限，否则无法启动成功：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chmod -R <span class="m">777</span> /srv/nexus/data
+</span></span></code></pre></div><h1 id="代理docker-hub">代理Docker Hub</h1>
+<h2 id="登录web页面">登录WEB页面</h2>
+<p>登录WEB页面，地址为：<a href="http://192.168.1.9:8081%E3%80%82">http://192.168.1.9:8081。</a>
+用户名为：admin，密码通过命令获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> nexus3 cat /nexus-data/admin.password
+</span></span></code></pre></div><h2 id="创建blob">创建Blob</h2>
+<p>在 Nexus Repository Manager 中，Blob Store（二进制大对象存储）是一个用于存储仓库数据的核心组件。Blob Store 主要用于存储各种二进制文件，例如软件包、依赖库、构建产物等，这些文件通常被称为“blob”。</p>
+<p>Blob Store 的作用包括：</p>
+<ol>
+<li>
+<p><strong>存储二进制文件：</strong> Blob Store 被设计用来安全、可靠地存储二进制文件。这些文件可以是各种形式的构建产物、软件包、依赖库等。Blob Store 是 Nexus 仓库管理系统的核心，它为这些文件提供了一个中央存储位置。</p>
+</li>
+<li>
+<p><strong>支持不同类型的存储后端：</strong> Nexus 支持不同类型的 Blob Store，例如本地文件系统、云存储（如Amazon S3、Google Cloud Storage）等。这使得用户可以根据需求选择不同的存储后端，并根据实际情况进行扩展或迁移。</p>
+</li>
+<li>
+<p><strong>提供存储策略：</strong> Blob Store 允许你定义存储策略，以确定何时以及如何清理或删除不再需要的文件。这对于管理仓库的存储空间非常重要，可以根据策略自动清理不再需要的快照或旧版本。</p>
+</li>
+<li>
+<p><strong>支持代理和缓存：</strong> 在 Maven Repository 的场景下，Blob Store 还可以用于代理远程 Maven 仓库，并缓存远程仓库中的文件。这有助于提高构建性能，减少对远程仓库的依赖。</p>
+</li>
+</ol>
+<p>我们缓存的镜像需要存储为blob，所以需要创建一个Blob store。点击左侧菜单栏的Blob Stores，然后点击Create blob store，选择Type为File，Name填写为dockerhub。</p>
+<h2 id="创建repository">创建Repository</h2>
+<p>在 Nexus Repository Manager 中，有三种主要的仓库类型：Hosted Repository、Proxy Repository、和 Group Repository。每种类型都有不同的作用和用途：</p>
+<ul>
+<li>
+<p>Hosted Repository（托管仓库）:</p>
+<ul>
+<li>作用： 用于存储和管理本地创建的部署（deploy）的二进制文件。这包括你自己或你的团队创建的库，例如 Maven 构件、npm 包、Docker 镜像等。</li>
+<li>使用场景： 当你需要在内部存储和分享自己创建的构建产物时，你可以使用 Hosted Repository。</li>
+</ul>
+</li>
+<li>
+<p>Proxy Repository（代理仓库）:</p>
+<ul>
+<li>作用： 用于代理和缓存远程仓库的二进制文件。当你从远程仓库获取构建依赖时，Proxy Repository 会将这些文件缓存在本地，从而提高构建性能并减少对远程仓库的依赖。</li>
+<li>使用场景： 在构建过程中，你通常会依赖于一些公共的远程仓库，例如 Maven Central、npm registry、Docker Hub等。使用 Proxy Repository 可以有效地管理这些依赖并减少对远程仓库的直接访问。</li>
+</ul>
+</li>
+<li>
+<p>Group Repository（组合仓库）:</p>
+<ul>
+<li>作用： 允许你将多个仓库组合成一个逻辑单元。当你需要在构建中同时使用多个仓库的内容时，Group Repository 可以将这些仓库组合在一起，使它们在应用程序中看起来像一个单一的仓库。</li>
+<li>使用场景： 当你有多个 Proxy Repository 或 Hosted Repository 时，你可以使用 Group Repository 将它们组合在一起。这对于简化构建配置、统一依赖管理等非常有用。</li>
+</ul>
+</li>
+</ul>
+<p>我们一般创建三个仓库，proxy代理公共镜像，hosted保存自己的镜像，group将proxy和hosted组合在一起。我们分别创建三个仓库。</p>
+<h3 id="proxy">proxy</h3>
+<p>点击左侧菜单栏的Repositories，然后点击Create repository，选择Docker (proxy)，按照下图填写：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Remote storage 图中填写为<code>https://registry-1.docker.io</code>，这是dockerhub的地址。但是实测会很慢，所以我们使用加速地址<code>https://dockerproxy.com</code>。需要注意修改一下。</p>
+<blockquote>
+<p>还有一些国内镜像源可选，可以参考这个项目。<a href="https://github.com/docker-practice/docker-registry-cn-mirror-test/actions/runs/7228669255">Test Registry · docker-practice/docker-registry-cn-mirror-test@83a4dd4</a></p>
+</blockquote>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Blob store选择为刚刚创建的<code>dockerhub</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="hosted">hosted</h3>
+<p>hosted比较简单，只需要填个名称就行了，这里填写为<code>docker-hosted</code>。</p>
+<h3 id="group">group</h3>
+<p>group 需要注意以下：</p>
+<ol>
+<li>HTTP需要单独设置端口号。我们设置与WEB页面不同的端口号，8082即可。</li>
+<li>需要将proxy和hosted都添加到group中，这样才能将两个仓库组合在一起。</li>
+</ol>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="启用realms">启用Realms</h2>
+<p>这里要在 Security-Realms 里面启用 Docker Bearer Token Realm。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="拉取镜像">拉取镜像</h2>
+<p>如果直接使用docker pull拉取镜像，会报错：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$ docker pull 192.168.1.9:8082/redis
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">Error response from daemon: Get &#34;https://192.168.1.9:8082/v2/&#34;: http: server gave HTTP response to HTTPS client
+</span></span></code></pre></div><p>编辑<code>/etc/docker/daemon.json</code>文件，添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;insecure-registries&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>注意：registry-mirrors中只保留一个Nexus的地址，这样默认就会从Nexus拉取镜像。如果有多个地址，就可能会从其他地址拉取镜像。因为我们在Nexus中配置的URL就是docker-proxy的地址，他就是一个国内代理地址，所以这里我们只保留一个Nexus的地址就行。
+注意： insecure-registries 拼写，不要写成 insecure-registry。最好直接复制，json格式很严格。</p>
+</blockquote>
+<p>重启Docker服务：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart docker
+</span></span></code></pre></div><p>登录Docker Registry：</p>
+<p>需要注意的shi，这里的用户名和密码是Nexus的用户名和密码，不是Docker Hub的用户名和密码。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker login 192.168.1.9:8082 -u admin -p admin123
+</span></span></code></pre></div><p>拉取镜像：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker pull redis                      
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">latest: Pulling from redis
+</span></span><span class="line"><span class="cl">1f7ce2fa46ab: Already exists 
+</span></span><span class="line"><span class="cl">4827e9d1e197: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">5845062cfda9: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">44d659adcf8b: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">b6962d83313d: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">5d29cf86ecab: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">4f4fb700ef54: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">3a2d9f90268c: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">Digest: sha256:249e1bfb9448ae9e76807748f8cb3c5cc73e55441b7b36364c61a7428c9e814c
+</span></span><span class="line"><span class="cl">Status: Downloaded newer image <span class="k">for</span> 192.168.1.9:8082/redis:latest
+</span></span><span class="line"><span class="cl">192.168.1.9:8082/redis:latest
+</span></span></code></pre></div><p>可以在首页的Browse Docker中看到镜像已经被缓存了。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="推送镜像">推送镜像</h2>
+<p>如果你需要上传自己修改的镜像，那么就需要修改之前的docker-hosted，其中HTTP中该为8083，和docker-proxy的端口号区分。这样我们就可以从8082下载镜像，从8083推送镜像。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>首先我们需要重命名镜像，格式如下</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker tag &lt;imageId or imageName&gt; &lt;nexus-hostname&gt;:&lt;repository-port&gt;/&lt;image&gt;:&lt;tag&gt;
+</span></span><span class="line"><span class="cl">docker tag af340544ed62 192.168.1.9:8083/hello-world:mytag
+</span></span><span class="line"><span class="cl">docker push 192.168.1.9:8083/hello-world:mytag
+</span></span></code></pre></div><p>拉取这个镜像：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull 192.168.1.9:8083/hello-world:mytag
+</span></span></code></pre></div><h1 id="代理-yum-源">代理 YUM 源</h1>
+<h1 id="代理-apt-源">代理 APT 源</h1>
+<p>和 YUM 源代理稍有不同的是，APT 源代理时没有 Group 仓库，但是使用APT源的系统如Ubuntu也是有多个版本的，我们只需要在 Distribution 参数里填写需要代理的版本即可，每隔版本用逗号分隔。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>常用的版本以及代号如下：</p>
+<ul>
+<li>Ubuntu 16.04 Xenial Xerus</li>
+<li>Ubuntu 18.04 Bionic Beaver</li>
+<li>Ubuntu 20.04 Focal Fossa</li>
+<li>Ubuntu 21.04 Hirsute Hippo</li>
+<li>Ubuntu 21.10 Impish Indri</li>
+<li>Ubuntu 22.04 Jammy Jellyfish</li>
+<li>Ubuntu 22.10 Kinetic Kudu</li>
+<li>Ubuntu 23.04 Lunar Lobster</li>
+<li>Ubuntu 23.10 Mantic Minotau</li>
+</ul>
+<p>代理地址为：http://192.168.1.9:8081/repository/apt-proxy/，我们可以在Ubuntu中使用这个地址来代理APT源。修改<code>/etc/apt/sources.list</code>文件，将原来的源地址替换为Nexus的地址即可。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-updates main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-updates main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-backports main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-backports main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-security main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-security main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 预发布软件源，不建议启用</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-proposed main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># # deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-proposed main restricted universe multiverse</span>
+</span></span></code></pre></div><h1 id="代理-pip-源">代理 pip 源</h1>
+<p>使用阿里云作为代理，我们需要在Nexus中创建一个PyPI代理仓库。点击左侧菜单栏的Repositories，然后点击Create repository，选择PyPI (proxy)，按照下图填写：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>再创建一个PyPI Group仓库，将刚刚创建的PyPI代理仓库和PyPI Hosted仓库添加到Group仓库中。</p>
+<p>编辑<code>/etc/pip.conf</code>文件，添加以下内容：</p>
+<blockquote>
+<p>或者在用户目录下的<code>~/.pip/pip.conf</code>文件中添加</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[global]
+</span></span><span class="line"><span class="cl">index = http://192.168.1.9:8081/repository/pypi/
+</span></span><span class="line"><span class="cl">index-url = http://192.168.1.9:8081/repository/pypi/simple
+</span></span><span class="line"><span class="cl">trusted-host =  192.168.1.9
+</span></span></code></pre></div><h1 id="在-wsl2-中使用-nexus-代理">在 WSL2 中使用 Nexus 代理</h1>
+<p>因为 WSL2 使用的是宿主机Windows的Docker desktop作为Docker引擎，所以我们需要在Windows中配置Docker的代理。打开Docker Desktop，点击Settings，然后选择Docker Engine，添加以下内容：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png" alt=""  />
+</a>
+</div>
+
+</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;builder&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;gc&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;defaultKeepStorage&#34;</span><span class="p">:</span> <span class="s2">&#34;20GB&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;enabled&#34;</span><span class="p">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;experimental&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;insecure-registries&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>重启Docker Desktop。然后在WSL2中使用 <code>docker info</code> 查看是否配置成功。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="常见错误">常见错误</h1>
+<h2 id="docker-login-nexus-unauthorized-authentication-required">docker login nexus unauthorized authentication required</h2>
+<ol>
+<li>确认登录密码是否正确，密码为Nexus登录密码</li>
+<li>却是否启用Realms</li>
+</ol>
+<h2 id="docker-login-nexus-connection-refused">docker login nexus connection refused</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker login 192.168.1.9:8082 -u admin -p admin123
+</span></span></code></pre></div><ol>
+<li>
+<p>确认Docker compose配置文件中已经将端口8082暴露，如果新增需要重启Nexus</p>
+</li>
+<li>
+<p>确认防火墙关闭或者已经打开端口</p>
+<ol>
+<li>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"> sudo ufw allow <span class="m">8082</span>
+</span></span><span class="line"><span class="cl"> sudo ufw allow 8082/tcp
+</span></span></code></pre></div></li>
+</ol>
+</li>
+<li>
+<p>确认已经将私有仓库添加到了<code>/etc/docker/daemon.json</code>，并且及时重启了docker服务</p>
+<ol>
+<li>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"> sudo systemctl restart docker.service
+</span></span></code></pre></div></li>
+</ol>
+</li>
+<li>
+<p>确认已经开启了Http connector</p>
+<ol>
+<li>如图：
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+</a>
+</div>
+
+</li>
+</ol>
+</li>
+</ol>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

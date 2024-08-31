@@ -14,6 +14,84 @@
       <pubDate>Fri, 08 Sep 2023 10:01:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</guid>
       <description>首先，.section .data 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，_app_num 是一个标签，表示一个 64 位的整数，初始值</description>
+      <content:encoded><![CDATA[<p>首先，<code>.section .data</code> 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，<code>_app_num</code> 是一个标签，表示一个 64 位的整数，初始值为 23。接下来是一系列的标签，分别代表了应用程序的起始地址，每个标签都是 64 位的整数。</p>
+<p>接着，<code>.section .data</code> 后面又出现了一个标签 <code>_app_names</code>，它是一个字符串数组，包含了一组字符串，分别命名为 &ldquo;ch2b_exit&rdquo;、&ldquo;ch2b_hello_world&rdquo;、&ldquo;ch2b_power&rdquo; 等等。这些字符串名字对应了前面定义的应用程序的起始地址。</p>
+<p>再往下，出现了一个标签 <code>INIT_PROC</code>，它是一个字符串，表示初始化进程的名称，值为 &ldquo;usershell&rdquo;。</p>
+<p>之后，每个应用程序都有自己的标签和段名，比如 <code>app_0_start</code>、<code>app_1_start</code> 等等。每个标签都包含一个指令 <code>.incbin</code>，它用于将一个二进制文件（以字符串形式指定文件路径）插入到当前段中。</p>
+<h1 id="进程初始化分析">进程初始化分析</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">scheduler</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">fetch_task</span><span class="p">()</span> <span class="c1">// 获取下一个要执行的进程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">swtch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">curenv</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">nextenv</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">)</span> <span class="c1">// 切换到下一个进程上下文
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Per-process state
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="n">proc</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">enum</span> <span class="n">procstate</span>    <span class="n">state</span><span class="p">;</span>     <span class="c1">// 进程状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span>               <span class="n">pid</span><span class="p">;</span>       <span class="c1">// 进程 ID
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint64</span>            <span class="n">ustack</span><span class="p">;</span>    <span class="c1">// 进程用户栈虚拟地址 (用户页表)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint64</span>            <span class="n">kstack</span><span class="p">;</span>    <span class="c1">// 进程内核栈虚拟地址 (内核页表)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">struct</span> <span class="n">trapframe</span> <span class="o">*</span><span class="n">trapframe</span><span class="p">;</span> <span class="c1">// 进程中断帧
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">struct</span> <span class="n">context</span>    <span class="n">context</span><span class="p">;</span> <span class="c1">// 用于保存进程内核态的寄存器信息，进程切换时使用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">pagetable_t</span>       <span class="n">pagetable</span><span class="p">;</span> <span class="c1">// User page table
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint64</span>            <span class="n">max_page</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint64</span>            <span class="n">program_brk</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint64</span>            <span class="n">heap_bottom</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">proc</span> <span class="o">*</span>     <span class="n">parent</span><span class="p">;</span> <span class="c1">// Parent process
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint64</span>            <span class="n">exit_code</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">file</span> <span class="o">*</span>     <span class="n">files</span><span class="p">[</span><span class="n">FD_BUFFER_SIZE</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint32</span>     <span class="n">syscall_times</span><span class="p">[</span><span class="n">MAX_SYSCALL_NUM</span><span class="p">];</span> <span class="c1">// 系统调用次数统计
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint64</span>     <span class="n">start_time</span><span class="p">;</span>                     <span class="c1">// 进程开始运行时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">struct</span> <span class="n">vma</span> <span class="n">vmas</span><span class="p">[</span><span class="n">NVMA</span><span class="p">];</span>                     <span class="c1">// 虚拟内存区域
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></div><h2 id="wait-系统调用的功能">wait 系统调用的功能</h2>
+<p><code>wait</code> 系统调用是用于处理子进程终止状态的系统调用。其主要功能是等待子进程的终止，并获取子进程的退出状态信息。在操作系统中，当一个父进程创建了一个子进程后，通常会使用 <code>wait</code> 来等待子进程的终止，以便进行后续的处理，如回收子进程的资源或获取其运行结果。</p>
+<p>以下是 <code>wait</code> 系统调用的主要功能：</p>
+<ol>
+<li>
+<p><strong>等待子进程终止</strong>：父进程调用 <code>wait</code> 系统调用后，会进入阻塞状态，等待子进程终止。如果子进程已经终止，那么 <code>wait</code> 立即返回，否则父进程会一直等待直到子进程终止。</p>
+</li>
+<li>
+<p><strong>获取子进程的退出状态</strong>：<code>wait</code> 系统调用会获取子进程的退出状态信息，包括子进程的退出码（通常是一个整数）。这个退出码可以告诉父进程子进程的终止情况，例如是否成功执行等。</p>
+</li>
+<li>
+<p><strong>回收子进程资源</strong>：一旦子进程终止，其占用的系统资源（如内存、文件描述符等）通常需要由父进程来回收，以避免资源泄漏。<code>wait</code> 系统调用在等待子进程终止后，会自动回收这些资源。</p>
+</li>
+<li>
+<p><strong>处理僵尸进程</strong>：在某些情况下，子进程可能会在终止后成为僵尸进程，即已经终止但其进程描述符仍然存在。父进程可以使用 <code>wait</code> 来回收这些僵尸进程，释放相关资源。</p>
+</li>
+</ol>
+<p><code>exec</code>、<code>fork</code> 和 <code>spawn</code> 是操作系统中常见的进程管理系统调用，各自具有不同的功能和用途：</p>
+<ol>
+<li>
+<p><strong><code>exec</code> 系统调用</strong>：</p>
+<ul>
+<li><strong>功能</strong>：<code>exec</code> 系统调用用于在当前进程的上下文中加载并执行一个新的程序。</li>
+<li><strong>用途</strong>：通常在一个进程需要替换自身的执行映像时使用。它会加载一个新的可执行文件，覆盖当前进程的地址空间和代码段，然后开始执行新的程序。这个新程序可以是完全不同的程序，从而允许进程动态切换到不同的应用程序，而不需要创建新的进程。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>fork</code> 系统调用</strong>：</p>
+<ul>
+<li><strong>功能</strong>：<code>fork</code> 系统调用用于创建一个与当前进程几乎完全相同的新进程，包括代码、数据和上下文等。</li>
+<li><strong>用途</strong>：通常用于创建新的进程，新进程称为子进程，它从父进程继承了大部分状态，然后可以在独立的地址空间中执行不同的操作。<code>fork</code> 创建的子进程是父进程的副本，可以并行执行不同的任务。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>spawn</code> 系统调用</strong>：</p>
+<ul>
+<li><strong>功能</strong>：<code>spawn</code> 系统调用通常用于创建新的进程并执行指定的程序。</li>
+<li><strong>用途</strong>：类似于 <code>fork</code>，它也创建了一个新的进程，但不像 <code>fork</code> 那样完全复制父进程。相反，<code>spawn</code> 允许你指定一个新程序的路径和参数，而不是完全复制当前进程的状态。这使得它更适合用于启动新程序，而不是简单地创建一个进程副本。</li>
+</ul>
+</li>
+</ol>
+<p>总结：</p>
+<ul>
+<li><code>exec</code> 用于替换当前进程的执行映像，允许加载和执行新程序。</li>
+<li><code>fork</code> 用于创建一个几乎与父进程相同的新进程，新进程成为父进程的副本。</li>
+<li><code>spawn</code> 通常用于创建一个新进程并执行指定的程序，允许指定不同的程序路径和参数。</li>
+</ul>
+<h1 id="附录">附录</h1>
+<p>本章任务：
+在次 -&gt; 在此</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

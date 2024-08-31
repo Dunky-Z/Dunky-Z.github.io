@@ -14,6 +14,98 @@
       <pubDate>Thu, 22 Sep 2022 09:37:54 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/zh-the-risc-v-instruction-set-manual-volume-2-%E7%89%B9%E6%9D%83%E7%BA%A7%E6%9E%B6%E6%9E%84/</guid>
       <description>Introduction Document Version 20211203 Control and Status Registers (CSRs) Machine-Level ISA, Version 1.12 本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，</description>
+      <content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
+<blockquote>
+<p>Document Version 20211203</p>
+</blockquote>
+<h1 id="control-and-status-registers-csrs">Control and Status Registers (CSRs)</h1>
+<h1 id="machine-level-isa-version-112">Machine-Level ISA, Version 1.12</h1>
+<p>本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。</p>
+<h2 id="machine-level-csrs">Machine-Level CSRs</h2>
+<p>除了本节中描述的机器级 CSRs 外，M-mode 代码还可以访问较低特权级别的所有 CSRs。</p>
+<h3 id="machine-isa-register-misa">Machine ISA Register <code>misa</code></h3>
+<p>misa CSR 是 WARL 读写寄存器，报告硬件 (hart) 支持的 ISA。该寄存器在任何实现中都必须是可读的，但是可以返回零值以指示未实现 misa 寄存器，这就需要通过一个单独的非标准机制确定 CPU 功能。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)" />
+</a>
+</div>
+
+</p>
+<p>MXL（机器 XLEN）字段编码本机基本整数 ISA 宽度，如表 3.1 所示。MXL 字段在支持多个基本 ISA 宽度的实现中可能是可写的。M-mode 下的有效 XLEN, MXLEN，由 MXL 的设置给出，如果 misa 为零，则有一个固定的值。重置时，MXL 字段始终设置为最广泛支持的 ISA 变种。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。</p>
+<blockquote>
+<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p>
+</blockquote>
+<p>Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。</p>
+<p>Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。</p>
+<p>复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。</p>
+<p>在通过清除 misa 中相应 bit 来禁止一个标准扩展时，由该扩展所定义或修改的指令和 CSR 将恢复为该扩展未实现时的定义，或者保留行为（revert to their defined or reserved behaviors as if the extension is not implemented）。</p>
+<p>RV128 base ISA 的设计尚未完工，尽管预计本 specification 中大部分的剩余部分都将适用于 RV128，但本版本的文档仅关注 RV32 和 RV64。</p>
+<p>如果支持用户模式（user mode），则将“U”bit 置位；如果支持主管模式（supervisor mode），则将“S”bit 置位。</p>
+<p>如果存在任何非标准扩展（non-standard extensions），则将“X”bit 置位。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>“E”位是只读的。除非将 misa 硬连线为零，否则“E”位始终读取为“I”位的补码（补集？）。同时支持 RV32E 和 RV32I 的实现可以通过清除“I”位来选择 RV32E。</p>
+<p>如果 ISA 功能 x 依赖 ISA 功能 y，则尝试启用功能 x 但禁用功能 y 会导致两个功能都被禁用。例如，设置“F” = 0 和“D” = 1 会导致同时清除“F”和“D”。</p>
+<p>具体实现可能会在 2 或多个 misa 字段的集体设置上施加额外约束，此时将它们的集体看作是一个 WARL 字段。试图向其中写入一个不支持的组合会导致这些 bits 被置为某个支持的组合。</p>
+<p>写 misa 可能会增加 IALIGN，例如，通过禁用 C 扩展。如果要写入 misa 的指令增加了 IALIGN，而后一条指令的地址未按 IALIGN 位对齐，则将抑制对 misa 的写入，从而使 misa 保持不变。</p>
+<p>在软件启用一个之前被禁用的扩展时，除该扩展另有规定（specified），否则所有单独与该扩展有关的状态都将是未指定的（unspecified）。</p>
+<h3 id="machine-vendor-id-register-mvendorid">Machine Vendor ID Register <code>mvendorid</code></h3>
+<p><code>mvendorid</code> CSR 是一个 32 位只读寄存器，提供内核供应商的 JEDEC 制造商 ID。此寄存器在任何实现中都必须是可读的，但可以返回 0，表示该字段未实现或这是非商业实现。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid" />
+</a>
+</div>
+
+</p>
+<p>JEDEC 制造商 ID 通常编码为单字节连续的 <code>0x7f</code> 代码的序列，以不等于 <code>0x7f</code> 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。<code>mvendorid</code> 在 Bank 字段中编码单字节的连续代码，并在 <code>Offset</code> 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID <code>0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a</code>（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 <code>0x60a</code>。</p>
+<blockquote>
+<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p>
+</blockquote>
+<blockquote>
+<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p>
+</blockquote>
+<blockquote>
+<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p>
+</blockquote>
+<h2 id="machine-mode-privileged-instructions">Machine-Mode Privileged Instructions</h2>
+<h3 id="environment-call-and-breakpoint">Environment Call and Breakpoint</h3>
+<h3 id="trap-return-instructions">Trap-Return Instructions</h3>
+<h3 id="wait-for-interrupt">Wait for Interrupt</h3>
+<p>等待中断指令 (WFI) 为实现提供了一个提示，即当前的 hart 可以停止，直到需要服务中断。WFI 指令的执行也可以用来通知硬件平台合适的中断应该优先路由到这个 hart。WFI 在所有特权模式下都可用，并且可用于 U 模式 (可选地)。当 mstatus 中的 TW = 1 时，该指令可能会引发非法指令异常，如第 3.1.6.5 节所述。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果在 hart 停止时存在或稍后出现启用的中断，则中断 trap 将在以下指令上执行，即在 trap 处理程序中恢复执行并且 <code>mepc = pc + 4</code>。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>ZH-CS 可视化 - 常用的 Git 命令</title>
@@ -21,6 +113,218 @@
       <pubDate>Thu, 07 Jul 2022 16:20:48 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/zh-cs%E5%8F%AF%E8%A7%86%E5%8C%96-%E5%B8%B8%E7%94%A8%E7%9A%84git%E5%91%BD%E4%BB%A4/</guid>
       <description>CS 可视化 - 常用的 Git 命令 Author：Lydia Hallie 译：🌳🚀 CS Visualized: Useful Git Commands - DEV Community 尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是</description>
+      <content:encoded><![CDATA[<h1 id="cs-可视化---常用的-git-命令">CS 可视化 - 常用的 Git 命令</h1>
+<blockquote>
+<p>Author：Lydia Hallie
+译：<a href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p>
+</blockquote>
+<p>尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在<code>master</code>分支执行<code>hard reset</code>、<code>force push</code>到 <code>origin</code>、在<code>.git</code>文件夹执行<code>rimraf</code>的时候，为什么我的同事都哭了？</p>
+<p>我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！</p>
+<h2 id="merging">Merging</h2>
+<p>拥有多个分支非常方便，可以将新更改彼此分开，并确保您不会意外地将未经批准或损坏的更改推送到生产环境。一旦更改获得批准，我们希望在我们的生产分支中获得这些更改！</p>
+<p>将更改从一个分支转移到另一个分支的一种方法是执行 <code>git merge</code>！Git 可以执行两种类型的合并：<code>fast-forward</code> 或​​ <code>no-fast-forward</code>。</p>
+<p>现在这可能没有多大意义，所以让我们看看差异！</p>
+<h3 id="fast-forward---ff">Fast-forward (<code>--ff</code>)</h3>
+<p>如果当前分支与即将合并过来的分支相比，没有额外的提交，这种就是<code>fast-forward</code>合并。Git 很会偷懒，它会首先尝试最简单的方案，即<code>fast-forward</code>。这种合并方式不会创建新的提交，只是把另一个分支的提交记录直接合并到当前分支。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美的！我们现在可以在 <code>master</code> 分支上使用在 <code>dev</code> 分支上所做的所有更改。那么，<code>no-fast-forward</code> 到底是什么？</p>
+<h3 id="no-fast-foward---no-ff">No-fast-foward (<code>--no-ff</code>)</h3>
+<p>如果与您要合并的分支相比，您当前的分支没有任何额外的提交，那就太好了，但不幸的是，这种情况很少见！如果我们在当前分支上提交了我们想要合并的分支没有的更改，Git 将执行 <code>no-fast-forward</code> 合并。</p>
+<p>使用 <code>no-fast-forward</code> 合并，Git 在活动分支上创建一个新的<strong>合并提交</strong>。提交的父提交指向活动分支和我们要合并的分支！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>没什么大不了的，完美的合并！ <code>master</code> 分支现在包含我们在 <code>dev</code> 分支上所做的所有更改。</p>
+<h3 id="merge-conflicts">Merge Conflicts</h3>
+<p>尽管 Git 擅长决定如何合并分支和向文件添加更改，但它不能总是自己做出这个决定。当我们尝试合并的两个分支在同一个文件的同一行上发生更改时，可能会发生这种情况，或者如果一个分支删除了另一个分支修改的文件，等等。</p>
+<p>在这种情况下，Git 会要求您帮助决定我们要保留两个选项中的哪一个！假设在两个分支上，我们编辑了 <code>README.md</code> 中的第一行。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果我们想将 <code>dev</code> 合并到 <code>master</code> 中，这将导致合并冲突：您希望标题是 <code>Hello!</code> 还是 <code>Hey!</code>？</p>
+<p>当试图合并分支时，Git 会告诉你冲突发生在哪里。我们可以手动删除不想保留的更改，保存更改，再次添加更改的文件，然后提交更改</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>耶！尽管合并冲突通常很烦人，但它完全有道理：Git 不应该自己决定选择哪一个更改。</p>
+<h2 id="rebasing">Rebasing</h2>
+<p>我们刚刚看到了如何通过执行 <code>git merge</code> 将更改从一个分支应用到另一个分支。另一种将更改从一个分支添加到另一个的方法是执行<code>git rebase</code>。</p>
+<p><code>git rebase</code> <em>复制</em>当前分支的提交，并将这些复制的提交放在指定分支的顶部。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美，我们现在可以在 <code>dev</code> 分支上使用在 <code>master</code> 分支上所做的所有更改！</p>
+<p>与合并相比，一个很大的区别是 Git 不会尝试找出要保留和不保留的文件。我们正在变基的分支总是有我们想要保留的最新更改！通过这种方式，您不会遇到任何合并冲突，并保持良好的线性 Git 历史记录。</p>
+<p>这个例子展示了基于 <code>master</code> 分支的变基。然而，在更大的项目中，您通常不想这样做。 <code>git rebase</code> <strong>改变了项目的历史</strong>，因为为复制的提交创建了新的哈希！</p>
+<p>每当您在功能分支上工作并且主分支已更新时，重新定基都很棒。您可以获得分支上的所有更新，这将防止未来的合并冲突！</p>
+<h3 id="interactive-rebase">Interactive Rebase</h3>
+<p>在重新提交提交之前，我们可以修改它们！我们可以使用 <em>interactive rebase</em> 来做到这一点。交互式变基对于您当前正在处理的分支也很有用，并且想要修改一些提交。</p>
+<p>我们可以对我们正在变基的提交执行 6 项操作：</p>
+<ul>
+<li><code>reword</code>: Change the commit message</li>
+<li><code>edit</code>: Amend this commit</li>
+<li><code>squash</code>: Meld commit into the previous commit</li>
+<li><code>fixup</code>: Meld commit into the previous commit, without keeping the commit&rsquo;s log message</li>
+<li><code>exec</code>: Run a command on each commit we want to rebase</li>
+<li><code>drop</code>: Remove the commit</li>
+</ul>
+<p>惊人的！这样，我们可以完全控制我们的提交。如果我们想删除一个提交，我们可以直接 <code>drop</code> 它。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>或者，如果我们想将多个提交压缩在一起以获得更清晰的历史记录，没问题！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>交互式变基使您可以对尝试变基的提交进行大量控制，即使在当前活动分支上也是如此！</p>
+<h2 id="resetting">Resetting</h2>
+<p>我们可能会提交我们以后不想要的更改。也许它是一个<code>WIP</code>提交，或者是一个引入错误的提交！在这种情况下，我们可以执行 <code>git reset</code>。</p>
+<p><code>git reset</code> 会删除所有当前暂存的文件，并让我们控制 <code>HEAD</code> 应该指向的位置。</p>
+<h3 id="soft-reset">Soft reset</h3>
+<p><em>软重置</em>将 <code>HEAD</code> 移动到指定的提交（或提交的索引与 <code>HEAD</code> 相比），而不会消除随后在提交中引入的更改！</p>
+<p>假设我们不想保留添加了<code>style.css</code>文件的提交<code>9e78i</code>，也不想保留添加了<code>index.js</code>文件的提交<code>035cc</code>。但是，我们确实希望保留新添加的 <code>style.css</code> 和 <code>index.js</code> 文件！软重置的完美用例。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>输入 <code>git status</code> 时，您会看到我们仍然可以访问对先前提交所做的所有更改。这很棒，因为这意味着我们可以修复这些文件的内容并在以后再次提交它们！</p>
+<h3 id="hard-reset">Hard reset</h3>
+<p>有时，我们不想保留某些提交引入的更改。与软重置不同，我们不再需要访问它们。Git 应该简单地将其状态重置回指定提交时的状态：这甚至包括工作目录和暂存文件中的更改！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Git 丢弃了在 <code>9e78i</code> 和 <code>035cc</code> 上引入的更改，并将其状态重置为提交 <code>ec5be</code> 时的状态。</p>
+<h3 id="reverting">Reverting</h3>
+<p>撤消更改的另一种方法是执行<code>git revert</code>。通过恢复某个提交，我们创建了一个包含恢复的更改的新提交！</p>
+<p>假设 <code>ec5be</code> 添加了一个 <code>index.js</code> 文件。后来，我们实际上意识到我们不再希望这次提交引入的这种变化！让我们恢复 <code>ec5be</code> 提交。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美的！提交<code>9e78i</code>恢复了由<code>ec5be</code>提交引入的更改。执行 <code>git revert</code> 非常有用，可以撤消某个提交，而无需修改分支的历史记录。</p>
+<h2 id="cherry-picking">Cherry-picking</h2>
+<p>当某个分支包含在活动分支上引入了我们需要的更改的提交时，我们可以 <code>cherry-pick</code> 该命令！通过 <code>cherry-pick</code> 提交，我们在活动分支上创建了一个新提交，其中包含由 <code>cherry-pick</code> 提交所引入的更改。</p>
+<p>假设 <code>dev</code> 分支上的提交 <code>76d12</code> 添加了我们想要在 <code>master</code> 分支中的 <code>index.js</code> 文件的更改。我们不想要<em>整个</em>，我们只关心这一次提交！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>很酷，<code>master</code> 分支现在包含了 <code>76d12</code> 引入的更改！</p>
+<h2 id="fetching">Fetching</h2>
+<p>如果我们有一个远程 Git 分支，例如 GitHub 上的一个分支，则可能会发生远程分支具有当前分支没有的提交！也许另一个分支被合并了，你的同事推送了一个快速修复，等等。</p>
+<p>我们可以通过在远程分支上执行 <code>git fetch</code> 在本地获取这些更改！它不会以任何方式影响您的本地分支：<code>fetch</code> 只是下载新数据。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们现在可以看到自上次推送以来所做的所有更改！既然我们在本地拥有新数据，我们就可以决定要如何处理这些数据。</p>
+<h2 id="pulling">Pulling</h2>
+<p>虽然 <code>git fetch</code> 对于获取分支的远程信息非常有用，但我们也可以执行 <code>git pull</code>。 <code>git pull</code> 实际上是两个命令合二为一：<code>git fetch</code> 和 <code>git merge</code>。当我们从源中提取更改时，我们首先像使用 <code>git fetch</code> 一样获取所有数据，之后最新的更改会自动合并到本地分支中。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>太棒了，我们现在与远程分支完美同步，并拥有所有最新更改！</p>
+<h2 id="reflog">Reflog</h2>
+<p>每个人都会犯错，这完全没关系！有时你可能会觉得你把你的 <code>git repo</code> 搞砸了，以至于你只想完全删除它。</p>
+<p><code>git reflog</code> 是一个非常有用的命令，用于显示所有已采取的操作的日志！这包括合并、重置、恢复：基本上是对分支的任何更改。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果您犯了错误，您可以根据 <code>reflog</code> 提供给我们的信息通过重置 <code>HEAD</code> 轻松地重做此操作！</p>
+<p>假设我们实际上并不想合并 <code>origin</code> 分支。当我们执行 <code>git reflog</code> 命令时，我们看到合并前 repo 的状态是在 <code>HEAD@{1}</code>。让我们执行 <code>git reset</code> 将 HEAD 指向它在 <code>HEAD@{1}</code> 上的位置！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们可以看到最新的 action 已经推送到<code>reflog</code>了！</p>
+]]></content:encoded>
     </item>
     <item>
       <title>ZH-什么是 Die-to-Die 接口</title>
@@ -28,6 +332,68 @@
       <pubDate>Mon, 28 Mar 2022 19:06:56 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/zh-%E4%BB%80%E4%B9%88%E6%98%AFdie-to-die%E6%8E%A5%E5%8F%A3/</guid>
       <description>什么是 Die-to-Die 接口 Author：Synopsys 译：What is a Die-to-Die Interface? – How it Works | Synopsys 定义 裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一</description>
+      <content:encoded><![CDATA[<h1 id="什么是-die-to-die-接口">什么是 Die-to-Die 接口</h1>
+<blockquote>
+<p>Author：Synopsys
+译：<a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p>
+</blockquote>
+<h2 id="定义">定义</h2>
+<p>裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一封装中的两个硅管芯之间的数据接口。芯片到芯片接口利用非常短的通道连接封装内的两个芯片，以实现功率效率和非常高的带宽效率，这超出了传统芯片到芯片接口所能达到的效果。</p>
+<p>Die2Die 接口通常由 PHY 和控制器块组成，控制器块在两个 die 上的内部互连结构之间提供无缝连接。Die2Die 的 PHY 使用高速 SerDes 架构或高密度并行架构实现，经过优化以支持多种先进的 2D、2.5D 和 3D 封装技术。</p>
+<p>Die2Die 接口是推动行业趋势从单片 SoC 设计转向同一封装中的多 Die SoC 组件的关键推动力。这种方法减轻了人们对小型工艺节点的高成本/低产量日益增长的担忧，并提供了额外的产品模块化和灵活性。</p>
+<h2 id="die-to-die-接口如何工作">Die-to-Die 接口如何工作？</h2>
+<p>Die2Die 的接口，就像任何其他芯片到芯片的接口一样，在两个芯片之间建立了可靠的数据链路。</p>
+<p>接口在逻辑上分为物理层、链路层和事务层。它在芯片运行期间建立和维护链路，同时向应用程序提供连接到内部互连结构的标准化并行接口。</p>
+<p>通过添加诸如前向纠错 (FEC) 和/或循环冗余码 (CRC) 和重试等错误检测和纠正机制来保证链路可靠性。</p>
+<p>物理层架构可以是基于 SerDes 或基于并行的。</p>
+<ul>
+<li>
+<p>基于 SerDes 的架构包括并行到串行（串行到并行）数据转换、阻抗匹配电路和时钟数据恢复或时钟转发功能。它可以支持更高带宽的 NRZ 信令或 PAM-4 信令，最高可达 112 Gbps。SerDes 架构的主要作用是尽量减少简单 2D 类型封装（如有机基板）中的 I/O 互连数量。</p>
+</li>
+<li>
+<p>基于并行的架构包括许多并行的低速简单收发器，每个收发器都由驱动器和具有转发时钟技术的接收器组成，以进一步简化架构。它支持 DDR 类型的信令。并行架构的主要作用是最大限度地降低密集 2.5D 型封装（如硅中介层）的功耗。</p>
+</li>
+</ul>
+<h2 id="die2die-的优势">Die2Die 的优势</h2>
+<p>现代芯片实现趋向于基于在封装中组装多个裸片以提高模块化和灵活性的解决方案。当（单片）芯片尺寸接近全光罩尺寸时，这种多管芯方法还通过将功能分成几个管芯来提高产量，从而促进更具成本效益的解决方案。</p>
+<p>Die 之间的接口必须满足此类系统的所有关键要求：</p>
+<ul>
+<li>
+<p><strong>电源效率</strong>。多芯片系统实现应该与等效的单片实现一样节能。Die2Die 链接使用短距离、低损耗的信道，没有明显的不连续性。PHY 架构利用良好的通道特性来降低 PHY 复杂性并节省功耗。</p>
+</li>
+<li>
+<p><strong>低延迟</strong>。将服务器或加速器 SoC 划分为多个 Die 不应导致内存架构不统一，因为访问不同 Die 中的内存具有显着不同的延迟。Die2Die 接口实现了简化的协议，并直接连接到芯片互连结构，以最大限度地减少延迟。</p>
+</li>
+<li>
+<p><strong>高带宽效率</strong>。高级服务器、加速器和网络交换机需要在 Die 之间传输大量数据。Die2Die 接口必须能够支持所有需要的带宽，同时减少 Die 边缘的占用。通常使用两种替代方案来实现此目标：通过以非常高的每通道数据速率（高达 112 Gbps）部署 PHY 来最小化所需通道的数量，或者通过使用更精细的凸块间距（微凸块）来增加 PHY 的密度) 在大量并行化以实现所需带宽的低数据速率通道（高达 8 Gbps/通道）上。</p>
+</li>
+<li>
+<p><strong>健壮的链接</strong>。Die2Die 链接必须没有错误。该接口必须实现足够强大的低延迟错误检测和纠正机制，以检测所有错误并以低延迟纠正它们。这些机制通常包括 FEC 和重试协议。</p>
+</li>
+</ul>
+<h2 id="die-to-die-接口用例">Die-to-Die 接口用例</h2>
+<p>通过将多个 Die 组合到一个封装中，小芯片提供了另一种扩展摩尔定律的方法，同时实现了产品模块化和工艺节点优化。小芯片用于计算密集型、工作负载繁重的应用程序，如高性能计算 (HPC)。</p>
+<p>针对 HPC、网络、超大规模数据中心和人工智能 (AI) 等应用程序的 die-to-die 接口有四个主要用例：</p>
+<h3 id="scale-soc">Scale SoC</h3>
+<p>目标是通过虚拟（裸片到裸片）连接来连接裸片，从而提高计算能力并为服务器和 AI 加速器创建多个 SKU，从而实现裸片之间的紧密耦合性能。</p>
+<h3 id="split-soc">Split SoC</h3>
+<p>目标是启用非常大的 SoC。大型计算和网络交换机芯片正在接近光罩限制。将它们分成几个裸片会带来技术可行性、提高产量、降低成本并扩展摩尔定律。</p>
+<h3 id="aggregate">Aggregate</h3>
+<p>其目的是聚合在不同模具中实现的多种不同的功能，以利用每个功能的最佳工艺节点，降低功率，并改善 FPGA、汽车和 5G 基站等应用的外形尺寸。</p>
+<h3 id="disaggregate">Disaggregate</h3>
+<p>目标是将中央芯片与 I/O 芯片分离，以便将中央芯片轻松迁移到高级工艺，同时将 I/O 芯片保持在保守节点中，以降低产品演进的风险/成本，实现重用并缩短时间在服务器、FPGA、网络交换机和其他应用程序中投放市场。</p>
+<h2 id="die-to-die-接口和-synopsys">Die-to-Die 接口和 Synopsys</h2>
+<p>Synopsys 结合了广泛的 Die2Die 112G USR/XSR 和 HBI PHY IP、控制器 IP 和中介层专业知识产品组合，提供全面的 die-to-die IP 解决方案，以支持芯片拆分、芯片分解、计算扩展和聚合的功能。基于 SerDes 的 112G USR/XSR PHY 和基于并行的 8G OpenHBI PHY 可用于高级 FinFET 工艺。可配置控制器使用具有重放和可选 (FEC) 功能的纠错机制，以最大限度地降低可靠芯片到芯片链接的误码率。它支持用于连贯和非连贯数据通信的 Arm® 特定接口。</p>
+<h2 id="qa">Q&amp;A</h2>
+<ul>
+<li>PHY 架构</li>
+<li>SerDes 架构</li>
+<li>reticle
+<a href="https://www.zhihu.com/question/457213984">LCD 厂掩膜版叫 Mask,Fab 里掩膜版叫 reticle，两者有什么区别？ - 知乎</a></li>
+</ul>
+<h2 id="原文参考">原文参考</h2>
+<p><a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p>
+]]></content:encoded>
     </item>
     <item>
       <title>ZH-Unix 是什么，为什么重要？</title>
@@ -35,6 +401,38 @@
       <pubDate>Tue, 20 Jul 2021 15:44:05 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/zh-unix%E6%98%AF%E4%BB%80%E4%B9%88%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81/</guid>
       <description>Unix 是什么，为什么重要？ Author：CHRIS HOFFMAN 译：What Is Unix, and Why Does It Matter? 大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几</description>
+      <content:encoded><![CDATA[<h1 id="unix-是什么为什么重要">Unix 是什么，为什么重要？</h1>
+<blockquote>
+<p>Author：CHRIS HOFFMAN
+译：<a href="https://www.howtogeek.com/182649/htg-explains-what-is-unix/">What Is Unix, and Why Does It Matter?</a></p>
+</blockquote>
+<p>大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几乎所有其他系统的祖宗都是 Unix。</p>
+<p>Linux、Mac OS X、Android、iOS、Chrome OS、PlayStation 4 上使用的 Orbis 操作系统，无论路由器上运行的是什么固件——所有这些操作系统通常都被称为“类 Unix”操作系统。</p>
+<h2 id="unix-的设计延续至今">Unix 的设计延续至今</h2>
+<p>19 世纪中后期 Unix 在贝尔实验室中被开发出来。最初版的 Unix 有许多重要的设计特性至今仍然在使用。</p>
+<p>“Unix 哲学”之一就是，创建小型、模块化的程序，一个程序只做一件事并把它做好。如果你经常使用 Linux 终端，那么你应该对此很熟悉——系统提供了许多实用程序，这些程序可以通过管道和其他功能以不同方式组合以执行更复杂的任务。甚至图形程序也可能在后台调用更简单的实用程序来完成复杂的工作。这也使得创建 shell 脚本变得容易，将简单的工具串在一起来完成复杂的事情。</p>
+<p>Unix 有一个程序之间通信用的单一文件系统。这就是为什么在 Linux 上“一切都是文件” ——包括硬件设备和提供系统信息或其他数据的特殊文件。这也是为什么只有 Windows 有驱动器号（C、D、E 盘）的原因，它是从 DOS 继承的——在其他操作系统上，系统上的每个文件都是单个目录层次结构的一部分。</p>
+<h2 id="追寻-unix-的后代">追寻 Unix 的后代</h2>
+<p>Unix 及其后代的历史错综复杂，简化起见，我们大致将 Unix 的后代分为两类。</p>
+<p>一类 Unix 后代是在学术界发展起来的。第一个是 BSD（BerkeleySoftwareDistribution），一个开源、类 Unix 操作系统。BSD 通过 FreeBSD、NetBSD 和 OpenBSD 延续至今。NeXTStep 也是基于最初的 BSD 开发的，Apple 的 Mac OS X 是基于 NeXTStep 开发出来的，而 iOS 则基于 Mac OS X。还有一些操作系统，包括 PlayStation 4 上使用的 Orbis OS，都是从 BSD 操作系统衍生而来的。</p>
+<p>Richard Stallman 的 GNU 项目也是为了应对 AT&amp;T 日益严格的 Unix 软件许可条款而启动的。MINIX 是一个为教育目的而创建的类 Unix 操作系统，Linux 的灵感来自于 MINIX。我们今天所知道的 Linux 实际上是 GNU/Linux，因为它由 Linux 内核和许多 GNU 实用程序组成。GNU/Linux 并非直接继承自 BSD，但它继承了 Unix 的设计并植根于学术界。当今的许多操作系统，包括 Android、ChromeOS、SteamOS 以及大量设备的嵌入式操作系统，都基于 Linux。</p>
+<p>另一类就是商业 Unix 操作系统。AT&amp;T UNIX、SCO UnixWare、Sun Microsystems Solaris、HP-UX、IBM AIX、SGI IRIX——许多大公司想要创建他们自己的 Unix 版本。这些在今天并不常见，但其中一些仍然存在。</p>
+<h2 id="dos-和-windows-nt-的崛起">DOS 和 Windows NT 的崛起</h2>
+<p>许多人期望 Unix 成为行业标准操作系统，但 DOS 系统和“IBM PC 兼容”的计算机最终流行起来。Microsoft 的 DOS 成为其中最成功的 DOS 系统。DOS 系统完全不同于 Unix，这就是为什么 Windows 使用反斜杠作为文件路径，而其他一切都使用正斜杠。这个决定是在 DOS 系统早期做出的，后来的 Windows 版本继承了它，就像 BSD、Linux、Mac OS X 和其他类 Unix 操作系统继承了许多 Unix 的设计一样。</p>
+<p>Windows 3.1、Windows 95、Windows 98 和 Windows ME 都基于底层的 DOS。当时，微软正在开发一种更现代、更稳定的操作系统，他们将其命名为 Windows NT——即“Windows  New Technology”。Windows NT 最终以 Windows XP 的形式出现在普通用户的计算机中，但在此之前，它以 Windows 2000 和 Windows NT 的形式供公司使用。</p>
+<p>今天，微软的所有操作系统都基于 Windows NT 内核。Windows 7、Windows 8、Windows RT、Windows Phone 8、Windows Server 和 Xbox One 的操作系统都使用 Windows NT 内核。与大多数其他操作系统不同，Windows NT 并不是作为类 Unix 操作系统开发的。</p>
+<p>当然，微软并不是完全重新开始。为了保持与 DOS 和旧的 Windows 软件的兼容性，Windows NT 继承了许多 DOS 约定，如驱动器号、文件路径的反斜杠和命令行的正斜杠。</p>
+<blockquote>
+<p>“在绝大多数地方，用的都是/（slash），包括 Mac/Linux，也包括 URL。你唯一需要记住的是，Microsoft 这个怪鸡在自己的操作系统里面偏要用\（backslash），使得自己与众不同。
+在 Windows 中，正斜杠/表示除法，用来进行整除运算；反斜杠\用来表示目录。
+在 Unix 系统中，/表示目录；\表示跳脱字符将特殊字符变成一般字符
+Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。</p>
+</blockquote>
+<h2 id="为什么重要">为什么重要？</h2>
+<p>你是否曾经看过 Mac OS X 终端或文件系统，并注意到它与 Linux 的相似之处，以及它们与 Windows 的不同之处？嗯，这就是为什么——Mac OSX 和 Linux 都是类 Unix 操作系统。</p>
+<p>了解这段历史有助于您了解什么是“类 Unix”操作系统，以及为什么这么多操作系统看起来彼此如此相似而 Windows 似乎如此不同。这解释了为什么 Linux 极客会觉得 Mac OS X 上的终端如此熟悉，而 Windows 上的命令提示符和 PowerShell 与其他命令行环境如此不同。</p>
+<p>这只是一个简短的历史，它将帮助您了解我们如何到达今天的位置，而不会陷入细节中。如果您想了解更多信息，可以找到有关 Unix 历史的整本书。</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

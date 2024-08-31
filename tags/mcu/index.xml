@@ -14,6 +14,97 @@
       <pubDate>Fri, 19 Aug 2022 14:16:29 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/iic%E5%8D%8F%E8%AE%AE/</guid>
       <description>IIC 概述 IIC（Inter-Integrated Circuit），也叫 I2C（Inter-IC Communication）总线，是一种串行通信</description>
+      <content:encoded><![CDATA[<h1 id="iic-概述">IIC 概述</h1>
+<p><strong>IIC（Inter-Integrated Circuit）</strong>，也叫 I2C（Inter-IC Communication）总线，是一种串行通信协议，由 Philips 公司在 1980 年代初开发。IIC 总线用于连接微控制器、传感器和其他集成电路，它具有以下特点：</p>
+<ol>
+<li>双线制结构简单：由一条数据线（SDA）和一条时钟线（SCL）组成。</li>
+<li>多主机并行通信：多个 Master 设备可同时接入同一条 IIC 总线上进行数据交换。</li>
+<li>硬件资源占用少：只要两根线就可以连接多个器件。</li>
+<li>数据传输速率快：现代 IIC 总线的最高传输速率可达到 400Kbps。</li>
+<li>低功耗设计：使用者可以通过软件控制设备进入睡眠模式以减少功耗。</li>
+</ol>
+<h1 id="传输协议">传输协议</h1>
+<h2 id="写操作">写操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片写数据，以及写标记（0）</li>
+<li>从设备回应（用来确定这个设备是香存在，然后就可以传输数据）</li>
+<li>主设备发送一个字节数据给从设备，并等待回应</li>
+<li>每传输一字节故据，接收方要有一个回应信号（确定故据是否接受完成），然后再传输下一个故据。</li>
+<li>数据发送完之后，主机就会发送一个停止信号。</li>
+</ul>
+<h2 id="读操作">读操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片读数据，以及读标记（1）</li>
+<li>从设备回应（用来确定这个设备是否存在），然后就可以传输数据</li>
+<li>从设备发送一个字节放据给主设备，并等待回应</li>
+<li>每传输一字节数据，接收方要有一个回应信号（确定数据是否接受完成），然后再传输下一个放据。</li>
+<li>数据发送完之后，主芯片就会发送一个停止信号。</li>
+</ul>
+<h1 id="状态">状态</h1>
+<h2 id="空闲状态">空闲状态</h2>
+<ul>
+<li>SCL 和 SDA 都为高电平</li>
+</ul>
+<p>此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。</p>
+<h2 id="起始状态">起始状态</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+</a>
+</div>
+
+</p>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平</li>
+</ul>
+<p>标志着一次数据传输的开始。起始信号是由主控器主动建立的，在建立该信号之前 I2C 总线必须处于空闲状态。</p>
+<h2 id="结束状态">结束状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由低电平变为高电平</li>
+</ul>
+<h2 id="数据传输状态">数据传输状态</h2>
+<ul>
+<li>SCL 高电平期间，SDL 保持稳定
+<ul>
+<li>SDL 为高电平表示 1，低电平表示 0</li>
+</ul>
+</li>
+</ul>
+<p>在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 <code>0xaa</code> 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p>
+</blockquote>
+<h2 id="应答状态">应答状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平（上图最后的 ACK 标记）</li>
+</ul>
+<p>I2C 总线上的所有数据都是以 8 位字节传送的，发送器 (主机) 每发送一个字节，就在<strong>第 9 个时钟</strong>脉冲期间释放数据线，由从设备反馈一个应答信号。应答信号为<strong>低电平</strong>时，规定为<strong>有效应答位</strong> (ACK 简称应答位)，表示接收器已经成功地接收了该字节；应答信号为<strong>高电平时</strong>，规定为<strong>非应答位</strong> (NACK)，一般表示接收器接收该字节没有成功。对于反馈有效应答位 ACK 的要求是，接收器在第 9 个时钟脉冲之前的低电平期间将 <strong>SDA</strong> 线拉低，并且确保在该<strong>时钟的高电平期间为稳定的低电平</strong>。</p>
+<p>以下四种情况 IIC 通信过程中会产生非应答位（NACK）：</p>
+<ul>
+<li>从机正在处理某些实时的操作无法与主机实现 IIC 通信的时候，从机会给主机反馈一个非应答 (NACK)</li>
+<li>主机发送数据的过程中，从机无法解析发送的数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机发送数据的过程中，从机无法再继续接收数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机从从机中读取数据的过程中，主机不想再接收数据，主机会给从机反馈一个非应答位 (NACK)，注意，这种情况是主机给从机反馈一个非应答位 (NACK)</li>
+</ul>
+<h1 id="参考资料">参考资料</h1>
+<ol>
+<li><a href="https://www.cnblogs.com/liujinggang/p/9656358.html">IIC总线的原理与Verilog实现 - jgliu - 博客园</a></li>
+<li><a href="https://www.cnblogs.com/xuyan123/p/14134246.html">IIC时序分析 - 夏天师妹 - 博客园</a></li>
+</ol>
+]]></content:encoded>
     </item>
     <item>
       <title>SPI 协议</title>
@@ -21,6 +112,169 @@
       <pubDate>Tue, 19 Jul 2022 14:23:40 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/spi%E5%8D%8F%E8%AE%AE/</guid>
       <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。 4 线制 SPI 四个信号： SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：片选信号</description>
+      <content:encoded><![CDATA[<h1 id="spi-概述">SPI 概述</h1>
+<p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>4 线制 SPI 四个信号：</p>
+<ul>
+<li>SCLK：串行时钟信号，由主设备产生，用于同步数据传输。</li>
+<li>CS：片选信号，由主设备产生，用于选择从设备。</li>
+<li>MOSI：主设备输出，从设备输入，用于主设备向从设备传输数据。</li>
+<li>MISO：主设备输入，从设备输出，用于从设备向主设备传输数据。</li>
+</ul>
+<p>除了四线式 SPI 总线之外，还有三线式 SPI 总线和双线式 SPI 总线。</p>
+<ul>
+<li>
+<p>四线式 SPI 总线，也称为标准 SPI 总线，由 SCLK、MOSI、MISO 和 SS（Slave Select）四个信号线组成。其中，SCLK 是时钟信号线；MOSI 是主设备向从设备发送数据的信号线；MISO 是从设备向主设备发送数据的信号线；SS 是从设备的片选信号线，用于选择要通信的从设备。</p>
+</li>
+<li>
+<p>三线式 SPI 总线将 MOSI 和 MISO 合并为单一的信号线。这种 SPI 总线有一个专门的叫做 MOMI 的信号线，既可以作为主设备向从设备发送数据的信号线，又可以作为从设备向主设备发送数据的信号线。</p>
+</li>
+<li>
+<p>双线式 SPI 总线（也称为 MICROWIRE 或 uWire），由一个串行数据线和一个时钟线组成。在这种 SPI 总线上，没有单独的片选信号线，而是使用一个帧选择控制位来选择相应的从设备。</p>
+</li>
+</ul>
+<blockquote>
+<p>他们传输速率有差别吗？
+是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。
+SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p>
+</blockquote>
+<h3 id="时钟极性和时钟相位">时钟极性和时钟相位</h3>
+<p>在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">SPI 模式</th>
+<th style="text-align:center">CPOL(Serial Clock Polarity)</th>
+<th style="text-align:center">CPHA(Serial Clock Phase)</th>
+<th style="text-align:center">空闲状态下的时钟极性</th>
+<th style="text-align:center">采样时的时钟相位</th>
+<th style="text-align:center">移位数据的时钟相位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">逻辑低电平</td>
+<td style="text-align:center">上升沿</td>
+<td style="text-align:center">下降沿</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">逻辑低电平</td>
+<td style="text-align:center">下降沿</td>
+<td style="text-align:center">上升沿</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">高电平</td>
+<td style="text-align:center">下降沿</td>
+<td style="text-align:center">上升沿</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">高电平</td>
+<td style="text-align:center">上升沿</td>
+<td style="text-align:center">下降沿</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p>
+</blockquote>
+<p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。" />
+</a>
+</div>
+
+</p>
+<p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。" />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出" />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。" />
+</a>
+</div>
+
+</p>
+<h1 id="多从机配置">多从机配置</h1>
+<h2 id="标准-spi-模式">标准 SPI 模式</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p>
+<p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p>
+<h2 id="菊花链模式">菊花链模式</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p>
+<p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="spi-实现">SPI 实现</h1>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.analog.com/cn/analog-dialogue/articles/introduction-to-spi-interface.html">SPI 接口简介 | 亚德诺半导体</a></p>
+<p><a href="https://jia.je/hardware/2023/04/26/spi/#sd-%E5%8D%A1">SPI 协议 - 杰哥的{运维，编程，调板子}小笔记</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

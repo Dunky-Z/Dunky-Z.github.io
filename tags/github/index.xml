@@ -14,6 +14,229 @@
       <pubDate>Fri, 14 Oct 2022 22:08:54 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8github-actions/</guid>
       <description>简介 GitHub Actions 是 GitHub 在 2018 年推出的持续集成服务。它可以自动完成一些开发周期内的任务，如 Push 代码时自动编译，Pull 代码时自动执行测试脚本等等。 我了解 GitHub Actions</description>
+      <content:encoded><![CDATA[<h1 id="简介">简介</h1>
+<p>GitHub Actions 是 GitHub 在 2018 年推出的<a href="http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html">持续集成服务</a>。它可以自动完成一些开发周期内的任务，如 Push 代码时自动编译，Pull 代码时自动执行测试脚本等等。</p>
+<p>我了解 GitHub Actions 的契机是，我在 GitHub 上保存了一些 Markdown 文档，我希望每次更新文档后自动使用 Pandoc 转换成 PDF 文档。接下来我们一起学习如何通过 GitHub Actions 实现这样的需求。</p>
+<p>首先我们先直观的了解一下它在 GitHub 的位置，如果打开一个仓库，它有图中绿色对号√，或者红色叉号×，说明这个项目配置了 GitHub Actions，绿色表示自动化的流程运行成功了，红色表示失败了。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/a3a273415c7250d26bb50e293378bf5e.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们点开<code>Actions</code>按钮就可以查看具体的任务详情。下面我们先学习如何配置一个简单的 GitHub Actions。</p>
+<h1 id="配置-github-actions">配置 GitHub Actions</h1>
+<p>GitHub Actions 可以简单理解为一些自动化脚本，工具，目的就是为了减少重复工作，所以这些工具都可以做成普适性的工具。而 GitHub 官方就开放了一个这类工具的<a href="https://github.com/marketplace">市场</a>，我们可以在上面搜索自己想要的工具。因为初学 GitHub Actions 所以也不知道怎么写配置文件，我们可以直接搜索一个并应用它，看看别人是怎么写的。</p>
+<p>我们进入一个自己的仓库，点击<code>Actions</code>，搜索框中搜索<code>PDF</code>，在搜索结果中找到<a href="https://github.com/marketplace/actions/create-pdf">Create PDF · Actions</a>这个工具。如果搜索到点击<code>Configure</code>。如果显示未找到，则点击<code>set up a workflow yourself</code>，同样搜索<code>PDF</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/f6baead7ab50e1db5ce3611a0525f833.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/f6baead7ab50e1db5ce3611a0525f833.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/15/f6baead7ab50e1db5ce3611a0525f833.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>打开<a href="https://github.com/marketplace/actions/create-pdf">详情页面</a>，拉到底，将<code>Example usage</code>。里的内容复制到编辑框中。点击右上角<code>Start commit</code>将会把我们新建的<code>main.yml</code>提交到仓库中。这就相当于创建了一个生成 PDF 的 GitHub Actions。当然每个 Actions 都有一些使用要求，比如这里还要根据介绍，创建几个文件夹，比如从哪个文件夹获取源文件，生成后的 PDF 又会放到哪个文件夹等。这里就不再介绍，我们先了解如何创建一个 Actions。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/0a24d8bcecc9d210b4e6b75b2fccae0b.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/0a24d8bcecc9d210b4e6b75b2fccae0b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/0a24d8bcecc9d210b4e6b75b2fccae0b.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/69370e917f9c35963a2343176ecf0eea.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/69370e917f9c35963a2343176ecf0eea.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/16/69370e917f9c35963a2343176ecf0eea.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="workflow-配置">Workflow 配置</h1>
+<p>GitHub Actions 的配置文件叫做 workflow 文件，存放在代码仓库的.github/workflows 目录。</p>
+<p>workflow 文件采用 YAML 格式，文件名可以任意取，但是后缀名统一为.yml or .yaml，比如 foo.yml or foo.yaml。一个库可以有多个 workflow 文件。GitHub 只要发现.github/workflows 目录里面有.yml or .yaml 文件，就会自动运行该文件（并行）。</p>
+<p>接下来我们逐个参数来解释都有哪些功能。</p>
+<h2 id="on">on</h2>
+<p>触发 workflow 的 GitHub 事件的名称。比如<code>push</code>代码时触发，其他人<code>fork</code>代码仓时触发等等。</p>
+<p>可以只有一个事件触发，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="l">push</span><span class="w">
+</span></span></span></code></pre></div><p>也可有多个事件触发，使用列表列举，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">push, fork]</span><span class="w">
+</span></span></span></code></pre></div><p>所有支持的事件列表，请查看<a href="https://docs.github.com/cn/actions/using-workflows/events-that-trigger-workflows">官方文档</a>。</p>
+<h3 id="onpushforktagsbranches">on.[push|fork].[tags|branches]</h3>
+<p><strong>注意</strong>：从这里开始就会出现一个字段下有子字段，每个点号<code>.</code>分割一个子字段。如<code>push</code>或者<code>fork</code>可以作为<code>on</code>的子字段，<code>tags</code>或者<code>branches</code>可以作为<code>push</code>或者<code>fork</code>的子字段。在<code>yaml</code>文件中，缩进很重要，每个缩进都表示是从属关系，表示是该字段的子字段。千万要注意缩进关系，如果缩进出错，那么将无法解析<code>yaml</code>文件。</p>
+<p>指定触发事件时，可以限定分支或标签。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">push</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">master</span><span class="w">
+</span></span></span></code></pre></div><p>上面代码指定，只有 master 分支发生 push 事件时，才会触发 workflow。</p>
+<h2 id="name">name</h2>
+<p>工作流程的名称。GitHub 在仓库的操作页面上显示工作流程的名称。如果省略 name，GitHub 将其设置为相对于仓库根目录的工作流程文件路径。</p>
+<h2 id="jobs">jobs</h2>
+<p>workflow 运行包括一项或多项 jobs。jobs 默认是并行运行。要按顺序运行作业，可以使用 <code>[job_id].needs</code> 关键词在其他 job 上定义依赖项。</p>
+<p>每个作业在 <code>runs-on</code> 指定的运行器环境中运行。</p>
+<h3 id="jobsjob_id">jobs.[job_id]</h3>
+<p>jobs 中的每个任务都有一个<code>[job_id]</code> ，且其必须为 jobs 对象中<strong>唯一的字符串键值</strong>。<code>[job_id]</code>必须以字母或<code>_</code>开头，并且只能包含字母数字字符、<code>-</code>或<code>_</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">first_job</span><span class="p">:</span><span class="w">  </span><span class="c"># [job_id]，任务 id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">My first job</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">second_job</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">My second job</span><span class="w">
+</span></span></span></code></pre></div><h3 id="jobsjob_idruns-on">jobs.[job_id].[runs-on]</h3>
+<p><code>runs-on</code> 字段指定运行所需要的虚拟机环境。它是必填字段。目前可用的虚拟机如下。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="l">ubuntu-latest，ubuntu-18.04或ubuntu-16.04</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="l">windows-latest，windows-2019或windows-2016</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="l">macOS-latest或macOS-10.14</span><span class="w">
+</span></span></span></code></pre></div><p>下面代码指定虚拟机环境为 ubuntu-18.04。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-18.04</span><span class="w">
+</span></span></span></code></pre></div><h3 id="jobsjob_idname">jobs.[job_id].name</h3>
+<p>workflow 文件的主体是 jobs 字段，表示要执行的一项或多项任务。</p>
+<p><code>job_id</code> 里面的 <code>name</code> 字段是任务的说明。它可以在网页端的 UI 上显示。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">first_job</span><span class="p">:</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">My first job </span><span class="w"> </span><span class="c"># [job_name]，任务名称</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">second_job</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">My second job</span><span class="w">
+</span></span></span></code></pre></div><h3 id="jobsjob_idneeds">jobs.[job_id].needs</h3>
+<p>needs 字段指定当前任务的依赖关系，即运行顺序。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">job1</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">job2</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l">job1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">job3</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">job1, job2]</span><span class="w">
+</span></span></span></code></pre></div><p>上面代码中，job1 必须先于 job2 完成，而 job3 等待 job1 和 job2 的完成才能运行。因此，这个 workflow 的运行顺序依次为：job1、job2、job3。</p>
+<h3 id="jobsjob_idsteps">jobs.[job_id].steps</h3>
+<p><code>steps</code> 字段指定每个 Job 的运行步骤，可以包含一个或多个步骤。每个步骤都可以指定以下三个字段。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="l">jobs.[job_id].steps.name：步骤名称。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="l">jobs.[job_id].steps.run：该步骤运行的命令或者 action。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="l">jobs.[job_id].steps.env：该步骤所需的环境变量。</span><span class="w">
+</span></span></span></code></pre></div><p>下面是一个完整的 workflow 文件的范例。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Greeting from Mona</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="l">push</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">my-job</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">My Job</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Print a greeting</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">MY_VAR</span><span class="p">:</span><span class="w"> </span><span class="l">Hi there! My name is</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">FIRST_NAME</span><span class="p">:</span><span class="w"> </span><span class="l">Mona</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">MIDDLE_NAME</span><span class="p">:</span><span class="w"> </span><span class="l">The</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">LAST_NAME</span><span class="p">:</span><span class="w"> </span><span class="l">Octocat</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          echo $MY_VAR $FIRST_NAME $MIDDLE_NAME $LAST_NAME.</span><span class="w">          
+</span></span></span></code></pre></div><p>上面代码中，steps 字段只包括一个步骤。该步骤先注入四个环境变量，然后执行一条 Bash 命令。</p>
+<h3 id="jobsjob_idstepsuses">jobs.[job_id].steps[*].uses</h3>
+<p>选择一个 action，可以理解为若干 steps.run，有利于代码复用。这也是 github action 最主要的功能。</p>
+<p>比如最常用的，下载本仓库的代码到工作区，就是使用的一个 action 完成的：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Check out Git repository</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/checkout@v2</span><span class="w">
+</span></span></span></code></pre></div><blockquote>
+<p>注：<code>@v2</code> 什么意思？
+表示 Action 的版本。我们如果不带版本号的话，就是默认使用最新版本。Github 官方强烈要求我们带上版本号。这样子的话，我们就不会出现：写好一个 Workflow，但是由于某个 Action 的作者一更新，我们的 Workflow 就崩了的问题</p>
+</blockquote>
+<h3 id="jobsjob_idstepsrun">jobs.[job_id].steps.run</h3>
+<p>在 shell 中执行的命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/checkout@v2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">create dir</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">dir</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">            mkdir output  # create output dir</span><span class="w">            
+</span></span></span></code></pre></div><p>以上配置是在下载完本仓库的代码后，在仓库根目录新建一个<code>output</code>文件夹。注意<code>run:</code>后的<code>|</code>表示可以多行命令。如果没有<code>|</code>表示只能执行一条命令。</p>
+<h3 id="jobsjob_idstepsworking-directory">jobs.[job_id].steps.working-directory</h3>
+<p>用来指定在<code>run</code>命令在哪执行。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Create dir</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l">mkdir output</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">working-directory</span><span class="p">:</span><span class="w"> </span><span class="l">./build</span><span class="w">
+</span></span></span></code></pre></div><h3 id="jobsjob_idstepsshell">jobs.[job_id].steps.shell</h3>
+<p>用来指定 shell 类型，如 Python，bash，powershell 等。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Display the path</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l">echo $PATH</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">shell</span><span class="p">:</span><span class="w"> </span><span class="l">bash</span><span class="w">
+</span></span></span></code></pre></div><p>所有支持的类型请查看<a href="https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell">官方文档</a>。</p>
+<h3 id="如何跳过-github-actions">如何跳过 GitHub Actions</h3>
+<p>在 commit message 中只要包含了下面几个关键词就会跳过 Github Actions。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="p">[</span><span class="l">skip ci]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="l">ci skip]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="kc">no</span><span class="w"> </span><span class="l">ci]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="l">skip actions]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="l">actions skip]</span><span class="w">
+</span></span></span></code></pre></div><h1 id="实例自动使用-pandoc-将-markdown-文件转换为-pdf">实例：自动使用 Pandoc 将 Markdown 文件转换为 PDF</h1>
+<p>以<a href="https://github.com/Dunky-Z/uefi-spec-zh">Dunky-Z/uefi-spec-zh</a>项目中使用的 GitHub Actions 为例，解释如何实现将 Markdown 文件转换为 PDF。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># CI 名为 MPPL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">MPPL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 在 Push 代码时触发 CI</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="l">push</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># 任务名称为 convert_via_pandoc</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">convert_via_pandoc</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># 在 ubuntu-latest 系统上运行</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤一：下载最新代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/checkout@v2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤二：在项目根目录建立 output 文件夹放生成的 PDF 文件</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">create file list</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">files_list</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          mkdir output  # create output dir</span><span class="w">          
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤三：更新项目的子模块</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Git Sumbodule Update</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          git submodule update --init --remote --recursive</span><span class="w">          
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤四：为运行的系统中安装需要的字体，因为原系统没有需要的中文字体</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 字体来源为项目目录的MPPL/fonts</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">add fonts</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get install ttf-mscorefonts-installer
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get install fontconfig
+</span></span></span><span class="line"><span class="cl"><span class="sd">          fc-list :lang=zh
+</span></span></span><span class="line"><span class="cl"><span class="sd">          ls -lh /usr/share/fonts/
+</span></span></span><span class="line"><span class="cl"><span class="sd">          cp -rf ./MPPL/fonts/* /usr/share/fonts/
+</span></span></span><span class="line"><span class="cl"><span class="sd">          mkfontscale
+</span></span></span><span class="line"><span class="cl"><span class="sd">          mkfontdir
+</span></span></span><span class="line"><span class="cl"><span class="sd">          fc-cache
+</span></span></span><span class="line"><span class="cl"><span class="sd">          fc-list</span><span class="w">          
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤五：安装 pandoc 和 texlive</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">install pandoc</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get update
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get install texlive-full
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get install pandoc
+</span></span></span><span class="line"><span class="cl"><span class="sd">          sudo apt-get clean</span><span class="w">          
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤六：使用 pandoc 命令生成 pdf</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">build pdf</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p">|</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">          cd src
+</span></span></span><span class="line"><span class="cl"><span class="sd">          pandoc -f  markdown-auto_identifiers  --listings --pdf-engine=xelatex --template=../MPPL/templates/mppl.tex  --output=../output/UEFI规范-中文.pdf *.md</span><span class="w">          
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 步骤七：将生成的结果上传到 GitHub</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/upload-artifact@master</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">output</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">output</span><span class="w">
+</span></span></span></code></pre></div><h1 id="注意事项">注意事项</h1>
+<p>every step must define a <code>uses</code> or <code>run</code> key
+<a href="https://github.com/einaregilsson/beanstalk-deploy/issues/2">every step must define a uses or run key · Issue #2 · einaregilsson/beanstalk-deploy</a></p>
+<h1 id="参考">参考</h1>
+<p><a href="https://github.com/fhem/mod-Buienradar/issues/318">GH actions: a step cannot have both the </a><a href="https://github.com/fhem/mod-Buienradar/issues/318"><code>uses</code></a><a href="https://github.com/fhem/mod-Buienradar/issues/318"> and </a><a href="https://github.com/fhem/mod-Buienradar/issues/318"><code>run</code></a><a href="https://github.com/fhem/mod-Buienradar/issues/318"> keys · Issue #318 · fhem/mod-Buienradar</a></p>
+<p><a href="https://github.com/einaregilsson/beanstalk-deploy/issues/2">every step must define a uses or run key · Issue #2 · einaregilsson/beanstalk-deploy</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

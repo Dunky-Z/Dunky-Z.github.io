@@ -14,6 +14,629 @@
       <pubDate>Wed, 30 Mar 2022 11:12:31 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
       <description>静态链接 库是一组目标文件的包，就是一些常用的代码编译成目标文件后打包存放。 第三章 目标文件里有什么 目标文件的格式 目标文件从结构上讲，它是已经编</description>
+      <content:encoded><![CDATA[<h2 id="静态链接">静态链接</h2>
+<p>库是一组目标文件的包，就是一些常用的代码编译成目标文件后打包存放。</p>
+<h2 id="第三章-目标文件里有什么">第三章 目标文件里有什么</h2>
+<h3 id="目标文件的格式">目标文件的格式</h3>
+<p><strong>目标文件</strong>从结构上讲，它是已经编译后的可执行文件格式，只是还没有经过链接的过程，其中可能有些符号或者有些地址还没有被调整。</p>
+<p>现在 PC 平台流形的可执行文件格式，主要是 Windows 下的 PE（Portable Executable）和 Linux 下的 ELF（Executable Linkable Format）,它们都是 COFF（Common file format）格式的变种。</p>
+<p>指令和数据分开存放的好处：</p>
+<ul>
+<li>
+<p>一方面当程序被装载后，数据和指令分别被映射到两个虚存区域。由于数据区域对于进程来说是可读写的，而指令区域对于进程来说是只读的，所以这两个虚存区域的权限可以被设置成可读写和只读，这样可以防止程序的指令被有意或无意地改写。</p>
+</li>
+<li>
+<p>另一方面是现代 CPU 有强大的缓存体系，由于缓存很重要，所以程序必须尽量提高缓存命中率。指令区和数据区分离有利于提高程序的局部性。现代 CPU 的缓存一般都被设计成数据缓存和指令缓存，所以程序的指令和数据分开存放对于 CPU 的缓存命中率提高有好处。</p>
+</li>
+<li>
+<p>第三个原因，也是最重要的原因，就是当系统中运行着多个该进程副本时，他们的指令都是一样的，所以内存中只需要保存一份程序的指令部分。</p>
+</li>
+</ul>
+<p><strong>真正了牛逼的程序员对自己的程序每一个字节都了如指掌。</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">objdump -h  SimpleSsection.o  # 打印elf文件各个段的信息
+</span></span><span class="line"><span class="cl">size SimpleSsection.o           # 查看elf文件各个段的长度
+</span></span><span class="line"><span class="cl">objdump -s -d SimpleSsection.o # -s将所有段内容以十六进制打印，-d将所有包含指令的段反汇编
+</span></span></code></pre></div><table>
+<thead>
+<tr>
+<th>段名称</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>.data</td>
+<td>- 初始化的全局变量 <br> - 局部静态变量</td>
+</tr>
+<tr>
+<td>.rodata</td>
+<td>只读数据段，对这个段的任何修改都是非法的，保证了程序的安全性。 <br> 有时候编译器会把字符串放到 data 段<br> - 只读变量 const 修饰 <br> - 字符串常量</td>
+</tr>
+<tr>
+<td>.bss</td>
+<td>不占磁盘空间， <br>- 未初始化的全局变量 <br> - 未初始化的局部静态变量 <br> - 初始化为 0 的静态变量</td>
+</tr>
+<tr>
+<td>.comment</td>
+<td>存放编译器版本信息，比如字符串“GCC：（GNU）4.2.0”</td>
+</tr>
+<tr>
+<td>.line</td>
+<td>调试时的行号表，即源代码行号与编译后指令的对应表</td>
+</tr>
+<tr>
+<td>.note</td>
+<td>额外的编译器信息，如程序公司名，版本号</td>
+</tr>
+<tr>
+<td>.symtab</td>
+<td>Symbol Table 符号表</td>
+</tr>
+<tr>
+<td>.plt</td>
+<td>动态链接的跳转表</td>
+</tr>
+<tr>
+<td>.got</td>
+<td>动态链接的全局入口表</td>
+</tr>
+</tbody>
+</table>
+<p>段名称都是<code>.</code>前缀，表示这些表名字是系统保留的，应用程序也可以使用一些非系统保留的名字作为段名称。比如可以加入一个<code>music</code>段，里面存一首 mp3 音乐，运行起来后就会播放音乐，打算自定义段不能使用<code>.</code>作为前缀，以免与系统保留段名冲突。</p>
+<blockquote>
+<p>Q: 如何将一个二进制文件，如图片，MP3 文件作为目标文件的一个段？
+A: 可以使用 objcopy 工具，比如有一个图片 image..jpg，大小为 0x2100 字节：
+$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o</p>
+</blockquote>
+<p>正常情况下编译出来的目标文件，代码会放到<code>.text</code>段，但是有时候你希望变量或者某些代码能放到你指定的段中去，以实现某些特定的功能。比如为了满足某些硬件的内存和 IO 地址布局。GCC 提供了扩展机制，使得程序员可以指定变量所处的段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">__attribute__((section(&#34;FOO&#34;))) int global = 42;
+</span></span><span class="line"><span class="cl">__attribute__((section(&#34;BAR&#34;))) void foo;
+</span></span></code></pre></div><h3 id="elf-文件结构">ELF 文件结构</h3>
+<p>使用<code>readelf</code>命令查看 elf 文件详细信息。</p>
+<ul>
+<li>
+<p>ELF 魔数，确认文件类型。</p>
+</li>
+<li>
+<p>文件类型</p>
+<table>
+<thead>
+<tr>
+<th>常量</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ET_REL</td>
+<td>1</td>
+<td>可重定位文件，一般问.o文件</td>
+</tr>
+<tr>
+<td>ET_EXEC</td>
+<td>2</td>
+<td>可执行文件</td>
+</tr>
+<tr>
+<td>ET_DYN</td>
+<td>3</td>
+<td>共享目标文件，一般为.so文件</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>机器类型</p>
+<table>
+<thead>
+<tr>
+<th>常量</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EM_M32</td>
+<td>1</td>
+<td>AT&amp;T WE 32100</td>
+</tr>
+<tr>
+<td>EM_SPARC</td>
+<td>2</td>
+<td>SPARC</td>
+</tr>
+<tr>
+<td>EM_M386</td>
+<td>3</td>
+<td>Intel x86</td>
+</tr>
+<tr>
+<td>EM_68K</td>
+<td>4</td>
+<td>Motorola 68000</td>
+</tr>
+<tr>
+<td>EM_88K</td>
+<td>5</td>
+<td>Motorola 88000</td>
+</tr>
+<tr>
+<td>EM_860</td>
+<td>6</td>
+<td>Intel 80860</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<p><strong>段表</strong>是保存各个段的基本属性的结构。段表是除文件头外最重要的结构。编译器，链接器和装载器都是依靠段表来定位和访问各个段的属性。</p>
+<h3 id="链接的接口---符号">链接的接口 - 符号</h3>
+<h4 id="符号表结构">符号表结构</h4>
+<p>链接过程的本质就是要把多个不同的目标文件之间相互粘到一起。</p>
+<p>目标文件 B 要用到目标文件 A 的函数<code>foo</code>，我们称目标文件 A<strong>定义</strong>了函数<code>foo</code>，目标文件 B<strong>引用</strong>了目标文件 A 的函数<code>foo</code>。</p>
+<p>链接中，我们将函数和变量统称为<strong>符号</strong>，函数名或变量名就是符号名。、</p>
+<p>每一个目标文件都会有一个相应的符号表，表里记录了目标文件中所用到的所有符号。每个符号都有一个对应值，叫符号值，对于变量和函数来说，符号值就是他们的地址。</p>
+<p>符号类型：</p>
+<ul>
+<li>定义在本目标文件的全局符号，可以被其他目标引用。</li>
+<li>在本目标文件中应用的全局符号，却没有定义在本目标文件。</li>
+<li>段名称，也就是段起始地址。</li>
+<li>局部符号，一些静态变量等。</li>
+<li>行号信息。</li>
+</ul>
+<p>最重要的就是第一类和第二类。链接只关心全局符号的相互粘合，其他都是次要的。</p>
+<p>可以使用 <code>readelf</code> <code>objdump</code> <code>nm</code>等命令查看符号信息。</p>
+<h4 id="特殊符号">特殊符号</h4>
+<p>一些特殊符号，没有在程序中定义，但是可以直接声明并引用它：</p>
+<ul>
+<li><code>__executable_start</code>，程序起始地址，不是入口地址，是程序最开始的地址。</li>
+<li><code>__etext</code> <code>__etext</code>  <code>etext</code> 代码段结束地址，代码段最末尾的地址。</li>
+<li><code>_edata</code> <code>edata</code> 数据段结束地址，数据段最末尾地址。</li>
+<li><code>__end</code>  <code>end</code> 程序结束地址。</li>
+</ul>
+<h4 id="符号修饰">符号修饰</h4>
+<p>符号应与对应的函数或者变量同名，但是在 C 语言发明时，已经存在了很多库和目标文件，如果再用一样的函数或变量就会冲突为了避免冲突，C 语言编译后符号名前会加上下划线<code>_</code>，如<code>foo</code>变成<code>_foo</code>，Fortran 语言编译后会在符号前后加上下划线<code>_foo_</code>。</p>
+<p>C++具有类，继承，重载等复杂机制，为了支持这些复杂特性，人们发明了<strong>符号修饰</strong>和<strong>符号改编</strong>。</p>
+<p><strong>函数签名</strong>包含了一个函数的信息，包括函数名，参数类型，所在类和名称空间等信息。它用于识别不同的函数。在编译器和链接器处理符号时，使用某种名称修饰的方法，是的每个函数签名对应一个<strong>修饰后名称</strong>。</p>
+<p>由于不同的编译器采用不同的名字修饰方式，必然导致由不同编译器编译产生的目标文件无法正常互相链接，这是导致不同编译器之间不能互操作的主要原因之一。</p>
+<h4 id="extern-c">extern C</h4>
+<p>C++为了兼容 C，C++编译器会将在<code>extern C</code> 的大括号内部的代码当做 C 语言代码处理，这样就不会使用 C++的名称修饰机制。（也就不会在编译的时候加上下划线）</p>
+<p>但是 C 语言并不支持<code>extern C</code>关键字，又不能为同一个库函数写两套头文件，这时候就可以用 C++的宏，<code>__cplusplus</code>。C++编译器会在编译 C++的程序时默认定义这个宏，我们可以用条件宏来判断当前编译单元是不是 C++代码。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#ifdef __cplusplus
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">extern</span> <span class="s">&#34;C&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="o">*</span><span class="nf">memset</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span> <span class="p">,</span> <span class="kt">size_t</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef __cplusplus
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span></code></pre></div><h4 id="弱符号与强符号">弱符号与强符号</h4>
+<p>我们经常碰到符号重定义，多个目标文件中含有相同名字全局符号的定义，那么这些目标文件链接的时候就会出现符号重定义的错误。比如在两个文件中定义了相同的全局变量。</p>
+<p>对于C/C++来说，编译器默认函数和初始化了的全局变量为强符号，未初始化的全局变量为弱符号。</p>
+<p>也可以使用 GCC 的<code>__attribute__((weak))</code>来定义任何一个强符号为弱符号。</p>
+<ul>
+<li>不允许强符号被多次定义，如果多次定义，则链接器报重复定义错误；</li>
+<li>如果一个符号在某文件中是强符号，在其他文件中都是弱符号，那么选择强符号。</li>
+<li>如果一个符号在所有目标文件中都是弱符号，那么选择其中占用空间最大的一个。</li>
+</ul>
+<h2 id="第四章-静态链接">第四章 静态链接</h2>
+<h3 id="空间地址分配">空间地址分配</h3>
+<p>可执行文件中的代码段和数据段就是多个文件合并而来的，对于多个文件链接器如何将它们合并到输出文件？</p>
+<p>按序叠加：最简单的方式，按照输入文件顺序依次合并。这会导致大量碎片，比如 x86 的硬件，段的装载地址和空间的对齐单位是页，也就是 4096 字节，那么如果一个段的长度只有 1 字节，它在内存里也要占用 4096 字节。</p>
+<p>相似段合并：将所有相同性质的段合并在一起。</p>
+<p>现在的链接器基本上采用第二种。使用这种方法的链接器都采用一种叫两步链接的方法。</p>
+<p>第一步，空间与地址分配。扫描所有的输入目标文件，并且获得各个段的长度，属性和位置，并将输入目标文件中的符号表所有的符号定义和符号引用收集起来，统一放到一个全局符号表。这一步，链接器将能够获得所有输入目标文件的段长度，并且将他们合并，计算出输出文件中各个段合并后的长度和位置，并建立映射关系。</p>
+<p>第二部，符号解析与重定位。使用上面收集到的信息，读取输入文件中段的数据，重定位信息。并且进行符号解析与重定位，调整代码中的地址。</p>
+<p>VMA（Virtual Memory Address）虚拟地址，LMA（Load Memory Address）加载地址。正常情况这两个值是一样的。</p>
+<p>链接之前目标文件的所有短 VMA 都是 0，因为虚拟空间还没有被分配，默认为 0，链接之后各个段就会被分配相应的虚拟地址。</p>
+<p>Linux 下，ELF 可执行文件默认从地址<code>0x8048000</code>开始分配。</p>
+<h3 id="符号解析与重定位">符号解析与重定位</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">objdump -d  查看代码段反汇编结果
+</span></span></code></pre></div><p>源代码在编译成目标文件时并不知道函数的调用地址。需要通过链接时重定位。</p>
+<p>链接器如何知道哪些指令需要被调整？这就用到了<strong>重定位表</strong>。</p>
+<p>重定位表就是 ELF 文件的一个段，所以其实重定位表也可以叫重定位段。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">objdump -r 查看重定位表
+</span></span></code></pre></div><p>每个要被重定位的地方叫一个重定位入口（Relocation Entry）。</p>
+<p>重定位过程也伴随着符号的解析过程，每个目标文件都可能定义一些符号，或引用到定义在其他文件的符号。重定位过程中，每个重定位的入口都是对一个符号的引用，那么当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器就会取查找由所有输入目标文件的符号表组成的全局符号表，找到对应的符号进行重定位。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">readelf -s 查看符号表
+</span></span></code></pre></div><p>对于 32 位 x86 平台下的 ELF 文件的重定位入口所修正的指令寻址方式只有两种：</p>
+<ul>
+<li>绝对近址 32 位寻址</li>
+<li>相对近址 32 位寻址</li>
+</ul>
+<p>x86 基本重定位类型</p>
+<table>
+<thead>
+<tr>
+<th>宏定义</th>
+<th>值</th>
+<th>重定位修正方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R_386_32</td>
+<td>1</td>
+<td>绝对寻址修正 S+A</td>
+</tr>
+<tr>
+<td>R_386_PC32</td>
+<td>2</td>
+<td>相对寻址修正 S+A-P</td>
+</tr>
+</tbody>
+</table>
+<p>A = 保存在被修正位置的值
+P = 被修正的位置 (相对于段开始的偏移量或者虚拟地址)，注意，该值可通过 r_offset 计算得到
+S = 符号的实际地址，即由 <code>r_info</code>的高 24 位指定的符号的实际地址</p>
+<h2 id="第六章-可执行文件的装载与进程">第六章 可执行文件的装载与进程</h2>
+<p>程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。</p>
+<h3 id="common-块">COMMON 块</h3>
+<blockquote>
+<p>Q:在目标文件中，编译器为什么不直接把未初始化的全局变量也当做未初始化的局部静态变量一样处理，为它在 BSS 段分配空间，而是将其标记为一个 COMMON 类型的变量？
+A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。</p>
+</blockquote>
+<p>GCC 的<code>-fno-common</code>吧所有未初始化的全局变量不以 COMMON 块形式处理。</p>
+<p><code>__attribute__</code>扩展也可以实现，<code>int global __attribute__((nocommon))</code>。这样未初始化的全局变量就是强符号。</p>
+<blockquote>
+<p>Q: 为什么静态运行库里面一个目标文件只包含一个函数？比如 libc.o 里面 printf.o 只包含 printf() 函数，strlen.o 只有 strlen 函数？
+A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。</p>
+</blockquote>
+<h3 id="链接的过程控制">链接的过程控制</h3>
+<h2 id="第-6-章-可执行文件的装载与进程">第 6 章 可执行文件的装载与进程</h2>
+<p>程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。</p>
+<p><strong>可执行文件在装载时实际上是被映射的虚拟空间，所以可执行文件又被叫做映像文件 (Image)。</strong></p>
+<p>Segment 和 Section  很难从中文翻译上区分，ELF 文件按 Section 存储的，从装载的角度 ELF 文件又可以按照 Segment 划分。</p>
+<h4 id="段地址对齐">段地址对齐</h4>
+<p>可执行文件需要被装载，装载一般通过虚拟内存页映射机制完成，页是映射的最小单位，对于 x86 处理器来说，默认页大小为 4096 字节，所以内存空间的长度必须是 4096 的整数倍，并且这段空间在物理内存和进程虚拟地址空间的起始地址必须是 4096 的整数倍。</p>
+<h2 id="第-7-章-动态链接">第 7 章 动态链接</h2>
+<h2 id="第七章-动态链接">第七章 动态链接</h2>
+<h3 id="为什么要动态链接">为什么要动态链接？</h3>
+<ul>
+<li>内存和磁盘空间：如果两个程序都用到一个静态库，链接时就会有静态库的两个副本，运行时就会占用两份内存。</li>
+<li>程序的开发与发布：一个程序用到的静态库如果有更新，那么程序就需要重新链接，发布给用户。</li>
+</ul>
+<p>要解决以上问题，最简单的方法就是把程序的模块相互分割开来，形成独立的文件，而不再将它们静态链接。就是不对目标文件进行链接，而等到程序运行时再链接。这就是<strong>动态链接的基本思想</strong>。</p>
+<p>动态链接模块的装载地址是从<code>0x00000000</code>开始的。</p>
+<p>共享对象的最终装载地址在编译时是不确定的。</p>
+<h3 id="地址无关代码">地址无关代码</h3>
+<p>静态共享库：将程序的各个模块交给操作系统管理，操作系统在某个特定的地址划分出一些地址块，为那些已知的模块预留足够的空间。</p>
+<p><strong>装载时重定位</strong>：程序在编译时被装载的目标地址为<code>0x1000</code>，但是在装载时操作系统发现<code>0x1000</code>这个地址已经被别的程序使用了，从<code>0x4000</code>开始有一块足够大的空间可以容纳，那么该程序就可以被装载至<code>0x4000</code>，程序指令和数据所有引用都只需要加上<code>0x3000</code>偏移量即可。因为他们在程序中的相对位置是不会改变的。</p>
+<p>地址无关代码为了解决共享对象指令中对绝对地址的重定位问题，基本想法是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分就可以保持不变，而数据部分可以在每个进程中拥有一个副本。</p>
+<p>模块中四类地址引用：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png" alt=""  />
+</a>
+</div>
+
+
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><strong>模块内部调用或者跳转</strong>
+不需要重定位，本身就是地址无关的。</p>
+<p><strong>模块内部数据访问</strong>
+指令中不能包含数据的绝对地址，所以使用相对寻址的方式。</p>
+<p><strong>模块间数据访问</strong>
+把跟地址相关的部分放到数据段里面。ELF 的做法是在数据段里面建立一个指向这些数据的指针数据，称为<strong>全局偏移表</strong>（GOT）。当代码需要引用全局变量时，可以通过 GOT 间接引用。</p>
+<p>链接器在装载时会查找每个变量的地址，填充 GOT 每个项，当指令中需要访问变量时，程序会先找到 GOT，根据 GOT 中对应的地址，找到对应的变量。GOT 本身放在数据段，所以他可以在模块装载时被修改，并且每个进程有独立副本，相互不影响。</p>
+<p>以访问变量 b 为例，程序首先计算出变量 b 的地址在 GOT 中的位置，即</p>
+<p><code>0x10000000 + 0x454 + 0x118c + 0xfffffff8 = 0x100015d8</code></p>
+<p><code>0xfffffff8</code>为<code>-8</code>的补码表示，然后使用寄存器间接寻址方式给变量 b 赋值 2。</p>
+<p><strong>模块间调用跳转</strong>
+类似于模块机数据访问，不同的是 GOT 中相应项保存的是目标函数的地址。</p>
+<hr>
+<p><strong>各种地址引用方式</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>指令跳转，调用</th>
+<th>数据访问</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模块内部</td>
+<td>相对跳转和调用</td>
+<td>相对地址访问</td>
+</tr>
+<tr>
+<td>模块外部</td>
+<td>间接跳转和调用（GOT）</td>
+<td>间接访问（GOT）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<blockquote>
+<p>Q : -fpic 和-fPIC 的区别？
+A: 都是 GCC 产生地址无关代码的参数。<code>-fpic</code>产生的代码较小，<code>-fPIC</code>产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上<code>-fpic</code>会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。</p>
+</blockquote>
+<blockquote>
+<p>Q: 如果一个共享对象 lib.so 中定义了一个全局变量 G，进程 A 和进程 B 都是用了 lib.so。那么当进程 A 改变这个全局变量时，进程 B 的 G 是否受到影响？
+A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。</p>
+</blockquote>
+<p>如果代码不是地址无关的，它就不能被多个进程共享，就失去了节省内存的优点。但是装载是重定位的共享对象的运行速度要比使用地址无关代码的共享对象快，因为它省去了地址无关代码中每次访问全局数据和函数是需要做一次计算当前地址以及间接地址寻址的过程。</p>
+<h3 id="延迟绑定-plt">延迟绑定 PLT</h3>
+<p>动态链接要比静态链接慢，一是因为动态链接下，对全局和静态数据的访问都要进行复杂的 GOT 定位，然后间接寻址。另外，程序开始执行时，动态链接器都要进行一次链接工作。</p>
+<p>而在一个程序运行过程中，可能很多函数在程序执行完时都不会用到，如果一开始就把所有函数链接好实际就是一种浪费，所有 ELF 采用了一种叫做延迟绑定的做法，基本思想就是当函数<strong>第一次使用时</strong>才进行绑定（符号查找，重定位等）。</p>
+<p>ELF 使用 PLT（Procedure Linkage Table）来实现延迟绑定。以调用<code>bar()</code>函数为例，之前的做法是通过 GOT 中的相应项进行跳转，而延迟绑定下，在这过程中间加了一层 PLT 间接跳转。每个外部函数在 PLT 中都有一个对应项，比如<code>bar()</code>在 PLT 中项的地址为<code>bar@plt</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">bar@plt:
+</span></span><span class="line"><span class="cl">    jmp *(bar@GOT)
+</span></span><span class="line"><span class="cl">    push n
+</span></span><span class="line"><span class="cl">    push moduleID
+</span></span><span class="line"><span class="cl">    jump _dl_runtime_resolve
+</span></span></code></pre></div><p>第一条是指令通过 GOT 间接跳转的指令，如果链接器在初始化阶段已经初始化该项，并将<code>bar()</code>地址填入该项，那么就能正确跳转到<code>bar()</code>。但是为了延迟绑定，链接器初始化时并没有将<code>bar()</code>地址填入，而是将第二条指令<code>push n</code>的地址填入了<code>bar@GOT</code>中，这一步不需要查找符号，代价很低。</p>
+<p>第一条指令的效果就是跳转到第二条指令，第二条指令将数字<code>n</code>压入堆栈，这个数字是<code>bar</code>这个符号引用在重定位表<code>.rel.plt</code>中的下标。第三条指令将模块 ID 压入堆栈，最后跳转到<code>_dl_runtime_resolve</code>。</p>
+<p><code>_dl_runtime_resolve</code>进行一系列工作后将<code>bar()</code>真正地址填入到<code>bar@GOT</code>。</p>
+<p>一旦<code>bar()</code>这个函数被解析完，当面再次调用<code>bar@plt</code>时，第一条<code>jump</code>指令就能跳转到<code>bar()</code>的真正地址。<code>bar()</code>函数返回时根据堆栈里保存的<code>EIP</code>直接返回到调用者，而不会执行<code>bar@plt</code>中第二条指令。<strong>那段代码只会在符号未被解析时执行一次</strong>。</p>
+<p>PLT 在 ELF 文件中以独立段存在，段名通常叫做<code>.plt</code>，因为它本身是一些地址无关的代码，所以可以跟代码段合并成同一个可读可执行的 Segment 被装载入内存。</p>
+<h3 id="动态链接相关结构">动态链接相关结构</h3>
+<p><strong>.interp 段</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">objdump -s a.out
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Contents of section .interp:
+</span></span><span class="line"><span class="cl">804811 2f6c6962 2f6c696d 6c696e78 782e736f  /lib/ld-linux.so.2
+</span></span></code></pre></div><p>里面保存的就是可执行文件所需要的动态链接器的路径，在 Linux 下，可执行文件动态链接器几乎都是<code>/lib/ld-linux.so.2</code>。</p>
+<p>这是个软链接，会他会指向系统中安装的动态链接器。当系统中的 Glibc 库更新时，软链接也会指向新的动态链接器，所以<code>.interp</code>段不需要修改。</p>
+<p>可以通过以下命令查看可执行文件需要的动态链接器的路径：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ readelf -l a.out <span class="p">|</span> grep interpreter
+</span></span><span class="line"><span class="cl">    <span class="o">[</span>Requesting program interpreter: /lib/ld-linux.so.2<span class="o">]</span>
+</span></span></code></pre></div><p><strong>.dynamic 段</strong></p>
+<p>动态链接 ELF 中最重要的结构，这里保存了动态链接器所需要的基本信息，如依赖哪些共享对象，动态链接符号表的位置，动态链接重定位表的位置，共享对象初始化代码的地址等。</p>
+<p><strong>动态符号表</strong></p>
+<p><code>Program1</code>程序一来<code>Lib.so</code>，引用到了里面的<code>foobar()</code>函数，那么对于<code>Program1</code>来说，称<code>Program1</code>导入（Import）了<code>foobar</code>函数，<code>foobar</code>是<code>Program1</code>的导入函数。</p>
+<p>而站在<code>Lib.so</code>角度来说，它定义了<code>foobar</code>函数，我们称<code>Lib.so</code>导出（Export）了<code>foobar</code>函数，<code>foobar</code>是<code>Lib.so</code>的导出函数。</p>
+<p>为了表示动态链接这些模块之间的符号导入导出关系，ELF 专门有一个叫做动态符号表的段来保存这些信息，段名通常叫<code>.dynsym</code>。</p>
+<p><code>.dynsym</code>只保存与动态链接相关的符号，对于那些模块内部的符号，比如模块私有变量则不保存。</p>
+<p><strong>动态链接重定位表</strong></p>
+<p>PIC 模式的共享对象也需要重定位。</p>
+<p>对于使用 PIC 技术的可执行文件或共享对象来说，虽然代码段不需要重定位，但是数据段还包含了绝对地址的引用，因为代码段中绝对地址相关的部分被分离出来，变成了 GOT，而 GOT 实际上是数据段的一部分。</p>
+<p>目标文件的重定位在静态链接时完成，共享对象的重定位在装载时完成。</p>
+<p>目标文件里包含专门用于重定位信息的重定位表，比如<code>.rel.text</code>表示是代码段重定位表，<code>.rel.data</code>表示数据段重定位表。</p>
+<p>共享对象里类似的重定位表叫做<code>.rel.dyn</code>和<code>.rel.plt</code>。<code>.rel.dyn</code>实际上是对数据引用的修正，它所修正的位置位于<code>.got</code>以及数据段；<code>.rel.plt</code>实际上是对代码引用的修正，它所修正的位置位于<code>.got.plt</code>。</p>
+<p>用以下命令可以查看重定位表；</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><code>printf</code>这个重定位入口，它的类型为<code>R_386_JUMP_SLOT</code>，它的偏移为<code>0x000015d8</code>。它实际位于<code>.got.plt</code>中，前三项是被系统占用的，第四项开始才是真正存放导入函数地址的地方，刚好是<code>0x000015c8 + 4 * 3 = 0x000015d4</code>，即<code>__gmon_start__</code>。</p>
+<p>当动态链接器要进行重定位时，先查找<code>printf</code>的地址，假设链接器在全局符号表中找到<code>printf</code>的地址为<code>0x08801234</code>，那么链接器就会将这个地址填入<code>.got.plt</code>中偏移为<code>0x000015d8</code>的位置。<strong>从而实现了地址重定位，即动态链接最关键的一步</strong>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="动态链接时进程堆栈初始化信息">动态链接时进程堆栈初始化信息</h3>
+<h3 id="动态链接的步骤和实现">动态链接的步骤和实现</h3>
+<p>动态链接分为三步：启动动态链接本身，装载所有的共享对象，重定位和初始化。</p>
+<blockquote>
+<p>Q：动态链接器本身是动态链接还是静态链接？
+A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。</p>
+</blockquote>
+<blockquote>
+<p>Q：动态链接器本身必须是 PIC 的吗？
+A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。</p>
+</blockquote>
+<blockquote>
+<p>Q：动态链接器可以被当做可执行文件运行，那么它的装载地址是多少？
+A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</code>。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。</p>
+</blockquote>
+<h3 id="显示运行时链接">显示运行时链接</h3>
+<h2 id="第-10-章-内存">第 10 章 内存</h2>
+<h3 id="程序的内存布局">程序的内存布局</h3>
+<p>在 32 位操作系统里，有 4GB 的寻址能力，大部分操作系统会将一部分挪给内核使用，应用程序无法直接访问这段内存。这部分称为内核空间。Windows 默认将高地址的 2GB 分给内核，Linux 默认分 1GB 给内核。</p>
+<p>剩下的称为用户空间，在用户空间里也有一些特殊的地址区间：</p>
+<ul>
+<li>栈：维护函数调用上下文，通常在用户空间的最高地址处分配。</li>
+<li>堆：用来容纳程序动态分配的内存区域，当使用 malloc 或者 new 分配内存时，得到的内存来自于堆。通常在栈下方。</li>
+<li>可执行文件映像：存储可执行文件再内存里的映像，由装载器在装载时将可执行文件的内存读取活映射到这里。</li>
+<li>保留区：保留区并不是一个单一的内存区域，而是对内存中受到保护而禁止访问的内存区域的总称。比如<code>NULL</code>。</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="栈与调用惯例">栈与调用惯例</h3>
+<p>栈保存了一个函数调用所需要的维护信息，通常这被称为栈帧。一般包括如下几个方面：</p>
+<ul>
+<li>函数的返回地址和参数</li>
+<li>临时变量</li>
+<li>保存的上下文</li>
+</ul>
+<p>一个函数的调用流程：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>I386 标准函数进入和退出指令序列，基本形式：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">push ebp
+</span></span><span class="line"><span class="cl">mov ebp, esp
+</span></span><span class="line"><span class="cl">sub esp, x
+</span></span><span class="line"><span class="cl">[push reg1]
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">[push regn]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">函数实际内存
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[pop regn]
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">[pop reg1]
+</span></span><span class="line"><span class="cl">mov esp, ebp
+</span></span><span class="line"><span class="cl">pop ebp
+</span></span><span class="line"><span class="cl">ret
+</span></span></code></pre></div><hr>
+<p><strong>Hot Patch Prologue 热补丁</strong>
+在 Windows 函数里，有些函数尽管使用了标准的进入指令序列，但是在这些指令之前却插入了一些特殊内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">mov edi,edi
+</span></span></code></pre></div><p>这条指令没有任何用，在汇编之后会成为一个占用 2 字节的机器码，纯粹为了占位符而存在，使用这条指令开头的函数整体看起来是这样的：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">nop
+</span></span><span class="line"><span class="cl">nop
+</span></span><span class="line"><span class="cl">nop
+</span></span><span class="line"><span class="cl">nop
+</span></span><span class="line"><span class="cl">nop
+</span></span><span class="line"><span class="cl">FUNCTION:
+</span></span><span class="line"><span class="cl">mov edi,edi
+</span></span><span class="line"><span class="cl">push ebp
+</span></span><span class="line"><span class="cl">mov ebp, esp
+</span></span></code></pre></div><p>其中 nop 占 1 个字节，也是占位符，FUNCTION 为一个标号，表示函数入口，本身不占空间。</p>
+<p>设计成这样的函数在运行时可以很容易被其他函数替换掉，在上面的指令序列中调用的函数是 FUNCTION，但是我们可以做一些修改，可以在运行时刻意改成调用函数 REPLACEMENT_FUNCTION。首先在进程内存空间任意处写入 REPLACEMENT_FUNCTION 的定义：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">REPLACEMENT_FUNCTION:
+</span></span><span class="line"><span class="cl">push ebp
+</span></span><span class="line"><span class="cl">mov ebp, esp
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">mov esp, ebp
+</span></span><span class="line"><span class="cl">pop ebp
+</span></span><span class="line"><span class="cl">ret
+</span></span></code></pre></div><p>然后修改原函数的内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">LABEL:         # 标号不占字节
+</span></span><span class="line"><span class="cl">jmp REPLACEMENT_FUNCTION # 占5字节，刚好五个nop
+</span></span><span class="line"><span class="cl">FUNCTION:      # 函数入口标号，不占字节
+</span></span><span class="line"><span class="cl">jmp LABEL      # 近跳指令，占2字节，跳跃到上方，即使截获失败也不影响原函数执行
+</span></span><span class="line"><span class="cl">push ebp
+</span></span><span class="line"><span class="cl">mov ebp, esp
+</span></span><span class="line"><span class="cl">...
+</span></span></code></pre></div><p>将 5 个<code>nop</code>换成一个<code>jmp</code>指令，然后将占用两个字节的<code>mov edi,edi</code>换成另一个<code>jmp</code>指令。因为这个<code>jmp</code>指令跳转的距离非常近，因此被汇编器翻译成了一个“近跳”指令，这种指令只占用两个字节。但<strong>只能跳跃到当前地址前后 127 个字节范围的目标位置</strong>。</p>
+<p>这里的替换机制，可以实现一种叫做<em>钩子</em>（HOOK）的技术，允许用户在某时刻截获特定函数的调用。</p>
+<hr>
+<p>函数传递参数时压栈顺序，传递参数是寄存器传参还是栈传参等等都需要遵守一定的约定，否则函数将无法正确执行，这样的约定称为<strong>调用惯例</strong>。</p>
+<p>一个调用惯例一般会规定如下几个方面：</p>
+<ul>
+<li>函数参数的传递顺序和方式
+<ul>
+<li>调用方压栈，函数自己从栈用取参数</li>
+<li>调用方压栈顺序：从左至右，还是从右至左？</li>
+</ul>
+</li>
+<li>栈的维护方式
+<ul>
+<li>参数出栈，可以由调用方完成还是由函数自己完成？</li>
+</ul>
+</li>
+<li>名字修饰的策略
+<ul>
+<li>为了链接的时候对调用惯例进行区分，调用惯例要对函数本身的名字进行修饰，不同调用惯例有不同的名字修饰策略</li>
+<li>没有显示指定调用惯例的函数默认是<code>cdecl</code>惯例</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">_cdecl</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">float</span> <span class="n">m</span><span class="p">)</span>
+</span></span></code></pre></div><blockquote>
+<p>_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是<code>__attribute__((cdecl))</code></p>
+</blockquote>
+<h2 id="附录">附录</h2>
+<h3 id="文件名">文件名</h3>
+<table>
+<thead>
+<tr>
+<th>英文名</th>
+<th>Linux</th>
+<th style="text-align:center">扩展名</th>
+<th>英文名</th>
+<th>Windows</th>
+<th style="text-align:center">扩展名</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DSO-Dynamic Shared Objects</td>
+<td>ELF 动态链接文件，动态共享对象，共享对象</td>
+<td style="text-align:center">.so</td>
+<td>DLL-Dynamic Linking Library</td>
+<td>动态链接库</td>
+<td style="text-align:center">.dll</td>
+<td>1111</td>
+</tr>
+<tr>
+<td>Static Shared Library</td>
+<td>静态共享库</td>
+<td style="text-align:center">2222</td>
+<td>2222</td>
+<td>2222</td>
+<td style="text-align:center">2222</td>
+<td>2222</td>
+</tr>
+<tr>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+</tr>
+<tr>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+</tr>
+<tr>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+<td>1111</td>
+<td style="text-align:center">1111</td>
+<td>1111</td>
+</tr>
+</tbody>
+</table>
+]]></content:encoded>
     </item>
     <item>
       <title>《代码整洁之道》读书笔记</title>
@@ -21,6 +644,730 @@
       <pubDate>Mon, 29 Nov 2021 23:20:18 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
       <description>代码整洁之道 整洁代码 整洁之道 代码是我们最终用来表达需求的那种语言，代码永存； 时时保持代码整洁，稍后等于永不（Later equals never）； 整洁代</description>
+      <content:encoded><![CDATA[<h1 id="代码整洁之道">代码整洁之道</h1>
+<h2 id="整洁代码">整洁代码</h2>
+<h3 id="整洁之道">整洁之道</h3>
+<ul>
+<li>
+<p>代码是我们最终用来表达需求的那种语言，代码永存；</p>
+</li>
+<li>
+<p>时时保持代码整洁，稍后等于永不（<strong>Later equals never</strong>）；</p>
+</li>
+<li>
+<p>整洁代码力求集中，每个函数、每个类和每个模块都全神贯注于一件事；</p>
+</li>
+<li>
+<p>整洁代码简单直接，从不隐藏设计者的意图；</p>
+</li>
+<li>
+<p>整洁代码应当有单元测试和验收测试。它使用有意义的命名，代码通过其字面表达含义；</p>
+</li>
+<li>
+<p>消除重复代码，提高代码表达力。</p>
+</li>
+</ul>
+<h2 id="有意义的命名">有意义的命名</h2>
+<h3 id="避免误导">避免误导</h3>
+<ul>
+<li>
+<p>&ldquo;一组账号&quot;别用<code>accountList</code>表示，<code>List</code>对程序员有特殊含义，可以用 <code>accountGroup</code>、<code>bunchOfAccounts</code>、甚至是<code>accounts</code>；</p>
+</li>
+<li>
+<p><strong>不使用区别较小的名称</strong>，<code>ZYXControllerForEfficientHandlingOfStrings</code>和 <code>ZYXControllerForEfficientStorageOfStrings</code>难以辨别；</p>
+</li>
+<li>
+<p>不使用小写 l、大写 O 作变量名，看起来像常量 1、0。</p>
+</li>
+</ul>
+<h3 id="做有意义的区分">做有意义的区分</h3>
+<ul>
+<li>
+<p><strong>不以数字系列命名</strong>(a1、a2、a3)，按照真实含义命名；</p>
+</li>
+<li>
+<p><strong><code>Product/ProductInfo/ProductData</code></strong> 意思无区别，只统一用一个；</p>
+</li>
+<li>
+<p>别写冗余的名字，变量名别带<code>variable</code>、表名别带<code>table</code>。</p>
+</li>
+</ul>
+<h3 id="使用读得出来的名称">使用读得出来的名称</h3>
+<ul>
+<li><code>genymdhms</code>（生成日期，年、月、日、时、分、秒）肯定不如<code>generation timestamp</code>（生成时间戳）方便交流。</li>
+</ul>
+<h3 id="使用可搜索的名称">使用可搜索的名称</h3>
+<ul>
+<li>单字母名称和数字常量很难在上下文中找出。名称长短应与其作用域大小相对应，越是频繁出现的变量名称得越容易搜索 (越长)。</li>
+</ul>
+<h3 id="命名时避免使用编码">命名时避免使用编码</h3>
+<ul>
+<li>
+<p>把类型和作用域编码进名称里增加了解码负担。意味着新人除了了解代码逻辑之外，还需要学习这种<strong>编码语言</strong>；</p>
+</li>
+<li>
+<p>别使用<strong>匈牙利语标记法</strong>(格式：<strong>[Prefix]-BaseTag-Name</strong> 其中 BaseTag 是数据类型的缩写，Name 是变量名字)，纯属多余。例如，<code>szCmdLine</code>的前缀<code>sz</code>表示“以零结束的字符串”；</p>
+</li>
+<li>
+<p>不必用<code>m_</code>前缀来表明成员变量；</p>
+</li>
+<li>
+<p>接口和实现别在名称中编码。接口名<code>IShapeFactory</code>的<strong>前导&quot;I&quot;是废话</strong>。如果接口和实现必须选一个编码，宁可选实现，<code>ShapeFactoryImp</code>都比对接口名称编码来的好。</p>
+</li>
+</ul>
+<h3 id="避免思维映射">避免思维映射</h3>
+<ul>
+<li>
+<p>不应当让读者在脑中把你的名称翻译为他们熟知的名称。例如，循环计数器自然有可能被命名为<code>i</code>或<code>j</code>或<code>k</code>，但千万别用字母<code>l</code>；</p>
+</li>
+<li>
+<p>专业程序员了解，<strong>明确是王道</strong>，编写能方便他人理解的代码。</p>
+</li>
+</ul>
+<h3 id="类名方法名">类名、方法名</h3>
+<ul>
+<li><strong>类名应当是名词</strong>或名词短语，<strong>方法名应当是动词</strong>或动词短语。</li>
+</ul>
+<h3 id="命名不要耍宝幽默">命名不要耍宝幽默</h3>
+<ul>
+<li>言到意到，意到言到，不要在命名上展示幽默感。</li>
+</ul>
+<h3 id="每个概念用一个词">每个概念用一个词</h3>
+<ul>
+<li><code>fetch</code>、<code>retrieve</code>、<code>get</code>约定一个一直用即可。</li>
+</ul>
+<h3 id="尽管使用计算机科学术语">尽管使用计算机科学术语</h3>
+<ul>
+<li>只有程序员才会读你的代码，不需要按照问题所在邻域取名称。</li>
+</ul>
+<h3 id="别用双关语">别用双关语</h3>
+<ul>
+<li><code>add</code>方法一般语义是：根据两个值获得一个新的值。<strong>如果要把单个值加入到某个集合</strong>，用<code>insert</code>或<code>append</code>命名更好，这里用<code>add</code>就是双关语了。</li>
+</ul>
+<h3 id="添加有意义的语境">添加有意义的语境</h3>
+<ul>
+<li>很少有名称能自我说明，<strong>需要用良好命名的类、函数、或者命名空间来放置名称</strong>，给读者提供语境，如果做不到的话，给名称添加前缀就是最后一招了。</li>
+</ul>
+<h2 id="函数">函数</h2>
+<h3 id="越短越好">越短越好</h3>
+<ul>
+<li>
+<p>短小，20 行封顶；</p>
+</li>
+<li>
+<p><code>if/else/while</code>语句的代码块应该只有一行，该行应该是一个函数调用语句；</p>
+</li>
+<li>
+<p>函数的缩进层级不应该多于一层或两层。</p>
+</li>
+</ul>
+<h3 id="一个函数只做一件事">一个函数只做一件事</h3>
+<ul>
+<li>
+<p>如果函数只是做了该函数名下<strong>同一抽象层上的步骤</strong>，则函数只做了一件事；</p>
+</li>
+<li>
+<p>要判断函数是否不止做了一件事，就是要看是否能<strong>再拆出一个函数</strong>；</p>
+</li>
+</ul>
+<h3 id="每个函数一个抽象层级">每个函数一个抽象层级</h3>
+<ul>
+<li><strong>向下规则</strong>：让代码拥有自顶向下的阅读顺序。每个函数后面都跟着位于下一抽象层级的函数，这样一来，在查看函数列表时，就能循抽象层级向下阅读了。</li>
+</ul>
+<h3 id="switch-语句">switch 语句</h3>
+<ul>
+<li><strong>把 switch 埋在较低的抽象层级</strong>，一般可以放在抽象工厂底下，用于创建多态对象。</li>
+</ul>
+<h3 id="使用描述性的名称">使用描述性的名称</h3>
+<ul>
+<li>
+<p>函数越短小、功能越集中，就越便于取个好名字；</p>
+</li>
+<li>
+<p>别害怕长名称，<strong>长而具有描述性的名称，要比短而令人费解的名称好，要比描述性的长注释好；</strong></p>
+</li>
+<li>
+<p>别害怕花时间取名字。</p>
+</li>
+</ul>
+<h3 id="函数参数">函数参数</h3>
+<ul>
+<li>
+<p><strong>参数越少越好</strong>，0 参数最好，尽量避免用三个以上参数；</p>
+</li>
+<li>
+<p>参数越多，编写组合参数的测试用例就越困难；</p>
+</li>
+<li>
+<p><strong>别用标识参数</strong>，向函数传入<code>bool</code>值是不好的，这意味着函数不止做一件事。可以将此函数拆成两个；</p>
+</li>
+<li>
+<p>如果函数需要<strong>两个、三个或者三个以上参数</strong>，就说明其中<strong>一些参数应该封装成类了</strong>；</p>
+</li>
+<li>
+<p><strong>将参数的顺序编码进函数名</strong>，减轻记忆参数顺序的负担，例如 <code>assertExpectedEqualsActual(expected, actual)</code>。</p>
+</li>
+</ul>
+<h3 id="副作用-函数在正常工作任务之外对外部环境所施加的影响">副作用 (函数在正常工作任务之外对外部环境所施加的影响)</h3>
+<ul>
+<li>
+<p>检查密码并且初始化<code>session</code>的方法命名为<code>checkPasswordAndInitializeSession</code>而非 <code>checkPassword</code>，<strong>即使违反单一职责原则也不要有副作用</strong>；</p>
+</li>
+<li>
+<p>避免使用&quot;输出参数&rdquo;，<strong>如果函数必须修改某种状态，就修改所属对象的状态吧</strong>。</p>
+</li>
+</ul>
+<h3 id="设置-写-和查询-读-分离">设置 (写) 和查询 (读) 分离</h3>
+<ul>
+<li></li>
+</ul>
+<pre><code>```C
+if(set(&quot;username&quot;, &quot;unclebob&quot;)) 
+{ 
+    ... 
+}
+```
+
+含义模糊不清。应该改为:
+
+```c
+if (attributeExists(&quot;username&quot;)) 
+{ 
+    setAttribute(&quot;username&quot;, &quot;unclebob&quot;);
+}
+```
+</code></pre>
+<h3 id="使用异常代替返回错误码">使用异常代替返回错误码</h3>
+<ul>
+<li>
+<p><strong>返回错误码</strong>会要求调用者立刻处理错误，从而<strong>引起深层次的嵌套结构</strong>；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nf">deletePate</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="o">==</span> <span class="n">E_OK</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">xxx</span><span class="p">()</span> <span class="o">==</span> <span class="n">E_OK</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">yyy</span><span class="p">()</span> <span class="o">==</span> <span class="n">E_OK</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">log</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">else</span> 
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">log</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">else</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">log</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> 
+</span></span><span class="line"><span class="cl"><span class="k">else</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">log</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div></li>
+<li>
+<p>所以需要用<code>try catch</code>异常机制；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">try</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">deletePage</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">xxx</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">yyy</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">zzz</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="nf">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">log</span><span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="nf">getMessage</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div></li>
+<li>
+<p><code>try/catch</code>代码块丑陋不堪，所以最好把<code>try</code>和 <code>catch</code>代码块的主体抽离出来，单独形成函数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">try</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">do</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="nf">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">handle</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="不要写重复代码">不要写重复代码</h3>
+<ul>
+<li>重复是软件中一切邪恶的根源。当算法改变时需要修改多处地方。</li>
+</ul>
+<h3 id="结构化编程">结构化编程</h3>
+<ul>
+<li>
+<p>只要函数保持短小，偶尔出现的<code>return</code>、<code>break</code>、<code>continue</code>语句没有坏处，甚至还比单入单出原则更具有表达力。<code>goto</code>只有在大函数里才有道理，应该尽量避免使用。</p>
+</li>
+<li>
+<p>并不需要一开始就按照这些规则写函数，没人做得到。想些什么就写什么，然后再打磨这些代码，按照这些规则组装函数。</p>
+</li>
+</ul>
+<h2 id="注释">注释</h2>
+<ul>
+<li>
+<p>若编程语言足够有表现力，我们就不需要注释；</p>
+</li>
+<li>
+<p>注释总是一种失败，因为我们无法找到不用注释就能表达自我的方法；</p>
+</li>
+<li>
+<p>代码在演化，注释却不总是随之变动，会变得越来越不准确。</p>
+</li>
+</ul>
+<h3 id="用代码来阐述">用代码来阐述</h3>
+<ul>
+<li>
+<p>创建一个与注释所言同一事物的函数即可，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="c1">// check to see if the employee is eligible for full benefits 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="p">((</span><span class="n">employee</span><span class="p">.</span><span class="n">falgs</span> <span class="o">&amp;</span> <span class="n">HOURLY_FLAG</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">employee</span><span class="p">.</span><span class="n">age</span> <span class="o">&gt;</span> <span class="mi">65</span><span class="p">))</span>
+</span></span></code></pre></div><p>应替换为</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">employee</span><span class="p">.</span><span class="nf">isEligibleForFullBenefits</span><span class="p">())</span>
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="好注释">好注释</h3>
+<ul>
+<li>
+<p>法律信息，并且只要有可能就指向标准许可或者外部文档，而不是放全文；</p>
+</li>
+<li>
+<p>提供基本信息，如解释某个<strong>抽象方法的返回值</strong>；</p>
+</li>
+<li>
+<p>对意图的解释，反应了作者某个决定后面的意图；</p>
+</li>
+<li>
+<p>阐释。把某些<strong>晦涩的参数或者返回值</strong>的意义<strong>翻译成可读的形式</strong>(更好的方法是让它们自身变得足够清晰，但是类似标准库的代码我们无法修改)；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="nf">compareTo</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">//b &gt; a
+</span></span></span></code></pre></div></li>
+<li>
+<p>警示。<code>// don't run unless you have some time to kill</code>；</p>
+</li>
+<li>
+<p><code>TODO</code>注释；</p>
+</li>
+<li>
+<p>放大 一些看似不合理之物的重要性。</p>
+</li>
+</ul>
+<h3 id="坏注释">坏注释</h3>
+<ul>
+<li>
+<p>自言自语；</p>
+</li>
+<li>
+<p>多余的注释。<strong>把逻辑在注释里写一遍不能比代码提供更多信息</strong>，读它不比读代码简单。<strong>一目了然的成员变量别加注释</strong>，显得很多余；</p>
+</li>
+<li>
+<p>误导性注释；</p>
+</li>
+<li>
+<p>遵循规矩的注释。<strong>每个函数都加注释、每个变量都加注释是愚蠢的</strong>；</p>
+</li>
+<li>
+<p>日志式注释。有了代码版本控制工具，不必在文件开头维护修改时间、修改人这类日志式的注释；</p>
+</li>
+<li>
+<p><strong>能用函数或者变量表示就别用注释</strong>；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// does the module from the global list &lt;mod&gt; </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// depend on the subsystem we are part of?</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">smodule</span><span class="p">.</span><span class="na">getDependSubsystems</span><span class="p">().</span><span class="na">contains</span><span class="p">(</span><span class="n">subSysMod</span><span class="p">.</span><span class="na">getSubSystem</span><span class="p">())</span><span class="w">
+</span></span></span></code></pre></div><p>可以改为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ArrayList</span><span class="w"> </span><span class="n">moduleDependees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">smodule</span><span class="p">.</span><span class="na">getDependSubsystems</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">String</span><span class="w"> </span><span class="n">ourSubSystem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subSysMod</span><span class="p">.</span><span class="na">getSubSystem</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">moduleDependees</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">ourSubSystem</span><span class="p">))</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>位置标记。<strong>标记多了会被我们忽略掉</strong>；</p>
+<p><code>///////////////////// Actions //////////////////////////</code></p>
+</li>
+<li>
+<p>右括号注释；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="n">try</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">()</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">()</span> 
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">...</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="c1">// if
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">...</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="c1">// while
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="c1">// try
+</span></span></span></code></pre></div><p>如果你想标记右括号，其实应该做的是缩短函数</p>
+</li>
+<li>
+<p>署名 <code>/* add by rick */</code> 源代码控制工具会记住你，<strong>署名注释跟不上代码的演变</strong>；</p>
+</li>
+<li>
+<p>注释掉的代码。会导致看到这段代码其他人不敢删除，使用版本控制系统，可以大胆删除需要注释的代码；</p>
+</li>
+<li>
+<p>信息过多。别在注释中添加有趣的历史话题或者无关的细节；</p>
+</li>
+<li>
+<p>没解释清楚的注释。注释的作用是解释未能自行解释的代码，如果注释本身还需要解释就太遗憾了；</p>
+</li>
+<li>
+<p>短函数的函数头注释。<strong>为短函数选个好名字比函数头注释要好</strong>；</p>
+</li>
+<li>
+<p>非公共API函数的<code>javadoc/phpdoc</code>注释。</p>
+</li>
+</ul>
+<h2 id="格式">格式</h2>
+<h3 id="垂直格式">垂直格式</h3>
+<ul>
+<li>
+<p>短文件比长文件更易于理解。<strong>平均200行，最多不超过500行的单个文件可以构造出色的系统</strong>；</p>
+</li>
+<li>
+<p>像报纸一样排版，由略及详，层层递进；</p>
+</li>
+<li>
+<p>区隔: 封包声明、导入声明、每个函数之间，都用空白行分隔开，<strong>空白行下面标识着新的独立概念</strong>，表示一个思路的开始</p>
+</li>
+<li>
+<p>靠近: 紧密相关的代码应该互相靠近，例如<strong>一个类里的属性之间别用空白行隔开</strong>；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReporterConfig</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//The class name of the reporter listener</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">m_className</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//The properties of the reporter listener</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Property</span><span class="o">&gt;</span><span class="w"> </span><span class="n">m_properties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Property</span><span class="o">&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">addProperty</span><span class="p">(</span><span class="n">Property</span><span class="w"> </span><span class="n">property</span><span class="p">)</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">m_properties</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">property</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">///////////////////////对比////////////////////////////////////</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReporterConfig</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">m_className</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Property</span><span class="o">&gt;</span><span class="w"> </span><span class="n">m_properties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Property</span><span class="o">&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">addProperty</span><span class="p">(</span><span class="n">Property</span><span class="w"> </span><span class="n">property</span><span class="p">)</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">m_properties</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">property</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p><strong>变量声明应尽可能靠近其使用位置</strong>：循环中的控制变量应该总是在循环语句中声明；</p>
+</li>
+<li>
+<p><strong>成员变量应该放在类的顶部声明</strong>，不要四处放置；</p>
+</li>
+<li>
+<p><strong>如果某个函数调用了另外一个，就应该把它们放在一起</strong>。我们希望底层细节最后展现出来，不用沉溺于细节，所以<strong>调用者尽可能放在被调用者之上；</strong></p>
+</li>
+<li>
+<p>执行同一基础任务的几个函数应该放在一起。</p>
+</li>
+</ul>
+<h3 id="水平格式">水平格式</h3>
+<ul>
+<li>
+<p>一行代码不必死守80字符的上限，偶尔到达100字符不超过120字符即可；</p>
+</li>
+<li>
+<p>区隔与靠近: 空格强调左右两边的分割。<strong>赋值运算符两边加空格，函数名与左圆括号之间不加空格，乘法运算符在与加减法运算符组合时不用加空格(a*b - c)</strong>；</p>
+</li>
+<li>
+<p>不必水平对齐。例如声明一堆成员变量时，各行不用每一个单词都对齐，代码自动格式化工具通常会把这类对齐消除掉；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span>　<span class="nc">FitNesseExpediter</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">ResponseSender</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w">　　 </span><span class="n">Socket</span><span class="w">　　　　　　　 </span><span class="n">socket</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w">　　 </span><span class="n">InputStream</span><span class="w">　　　   </span><span class="n">input</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w">　　 </span><span class="n">OutputStream</span><span class="w">　　　  </span><span class="n">output</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w">　　 </span><span class="n">Request</span><span class="w">　　　　　　  </span><span class="n">request</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">　　
+</span></span></span></code></pre></div></li>
+<li>
+<p>短小的<code>if</code>、<code>while</code>、函数里最好也不要违反缩进规则，不要这样:<code>if (xx == yy) z = 1</code>；</p>
+</li>
+<li>
+<p><code>while</code>语句为空，最好分行写分号；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">;</span>
+</span></span></code></pre></div></li>
+</ul>
+<h3 id="团队规则">团队规则</h3>
+<ul>
+<li>团队绝对不要用各种不同的风格来编写源代码，这样会增加其复杂度。</li>
+</ul>
+<h2 id="对象和数据结构">对象和数据结构</h2>
+<h3 id="数据抽象">数据抽象</h3>
+<ul>
+<li>对象：暴露行为 (接口),隐藏数据 (私有变量)  ；</li>
+<li>数据结构：没有明显的行为 (接口),暴露数据。如<code>DTO</code>(Data Transfer Objects)、<code>Entity</code>；</li>
+</ul>
+<h3 id="数据对象的反对称性">数据，对象的反对称性</h3>
+<ul>
+<li>
+<p>使用<strong>数据结构便于</strong>在不改动现在数据结构的前提下<strong>添加新函数</strong>；使用<strong>对象便于</strong>在不改动既有函数的前提下<strong>添加新类</strong>；</p>
+</li>
+<li>
+<p>使用<strong>数据结构难以添加新数据结构</strong>，因为必须修改所有函数；使用<strong>对象难以添加新函数</strong>，因为必须修改所有类；</p>
+</li>
+<li>
+<p>万物皆对象只是个传说，有时候我们也会在简单数据结构上做一些过程式的操作。</p>
+</li>
+</ul>
+<h3 id="law-of-demeter">Law of Demeter</h3>
+<ul>
+<li>
+<p><strong>模块不应该了解它所操作对象的内部情形</strong>；</p>
+</li>
+<li>
+<p><code>class C</code>的方法<code>f</code>只应该调用以下对象的方法：</p>
+<ul>
+<li>
+<p><code>C</code></p>
+</li>
+<li>
+<p>在方法<code>f</code>里创建的对象</p>
+</li>
+<li>
+<p>作为参数传递给方法<code>f</code>的对象</p>
+</li>
+<li>
+<p><code>C</code>持有的对象</p>
+</li>
+</ul>
+</li>
+<li>
+<p>方法不应调用 <strong>由任何函数返回的对象</strong> 的方法。下面的代码违反了 demeter 定律：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">outputDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctxt</span><span class="p">.</span><span class="na">getOptions</span><span class="p">().</span><span class="na">getScratchDir</span><span class="p">().</span><span class="na">getAbsolutePath</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>一个简单例子是，人可以命令一条狗行走（walk），但是不应该直接指挥狗的腿行走，应该由狗去指挥控制它的腿如何行走。</p>
+</li>
+</ul>
+<h3 id="错误处理">错误处理</h3>
+<ul>
+<li>错误处理很重要，但是不能凌乱到打乱代码逻辑。</li>
+</ul>
+<h3 id="使用异常而不是返回错误码">使用异常而不是返回错误码</h3>
+<ul>
+<li>
+<p>如果使用错误码，调用者必须在函数返回时<strong>立刻处理错误</strong>，但这很容易被我们忘记；</p>
+</li>
+<li>
+<p>错误码通常会导致<strong>嵌套</strong><code>if else</code>。</p>
+</li>
+</ul>
+<h3 id="先写-try-catch-语句">先写 try-catch 语句</h3>
+<ul>
+<li>当编写可能会抛异常的代码时，先写好<code>try-catch</code>再往里堆逻辑。</li>
+</ul>
+<h3 id="在-catch-里尽可能的记录">在 catch 里尽可能的记录</h3>
+<ul>
+<li>在<code>catch</code>里尽可能的记录错误信息，记录失败的操作以及失败的类型</li>
+</ul>
+<h3 id="依调用者定义异常类">依调用者定义异常类</h3>
+<ul>
+<li>对错误分类有很多方式。可以依其来源分类：是来自组件还是其他地方？或依其类型分类：是设备错误、网络错误还是编程错误？</li>
+</ul>
+<h3 id="别返回-null-值">别返回 null 值</h3>
+<ul>
+<li>
+<p>返回<code>null</code>值只要一处没检查<code>null</code>，应用程序就会失败；</p>
+</li>
+<li>
+<p>当想返回<code>null</code>值的时候，<strong>可以试试抛出异常，或者返回特例模式的对象。</strong></p>
+</li>
+</ul>
+<h3 id="别传递-null-值">别传递 null 值</h3>
+<ul>
+<li>
+<p>在方法中传递<code>null</code>值是一种糟糕的做法，应该尽量避免；</p>
+</li>
+<li>
+<p>在方法里用<code>if</code>或<code>assert</code>过滤<code>null</code>值参数，但是还是会出现运行时错误，没有良好的办法对付调动者意外传入的<code>null</code>值，恰当的做法就是<strong>禁止传入<code>null</code>值</strong>。</p>
+</li>
+</ul>
+<h2 id="边界">边界</h2>
+<h3 id="将第三方代码干净利落地整合进自己的代码中">将第三方代码干净利落地整合进自己的代码中</h3>
+<ul>
+<li>
+<p>避免公共 API 返回边界接口，或者将边界接口作为参数传递给 API。将边界保留在近亲类中；</p>
+</li>
+<li>
+<p>不要在生产代码中试验新东西，而是编写测试来理解第三方代码；</p>
+</li>
+<li>
+<p>避免我们的代码过多地了解第三方代码中的特定信息。</p>
+</li>
+<li>
+<p>学习性测试是一种精确试验，帮助我们增进对 API 的理解。</p>
+</li>
+</ul>
+<h2 id="单元测试">单元测试</h2>
+<h3 id="tddtest-driven-development-三定律">TDD(Test-driven development) 三定律</h3>
+<ul>
+<li>
+<p><em>First Law: You may not write production code until you have written a failing unit test.</em></p>
+</li>
+<li>
+<p><em>Second Law: You may not write more of a unit test than is sufficient to fail, and not compiling is failing.</em></p>
+</li>
+<li>
+<p><em>Third Law: You may not write more production code than is sufficient to pass the currently failing test.</em></p>
+</li>
+</ul>
+<h3 id="保持测试整洁">保持测试整洁</h3>
+<ul>
+<li>
+<p><strong>脏测试等同于没测试</strong>，测试代码越脏生产代码越难修改；</p>
+</li>
+<li>
+<p>测试代码和生产代码一样重要；</p>
+</li>
+<li>
+<p>整洁的测试代码最应具有的要素是：<strong>整洁性</strong>。<strong>测试代码中不要有大量重复代码的调用。</strong></p>
+</li>
+</ul>
+<h3 id="每个测试一个断言">每个测试一个断言</h3>
+<ul>
+<li>
+<p>每个测试函数<strong>有且仅有一个断言语句</strong>；</p>
+</li>
+<li>
+<p>每个测试函数中<strong>只测试一个概念</strong>。</p>
+</li>
+</ul>
+<h3 id="整洁的测试依赖于-first-规则">整洁的测试依赖于 FIRST 规则</h3>
+<ul>
+<li>
+<p><strong>fast</strong>: 测试代码应该<strong>能够快速运行</strong>，因为我们需要频繁运行它；</p>
+</li>
+<li>
+<p><strong>independent</strong>: 测试应该<strong>相互独立</strong>，某个测试不应该依赖上一个测试的结果，测试可以以任何顺序进行；</p>
+</li>
+<li>
+<p><strong>repeatable</strong>: 测试应可以在任何环境中通过；</p>
+</li>
+<li>
+<p><strong>self-validating</strong>: 测试应该有<code>bool</code>值输出，不应通过查看日志来确认测试结果，不应手工对比两个文本文件确认测试结果；</p>
+</li>
+<li>
+<p><strong>timely</strong>: 及时编写测试代码。<strong>单元测试应该在生产代码之前编写</strong>，否则生产代码会变得难以测试。</p>
+</li>
+</ul>
+<h2 id="类">类</h2>
+<h3 id="类的组织">类的组织</h3>
+<p>以下针对 JAVA 语言，其他语言类似，变量在前，方法在后，公有在前，私有在后。</p>
+<ul>
+<li>
+<p>公共静态常量</p>
+</li>
+<li>
+<p>私有静态变量</p>
+</li>
+<li>
+<p>私有实体变量</p>
+</li>
+<li>
+<p>公共函数</p>
+</li>
+<li>
+<p>私有工具函数</p>
+</li>
+</ul>
+<p>如果测试需要调用一个函数或变量，可以设为保护类型。</p>
+<h3 id="类应该短小">类应该短小</h3>
+<ul>
+<li>
+<p>对于函数我们计算<strong>代码行数</strong>衡量大小，对于类我们使用<strong>权责</strong>来衡量；</p>
+</li>
+<li>
+<p><strong>类的名称应当描述其权责</strong>。类的命名是判断类长度的第一个手段，如果无法为某个类命以准确的名称，这个类就太长了。类名包含模糊的词汇，如<code>Processor</code>、<code>Manager</code>、<code>Super</code>，这种现象就说明有不恰当的<strong>权责聚集</strong>情况；</p>
+</li>
+<li>
+<p>单一权责原则（Single Responsibility Principle，SRP）: 类或者模块应该有一个权责——只有一条修改的理由 (A class should have only one reason to change.)；</p>
+</li>
+<li>
+<p>系统应该由许多短小的类而不是少量巨大的类组成；</p>
+</li>
+<li>
+<p>类应该只有少量的实体变量，如果一个类中每个实体变量都被每个方法所使用，则说明该类具有<strong>最大的内聚性</strong>。创建最大化的内聚类不太现实，但是应该以高内聚为目标，<strong>内聚性越高说明类中的方法和变量互相依赖、互相结合形成一个逻辑整体</strong>；</p>
+</li>
+<li>
+<p><strong>保持内聚性就会得到许多短小的类</strong>。如果你想把一个大函数的某一小部分拆解成单独的函数，拆解出的函数使用了大函数中的 4 个变量，不必<strong>将 4 个变量作为参数传递到新函数里</strong>，仅需<strong>将这 4 个变量提升为大函数所在类的实体变量</strong>，但是这么做却因为实体变量的增多而丧失了类的内聚性，更好多做法是<strong>让这 4 个变量拆出来，拥有自己的类</strong>。将大函数拆解成小函数往往是将类拆分为小类的时机。</p>
+</li>
+</ul>
+<h3 id="为了修改而组织">为了修改而组织</h3>
+<ul>
+<li>
+<p>类应当对扩展开放，对修改封闭 (开放闭合原则)；</p>
+</li>
+<li>
+<p>在理想系统中，我们通过扩展系统而非修改现有代码来添加新特性。</p>
+</li>
+</ul>
+<h2 id="系统">系统</h2>
+<h3 id="将系统的构造与使用分开">将系统的构造与使用分开</h3>
+<ul>
+<li>软件系统应将起始过程和之后的运行逻辑分开。</li>
+</ul>
+<h3 id="分解-main">分解 main</h3>
+<ul>
+<li>
+<p><strong>将全部构造过程搬迁到 main</strong>或者被称之为<code>main</code>的模块中，涉及系统其余部分时，<strong>假设所有对象都已经正确构造</strong>；</p>
+</li>
+<li>
+<p>依赖注入 (DI)，控制反转 (IoC) 是分离构造与使用的强大机制。</p>
+</li>
+</ul>
+<h2 id="迭代">迭代</h2>
+<h3 id="表达力">表达力</h3>
+<ul>
+<li>
+<p>作者把代码写的越清晰，其他人理解代码就越快；</p>
+</li>
+<li>
+<p>太多时候我们深入于要解决的问题中，写出能工作的代码之后，就转移到下一个问题上，没有下足功夫调整代码让后来者易于阅读。多少尊重一下我们的手艺，花一点点时间在每个函数和类上。</p>
+</li>
+</ul>
+<h3 id="尽可能少的类和方法">尽可能少的类和方法</h3>
+<ul>
+<li>
+<p>为了保持类和函数的短小，我们可能会早出太多细小的类和方法；</p>
+</li>
+<li>
+<p>类和方法数量太多，有时是由毫无意义的教条主义导致的。</p>
+</li>
+</ul>
+<h3 id="以上-4-条规则优先级依次递减重要的是测试消除重复表达意图">以上 4 条规则优先级依次递减。重要的是测试、消除重复、表达意图</h3>
+<h2 id="并发编程">并发编程</h2>
+<h3 id="为什么要并发编程">为什么要并发编程</h3>
+<ul>
+<li>
+<p>并发总能改进性能；</p>
+</li>
+<li>
+<p>编写并发程序无需修改设计；</p>
+</li>
+<li>
+<p>在采用<code>Web</code>或<code>EJB</code>容器的时候，理解并发问题并不重要。</p>
+</li>
+</ul>
+<h3 id="防御并发代码问题的原则与技巧">防御并发代码问题的原则与技巧</h3>
+<ul>
+<li>
+<p>遵循单一职责原则。分离并发代码与非并发代码；</p>
+</li>
+<li>
+<p>限制临界区数量、限制对共享数据的访问；</p>
+</li>
+<li>
+<p>避免使用共享数据，使用对象的副本；</p>
+</li>
+<li>
+<p>线程尽可能地独立，不与其他线程共享数据。</p>
+</li>
+</ul>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

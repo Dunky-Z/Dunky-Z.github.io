@@ -14,6 +14,322 @@
       <pubDate>Fri, 09 Aug 2024 23:10:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/hugo%E4%B8%BB%E9%A2%98%E9%85%8D%E7%BD%AE/</guid>
       <description>配置页面的菜单 在config.yaml中配置menu字段，如下： menu: main: - identifier: &amp;#34;archives&amp;#34; name: &amp;#34;归档&amp;#34; url: &amp;#34;/archives/&amp;#34; weight: 2 - identifier: &amp;#34;tags&amp;#34; name: &amp;#34;标签&amp;#34;</description>
+      <content:encoded><![CDATA[<h2 id="配置页面的菜单">配置页面的菜单</h2>
+<p>在<code>config.yaml</code>中配置<code>menu</code>字段，如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">menu</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;archives&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;归档&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/archives/&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;tags&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;标签&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/tags/&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;categories&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;分类&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/categories/&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">weight</span><span class="p">:</span><span class="w"> </span><span class="m">4</span><span class="w">
+</span></span></span></code></pre></div><p>其中<code>weight</code>字段表示菜单的排序，数字越小越靠前。此时页面应该会显示这三个菜单，但是归档页面是 404，还需要在创建一个<code>content/archives.md</code>文件，内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">title: &#34;Archive&#34;
+</span></span><span class="line"><span class="cl">layout: &#34;archives&#34;
+</span></span><span class="line"><span class="cl">url: &#34;/archives&#34;
+</span></span><span class="line"><span class="cl">summary: &#34;archives&#34;
+</span></span><span class="line"><span class="cl">---
+</span></span></code></pre></div><p>其中最关键的就是<code>layout</code>字段，指定了这个页面使用的模板，这里使用的是<code>themes\PaperMod\layouts\_default\archives.html</code>模板，所以我们在<code>content/archives.md</code>中只需要制定这个模板就行，不需要再添加其他内容，这样就能够让归档页面正常显示了。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/7973533a1fe44d65c94813434de6782c.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/7973533a1fe44d65c94813434de6782c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/7973533a1fe44d65c94813434de6782c.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="修改-layout-模板">修改 layout 模板</h2>
+<p>我们可以直接修改主题中的文件，但是这样会导致主题更新时丢失我们的修改，所以我们可以将主题中的文件复制到<code>layouts</code>目录下，然后再进行修改，这样就不会丢失我们的修改了。hugo 会优先使用<code>layouts</code>目录下的文件。</p>
+<h2 id="文章添加标签和分类">文章添加标签和分类</h2>
+<p>在文章的头部添加<code>tags</code>和<code>categories</code>字段，如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">ELF, C]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">categories</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">C 语言入门]</span><span class="w">
+</span></span></span></code></pre></div><h2 id="文章添加封面图">文章添加封面图</h2>
+<p>在<code>static</code>目录下创建一个<code>img</code>目录，然后将图片<code>a.jpg</code>放到这个目录下，然后在文章的头部添加<code>cover</code>字段，如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">cover</span><span class="p">:</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">img/a.jpg</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># 设置图片的小标题</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">alt</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;图片&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">caption</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;图片&#34;</span><span class="w">
+</span></span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/ec0963b43aceed81451a2bd8a82f0779.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/ec0963b43aceed81451a2bd8a82f0779.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/ec0963b43aceed81451a2bd8a82f0779.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="点击图片显示原图">点击图片显示原图</h2>
+<p>在<code>config.yaml</code>中添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">cover</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">linkFullImages</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span></code></pre></div><h2 id="设置面包屑导航">设置面包屑导航</h2>
+<p>在<code>config.yaml</code>中添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">showBreadCrumbs</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/659f8be600c857ce5d3c7f10ce7e4d65.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/659f8be600c857ce5d3c7f10ce7e4d65.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/09/659f8be600c857ce5d3c7f10ce7e4d65.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="设置主页欢迎信息">设置主页欢迎信息</h2>
+<p>在<code>config.yaml</code>中添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">homeInfoParams</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;欢迎来到我的博客&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;这里是我的个人博客，欢迎访问。&#34;</span><span class="w">
+</span></span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5c96dd4273a7f7c1a66829ea3b610b13.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5c96dd4273a7f7c1a66829ea3b610b13.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5c96dd4273a7f7c1a66829ea3b610b13.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="主页添加社交网站信息">主页添加社交网站信息</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># 主页添加社交网站图标</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">socialIcons</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">GitHub</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;https://github.com/Dunky-Z&#34;</span><span class="w">
+</span></span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/d1056513367d2698342646e970de4083.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/d1056513367d2698342646e970de4083.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/d1056513367d2698342646e970de4083.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="添加搜索功能">添加搜索功能</h2>
+<p>添加以下配置到 config.yml 文件（上述配置文件已有，此处不用重复添加）</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">outputs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">home</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="l">HTML</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="l">RSS</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="l">JSON</span><span class="w"> </span><span class="c"># is necessary</span><span class="w">
+</span></span></span></code></pre></div><p>在 content 文件夹中创建 search.md 并添加以下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">title: &#34;🔍 搜索&#34; # in any language you want
+</span></span><span class="line"><span class="cl">layout: &#34;search&#34; # is necessary
+</span></span><span class="line"><span class="cl"># url: &#34;/archive&#34;
+</span></span><span class="line"><span class="cl"># description: &#34;Description for Search&#34;
+</span></span><span class="line"><span class="cl">summary: &#34;search&#34;
+</span></span><span class="line"><span class="cl">placeholder: &#34;搜索框内的默认显示&#34;
+</span></span><span class="line"><span class="cl">---
+</span></span></code></pre></div><p>要使得某些特定的不被搜素到，可以在博客开头添加：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">searchHidden: true
+</span></span></code></pre></div><h2 id="更改字体">更改字体</h2>
+<p>打开<a href="https://fonts.google.com/">谷歌字体</a>，选择自己喜欢的字体，点击 Get Font-&gt;Get embed code，复制 html 和 css 两部分备用。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/7cd7a9cb8e0f2182805dfede2204588c.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/7cd7a9cb8e0f2182805dfede2204588c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/7cd7a9cb8e0f2182805dfede2204588c.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>将主题中的<code>themes\PaperMod\layouts\partials\extend_head.html</code>文件复制到博客主目录下的<code>layout\partials\extend_head.html</code>目录下，一定要保持目录结构一致，没有的目录自己创建一个。将 Html 代码粘贴到<code>extend_head.html</code>文件中。</p>
+<p>将主题中的<code>themes\PaperMod\assets\css\extended\blank.css</code>文件复制到博客主目录下的<code>assets\css\extended\blank.css</code>目录下，同样需要保持目录结构一致，将 css 代码粘贴到<code>blank.css</code>文件中。注意 Google Font 提供的是个 CSS 模板，有些具体的参数需要修改一下，比如尖括号里的内容是需要自己填写的。我的修改如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-css" data-lang="css"><span class="line"><span class="cl"><span class="nt">body</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">font-family</span><span class="p">:</span> <span class="s2">&#34;Noto Sans SC&#34;</span><span class="p">,</span> <span class="kc">sans-serif</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">font-optical-sizing</span><span class="p">:</span> <span class="kc">auto</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">font-size</span><span class="p">:</span> <span class="mi">1</span><span class="kt">rem</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">line-height</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">margin</span><span class="p">:</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>修改代码字体过程一样，需要注意的是，Google Font 可以选择多个字体，比如我选择了两种字体，一种<code>JetBrains+Mono</code>用于代码，一种<code>Noto+Sans+SC</code>用于中文，在选择第二个字体时，点击 Get embed font 默认会把<code>html</code>代码何必在了一起，也就是下面这样：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;preconnect&#34;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;https://fonts.googleapis.com&#34;</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;preconnect&#34;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;https://fonts.gstatic.com&#34;</span> <span class="na">crossorigin</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;family=Noto+Sans+SC:wght@100..900&amp;display=swap&#34;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;stylesheet&#34;</span><span class="p">&gt;</span>
+</span></span></code></pre></div><h2 id="加入-disqus-评论">加入 Disqus 评论</h2>
+<p>前往<a href="https://disqus.com/">Disqus 官网</a>注册账号，创建一个站点，</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/64b2119d2d42c6dbfb67423a2e672869.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/64b2119d2d42c6dbfb67423a2e672869.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/64b2119d2d42c6dbfb67423a2e672869.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>然后将站点的<code>shortname</code>复制下来，</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/40345b0512027a8cc19050102b2ce0e0.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/40345b0512027a8cc19050102b2ce0e0.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/40345b0512027a8cc19050102b2ce0e0.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>然后在<code>config.yaml</code>中添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l">production</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">comments</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">disqus</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">shortname</span><span class="p">:</span><span class="w"> </span><span class="l">lifeislife-1</span><span class="w">
+</span></span></span></code></pre></div><p>回到 Disqus 官网，点击<code>Create a new site</code>，等几分钟创建完成。安装时拉到下面选择手动安装：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/844c3c5e65779844178c610bb16ed19b.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/844c3c5e65779844178c610bb16ed19b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/844c3c5e65779844178c610bb16ed19b.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>把代码块复制下来：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/bd2d40d6921793c8b01fe3915d62383b.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/bd2d40d6921793c8b01fe3915d62383b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/bd2d40d6921793c8b01fe3915d62383b.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>复制主题中的<code>themes\PaperMod\layouts\partials\comments.html</code>文件到博客主目录下的<code>layouts\partials\comments.html</code>目录下，然后将 Disqus 提供的代码粘贴到<code>comments.html</code>文件中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;disqus_thread&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">    var disqus_config = function () {
+</span></span></span><span class="line"><span class="cl"><span class="cm">    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page&#39;s canonical URL variable
+</span></span></span><span class="line"><span class="cl"><span class="cm">    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page&#39;s unique identifier variable
+</span></span></span><span class="line"><span class="cl"><span class="cm">    };
+</span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// DON&#39;T EDIT BELOW THIS LINE
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="nb">document</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;script&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s1">&#39;https://lifeislife-1.disqus.com/embed.js&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">s</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;data-timestamp&#39;</span><span class="p">,</span> <span class="o">+</span><span class="k">new</span> <span class="nb">Date</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="p">(</span><span class="nx">d</span><span class="p">.</span><span class="nx">head</span> <span class="o">||</span> <span class="nx">d</span><span class="p">.</span><span class="nx">body</span><span class="p">).</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">s</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})();</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">noscript</span><span class="p">&gt;</span>Please enable JavaScript to view the <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;https://disqus.com/?ref_noscript&#34;</span><span class="p">&gt;</span>comments powered by Disqus.<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">noscript</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p>配置完成，刷新页面可以在博客底部看到评论框。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/6ce5fe639e0155b01d05bb11068893db.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/6ce5fe639e0155b01d05bb11068893db.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/6ce5fe639e0155b01d05bb11068893db.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="配置网站的-favicon">配置网站的 favicon</h2>
+<p>Favicon 就是网站的小图标，比如标签栏中的图标。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/1e83fb5fd94465d1b86c22a9f549d48a.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/1e83fb5fd94465d1b86c22a9f549d48a.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/1e83fb5fd94465d1b86c22a9f549d48a.png" alt=""  />
+</a>
+</div>
+
+</p>
+<ol>
+<li>
+<p>准备一个喜欢的 Logo，最好为 png 格式，尺寸为 1:1，但是图片内容为圆形，圆形外面为透明的，这样才不会影响显示。</p>
+<ol>
+<li><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/e948f8f14fbefa649d76985e655e50ec.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/e948f8f14fbefa649d76985e655e50ec.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/e948f8f14fbefa649d76985e655e50ec.png" alt=""  />
+</a>
+</div>
+
+</li>
+</ol>
+</li>
+<li>
+<p>打开<a href="https://realfavicongenerator.net/">Favicon Generator</a>，选择自己的图标，点击 Generate Favicon，下载生成的文件。</p>
+</li>
+<li>
+<p>把解压的文件都放到博客主目录下的<code>static/assets</code>目录下。比如<code>/static/assets/favicon.ico</code>。</p>
+</li>
+<li>
+<p>修改配置文件<code>config.yaml</code>，添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">assets</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">disableHLJS</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">favicon</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;/assets/favicon.ico&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># favicon: &#34;&lt;link / abs url&gt;&#34; </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># favicon16x16: &#34;&lt;link / abs url&gt;&#34; </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># favicon32x32: &#34;&lt;link / abs url&gt;&#34; </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># apple_touch_icon: &#34;&lt;link / abs url&gt;&#34; </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># safari_pinned_tab: &#34;&lt;link / abs url&gt;&#34; </span><span class="w">
+</span></span></span></code></pre></div><p>路径中不需要加上<code>static</code>。</p>
+</li>
+<li>
+<p>刷新页面，可以看到网站图标已经修改。</p>
+<ol>
+<li><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/a13d568c2fad1947a18b1bfb9d07b2a2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/a13d568c2fad1947a18b1bfb9d07b2a2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/16/a13d568c2fad1947a18b1bfb9d07b2a2.png" alt=""  />
+</a>
+</div>
+
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="点击图片查看原图">点击图片查看原图</h2>
+<p>博客中有一些图片比较大，无法查看原图就看不到细节，可以通过点击图片查看原图。</p>
+<ol>
+<li>
+<p>修改网站根目录下的 config.yaml 文件，添加如下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">params</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">fancybox</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span></code></pre></div></li>
+<li>
+<p>主题目录下创建以下路径和文件<code>/layouts/_default/_markup/render-image.html</code>，并添加内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl"> {{if .Page.Site.Params.fancybox }}
+</span></span><span class="line"><span class="cl"> <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#34;post-img-view&#34;</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">&lt;</span><span class="nt">a</span> <span class="na">data-fancybox</span><span class="o">=</span><span class="s">&#34;gallery&#34;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;{{ .Destination | safeURL }}&#34;</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;{{ .Destination | safeURL }}&#34;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&#34;{{ .Text }}&#34;</span> <span class="err">{{</span> <span class="na">with</span> <span class="err">.</span><span class="na">Title</span><span class="err">}}</span> <span class="na">title</span><span class="o">=</span><span class="s">&#34;{{ . }}&#34;</span><span class="err">{{</span> <span class="na">end</span> <span class="err">}}</span> <span class="p">/&gt;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"> {{ end }}
+</span></span></code></pre></div></li>
+<li>
+<p>主题 <code>layouts/partials</code> 目录下的 <code>head.html</code> 或者 <code>footer.html</code> 中添加以下代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">{{if .Page.Site.Params.fancybox }}
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;stylesheet&#34;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css&#34;</span> <span class="p">/&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">{{ end }}
+</span></span></code></pre></div></li>
+</ol>
+<h2 id="加入哔哩哔哩视频">加入哔哩哔哩视频</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">{{<span class="w"> </span><span class="l">&lt; douban src=&#34;https://book.douban.com/subject/30838038/&#34; &gt; }}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 使用的时候把去掉尖括弧外侧空格，此处是为了防止被识别生效</span><span class="w">
+</span></span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

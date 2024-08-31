@@ -14,6 +14,89 @@
       <pubDate>Sat, 02 Mar 2024 22:21:23 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3%E7%B3%BB%E7%BB%9F%E4%BE%9D%E8%B5%96%E9%94%99%E8%AF%AFglibcxx-3-4-29-not-found/</guid>
       <description>以前对软件包的构建不太了解，喜欢随意修改软件源列表，软件源和当前系统的版本不一致就会出现安装了一个依赖较多的软件包后会出现连锁反应，修改了所</description>
+      <content:encoded><![CDATA[<p>以前对软件包的构建不太了解，喜欢随意修改软件源列表，软件源和当前系统的版本不一致就会出现安装了一个依赖较多的软件包后会出现连锁反应，修改了所有依赖的软件包版本，导致系统故障。最常出现的就是修改了GCC版本，导致GLIBCXX版本不一致，导致系统软件无法运行。</p>
+<p>如果你的系统还能正常安装软件，那么修改软件源和当前系统版本保存一致，然后更新软件，并重新安装GCC即可解决问题。具体步骤如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 修改软件源</span>
+</span></span><span class="line"><span class="cl">sudo vim /etc/apt/sources.list
+</span></span><span class="line"><span class="cl"><span class="c1"># 检查当前系统版本</span>
+</span></span><span class="line"><span class="cl">lsb_release -a
+</span></span><span class="line"><span class="cl"><span class="c1"># 将软件源修改为当前系统版本的软件源，Ubuntu系统版本号对应的软件源列表可以在https://wiki.ubuntu.com/Releases查看</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 更新软件</span>
+</span></span><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装GCC，build-essential包含了GCC</span>
+</span></span><span class="line"><span class="cl">sudo apt install build-essential
+</span></span></code></pre></div><p>如果你和我一样倒霉，连 apt 都无法使用，那么可以使用 dpkg 命令手动安装 GCC。</p>
+<p>因为误操作在 Ubuntu 20.04 上安装了 Ubuntu 18.04 的 GCC，导致系统软件无法运行，apt 也无法使用，所以只能手动安装 GCC。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">apt: libx86_64-linux-gnu-libstdc++.so.6: version <span class="sb">`</span>GLIBCXX_3.4.29<span class="err">&#39;</span> not found <span class="o">(</span>required by libx86_64-linux-gnulibapt-private.so.0.0<span class="o">)</span>
+</span></span></code></pre></div><p>既然libstdc++版本不一致，我们就去下载对应版本的GCC，访问https://packages.ubuntu.com/，在下方的搜索框中输入libstdc++6，选择对应的系统版本，然后下载对应的GCC。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/64ad9d26ea0d40d39a17330698dd805d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/64ad9d26ea0d40d39a17330698dd805d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/64ad9d26ea0d40d39a17330698dd805d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>点击搜索结果，点击系统的架构，一般为amd64，</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/4965061df423ae7897faa87cce2a5fc6.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/4965061df423ae7897faa87cce2a5fc6.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/4965061df423ae7897faa87cce2a5fc6.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>具体下载地址比较隐蔽，直接点击红框的链接没有反应，你可以右键另存为到本地，我习惯复制链接后用wget下载。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/b69d28c1b5515dd8898213332baa9b99.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/b69d28c1b5515dd8898213332baa9b99.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/02/b69d28c1b5515dd8898213332baa9b99.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>下载完成后，使用dpkg命令安装GCC。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo dpkg -i libstdc++6_12.3.0-1ubuntu1<span class="se">\~</span>22.04_amd64.deb
+</span></span></code></pre></div><p>之后可以检查一下缺失的GLIBCXX版本已经安装。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ strings /lib/x86_64-linux-gnu/libstdc++.so.6 <span class="p">|</span> grep GLIBCXX                               
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.1
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.2
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.3
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.4
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.5
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.6
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.7
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.8
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.9
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.10
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.11
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.12
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.13
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.14
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.15
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.16
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.17
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.18
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.19
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.20
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.21
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.22
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.23
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.24
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.25
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.26
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.27
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.28
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.29
+</span></span><span class="line"><span class="cl">GLIBCXX_3.4.30
+</span></span><span class="line"><span class="cl">GLIBCXX_DEBUG_MESSAGE_LENGTH
+</span></span></code></pre></div><p>此时apt 应该就可以正常使用了，我们只需要修复一下所有软件包，让它回到正确的版本即可恢复系统。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt --fix-broken install
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

@@ -14,6 +14,601 @@
       <pubDate>Mon, 23 May 2022 22:38:14 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/cpu%E4%BA%B2%E5%92%8C%E6%80%A7%E4%B8%8E%E4%B8%AD%E6%96%AD%E4%BA%B2%E5%92%8C%E6%80%A7/</guid>
       <description>预备知识 超线程技术 (Hyper-Threading)：就是利用特殊的硬件指令，把两个逻辑内核 (CPU core) 模拟成两个物理芯片，让单个处理器都能使用线程</description>
+      <content:encoded><![CDATA[<h2 id="预备知识">预备知识</h2>
+<p><a href="https://mp.weixin.qq.com/s/HwDqCk8vtMdSEVSCLHAsbg">超线程技术 (Hyper-Threading)</a>：就是利用特殊的硬件指令，把两个逻辑内核 (CPU core) 模拟成两个物理芯片，让单个处理器都能使用线程级并行计算，进而兼容多线程操作系统和软件，减少了 CPU 的闲置时间，提高的 CPU 的运行效率。</p>
+<p>我们常听到的双核四线程/四核八线程指的就是支持超线程技术的CPU.</p>
+<p><strong>物理 CPU</strong>：机器上安装的实际 CPU, 比如说你的主板上安装了一个 8 核 CPU，那么物理 CPU 个数就是 1 个，所以物理 CPU 个数就是主板上安装的 CPU 个数。</p>
+<p><strong>逻辑 CPU</strong>：一般情况，我们认为一颗 CPU 可以有多核，加上 Intel 的超线程技术 (HT), 可以在逻辑上再分一倍数量的 CPU core 出来；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">逻辑CPU数量 = 物理CPU数量 x CPU cores x 2(如果支持并开启HT) //前提是CPU的型号一致，如果不一致只能一个一个的加起来，不用直接乘以物理CPU数量
+</span></span><span class="line"><span class="cl">//比如你的电脑安装了一块4核CPU，并且支持且开启了超线程（HT）技术，那么逻辑CPU数量 = 1 × 4 × 2 = 8
+</span></span></code></pre></div><p><strong>Linux 下查看 CPU 相关信息</strong>, CPU 的信息主要都在<code>/proc/cupinfo</code>中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 查看物理CPU个数
+</span></span><span class="line"><span class="cl">➜  ~ cat /proc/cpuinfo|grep &#34;physical id&#34;|sort -u|wc -l
+</span></span><span class="line"><span class="cl">32
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 查看每个物理CPU中core的个数(即核数)
+</span></span><span class="line"><span class="cl">➜  ~ cat /proc/cpuinfo|grep &#34;cpu cores&#34;|uniq
+</span></span><span class="line"><span class="cl">1
+</span></span><span class="line"><span class="cl"># 或者
+</span></span><span class="line"><span class="cl">➜    cat /proc/cpuinfo | grep &#39;process&#39; | sort | uniq | wc -l
+</span></span><span class="line"><span class="cl">1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 查看逻辑CPU的个数
+</span></span><span class="line"><span class="cl">➜  ~ cat /proc/cpuinfo|grep &#34;processor&#34;|wc -l
+</span></span><span class="line"><span class="cl">32
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 查看CPU的名称型号
+</span></span><span class="line"><span class="cl">➜  ~ cat /proc/cpuinfo|grep &#34;name&#34;|cut -f2 -d:|uniq
+</span></span><span class="line"><span class="cl">Intel Xeon Processor (Skylake, IBRS)
+</span></span></code></pre></div><p><strong>Linux 查看某个进程运行在哪个逻辑 CPU 上</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ps -eo pid,args,psr
+</span></span></code></pre></div><ul>
+<li><code>pid</code>：进程 ID</li>
+<li><code>args</code>：该进程执行时传入的命令行参数</li>
+<li><code>psr</code>：分配给进程的逻辑 CPU</li>
+</ul>
+<p>例子：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  ps -eo pid,args,psr | grep firefox
+</span></span><span class="line"><span class="cl">20118 /usr/lib/firefox/firefox -n  13
+</span></span><span class="line"><span class="cl">20208 /usr/lib/firefox/firefox -c   9
+</span></span><span class="line"><span class="cl">20266 /usr/lib/firefox/firefox -c  29
+</span></span><span class="line"><span class="cl">20329 /usr/lib/firefox/firefox -c  24
+</span></span><span class="line"><span class="cl">20499 /usr/lib/firefox/firefox -c   7
+</span></span><span class="line"><span class="cl">20565 /usr/lib/firefox/firefox -c  15
+</span></span><span class="line"><span class="cl">20596 /usr/lib/firefox/firefox -c  24
+</span></span><span class="line"><span class="cl">20760 /usr/lib/firefox/firefox -c  18
+</span></span><span class="line"><span class="cl">22110 /usr/lib/firefox/firefox -c  27
+</span></span><span class="line"><span class="cl">25857 /usr/lib/firefox/firefox -c  28
+</span></span><span class="line"><span class="cl">26347 /usr/lib/firefox/firefox -c  19
+</span></span><span class="line"><span class="cl">26899 /usr/lib/firefox/firefox -c  29
+</span></span></code></pre></div><p><strong>Linux 查看线程的 TID</strong></p>
+<p>TID 就是 Thread ID，他和 POSIX 中<code>pthread_t</code>表示的线程 ID 完全不是同一个东西。</p>
+<p>Linux 中的 POSIX 线程库实现的线程其实也是一个轻量级进程 (LWP),这个 TID 就是这个线程的真实 PID.</p>
+<p>但是又不能通过<code>getpid()</code>函数获取，Linux 中定义了<code>gettid()</code>这个接口，但是通常都是未实现的，所以需要使用下面的方式获取 TID。</p>
+<p>使用 API 获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt;  </span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="kt">pid_t</span> <span class="n">tid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">tid</span> <span class="o">=</span> <span class="nf">syscall</span><span class="p">(</span><span class="n">__NR_gettid</span><span class="p">);</span> <span class="c1">// or syscall(SYS_gettid)  
+</span></span></span></code></pre></div><p>命令行方式获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 3种方法(推荐第三种方法)
+</span></span><span class="line"><span class="cl">➜  ps -efL | grep prog_name
+</span></span><span class="line"><span class="cl">➜  ls /proc/pid/task      //文件夹名即TID
+</span></span><span class="line"><span class="cl">➜  ps -To &#39;pid,lwp,psr,cmd&#39; -p PID
+</span></span></code></pre></div><h2 id="什么是-cpu-亲和性">什么是 CPU 亲和性</h2>
+<p>CPU 的亲和性 (Affinity)，属于一种调度属性，可以绑定进程到指定 CPU 上。 换句话说，就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器。</p>
+<p>为何会出现这种技术？在 SMP(Symmetric Multi-Processing 对称多处理) 架构下，调度器会试图保持进程在相同的 CPU 上运行，这意味着进程通常不会在处理器之间频繁迁移，进程迁移的频率小就意味着产生的负载小。</p>
+<p>又如，每个 CPU 本身自己会有缓存，缓存着进程使用的信息，而进程可能会被操作系统调度到其他 CPU 上，如此，CPU 缓存命中率就低了，当绑定 CPU 后，程序就会一直在指定的 CPU 跑，不会由操作系统调度到其他 CPU 上，性能有一定的提高。</p>
+<p><strong>软亲和性</strong>:  就是进程要在指定的 CPU 上尽量长时间地运行而不被迁移到其他处理器，Linux 内核进程调度器天生就具有被称为 软 CPU 亲和性（affinity）的特性，这意味着进程通常不会在处理器之间频繁迁移。这种状态正是我们希望的，因为进程迁移的频率小就意味着产生的负载小。</p>
+<p><strong>硬亲和性</strong>：简单来说就是利用 Linux 内核提供给用户的 API，强行将进程或者线程绑定到某一个指定的 CPU 核运行。</p>
+<p>CPU affinity 使用位掩码 (bitmask) 表示，每一位都表示一个 CPU, 置 1 表示&quot;绑定&quot;。最低位表示第一个逻辑 CPU, 最高位表示最后一个逻辑 CPU。</p>
+<p>CPU affinity 典型的表示方法是使用 16 进制，具体如下。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0b00000000000000000000000000000001
+</span></span><span class="line"><span class="cl">= 0x00000001
+</span></span><span class="line"><span class="cl">表示 processor #0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">0b00000000000000000000000001010101
+</span></span><span class="line"><span class="cl">= 0x00000055
+</span></span><span class="line"><span class="cl">表示 processors #0, #2, #4, #6
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">0b11111111111111111111111111111111
+</span></span><span class="line"><span class="cl">= 0xFFFFFFFF
+</span></span><span class="line"><span class="cl">表示所有 processors (#0 through #31)
+</span></span></code></pre></div><h2 id="使用taskset命令设置-cpu-亲和性">使用<code>taskset</code>命令设置 CPU 亲和性</h2>
+<p><strong>命令行形式</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">taskset [options] mask command [arg]...
+</span></span><span class="line"><span class="cl">taskset [options] -p [mask] pid
+</span></span></code></pre></div><p><strong>参数解析</strong>
+[OPTIONS]taskset 的可选参数</p>
+<ul>
+<li>
+<p><code>-a, --all-tasks</code> (旧版本中没有这个选项)
+这个选项涉及到了linux中TID的概念,他会将一个进程中所有的TID都执行一次CPU亲和性设置.
+TID 就是 Thread ID，他和 POSIX 中 pthread_t 表示的线程 ID 完全不是同一个东西。
+Linux中的POSIX线程库实现的线程其实也是一个进程(LWP),这个TID就是这个线程的真实PID.</p>
+</li>
+<li>
+<p><code>-p, --pid</code>
+操作已存在的PID,而不是加载一个新的程序</p>
+</li>
+<li>
+<p><code>-c, --cpu-list</code>
+声明CPU的亲和力使用数字表示而不是用位掩码表示. 例如 0,5,7,9-11.</p>
+</li>
+<li>
+<p><code>-h, --help</code>
+显示帮助信息</p>
+</li>
+<li>
+<p><code>-V, --version</code>
+显示版本信息</p>
+</li>
+<li>
+<p><code>mask</code> : cpu 亲和性，当没有<code>-c</code>选项时，其值前无论有没有<code>0x</code>标记都是 16 进制的，当有<code>-c</code>选项时，其值是十进制的。</p>
+</li>
+<li>
+<p><code>command</code> : 命令或者可执行程序</p>
+</li>
+<li>
+<p><code>pid</code> : 进程 ID，可以通过<code>ps/top/pidof</code>等命令获取</p>
+</li>
+</ul>
+<p><code>[arg]</code> command 的参数</p>
+<h3 id="实例">实例</h3>
+<h4 id="使用指定的-cpu-亲和性运行一个新程序">使用指定的 CPU 亲和性运行一个新程序</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">taskset <span class="o">[</span>-c<span class="o">]</span> mask <span class="nb">command</span> <span class="o">[</span>arg<span class="o">]</span>...
+</span></span><span class="line"><span class="cl"><span class="c1"># 举例: 使用CPU0运行ls命令显示/etc/init.d下的所有内容</span>
+</span></span><span class="line"><span class="cl">taskset -c <span class="m">0</span> ls -al /etc/init.d/
+</span></span></code></pre></div><h4 id="显示已经运行的进程的-cpu-亲和性">显示已经运行的进程的 CPU 亲和性</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">taskset -p pid
+</span></span><span class="line"><span class="cl"><span class="c1"># 举例:查看init进程(PID=1)的CPU亲和性</span>
+</span></span><span class="line"><span class="cl">taskset -p <span class="m">1</span>
+</span></span></code></pre></div><h4 id="改变已经运行进程的-cpu-亲和性">改变已经运行进程的 CPU 亲和性</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">taskset -p[c] mask pid
+</span></span><span class="line"><span class="cl">举例:打开2个终端,在第一个终端运行top命令,第二个终端中
+</span></span><span class="line"><span class="cl"> 　　首先运行:[~]# ps -eo pid,args,psr | grep top #获取top命令的pid和其所运行的CPU号
+</span></span><span class="line"><span class="cl"> 　　其次运行:[~]# taskset -cp 新的CPU号 pid       #更改top命令运行的CPU号
+</span></span><span class="line"><span class="cl"> 　　最后运行:[~]# ps -eo pid,args,psr | grep top #查看是否更改成功
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  ~ ps -eo pid,args,psr | grep top
+</span></span><span class="line"><span class="cl">2501 nautilus-desktop             24
+</span></span><span class="line"><span class="cl">2634 /usr/libexec/xdg-desktop-po  18
+</span></span><span class="line"><span class="cl">2658 /usr/libexec/xdg-desktop-po  11
+</span></span><span class="line"><span class="cl">23848 top                           6
+</span></span><span class="line"><span class="cl">➜  ~ taskset -cp 10 23848
+</span></span><span class="line"><span class="cl">pid 23848&#39;s current affinity list: 0-31
+</span></span><span class="line"><span class="cl">pid 23848&#39;s new affinity list: 10
+</span></span><span class="line"><span class="cl">➜  ~ ps -eo pid,args,psr | grep top
+</span></span><span class="line"><span class="cl"> 2501 nautilus-desktop             24
+</span></span><span class="line"><span class="cl"> 2634 /usr/libexec/xdg-desktop-po  18
+</span></span><span class="line"><span class="cl"> 2658 /usr/libexec/xdg-desktop-po  11
+</span></span><span class="line"><span class="cl">23848 top                          10
+</span></span></code></pre></div><blockquote>
+<p>一个用户要设定一个进程的 CPU 亲和性，如果目标进程是该用户的，则可以设置，如果是其他用户的，则会设置失败，提示 Operation not permitted.当然 root 用户没有任何限制。
+任何用户都可以获取任意一个进程的 CPU 亲和性。</p>
+</blockquote>
+<h2 id="程序-api-实现硬亲和性">程序 API 实现硬亲和性</h2>
+<p>以下实验使用的源码可以从<a href="https://github.com/Dunky-Z/learning-linux/tree/main/Affinity">这个仓库</a>获取。</p>
+<p>以下是一些设置亲和性时会用到的宏定义及函数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define _GNU_SOURCE
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt; //注意&lt;pthread.h&gt;包含&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cm">/* MACRO */</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 对 CPU 集初始化，将其设置为空集
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">void</span> <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_ZERO_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// 将 CPU 加入到 CPU 集中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">void</span> <span class="nf">CPU_SET</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_SET_S</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// 将 CPU 从 CPU 集中移除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">void</span> <span class="nf">CPU_CLR</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_CLR_S</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// 判断 CPU 是否在 CPU 集中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="nf">CPU_ISSET</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="nf">CPU_ISSET_S</span><span class="p">(</span><span class="kt">int</span> <span class="n">cpu</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// 计算 CPU 集的大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">void</span> <span class="nf">CPU_COUNT</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_COUNT_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">// The following macros perform logical operations on CPU sets 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="cm">/* Store the logical AND of the sets srcset1 and srcset2 in destset (which may be one of the source sets). */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_AND</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_AND_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Store the logical OR of the sets srcset1 and srcset2 in destset (which may be one of the source sets). */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_OR</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_OR_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Store  the logical XOR of the sets srcset1 and srcset2 in destset (which may be one of the source sets). */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_XOR</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_XOR_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">destset</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">srcset2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Test whether two CPU set contain exactly the same CPUs. */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="nf">CPU_EQUAL</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="nf">CPU_EQUAL_S</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">setsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set1</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* The following macros are used to allocate and deallocate CPU sets: */</span>
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Allocate a CPU set large enough to hold CPUs in the range 0 to num_cpus-1 */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="nf">CPU_ALLOC</span><span class="p">(</span><span class="kt">int</span> <span class="n">num_cpus</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Return the size in bytes of the CPU set that would be needed to  hold  CPUs  in the  range 0 to num_cpus-1. 
+</span></span></span><span class="line"><span class="cl"><span class="cm">           This macro provides the value that can be used for the setsize argument in the CPU_*_S() macros */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">size_t</span> <span class="nf">CPU_ALLOC_SIZE</span><span class="p">(</span><span class="kt">int</span> <span class="n">num_cpus</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="cm">/* Free a CPU set previously allocated by CPU_ALLOC(). */</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">void</span> <span class="nf">CPU_FREE</span><span class="p">(</span><span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">set</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/* API */</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/*该函数设置进程为 pid 的这个进程，让它运行在 mask 所设定的 CPU 上。如果 pid 的值为 0,
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *则表示指定的是当前进程，使当前进程运行在 mask 所设定的那些 CPU 上.
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *第二个参数 cpusetsize 是 mask 所指定的数的长度。通常设定为 sizeof(cpu_set_t).
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *如果当前 pid 所指定的进程此时没有运行在 mask 所指定的任意一个 CPU 上，
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *则该指定的进程会从其它 CPU 上迁移到 mask 的指定的一个 CPU 上运行.
+</span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">sched_setaffinity</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/*该函数获得 pid 所指示的进程的 CPU 位掩码，并将该掩码返回到 mask 所指向的结构中.
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *即获得指定 pid 当前可以运行在哪些 CPU 上.
+</span></span></span><span class="line"><span class="cl"><span class="cm">    *同样，如果 pid 的值为 0.也表示的是当前进程
+</span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">sched_getaffinity</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* set CPU affinity attribute in thread attributes object */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">pthread_attr_setaffinity_np</span><span class="p">(</span><span class="kt">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="k">const</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/* get CPU affinity attribute in thread attributes object */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">pthread_attr_getaffinity_np</span><span class="p">(</span><span class="k">const</span> <span class="kt">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* set CPU affinity of a thread */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">pthread_setaffinity_np</span><span class="p">(</span><span class="kt">pthread_t</span> <span class="kr">thread</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="k">const</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/* get CPU affinity of a thread */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">pthread_getaffinity_np</span><span class="p">(</span><span class="kt">pthread_t</span> <span class="kr">thread</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">cpusetsize</span><span class="p">,</span> <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span></code></pre></div><p>程序中会使用<code>syscall</code>来获取一些内核数据，<code>syscall</code>是执行一个系统调用，根据指定的参数<code>number</code>和所有系统调用的接口来确定调用哪个系统调用，用于用户空间跟内核之间的数据交换，下面是<code>syscall</code>函数原型及一些常用的<code>number</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//syscall - indirect system call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#define _GNU_SOURCE         </span><span class="cm">/* See feature_test_macros(7) */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt;   /* For SYS_xxx definitions */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">syscall</span><span class="p">(</span><span class="kt">int</span> <span class="n">number</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看缓存内存页面的大小；打印用%ld 长整型。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_PAGESIZE</span><span class="p">);</span>  
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看内存的总页数；打印用%ld 长整型。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_PHYS_PAGES</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看可以利用的总页数；打印用%ld 长整型。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_AVPHYS_PAGES</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看 CPU 的个数；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_CONF</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看在使用的 CPU 个数；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_ONLN</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 计算内存大小。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_PAGESIZE</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_PHYS_PAGES</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看最大登录名长度；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_LOGIN_NAME_MAX</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看最大主机长度；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_HOST_NAME_MAX</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">// 每个进程运行时打开的文件数目；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_OPEN_MAX</span><span class="p">)</span>  
+</span></span><span class="line"><span class="cl"><span class="c1">// 查看每秒中跑过的运算速率；打印用%ld 长整。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_CLK_TCK</span><span class="p">)</span> 
+</span></span></code></pre></div><h3 id="使用-2-种方式-带和不带_s-后缀的宏-获取当前进程的-cpu-亲和性">使用 2 种方式 (带和不带_S 后缀的宏) 获取当前进程的 CPU 亲和性</h3>
+<p>相关的宏通常都分为 2 种，一种是带<code>_S</code>后缀的，一种不是不带<code>_S</code>后缀的，从声明上看带<code>_S</code>后缀的宏都多出一个参数 <code>setsize</code>。</p>
+<p>从功能上看他们的区别是带<code>_S</code>后缀的宏是用于操作动态申请的<code>CPU set(s)</code>，所谓的动态申请其实就是使用宏 <code>CPU_ALLOC</code> 申请，</p>
+<p>参数 <code>setsize</code> 可以是通过宏 <code>CPU_ALLOC_SIZE</code> 获得，两者的用法详见下面的例子。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define _GNU_SOURCE
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#undef WITH_S
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef WITH_S
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">nrcpus</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">cpu_set_t</span> <span class="o">*</span><span class="n">pmask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">size_t</span> <span class="n">cpusize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bitmask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 获取逻辑 CPU 个数 */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">nrcpus</span> <span class="o">=</span> <span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_CONF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">pmask</span> <span class="o">=</span> <span class="nf">CPU_ALLOC</span><span class="p">(</span><span class="n">nrcpus</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cpusize</span> <span class="o">=</span> <span class="nf">CPU_ALLOC_SIZE</span><span class="p">(</span><span class="n">nrcpus</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO_S</span><span class="p">(</span><span class="n">cpusize</span><span class="p">,</span> <span class="n">pmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 获取 CPU 亲和性 */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">sched_getaffinity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cpusize</span><span class="p">,</span> <span class="n">pmask</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;sched_getaffinity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">CPU_FREE</span><span class="p">(</span><span class="n">pmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nrcpus</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">CPU_ISSET_S</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cpusize</span><span class="p">,</span> <span class="n">pmask</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">bitmask</span> <span class="o">|=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="mh">0x01</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;processor #%d is set</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;bitmask = %#lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">bitmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_FREE</span><span class="p">(</span><span class="n">pmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#else
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">nrcpus</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">cpu_set_t</span> <span class="n">mask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bitmask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 获取 CPU 亲和性 */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">sched_getaffinity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;sched_getaffinity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 获取逻辑 CPU 个数 */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">nrcpus</span> <span class="o">=</span> <span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_CONF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nrcpus</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">CPU_ISSET</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">bitmask</span> <span class="o">|=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="mh">0x01</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;processor #%d is set</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;bitmask = %#lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">bitmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 直接运行，不设置亲和性，获取CPU亲和性为所有CPU都会被设置
+</span></span><span class="line"><span class="cl">➜  Affinity git:(main)   ./bin/main 
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">processor #1 is set
+</span></span><span class="line"><span class="cl">processor #2 is set
+</span></span><span class="line"><span class="cl">processor #3 is set
+</span></span><span class="line"><span class="cl">processor #4 is set
+</span></span><span class="line"><span class="cl">processor #5 is set
+</span></span><span class="line"><span class="cl">processor #6 is set
+</span></span><span class="line"><span class="cl">processor #7 is set
+</span></span><span class="line"><span class="cl">processor #8 is set
+</span></span><span class="line"><span class="cl">processor #9 is set
+</span></span><span class="line"><span class="cl">processor #10 is set
+</span></span><span class="line"><span class="cl">processor #11 is set
+</span></span><span class="line"><span class="cl">processor #12 is set
+</span></span><span class="line"><span class="cl">processor #13 is set
+</span></span><span class="line"><span class="cl">processor #14 is set
+</span></span><span class="line"><span class="cl">processor #15 is set
+</span></span><span class="line"><span class="cl">processor #16 is set
+</span></span><span class="line"><span class="cl">processor #17 is set
+</span></span><span class="line"><span class="cl">processor #18 is set
+</span></span><span class="line"><span class="cl">processor #19 is set
+</span></span><span class="line"><span class="cl">processor #20 is set
+</span></span><span class="line"><span class="cl">processor #21 is set
+</span></span><span class="line"><span class="cl">processor #22 is set
+</span></span><span class="line"><span class="cl">processor #23 is set
+</span></span><span class="line"><span class="cl">processor #24 is set
+</span></span><span class="line"><span class="cl">processor #25 is set
+</span></span><span class="line"><span class="cl">processor #26 is set
+</span></span><span class="line"><span class="cl">processor #27 is set
+</span></span><span class="line"><span class="cl">processor #28 is set
+</span></span><span class="line"><span class="cl">processor #29 is set
+</span></span><span class="line"><span class="cl">processor #30 is set
+</span></span><span class="line"><span class="cl">processor #31 is set
+</span></span><span class="line"><span class="cl">bitmask = 0xffffffff
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 使用taskset设置亲和性，将main程序绑定到第1个CPU上，mask转化为16进制为0x1
+</span></span><span class="line"><span class="cl">➜  Affinity git:(main)  taskset 1 ./bin/main
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">bitmask = 0x1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 使用taskset设置亲和性，将main程序绑定到第1,3,5,7个CPU上，mask转化为16进制为0x55
+</span></span><span class="line"><span class="cl">➜  Affinity git:(main)  taskset 55 ./bin/main
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">processor #2 is set
+</span></span><span class="line"><span class="cl">processor #4 is set
+</span></span><span class="line"><span class="cl">processor #6 is set
+</span></span><span class="line"><span class="cl">bitmask = 0x55
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 使用taskset设置亲和性，将main程序绑定到第1,2,3,4个CPU上，mask转化为16进制为0xf
+</span></span><span class="line"><span class="cl">➜  Affinity git:(main)  taskset F ./bin/main
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">processor #1 is set
+</span></span><span class="line"><span class="cl">processor #2 is set
+</span></span><span class="line"><span class="cl">processor #3 is set
+</span></span><span class="line"><span class="cl">bitmask = 0xf
+</span></span></code></pre></div><h3 id="设置进程的-cpu-亲和性后再获取显示-cpu-亲和性">设置进程的 CPU 亲和性后再获取显示 CPU 亲和性</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define _GNU_SOURCE
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt; /* sysconf */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt; /* exit */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">nrcpus</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">cpu_set_t</span> <span class="n">mask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bitmask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_SET</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span> <span class="cm">/* add CPU0 to cpu set */</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_SET</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span> <span class="cm">/* add CPU2 to cpu set */</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_SET</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span> <span class="cm">/* add CPU3 to cpu set */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* 设置 CPU 亲和性 */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">sched_setaffinity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   
+</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;sched_setaffinity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">sched_getaffinity</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   
+</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;sched_getaffinity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">       <span class="cm">/* get logical cpu number */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">nrcpus</span> <span class="o">=</span> <span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_CONF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nrcpus</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">CPU_ISSET</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">bitmask</span> <span class="o">|=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="mh">0x01</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;processor #%d is set</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;bitmask = %#lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">bitmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  Affinity git:(main) ✗ ./bin/main 
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">processor #2 is set
+</span></span><span class="line"><span class="cl">processor #3 is set
+</span></span><span class="line"><span class="cl">bitmask = 0xd
+</span></span></code></pre></div><h3 id="设置线程的-cpu-属性后再获取显示-cpu-亲和性">设置线程的 CPU 属性后再获取显示 CPU 亲和性</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define _GNU_SOURCE
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt; //不用再包含&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define handle_error_en(en, msg) \
+</span></span></span><span class="line"><span class="cl"><span class="cp">        do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="n">j</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">cpu_set_t</span> <span class="n">cpuset</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="kr">thread</span> <span class="o">=</span> <span class="nf">pthread_self</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* Set affinity mask to include CPUs 0 to 7 */</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">CPU_SET</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">s</span> <span class="o">=</span> <span class="nf">pthread_setaffinity_np</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">handle_error_en</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">&#34;pthread_setaffinity_np&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/* Check the actual affinity mask assigned to the thread */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">s</span> <span class="o">=</span> <span class="nf">pthread_getaffinity_np</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">handle_error_en</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">&#34;pthread_getaffinity_np&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Set returned by pthread_getaffinity_np() contained:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">CPU_SETSIZE</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="c1">//CPU_SETSIZE 是定义在&lt;sched.h&gt;中的宏，通常是 1024
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">CPU_ISSET</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cpuset</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;    CPU %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">j</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  Affinity git:(main) ./bin/main
+</span></span><span class="line"><span class="cl">Set returned by pthread_getaffinity_np() contained:
+</span></span><span class="line"><span class="cl">    CPU 0
+</span></span><span class="line"><span class="cl">    CPU 1
+</span></span><span class="line"><span class="cl">    CPU 2
+</span></span><span class="line"><span class="cl">    CPU 3
+</span></span><span class="line"><span class="cl">    CPU 4
+</span></span><span class="line"><span class="cl">    CPU 5
+</span></span><span class="line"><span class="cl">    CPU 6
+</span></span><span class="line"><span class="cl">    CPU 7
+</span></span></code></pre></div><h3 id="使用-seched_setaffinity-设置线程的-cpu-亲和性">使用 seched_setaffinity 设置线程的 CPU 亲和性</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define _GNU_SOURCE
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt; // syscall</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">pid_t</span> <span class="n">tid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">nrcpus</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">cpu_set_t</span> <span class="n">mask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bitmask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_SET</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span> <span class="cm">/* add CPU0 to cpu set */</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CPU_SET</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">);</span> <span class="cm">/* add CPU2 to cpu set */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 获取线程 id
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">tid</span> <span class="o">=</span> <span class="nf">syscall</span><span class="p">(</span><span class="n">__NR_gettid</span><span class="p">);</span> <span class="c1">// or syscall(SYS_gettid);
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 对指定线程 id 设置 CPU 亲和性
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="nf">sched_setaffinity</span><span class="p">(</span><span class="n">tid</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">cpu_set_t</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;sched_setaffinity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">nrcpus</span> <span class="o">=</span> <span class="nf">sysconf</span><span class="p">(</span><span class="n">_SC_NPROCESSORS_CONF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nrcpus</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">CPU_ISSET</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mask</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">bitmask</span> <span class="o">|=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="mh">0x01</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;processor #%d is set</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  Affinity git:(main) ./bin/main
+</span></span><span class="line"><span class="cl">processor #0 is set
+</span></span><span class="line"><span class="cl">processor #2 is set
+</span></span></code></pre></div><h2 id="什么是中断亲和性">什么是中断亲和性</h2>
+<p>计算机中，中断是一种电信号，由硬件产生并直接送到中断控制器上，再由中断控制器向 CPU 发送中断信号，CPU 检测到信号后，中断当前工作转而处理中断信号。CPU 会通知操作系统已经产生中断，操作系统就会对中断进行处理。
+这里有篇推文：<a href="https://mp.weixin.qq.com/s?__biz=MzIyNjMxOTY0NA==&amp;mid=2247484717&amp;idx=1&amp;sn=2c1dd6c389c8476eb4fd178c714eaafc&amp;scene=21#wechat_redirect">CPU 明明 8 个核，网卡为啥拼命折腾一号核？</a>生动的解释了中断亲和性。</p>
+<p>默认情况下，Linux 中断响应会被平均分配到所有 CPU 核心上，势必会发生写新的数据和指令缓存，并与 CPU 核心上原有进程产生冲突，造成中断响应延迟，影响进程处理时间。为了解决这个问题，可以将中断（或进程）绑定到指定 CPU 核心上，中断（或进程）所需要指令代码和数据有更大概率位于指定 CPU 本地数据和指令缓存内，而不必进行新的写缓存，从而提高中断响应（或进程）的处理速度。</p>
+<h2 id="中断亲和性的使用场景">中断亲和性的使用场景</h2>
+<p>对于文件服务器、Web 服务器，把不同的网卡 IRQ 均衡绑定到不同的 CPU 上将会减轻某 CP 的负载，提高多个 CPU 整体处理中断的能力; 对于数据库服务器，把磁盘控制器绑到一个 CPU、把网卡绑定到另一个 CPU 将会提高数据库的响应时间、优化性能。<br>
+合理的根据自己的生产环境和应用的特点来平衡 IRQ 中断有助于提高系统的整体吞吐能力和性能。</p>
+<h2 id="中断绑定流程">中断绑定流程</h2>
+<ol>
+<li>
+<p>关闭中断平衡守护进程
+中断平衡守护进程（irqbalance daemon）会周期性地将中断平均地公平地分配给各个 CPU 核心，默认开启。为了实现中断绑定，首先需要将中断平衡守护进程关闭。</p>
+<ul>
+<li><code>systemctl status irqbalance</code>查看守护进程的运行状态</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">➜  ~ systemctl status irqbalance
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">● irqbalance.service - irqbalance daemon
+</span></span><span class="line"><span class="cl">Loaded: loaded <span class="o">(</span>/lib/systemd/system/irqbalance.service<span class="p">;</span> enabled<span class="p">;</span> vendor preset: <span class="nb">enable</span>
+</span></span><span class="line"><span class="cl">Active: active <span class="o">(</span>running<span class="o">)</span> since Thu 2022-05-19 14:46:20 CST<span class="p">;</span> <span class="m">1</span> weeks <span class="m">1</span> days ago
+</span></span><span class="line"><span class="cl">Main PID: <span class="m">1062</span> <span class="o">(</span>irqbalance<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    Tasks: <span class="m">2</span> <span class="o">(</span>limit: 4915<span class="o">)</span>
+</span></span><span class="line"><span class="cl">CGroup: /system.slice/irqbalance.service
+</span></span><span class="line"><span class="cl">        └─1062 /usr/sbin/irqbalance --foreground
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">5月 <span class="m">19</span> 14:46:20 zdd systemd<span class="o">[</span>1<span class="o">]</span>: Started irqbalance daemon.
+</span></span></code></pre></div><ul>
+<li><code>systemctl stop irqbalance</code>关闭中断平衡守护进程，中断响应默认都会由 CPU0 核心处理。或者<code>systemctl disable irqbalance</code>取消中断平衡守护进程开机重启。因为关闭中断平衡守护进程过于强硬，可以在不关闭中断平衡守护进程条件下，让某些 CPU 核心脱离中断平衡守护进程的管理。</li>
+</ul>
+</li>
+<li>
+<p>绑定中断
+中断绑定时，需要关闭系统中断平衡守护进程<code>systemctl stop irqbalance</code>计算机当前各种中断响应情况在 <code>/proc/interrupts</code> 文件中。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205281336182.png" alt=""  />
+</a>
+</div>
+
+
+第一列是中断 ID 号，CPU N 列是中断在第 n 个 CPU 核心上的响应次数，倒数第二列是中断类型，最后一列是描述。</p>
+<p>利用 echo 命令将 CPU 掩码写入 <code>/proc/irq/中断 ID/smp_affinity</code> 文件中，即可实现修改某一中断的 CPU 亲和性。例如</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> 0x0004 &gt; /proc/irq /50/smp_affinity
+</span></span></code></pre></div></li>
+</ol>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://www.cnblogs.com/lubinlew/p/cpu_affinity.html">Linux 中 CPU 亲和性 (affinity) - LubinLew - 博客园</a>
+<a href="https://blog.51cto.com/u_15302006/3075968">操作系统底层技术——CPU 亲和性_mb60ed33cfc44fa 的技术博客_51CTO 博客</a>
+<a href="https://blog.51cto.com/u_15484754/4907846">linux 进程、线程与 CPU 的亲和性（affinity）_wx61d68abba262d 的技术博客_51CTO 博客</a>
+<a href="https://mp.weixin.qq.com/s?__biz=MzIyNjMxOTY0NA==&amp;mid=2247484717&amp;idx=1&amp;sn=2c1dd6c389c8476eb4fd178c714eaafc&amp;scene=21#wechat_redirect">CPU 明明 8 个核，网卡为啥拼命折腾一号核？</a>
+<a href="https://en.wikipedia.org/wiki/Processor_affinity">Processor affinity - Wikipedia</a>
+<a href="https://mp.weixin.qq.com/s/HwDqCk8vtMdSEVSCLHAsbg">什么？一个核同时执行两个线程？</a>
+<a href="https://www.cnblogs.com/wenqiang/p/6049978.html#!comments">linux 进程、线程与 CPU 的亲和性（affinity） - zhangwju - 博客园</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

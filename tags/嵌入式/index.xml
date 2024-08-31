@@ -14,6 +14,108 @@
       <pubDate>Sun, 14 Aug 2022 14:17:26 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/debug%E5%8E%9F%E7%90%86/</guid>
       <description>了解调试原理时看到了一个质量比较高的视频，【蛋饼嵌入式】一起探究调试原理。UP 通俗，形象地讲解了 DEBUG 的一些原理，值得反复观看，但是视频不如文字</description>
+      <content:encoded><![CDATA[<p>了解调试原理时看到了一个质量比较高的视频，<a href="https://www.bilibili.com/video/BV1iN411Z7jk?spm_id_from=333.999.0.0&amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44">【蛋饼嵌入式】一起探究调试原理</a>。UP 通俗，形象地讲解了 DEBUG 的一些原理，值得反复观看，但是视频不如文字查阅效率高，遂记录了以下文稿内容。</p>
+<h2 id="什么是-jtag">什么是 JTAG</h2>
+<p>1985 年，几家半导体厂商为了解决板级测试的问题，成立了 Joint Test Action Group（JTAG）联合测试行动小组，他们希望将测试点和测试电路集成在芯片内部引脚处。同时，留出一个统一协议的接口，大家都能通过这个接口来访问芯片的输入与输出状态。这样就省去了板级测试是的物理接触，同时还能进行逻辑性调试。后来 IEEE 组织，将这个方案制定成了标准 IEEE 1149.1，这就是现在我们常听到的 JTAG 调试。</p>
+<h2 id="边界扫描技术">边界扫描技术</h2>
+<p>实现 JTAG 调试最重要的一个技术就是边界扫描技术，核心思想是<strong>给芯片的每一个输入输出引脚，添加一个移位寄存器单元，也称为边界扫描单元</strong>（Boundary Scan Cell，BSC）。通过它一边可以实现对芯片输出数据的截取，另一边可以完成对输入数据的替代。正常运行状态下，这些寄存器又是透明般的存在。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>这些位于引脚边界的移位寄存器，还可以串在一起，形成一条边界扫描链，以串行的方式从外部更新扫描单元上的数据，以及对外输出边界扫描单元捕获的数据。如果板上有多个这样的芯片，他们还能以菊花链的形式串联在一起，这样就大大方便了测试的过程。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>要实现对内部移位寄存器单元或者说对整个扫描链的访问和操作，便依赖于 JTAG 调试协议和相应的物理接口。JTAG 标准接口包括以下几个部分：</p>
+<ul>
+<li>TDI(Test Data In)</li>
+<li>TDO(Test Data Out)</li>
+<li>TCLK(Test Clock)</li>
+<li>TMS(Test Mode Select)</li>
+<li>TRST(Test Reset)：可选，用于复位</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>调试逻辑的实现，是通过芯片内部的 TAP（Test Access Port）来完成的。模式状态信号 TMS 配合测试时钟信号 TCLK，以一定的时序进入到 TAP 控制器后，由 TAP 控制器内部的状态机转化为相应的控制动作。从而完成数据的移位，引脚状态的捕获和更新。</p>
+<p>设备 ID 寄存器构成的扫描链，板卡一连上调试器，通过对这条扫描链的访问，就能够识别到被调试芯片的信号。存放调试机制相关配置的数据寄存器，所构成的扫描链，后面断点和单步调试时就会用到。以及移位的 BYPASS 寄存器，当调试链路上有多个芯片连接时，来减少总调试链路的长度。</p>
+<p>以上都属于数据寄存器构成扫描链，因为想要在他们之间进行切换，需要引入另外的指令寄存器，以及对应的扫描链，这样调试主机将不同的调试命令写到指令寄存器中，就可以选通需要调试的数据链路。数据与指令寄存器两种链路的切换，就通过 TAP 控制器完成。</p>
+<blockquote>
+<p>补充：
+如果芯片支持 JTAG 调试，那么芯片上就必须有上述的四个接口，TDI，TDO，TCLK，TMS。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141725205.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141725205.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141725205.png" alt=""  />
+</a>
+</div>
+
+
+芯片外有个 Adapter 与之 Pin to Pin 连接，负责协议转换，把 USB 的 JTAG 控制信息按 JTAG 协议转换输出，满足协议定义的电气特性。
+Adapter 与 Host 连接，Host 可以是我们的 PC，也可以是另一个嵌入式调试器。
+Host 上通常需要运行一些软件，如 OpenOCD，负责把 GDB 的高级别命令转换成 JTAG 命令，并通过特定 Adapter 的要求进行打包，调用 OS 提供的 USB/ETH/PCI 驱动发送出去。
+GDB 与 OpenOCD 通过一些远程协议，如 TCP/IP，进行通信。这样就能够调试 Chip。</p>
+</blockquote>
+<h2 id="断点是如何实现的">断点是如何实现的？</h2>
+<p>通过以上 JTAG 调试接口，我们已经能够测试引脚的输入输出了，同时也获得了观察和改变芯片内部数据的机会，那么接下来我们如何进行调试呢？比如打个断点？</p>
+<p>断点作为一种干预性调试，根据调试行为的不同，分为监控模式和中止模式。</p>
+<ul>
+<li>监控模式（软件断点）：会触发异常，交由相应的软件程序来处理，处理器仍然处于运行状态。</li>
+<li>中止模式（硬件断点），使处理器进入非正常运行的调试状态。</li>
+</ul>
+<p>以 ARM 架构来说，最初工程师想到的办法是插入一条指令集中没有定义的无效指令，来<strong>替换掉希望打断指令处的源指令</strong>。这样内核运行到这条指令时，就会进入到无效指令的服务程序，在这个异常的服务程序中，我们再去做想要的调试操作，操作完成后，还原当时被替换的指令。并继续执行。</p>
+<p>后来 ARMv5 开始引入专门用于调试的<code>BKPT</code>指令，类似与 X86 指令集的<code>INT3</code>指令，但不管是不是专用指令，他们都属于软件中断。这意味着我想要实时地添加这种断点，就要求能够随时地更改程序，插入断点指令，而一般只有程序运行在 RAM 上，才方便这样操作。那如果直接从 FLASH 上取址运行的程序，因为 FLASH 先擦后写的物理特性，是无法通过随意插入指令来实现断点的。更不要说从只读存储器上运行的程序，比如说固化在 BIOS 中上电自检 POST 程序，面对这种情况，需要的就是硬件断点。</p>
+<p>硬件断点顾名思义，需要额外的硬件逻辑支持，主要起的作用就是<strong>暂存和比较</strong>，我们把这种实现特定逻辑的组合电路，称为<strong>宏单元</strong>（Macro Cell）。</p>
+<p>还记得我们前面说过 JTAG 协议，支持自定义扩展扫描链吗？硬件断点宏单元的控制和比较两种数据寄存器，就可以作为两条拓展扫描链，加入到 JTAG 调试框架中。</p>
+<p>你在调试软件中按下一个按钮，对应的那行代码地址，就会通过上述扫描链，被记录到断点宏单元相应的寄存器中，当然，调试器能够知道某行代码的地址，是依赖于编译时生成的 ELF 文件中的符号表信息。而当程序正常运行取址时，如果宏单元的寄存器，发现了总线上出现了记录过的地址，比较器就会发出调试状态信号，CPU 接收到这个信号后暂停运行，进入调试模式或者异常。</p>
+<p>因为每打一个断点，都需要宏单元相应的寄存器来保存地址信息。而寄存器数量是有限的，所以调试软件一旦和芯片建立起了连接，就会通过上述的另外一条控制寄存器获得该硬件断点宏单元所支持的最大断点数，这样你在调试过程中如果断点打多了，调试器就会报错。</p>
+<h2 id="为什么调试器能够烧录程序呢">为什么调试器能够烧录程序呢？</h2>
+<p>正常情况下，CPU 内核通过内部的系统总线，从 FLASH 或者 RAM 中获取运行的指令，交换数据，并在一定的驱动程序下，实现对 FLASH 的擦除和写入操作。为了把指令和数据直接给 CPU 内核，我们还需要定义一条扫描链，这条扫描链直接在系统总线上开了一个口子，通过上位机的调试信号，把相关的操作指令直接传到总线上，供 CPU 内核取用。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>那么整个调试器的下载过程是这样的：</p>
+<ul>
+<li>第一，通过调试器使得 CPU 进入调试模式；</li>
+<li>第二，通过总线扫描链将 FLASH 编程算法与即将被下载的用户程序放到 RAM 中；</li>
+<li>第三，将 CPU 的 PC 指针指向刚刚搬运完成的 RAM 地址起始处，并退出调试状态；</li>
+<li>第四，CPU 将在正常状态下运行 RAM 中的 FLASH 编程算法。将用户代码烧录到确定位置上，执行完成后回到调试状态。</li>
+</ul>
+<p>如果 RAM 空间不够大，以上操作还需要重复多次执行。</p>
+<p>需要注意的是，在第二步操作 RAM 时，是处于调试状态下，而调试时钟的速率是无法满足 RAM 或者 FLASH 的访问速率要求的，所以在这一过程中，CPU 会频繁的在系统时钟与调试时钟之间切换</p>
+<p>调试时钟下，总线扫描链先传递来要写入的数据和 RAM 地址，CPU 先分别暂存在内部通用寄存器中，接着扫描链传递写入指令，并切换为系统时钟。CPU 在正常状态下执行搬运指令，往 RAM 里写入数据，执行完成后回到调试状态，继续通过扫描链传递后面要写入的值，</p>
+<h2 id="openocd-open-on-chip-debugger">OpenOCD (Open On-Chip Debugger)</h2>
+<p>OpenOCD（Open On-Chip Debugger）开源片上调试器，是一款开源软件，最初是由 Dominic Rath 同学还在大学期间发起的（2005 年）项目。OpenOCD 旨在提供针对嵌入式设备的调试、系统编程和边界扫描功能。</p>
+<h2 id="参考资料">参考资料</h2>
+<p><a href="https://www.bilibili.com/video/BV1iN411Z7jk?spm_id_from=333.999.0.0&amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44">【蛋饼嵌入式】饮茶先？DEBUG 先！一起探究调试原理_哔哩哔哩_bilibili</a>
+<a href="https://zhuanlan.zhihu.com/p/125145986">浅谈 RISC-V 的 DEBUG 系统及其仿真 - 知乎</a>
+<a href="https://www.bilibili.com/video/BV1s54y1Z7Zj/?spm_id_from=333.788&amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44">ESP32 JTAG Debug 01: JTAG 接口简介_哔哩哔哩_bilibili</a>+</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

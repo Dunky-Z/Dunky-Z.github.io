@@ -14,6 +14,20 @@
       <pubDate>Sat, 13 Nov 2021 19:00:29 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3c-%E4%B8%ADvector%E5%A3%B0%E6%98%8E%E9%94%99%E8%AF%AFexpected-parameter-declarator/</guid>
       <description>保留现场 QVector&amp;lt;uint32_t&amp;gt; buttonPins(3); 声明了一个长度为 3 的vector数组，编译是会报这个错误。 探究原因 编译器可能无法区分这是一个成员函数声明还是一个成员变量声明，也</description>
+      <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">    <span class="n">QVector</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span> <span class="n">buttonPins</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span></span></code></pre></div><p>声明了一个长度为 3 的<code>vector</code>数组，编译是会报这个错误。</p>
+<h2 id="探究原因">探究原因</h2>
+<p>编译器可能无法区分这是一个成员函数声明还是一个成员变量声明，也就是产生歧义。</p>
+<h2 id="解决方法">解决方法</h2>
+<p>方法 1：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">    <span class="n">QVector</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span> <span class="n">buttonPins</span> <span class="o">=</span> <span class="n">QVector</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="c1">//明确这是一个成员变量
+</span></span></span></code></pre></div><p>方法 2：默认构造函数里面进行成员变量的初始化</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="n">MainWindow</span><span class="o">::</span><span class="n">MainWindow</span><span class="p">(</span><span class="n">QWidget</span> <span class="o">*</span><span class="n">parent</span><span class="p">)</span> <span class="o">:</span> <span class="n">QMainWindow</span><span class="p">(</span><span class="n">parent</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ui</span><span class="p">(</span><span class="k">new</span> <span class="n">Ui</span><span class="o">::</span><span class="n">MainWindow</span><span class="p">),</span><span class="n">buttonPins</span><span class="p">(</span><span class="mi">3</span><span class="p">){}</span>
+</span></span></code></pre></div><p>方法 3：列表初始化</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="n">QVector</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span> <span class="n">buttonPins</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">};</span>
+</span></span></code></pre></div>]]></content:encoded>
     </item>
     <item>
       <title>C 语言可变参数</title>
@@ -21,6 +35,94 @@
       <pubDate>Tue, 12 Oct 2021 11:21:49 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/c%E8%AF%AD%E8%A8%80%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0/</guid>
       <description>学习过程中查看了printf()源码，遇到了这样的函数定义， void printf(char *fmt, ...){ char buf[256]; va_list args; memset(buf, 0, sizeof(buf)); va_start(args, fmt); vsprint(buf, fmt, args); va_end(args); puts(buf); } 参数中的三个点号，就是 C 语言中可变参数的标</description>
+      <content:encoded><![CDATA[<p>学习过程中查看了<code>printf()</code>源码，遇到了这样的函数定义，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">printf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">,</span> <span class="p">...){</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">va_list</span> <span class="n">args</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">memset</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">va_start</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">fmt</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">vsprint</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">va_end</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">puts</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>参数中的三个点号，就是 C 语言中可变参数的标识。这样的函数称为可变参数函数。这种函数需要固定数量的<strong>强制参数</strong>（mandatory argument），后面是<strong>数量可变的可选参数</strong>（optional argument）。</p>
+<p>这种函数<strong>必须至少有一个</strong>强制参数。可选参数的类型可以变化。可选参数的数量由强制参数的值决定，或由用来定义可选参数列表的特殊值决定。</p>
+<p>C 语言中最常用的可变参数函数例子是<code>printf（）</code>和 <code>scanf（）</code>。这两个函数都有一个强制参数，即格式化字符串。格式化字符串中的转换修饰符决定了可选参数的数量和类型。</p>
+<p>可变参数函数要获取可选参数时，必须通过一个类型为 <code>va_list</code> 的对象，它包含了参数信息。这种类型的对象也称为参数指针（argument pointer），它包含了栈中至少一个参数的位置。可以使用这个参数指针从一个可选参数移动到下一个可选参数，由此，函数就可以获取所有的可选参数。<code>va_list</code> 类型被定义在头文件 <code>stdarg.h</code> 中。</p>
+<p>当编写支持参数数量可变的函数时，必须用 <code>va_list</code> 类型定义参数指针，以获取可选参数。在下面的讨论中，<code>va_list</code> 对象被命名为 <code>argptr</code>。可以用 <code>4</code>个宏来处理该参数指针，这些宏都定义在头文件 <code>stdarg.h</code> 中：</p>
+<ul>
+<li>
+<p>宏 <code>va_start</code> 使用第一个可选参数的位置来初始化 <code>argptr</code> 参数指针。该宏的第二个参数必须是该函数最后一个有名称参数的名称。必须先调用该宏，才可以开始使用可选参数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">va_start</span><span class="p">(</span><span class="n">va_list</span> <span class="n">argptr</span><span class="p">,</span> <span class="n">lastparam</span><span class="p">);</span>
+</span></span></code></pre></div></li>
+<li>
+<p>展开宏 <code>va_arg</code> 会得到当前 <code>argptr</code> 所引用的可选参数，也会将 <code>argptr</code> 移动到列表中的下一个参数。宏 <code>va_arg</code> 的第二个参数是刚刚被读入的参数的类型。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">type</span> <span class="nf">va_arg</span><span class="p">(</span><span class="n">va_list</span> <span class="n">argptr</span><span class="p">,</span> <span class="n">type</span><span class="p">);</span>
+</span></span></code></pre></div></li>
+<li>
+<p>当不再需要使用参数指针时，必须调用宏 <code>va_end</code>。如果想使用宏 <code>va_start</code> 或者宏 <code>va_copy</code> 来重新初始化一个之前用过的参数指针，也必须先调用宏 <code>va_end</code>。<code>va_end</code>被定义为空。它只是为实现与 va_start 配对 (实现代码对称和&quot;代码自注释&quot;(根据代码就能知道功能，不需要额外注释) 功能)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">va_end</span><span class="p">(</span><span class="n">va_list</span> <span class="n">argptr</span><span class="p">);</span>
+</span></span></code></pre></div></li>
+<li>
+<p>宏 <code>va_copy</code> 使用当前的<code>src</code>值来初始化参数指针 <code>dest</code>。然后就可以使用 <code>dest</code>中的备份获取可选参数列表，从<code>src</code> 所引用的位置开始。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">va_copy</span><span class="p">(</span><span class="n">va_list</span> <span class="n">dest</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">src</span><span class="p">);</span>
+</span></span></code></pre></div></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 函数 add() 计算可选参数之和
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 参数：第一个强制参数指定了可选参数的数量，可选参数为 double 类型
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 返回值：和值，double 类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">double</span> <span class="nf">add</span><span class="p">(</span> <span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="p">...</span> <span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">double</span> <span class="n">sum</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">va_list</span> <span class="n">argptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">va_start</span><span class="p">(</span> <span class="n">argptr</span><span class="p">,</span> <span class="n">n</span> <span class="p">);</span>             <span class="c1">// 初始化 argptr
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>          <span class="c1">// 对每个可选参数，读取类型为 double 的参数，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">sum</span> <span class="o">+=</span> <span class="nf">va_arg</span><span class="p">(</span> <span class="n">argptr</span><span class="p">,</span> <span class="kt">double</span> <span class="p">);</span> <span class="c1">// 然后累加到 sum 中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nf">va_end</span><span class="p">(</span> <span class="n">argptr</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">sum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>简易<code>printf</code>函数</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdarg.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="cm">/* minprintf: minimal printf with variable arqument list */</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">minprintf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">,</span> <span class="p">...)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GPIO</span>
+</span></span><span class="line"><span class="cl">    <span class="n">va_list</span> <span class="n">ap</span><span class="p">;</span> <span class="cm">/* points to each unnamed arq in turn */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="o">*</span><span class="n">sval</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">ival</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">dval</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">va_start</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">fmt</span><span class="p">);</span> <span class="cm">/* make ap point to 1st unnamed arg */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">fmt</span><span class="p">;</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span> <span class="n">p</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">!=</span> <span class="sc">&#39;%&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">putchar</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">switch</span> <span class="p">(</span><span class="o">*++</span><span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="sc">&#39;d&#39;</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">         <span class="n">ival</span> <span class="o">=</span> <span class="nf">va_arg</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span> <span class="n">ival</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="sc">&#39;f&#39;</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">dval</span> <span class="o">=</span> <span class="nf">va_arg</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="kt">double</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%f&#34;</span><span class="p">,</span> <span class="n">dval</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="sc">&#39;s&#39;</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="n">sval</span> <span class="o">=</span> <span class="nf">va_arq</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="p">);</span> <span class="o">*</span><span class="n">sval</span><span class="p">;</span> <span class="n">sval</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nf">putchar</span><span class="p">(</span><span class="o">*</span><span class="n">sval</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">putchar</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">va_end</span><span class="p">(</span><span class="n">ap</span><span class="p">);</span> <span class="cm">/* clean up when done */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div>]]></content:encoded>
     </item>
     <item>
       <title>解决 Undefined reference to 问题</title>
@@ -28,6 +130,24 @@
       <pubDate>Fri, 17 Sep 2021 11:14:30 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3undefined-reference-to%E9%97%AE%E9%A2%98/</guid>
       <description>链接时缺失了相关目标文件 这是最典型最常见的情况。比如新添加了一个模块fun.h fun.c两个文件，其他文件中使用了这个模块里的函数，如果编译</description>
+      <content:encoded><![CDATA[<h2 id="链接时缺失了相关目标文件">链接时缺失了相关目标文件</h2>
+<p>这是最典型最常见的情况。比如新添加了一个模块<code>fun.h fun.c</code>两个文件，其他文件中使用了这个模块里的函数，如果编译时忘记加上这两个文件，调用<code>fun</code>模块函数的地方，就会报<code>undefined reference</code>错误。</p>
+<p>这个问题在编辑器中一般不容易发现，因为头文件包含是正确的，编辑器能够找到相关的函数及其实现，所以在编写代码时不会报错。</p>
+<h2 id="链接时缺少相关的库文件">链接时缺少相关的库文件</h2>
+<p>这个原因和上一条类似，我们在调用静态库中的函数时，编译时如果没有将静态库一起编译，就会报同样的错误。</p>
+<h2 id="链接的库文件中又使用了另一个库文件">链接的库文件中又使用了另一个库文件</h2>
+<p>在使用第三方库时，一定要在编译中加入第三方库的路径。</p>
+<h2 id="多个库文件链接顺序问题">多个库文件链接顺序问题</h2>
+<p>在链接命令中给出所依赖的库时，需要注意库之间的依赖顺序，依赖其他库的库一定要放到被依赖库的前面，这样才能真正避免 undefined reference 的错误，完成编译链接。</p>
+<h2 id="声明与实现不一致">声明与实现不一致</h2>
+<p>这个原因也比较典型，注意排查声明与实现的参数是否一致，返回值是否一致。</p>
+<h2 id="在-c代码中链接-c-语言的库">在 c++代码中链接 c 语言的库</h2>
+<p>在<code>C++</code>代码中，调用了<code>C</code>语言库的函数，因此链接的时候找不到，解决方法是在相关文件添加一个<code>extern &quot;C&quot;</code>的声明即可。</p>
+<h2 id="总结">总结</h2>
+<p>顾名思义，这个错误就是<strong>未定义</strong>你使用的内容导致的。所以要排查使用的内容是否能够被正确“找到”。使用的时候有没有声明，有没有定义，声明与定义是否一致，编译时能否正确链接等等。</p>
+<h2 id="相关参考">相关参考</h2>
+<p><a href="https://segmentfault.com/a/1190000006049907">&ldquo;undefined reference to&rdquo; 问题汇总及解决方法</a></p>
+]]></content:encoded>
     </item>
     <item>
       <title>C/C&#43;&#43;如何避免过多使用全局变量</title>
@@ -35,6 +155,15 @@
       <pubDate>Fri, 17 Sep 2021 10:49:15 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/c-c-%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%BF%87%E5%A4%9A%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F/</guid>
       <description>‘ 具体实例可以参考Marc Pony 指针传参 C 语言中，全局变量用结构体封装，设计函数时，将参数以结构体指针形式传入。 定义获取变量的方法/函数 定义一个</description>
+      <content:encoded><![CDATA[<p>‘</p>
+<p>具体实例可以参考<a href="https://blog.csdn.net/maple_2014/article/details/109541104">Marc Pony</a></p>
+<h2 id="指针传参">指针传参</h2>
+<p>C 语言中，全局变量用结构体封装，设计函数时，将参数以结构体指针形式传入。</p>
+<h2 id="定义获取变量的方法函数">定义获取变量的方法/函数</h2>
+<p>定义一个函数以<code>get/set</code>全局变量，利用<code>static</code>变量，将全局变量作用域限定于该函数，将全局变量隐藏起来。</p>
+<h2 id="善用static">善用<code>static</code></h2>
+<p>把全局变量定义在某一个 .c 文件中，并定义为 static 类型，然后定义一系列操作这个变量的函数，头文件里面只有操作函数，没有变量的声明</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

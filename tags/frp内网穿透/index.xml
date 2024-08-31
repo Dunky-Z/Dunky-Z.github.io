@@ -14,6 +14,48 @@
       <pubDate>Mon, 01 Apr 2024 21:08:03 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/frp%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</guid>
       <description>懒得自己搭建了，还要准备一台公网服务器，直接找第三方服务商。签到免费送流量，不过流量不多，不过用来穿透个小服务还是够的。 https://chickfrp.com?affcode=2649EJBPNQ https://console.openfrp.net/ 创建隧道，下载配</description>
+      <content:encoded><![CDATA[<p>懒得自己搭建了，还要准备一台公网服务器，直接找第三方服务商。签到免费送流量，不过流量不多，不过用来穿透个小服务还是够的。</p>
+<ul>
+<li><a href="https://chickfrp.com?affcode=2649EJBPNQ">https://chickfrp.com?affcode=2649EJBPNQ</a></li>
+<li><a href="https://console.openfrp.net/">https://console.openfrp.net/</a></li>
+</ul>
+<p>创建隧道，下载配置文件如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="p">[</span><span class="l">common]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">protocol=tcp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">server_addr=ali-shanghai-a.chickfrp.com</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">server_port=7000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">user=xxxxxxxxx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">token=xxxxxxxx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">tcp_mux=true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="w"> </span><span class="l">openai ]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">type= tcp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">remote_port= 10006</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">local_ip= 192.168.1.9</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">local_port= 3322</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">use_compression=false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">use_encryption=false</span><span class="w">
+</span></span></span></code></pre></div><p>配置客户端，下面以 Linux 为例，因为需要配置 Docker 服务，所以做个简单记录。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># 下载 frp 应用，解压后 frpc 是客户端，frps 是服务端，今天我们只用到 frpc</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">wget https://github.com/fatedier/frp/releases/download/v0.56.0/frp_0.56.0_linux_amd64.tar.gz</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">tar zxvf frp_0.56.0_linux_amd64.tar.gz</span><span class="w">
+</span></span></span></code></pre></div><p>将服务商提供的配置文件复制到<code>frpc.toml</code>中。服务商提供的可能是旧版本的 frp 配置，是<code>ini</code>格式，需要转换成<code>toml</code>格式。有能力可以自己稍微改一下格式就行，不会的话，可以用在线转换工具，比如：https://toml.info/zh/ini-to-toml。</p>
+<p>简单启动：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">./frpc  -c ./frpc.toml
+</span></span><span class="line"><span class="cl">2024-04-01 21:04:29.326 <span class="o">[</span>I<span class="o">]</span> <span class="o">[</span>client/control.go:170<span class="o">]</span> <span class="o">[</span>19341bf77b5454753237<span class="o">]</span> <span class="o">[</span>SDSDasdaderf.openai<span class="o">]</span> start proxy success
+</span></span></code></pre></div><p>配置 Docker-compose 一键启动，将配置文件<code>frpc.toml</code>映射到容器中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">frp</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">stilleshan/frpc:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">frp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/path/to/frpc.toml:/frp/frpc.toml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span></code></pre></div><p><code>docker-compose up -d</code>启动容器。<code>docker logs frp</code>查看日志。出现<code>start proxy success</code>表示成功。</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

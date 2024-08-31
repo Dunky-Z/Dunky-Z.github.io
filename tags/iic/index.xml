@@ -14,6 +14,97 @@
       <pubDate>Fri, 19 Aug 2022 14:16:29 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/iic%E5%8D%8F%E8%AE%AE/</guid>
       <description>IIC 概述 IIC（Inter-Integrated Circuit），也叫 I2C（Inter-IC Communication）总线，是一种串行通信</description>
+      <content:encoded><![CDATA[<h1 id="iic-概述">IIC 概述</h1>
+<p><strong>IIC（Inter-Integrated Circuit）</strong>，也叫 I2C（Inter-IC Communication）总线，是一种串行通信协议，由 Philips 公司在 1980 年代初开发。IIC 总线用于连接微控制器、传感器和其他集成电路，它具有以下特点：</p>
+<ol>
+<li>双线制结构简单：由一条数据线（SDA）和一条时钟线（SCL）组成。</li>
+<li>多主机并行通信：多个 Master 设备可同时接入同一条 IIC 总线上进行数据交换。</li>
+<li>硬件资源占用少：只要两根线就可以连接多个器件。</li>
+<li>数据传输速率快：现代 IIC 总线的最高传输速率可达到 400Kbps。</li>
+<li>低功耗设计：使用者可以通过软件控制设备进入睡眠模式以减少功耗。</li>
+</ol>
+<h1 id="传输协议">传输协议</h1>
+<h2 id="写操作">写操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片写数据，以及写标记（0）</li>
+<li>从设备回应（用来确定这个设备是香存在，然后就可以传输数据）</li>
+<li>主设备发送一个字节数据给从设备，并等待回应</li>
+<li>每传输一字节故据，接收方要有一个回应信号（确定故据是否接受完成），然后再传输下一个故据。</li>
+<li>数据发送完之后，主机就会发送一个停止信号。</li>
+</ul>
+<h2 id="读操作">读操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片读数据，以及读标记（1）</li>
+<li>从设备回应（用来确定这个设备是否存在），然后就可以传输数据</li>
+<li>从设备发送一个字节放据给主设备，并等待回应</li>
+<li>每传输一字节数据，接收方要有一个回应信号（确定数据是否接受完成），然后再传输下一个放据。</li>
+<li>数据发送完之后，主芯片就会发送一个停止信号。</li>
+</ul>
+<h1 id="状态">状态</h1>
+<h2 id="空闲状态">空闲状态</h2>
+<ul>
+<li>SCL 和 SDA 都为高电平</li>
+</ul>
+<p>此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。</p>
+<h2 id="起始状态">起始状态</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+</a>
+</div>
+
+</p>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平</li>
+</ul>
+<p>标志着一次数据传输的开始。起始信号是由主控器主动建立的，在建立该信号之前 I2C 总线必须处于空闲状态。</p>
+<h2 id="结束状态">结束状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由低电平变为高电平</li>
+</ul>
+<h2 id="数据传输状态">数据传输状态</h2>
+<ul>
+<li>SCL 高电平期间，SDL 保持稳定
+<ul>
+<li>SDL 为高电平表示 1，低电平表示 0</li>
+</ul>
+</li>
+</ul>
+<p>在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 <code>0xaa</code> 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p>
+</blockquote>
+<h2 id="应答状态">应答状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平（上图最后的 ACK 标记）</li>
+</ul>
+<p>I2C 总线上的所有数据都是以 8 位字节传送的，发送器 (主机) 每发送一个字节，就在<strong>第 9 个时钟</strong>脉冲期间释放数据线，由从设备反馈一个应答信号。应答信号为<strong>低电平</strong>时，规定为<strong>有效应答位</strong> (ACK 简称应答位)，表示接收器已经成功地接收了该字节；应答信号为<strong>高电平时</strong>，规定为<strong>非应答位</strong> (NACK)，一般表示接收器接收该字节没有成功。对于反馈有效应答位 ACK 的要求是，接收器在第 9 个时钟脉冲之前的低电平期间将 <strong>SDA</strong> 线拉低，并且确保在该<strong>时钟的高电平期间为稳定的低电平</strong>。</p>
+<p>以下四种情况 IIC 通信过程中会产生非应答位（NACK）：</p>
+<ul>
+<li>从机正在处理某些实时的操作无法与主机实现 IIC 通信的时候，从机会给主机反馈一个非应答 (NACK)</li>
+<li>主机发送数据的过程中，从机无法解析发送的数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机发送数据的过程中，从机无法再继续接收数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机从从机中读取数据的过程中，主机不想再接收数据，主机会给从机反馈一个非应答位 (NACK)，注意，这种情况是主机给从机反馈一个非应答位 (NACK)</li>
+</ul>
+<h1 id="参考资料">参考资料</h1>
+<ol>
+<li><a href="https://www.cnblogs.com/liujinggang/p/9656358.html">IIC总线的原理与Verilog实现 - jgliu - 博客园</a></li>
+<li><a href="https://www.cnblogs.com/xuyan123/p/14134246.html">IIC时序分析 - 夏天师妹 - 博客园</a></li>
+</ol>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

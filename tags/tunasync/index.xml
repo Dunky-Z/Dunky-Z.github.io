@@ -14,6 +14,169 @@
       <pubDate>Thu, 14 Dec 2023 14:15:54 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</guid>
       <description>Tunasync 项目简介 Tunasync 是一个开源的镜像站点镜像工具，可以帮助你快速搭建一个镜像站点，也可以帮助你快速的同步镜像站点的镜像。我们所熟知的清华大学镜像站就</description>
+      <content:encoded><![CDATA[<h1 id="tunasync-项目简介">Tunasync 项目简介</h1>
+<p>Tunasync 是一个开源的镜像站点镜像工具，可以帮助你快速搭建一个镜像站点，也可以帮助你快速的同步镜像站点的镜像。我们所熟知的清华大学镜像站就是使用 Tunasync 来同步镜像的。</p>
+<h1 id="准备-workspace">准备 workspace</h1>
+<p>创建目录用于存放 Tunasync 的程序、配置文件和数据库文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir /home/username/tunasync
+</span></span><span class="line"><span class="cl">mkdir /home/username/tunasync/conf
+</span></span><span class="line"><span class="cl">mkdir /home/username/tunasync/db
+</span></span></code></pre></div><p>创建目录用于存放镜像文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo mkdir /srv/mirrors
+</span></span></code></pre></div><p>srv 目录需要 root 权限，将 mirrors 目录的所有者改为当前用户：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chown -R username:username /srv/mirrors
+</span></span></code></pre></div><h1 id="下载-tunasync">下载 Tunasync</h1>
+<p>可以从 <a href="https://github.com/tuna/tunasync">Tunasync 项目</a>的 Github releases 编译好的程序直接使用。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">wget https://github.com/tuna/tunasync/releases/download/v0.8.0/tunasync-linux-amd64-bin.tar.gz
+</span></span><span class="line"><span class="cl">tar -zxvf tunasync-linux-amd64-bin.tar.gz
+</span></span></code></pre></div><h1 id="配置-tunasync">配置 Tunasync</h1>
+<h2 id="manager-配置">Manager 配置</h2>
+<p>创建配置文件<code>/home/username/tunasync/conf/manager.conf</code>，并添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">debug</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>server<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">addr</span> <span class="o">=</span> <span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">port</span> <span class="o">=</span> <span class="m">12345</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_key</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>files<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">db_type</span> <span class="o">=</span> <span class="s2">&#34;bolt&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">db_file</span> <span class="o">=</span> <span class="s2">&#34;/home/username/tunasync/db/manager.db&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ca_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span></code></pre></div><h2 id="worker-配置">Worker 配置</h2>
+<p>创建配置文件<code>/home/username/tunasync/conf/worker-openeuler.conf</code>，并添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>global<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;openeuler_worker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">log_dir</span> <span class="o">=</span> <span class="s2">&#34;/srv/mirrors/log/tunasync/{{.Name}}&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">mirror_dir</span> <span class="o">=</span> <span class="s2">&#34;/srv/mirrors&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">concurrent</span> <span class="o">=</span> <span class="m">10</span>
+</span></span><span class="line"><span class="cl"><span class="nv">interval</span> <span class="o">=</span> <span class="m">1440</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>manager<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">api_base</span> <span class="o">=</span> <span class="s2">&#34;http://localhost:12345&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">token</span> <span class="o">=</span> <span class="s2">&#34;some_token&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ca_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>cgroup<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nb">enable</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span><span class="line"><span class="cl"><span class="nv">base_path</span> <span class="o">=</span> <span class="s2">&#34;/sys/fs/cgroup&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">group</span> <span class="o">=</span> <span class="s2">&#34;tunasync&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>server<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">hostname</span> <span class="o">=</span> <span class="s2">&#34;localhost&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">listen_addr</span> <span class="o">=</span> <span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">listen_port</span> <span class="o">=</span> <span class="m">16010</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_key</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[[</span>mirrors<span class="o">]]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;centos&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">provider</span> <span class="o">=</span> <span class="s2">&#34;rsync&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">upstream</span> <span class="o">=</span> <span class="s2">&#34;rsync://mirrors.tuna.tsinghua.edu.cn/openeuler/&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">use_ipv6</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span></code></pre></div><h1 id="启动-tunasync">启动 Tunasync</h1>
+<h2 id="启动-manager">启动 Manager</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">./tunasync manager -c conf/manager.conf &gt;&gt; /srv/mirrors/log/plog/manager.log <span class="p">&amp;</span>
+</span></span></code></pre></div><h2 id="启动-worker">启动 Worker</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">./tunasync worker -c conf/worker-openeuler.conf &gt;&gt; /srv/mirrors/log/plog/worker-openeuler.log <span class="p">&amp;</span>
+</span></span></code></pre></div><p>通常可能同步不止一个镜像站点，可以创建多个 Worker 配置文件，然后启动多个 Worker。</p>
+<h1 id="创建-web-服务">创建 web 服务</h1>
+<ol>
+<li>
+<p><strong>安装 Apache2：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl">sudo apt install apache2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>修改配置文件：</strong></p>
+<p>Ubuntu 中的 Apache2 主要配置文件是 <code>/etc/apache2/apache2.conf</code>。可以在此文件中进行全局配置，也可以使用专门的配置文件，例如 <code>/etc/apache2/sites-available/your-site.conf</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo nano /etc/apache2/apache2.conf
+</span></span></code></pre></div><p>在 <code>apache2.conf</code> 文件中，添加以下行，设置 <code>DocumentRoot</code> 和目录访问权限：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-apache" data-lang="apache"><span class="line"><span class="cl"><span class="nb">DocumentRoot</span> <span class="sx">/mirrors</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;Directory</span> <span class="s">&#34;/mirrors&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Options</span> Indexes FollowSymLinks
+</span></span><span class="line"><span class="cl">    <span class="nb">AllowOverride</span> <span class="k">None</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Require</span> <span class="k">all</span> granted
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/Directory&gt;</span>
+</span></span></code></pre></div><p>请确保将 <code>&lt;Directory&gt;</code> 部分添加到正确的位置。可以在文件中找到 <code>&lt;Directory /var/www/&gt;</code> 部分，然后在该部分下添加配置。</p>
+</li>
+<li>
+<p><strong>重新启动 Apache2 服务：</strong></p>
+<p>在进行配置更改后，需要重新启动 Apache2 服务以使更改生效：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart apache2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>补充文件：</strong></p>
+<p>将 <code>index.html</code> 文件和其他需要的文件添加到 <code>/srv/mirrors</code> 目录中。</p>
+</li>
+<li>
+<p><strong>测试：</strong></p>
+<p>打开 Web 浏览器，访问 <code>http://your-server-ip</code> 或 <code>http://localhost</code>，应该能够看到 <code>/srv/mirrors</code> 目录中的文件。</p>
+</li>
+<li>
+<p>如打不开，需要开启防火墙</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo ufw allow http
+</span></span><span class="line"><span class="cl">sudo ufw allow https
+</span></span></code></pre></div></li>
+<li>
+<p>修改 Web 服务端口</p>
+<ol>
+<li>
+<p><strong>编辑 Apache2 配置文件：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo nano /etc/apache2/ports.conf
+</span></span></code></pre></div></li>
+<li>
+<p>**在文件中找到 <strong>​</strong><code>Listen</code><strong>​ ** 行，修改端口：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-apache" data-lang="apache"><span class="line"><span class="cl"><span class="nb">Listen</span> <span class="m">2081</span>
+</span></span></code></pre></div></li>
+<li>
+<p><strong>编辑虚拟主机配置（如果有）：</strong></p>
+<p>如果你有虚拟主机配置文件（通常在 <code>/etc/apache2/sites-available/</code> 中），确保其中的 <code>&lt;VirtualHost&gt;</code> 部分中的端口也被修改为 2081。</p>
+</li>
+<li>
+<p><strong>保存并退出配置文件。</strong></p>
+</li>
+<li>
+<p><strong>重启 Apache 服务：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart apache2
+</span></span></code></pre></div></li>
+</ol>
+</li>
+</ol>
+<h3 id="打开防火墙端口">打开防火墙端口</h3>
+<pre><code>1. **打开 2081 端口：**
+
+    ```bash
+    sudo ufw allow 2081
+    ```
+
+2. **检查配置：**
+
+    ```bash
+    sudo ufw status
+    ```
+
+    确保 2081 端口已经正确添加。
+3. **重启防火墙（可选）：**
+
+    ```bash
+    sudo ufw reload
+    ```
+
+    或者
+
+    ```bash
+    sudo systemctl restart ufw
+    ```
+
+这样，你就将 Apache2 Web 服务的端口修改为 2081，并且只开放了 2081 端口。确保修改了防火墙规则后，仍能够通过新的端口访问你的网站。
+</code></pre>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

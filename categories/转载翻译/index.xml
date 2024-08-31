@@ -1,0 +1,1112 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>转载翻译 on 夜云泊</title>
+    <link>https://lifeislife.cn/categories/%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/</link>
+    <description>Recent content in 转载翻译 on 夜云泊</description>
+    <generator>Hugo -- 0.133.1</generator>
+    <language>zh</language>
+    <lastBuildDate>Sat, 31 Aug 2024 17:00:13 +0800</lastBuildDate>
+    <atom:link href="https://lifeislife.cn/categories/%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PCIe Part 2 - 关于内存的一切 MMIO DMA TLPs !</title>
+      <link>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/</link>
+      <pubDate>Sat, 31 Aug 2024 17:00:13 +0800</pubDate>
+      <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/</guid>
+      <description>本文翻译自：PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul 在这个系列文章的第</description>
+      <content:encoded><![CDATA[<blockquote>
+<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p>
+</blockquote>
+<p>在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。</p>
+<p>配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。</p>
+<p>正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。</p>
+<blockquote>
+<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p>
+</blockquote>
+<h2 id="pcie-中的数据传输方法简介">PCIe 中的数据传输方法简介</h2>
+<p>配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。</p>
+<p>配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。</p>
+<p>我们现在需要的是数据传输方法，让我们真正开始利用 PCIe 设计的高速传输吞吐量。吞吐量是对给定时间段内传输的字节数的度量。这意味着为了最大限度地提高吞吐量，我们必须最小化每个数据包的开销，以传输每个数据包的最大字节数。如果我们每个数据包只发送几个 DWORD（每个 4 字节），就像在配置空间的情况下一样，PCIe 高速传输能力就浪费了。</p>
+<p>废话不多说，先介绍一下 PCIe 中高速 I/O 的两种主要形式：</p>
+<ul>
+<li>内存映射输入/输出（简称 MMIO）- 与主机 CPU 读取和写入内存到 ECAM 以执行配置空间访问类似，MMIO 可以用来映射设备的地址空间，以执行内存传输。主机机器在其物理地址空间中配置“内存窗口”，使 CPU 拥有一个内存地址窗口，这些内存地址神奇地转换为直接读取和写入设备。内存窗口在 RC 中解码，将 CPU 的读取和写入转换为传输到设备的数据 TLPs。硬件优化使得这种方法可以实现比配置空间访问快得多的吞吐量。然而，其速度仍然远远落后于 DMA 的批量传输速度。</li>
+<li>直接内存访问（简称 DMA）- DMA 是迄今为止最常见的数据传输形式，因为它具有原始传输速度和低延迟。每当驱动程序需要在主机和设备之间沿任一方向进行任何重要大小的传输时，它肯定会是 DMA。但与 MMIO 不同的是，DMA 是由设备本身启动的，而不是由主机 CPU 启动的。主机 CPU 将通过 MMIO 告诉设备 DMA 应该去哪里，设备本身负责开始和完成 DMA 传输。这允许设备在没有 CPU 参与的情况下执行 DMA 事务，与设备必须等待主机 CPU 告诉它每次传输做什么相比，这节省了大量的 CPU 周期。由于 DMA 的普遍性和重要性，从硬件实现和软件层面了解 DMA 非常有价值。</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
+</a>
+</div>
+
+</p>
+<h2 id="mmio-简介">MMIO 简介</h2>
+<h3 id="什么是-bar">什么是 BAR？</h3>
+<p>由于配置空间限制为 4096 字节，因此之后没有太多可用空间用于特定于设备的功能。如果设备想要映射 1GB 的 MMIO 空间来访问其内部 RAM，该怎么办？没有办法将其放入 4096 字节的配置空间。因此，它将需要请求一个被称为 BAR（基地址寄存器）的东西。这是通过配置空间公开的一个寄存器，允许主机机器配置其内存的一个区域，直接映射到设备上。然后主机机器上的软件通过对 BAR 的物理地址的内存读/写指令来访问 BAR，就像我们在 ECAM 的第一部分中看到的 MMIO 一样。对设备内存映射进行读取或写入的操作将直接转换为发送到层次结构上的设备的数据包。当设备需要响应时，它将通过层次结构向主机机器发送一个新的数据包。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
+</a>
+</div>
+
+</p>
+<p>当 CPU 指令读取器件 MMIO 区域的内存时，会生成一个内存读取请求事务层数据包（MemRd TLP），该数据包从主机的 RC 向下传输到器件。这个 TLP 包的目的是通知设备希望读取设备，然后设备需要尽快响应请求地址上的内容。</p>
+<p>在 PCIe 中发送和接收的所有数据传输数据包都将采用 TLP 形式。回想一下第 1 部分，这些数据包是设备之间的所有通信都在 PCIe 中发生的中心抽象。这些数据包在出现数据传输错误（类似于网络中的 TCP）的情况下是可靠的，并且可以根据需要重试/重新发送。这确保了数据传输免受 PCIe 可以达到的极高速度下发生的恶劣电气干扰。我们很快就会仔细研究 TLP 的结构，但现在只需将这些视为您在 TCP 中看到的常规网络数据包。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
+</a>
+</div>
+
+</p>
+<p>当设备收到请求者数据包时，设备会使用 MemRd TLP 响应内存请求。此 TLP 包含从设备内存空间读取的结果，给定原始请求者数据包中的地址和大小。设备将它正在响应的特定请求数据包和发送方标记到响应数据包中，交换层次结构知道如何将响应数据包返回给请求者。然后，请求者将使用数据包中的数据来更新发起请求的 CPU 寄存器。</p>
+<p>同时，当 TLP 正在传输时，CPU 必须等待内存请求完成，并且它不能被中断或执行许多有用的工作。正如你可能看到的，如果需要执行大量这样的请求，CPU 将需要花费大量时间等待设备响应每个请求。虽然在硬件级别进行了优化，使此过程更加简化，但使用 CPU 周期等待数据传输完成仍然不是最佳选择。希望您能看到我们需要第二种类型的传输，即 DMA，来解决 BAR 访问的这些缺点。</p>
+<p>这里的另一个重点是，设备内存并不严格需要用于设备的 RAM。虽然通常会看到具有板载 RAM 的设备通过 BAR 公开其内部 RAM 的映射，但这不是必需的。例如，访问设备的 BAR 可能会访问设备的内部寄存器，也可能导致设备执行某些操作。例如，写入 BAR 是设备开始执行 DMA 的主要方式。一个核心要点是，设备 BAR 非常灵活，可用于控制设备或执行与设备之间的数据传输。</p>
+<h3 id="如何枚举-bar">如何枚举 BAR？</h3>
+<p>设备使用其配置空间从软件请求内存区域。在枚举时，由主机确定该区域将放置在物理内存中的位置。每个器件在其配置空间（称为“寄存器”，因此称为基址寄存器）中都有 6 个 32 位值，当枚举器件时，软件将读取和写入这些值。这些寄存器描述了器件希望分配的每个 MMIO 区域的长度和对齐要求，每个可能的 BAR 一个，总共 6 个不同的区域。如果设备希望能够将其 BAR 映射到 4GB 空间（64 位 BAR）以上，它可以将两个 32 位寄存器组合在一起，形成一个 64 位 BAR，最多只留下三个 64 位 BAR。</p>
+<p>PCIe</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p>
+</blockquote>
+<p>BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。</p>
+<p><strong>设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！</strong></p>
+<h2 id="什么是-dma引言和理论">什么是 DMA？引言和理论</h2>
+<p>到目前为止，我们已经看到了两种形式的 I/O，配置空间访问和通过 BAR 的 MMIO 访问。我们将讨论的最后一种也是最后一种访问形式是直接内存访问（DMA）。DMA 是迄今为止最快的 PCIe 批量传输方法，因为它的传输开销最小。也就是说，通过链路传输最大字节数所需的资源最少。这使得 DMA 对于真正利用 PCIe 提供的高速链路至关重要。</p>
+<p>但是，强大的力量会带来巨大的混乱。对于软件开发人员来说，DMA 是一个非常陌生的概念，因为我们在软件中没有类似的东西可以比较。对于 MMIO，我们可以将内存访问概念化为从设备内存中读取和写入的指令。但 DMA 与此非常不同。这是因为 DMA 是异步的，它不利用 CPU 来执行传输。相反，顾名思义，读取和写入的内存直接来自系统 RAM。一旦 DMA 开始，唯一涉及的各方是系统主内存的内存控制器和设备本身。因此，CPU 不会花费周期等待单个内存访问。相反，它只是启动转移，并让平台在后台自行完成 DMA。然后，平台将在传输完成时通知 CPU，通常是通过中断。</p>
+<p>让我们想一想，为什么异步执行 DMA 如此重要。考虑 CPU 从计算机上的 NVMe SSD 解密大量文件的情况。一旦主机上的 NVMe 驱动程序启动 DMA，设备就会不断以最快的速度将文件数据从 SSD 的内部存储传输到 CPU 可以访问的系统 RAM 中的位置。然后，CPU 可以使用其 100% 的处理能力来执行解密数学运算，以便在从系统内存中读取数据时解密文件块。CPU 不会花时间等待对设备进行单个内存读取，而是简单地连接数据，并允许设备尽可能快地传输，而 CPU 会尽可能快地处理它。在此期间，任何额外的数据都会在系统 RAM 中缓冲，直到 CPU 可以访问它。这样，任何过程的任何部分都不会等待其他事情发生。所有这些都以尽可能快的速度同时发生。</p>
+<p>由于 DMA 的复杂性和涉及的部件数量，我将尝试以最直接的方式解释 DMA，并用大量图表来显示该过程。更令人困惑的是，每个设备都有不同的 DMA 接口。没有用于执行 DMA 的通用软件接口，只有器件的设计人员知道如何告诉该器件执行 DMA。值得庆幸的是，某些设备类别使用普遍认可的接口，例如大多数 SSD 使用的 NVMe 接口或 USB 3.0 的 XHCI 接口。如果没有标准接口，则只有硬件设计人员知道设备如何执行 DMA，因此生产设备的公司或个人需要是编写设备驱动程序的人，而不是依赖与操作系统捆绑的通用驱动程序与设备通信。</p>
+<h2 id="一个简单的-dma-传输---step-by-step">一个简单的 DMA 传输 - Step by Step</h2>
+<p>我们 DMA 旅程的第一步是查看传输的初始设置。这涉及几个步骤，为即将到来的 DMA 传输准备系统内存、内核和设备。在这种情况下，我们将设置 DMA，以便读取系统 RAM 中存在的 DMA 缓冲区中的内存内容，并将其放入 Target Memory 的器件板载 RAM 中。此时我们已经选择将此内存从 DMA Buffer 读取到器件上地址为 <code>0x8000</code> 中。目标是尽快将此内存从系统内存传输到设备，以便它可以开始处理它。假设在这种情况下，内存量几 M 字节，MMIO 会太慢，但为简单起见，我们将仅显示 32 字节的内存。这种传输将是最简单的 DMA 传输类型：将内存块的已知大小和地址从系统 RAM 复制到设备 RAM。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="第-1-步---从操作系统分配-dma-内存">第 1 步 - 从操作系统分配 DMA 内存</h3>
+<p>此过程的第一步是从 OS 分配 DMA 内存。这意味着设备驱动程序必须进行 OS API 调用，以请求 OS 为设备分配一个内存区域以将数据写入。这一点很重要，因为操作系统可能需要执行特殊的内存管理操作才能使数据对设备可用，例如删除保护或重新组织现有分配以促进请求。</p>
+<p>传统上，DMA（直接内存访问）存储器必须是连续的物理存储器，这意味着设备从某个地址和长度的起始处开始，并线性地从缓冲区的起始位置读取/写入数据直到结束。因此，操作系统必须负责组织其物理内存，以创建足够大的连续范围，以满足驱动程序请求的 DMA 缓冲区。有时，对于长时间运行或物理内存有限的系统来说，这可能非常困难。因此，这一领域的增强功能允许更现代的设备使用 Scatter-Gather 和 IOMMU Remapping 等功能传输到非连续的存储器区域。稍后，我们将看一些这些功能。但现在，我们只专注于更简单的连续内存情况。</p>
+<p>一旦请求的分配成功，API 将返回内存地址，并指向系统 RAM 中的缓冲区。这将是设备通过 DMA 访问内存的地址。DMA 意图为 API 返回的地址将被赋予一个特殊的名称; 设备逻辑地址或逻辑地址。对于我们的示例，逻辑地址等同于物理地址。设备看到的是操作系统看到的物理内存的完全相同视图，没有额外的转换。然而，在更高级的传输形式中，情况可能并非总是如此。因此最好意识到，设备给出的地址可能并非总是与其在 RAM 中实际的物理地址相同。</p>
+<p>分配缓冲区后，由于目的是将数据从此缓冲区移动到设备，因此设备驱动程序将提前使用写入设备所需的信息填充缓冲区。在此示例中，由重复 01 02 03 04 模式组成的数据正在传输到设备的 RAM。</p>
+<h3 id="第-2-步---将-dma-地址写入设备并开始传输">第 2 步 - 将 DMA 地址写入设备并开始传输</h3>
+<p>传输的下一步是准备设备执行事务所需的信息。这通常是了解器件的特定 DMA 接口最重要的地方。每个设备都以自己的方式进行编程，了解驱动程序应该如何对设备进行编程的唯一方法是参考其通用标准（如 NVMe 规范）或简单地与硬件设计人员合作。</p>
+<p>在这个例子中，我将为一个只有执行传输所需的最基本功能的设备构建一个简化的 DMA 接口。在下面的图表中，我们可以看到这个设备通过向 BAR0 MMIO 区域写入数值来进行编程。这意味着为了为这个设备编程 DMA，驱动程序必须将内存写入由 BAR0 指定的 MMIO 区域。每个寄存器在 BAR0 区域内的位置是由驱动程序编写者提前知道的，并且被集成到设备驱动程序的代码中。</p>
+<p>对于此示例、我在 BAR0 中创建了四个器件寄存器：</p>
+<ul>
+<li>Destination Address（目标地址） - 设备内部 RAM 中用于写入从系统 RAM 读取的数据的地址。这是我们将对已经确定的目标地址 0x8000 进行编程的地方。</li>
+<li>Source Address（源地址） - 设备将从中读取数据的系统 RAM 的逻辑地址。这将对我们希望设备读取的 DMA Buffer 的逻辑地址进行编程。</li>
+<li>Transfer Size（传输大小） - 我们要传输的大小（以字节为单位）。</li>
+<li>Initiate Transfer（启动传输标志位）- 一旦次寄存器写入 1，器件将开始在上面给出的地址之间进行传输。通过这种方式，驱动程序可以判断设备已完成填充缓冲区并准备好开始传输。这通常被称为门铃（Door Bell）寄存器。</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在上图中，驱动程序需要使用器件的 BAR0 的映射内存将必要的值写入寄存器（它如何映射此内存取决于 OS）。此图中的值如下所示：</p>
+<ul>
+<li>Target Memory - 我们要从器件复制的内存将为 <code>0x00008000</code>，它映射到器件板载 RAM 中的内存区域。这将是我们的目标地址。</li>
+<li>DMA 缓冲区 - 操作系统在 <code>0x001FF000</code> 分配内存块，因此这将是我们的源地址。</li>
+</ul>
+<p>有了这些信息，驱动程序现在可以将值编程到设备中，如下所示：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>现在，驱动程序已经配置了执行传输所需的所有寄存器。最后一步是向启动传输寄存器写入一个值，该寄存器充当开始传输的 Door bell 寄存器。一旦写入此值，设备将驱动 DMA 传输，并独立于驱动程序或 CPU 的参与执行它。驱动程序已完成启动传输的工作，此时 CPU 可在等待设备通知系统 DMA 完成的同时，自由进行其他工作。</p>
+<h3 id="第-3-步---设备执行-dma-事务">第 3 步 - 设备执行 DMA 事务</h3>
+<p>现在，驱动程序已写入 Door bell 寄存器，设备现在将接管处理实际传输。在设备本身上，存在一个名为 DMA 引擎的模块，负责处理和维护事务的所有方面。当器件被编程时，对 BAR0 的寄存器写入正在对 DMA 引擎进行编程，其中包含开始在 PCIe 链路上发送必要的 TLP 以执行内存事务所需的信息。</p>
+<p>如上一节所述，PCIe 链路上的所有内存操作都是通过 Memory Write/Read TLP 完成的。在这里，我们将深入研究在交易发生时设备的 DMA 引擎发送和接收的 TLP。请记住，更容易将 TLP 视为在单个可靠连接上发送和接收数据的网络数据包。</p>
+<p>如在前文部分讨论过的，PCIe 链接上的所有内存操作都是通过内存写入/读取 TLPs 来完成的。在这里，我们将深入探讨设备的 DMA 引擎在传输过程中发送和接收的 TLPs。要牢记的是，将 TLPs 视为在一个单一、可靠的连接上发送和接收数据的网络数据包更易于理解。</p>
+<h3 id="插曲快速了解-tlp">插曲：快速了解 TLP</h3>
+<p>在查看链路上的 TLP 之前，让我们仔细了解一下数据包结构本身的概览。</p>
+<p>以下是内存读取请求和响应的两个 TLP。如前所述，用于内存操作的 TLP 利用请求和响应系统。执行读取的设备将生成特定地址和长度（以 4 字节 DWORD 为单位）的读取请求 TLP，然后坐下来等待完成数据包到达包含响应数据的链路。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们可以看到，有与生成请求的设备、Requester 以及唯一的 Tag 值相关的元数据。此 Tag 值用于将请求与其完成匹配。当设备生成请求时，它会使用唯一值标记 TLP 以跟踪待处理的请求。该值由请求的发送者选择，并且由发送者来跟踪其分配的 Tags。</p>
+<p>随着完成的数据通过链路到达，完成的 Tag 让设备能够将接入的数据正确地移至特定传输所需的位置。该系统允许单一设备有多个独特的未完成传输任务，尽管它们接收的数据包相互交错，但仍能保持作为独立传输任务的有序性。</p>
+<p>数据包内部还包含了必要的信息，使得 PCIe 切换层次结构能够确定请求和完成需要去向的位置。例如，内存地址被用来确定正在请求访问的设备是哪一个。在枚举期间，层次结构中的每一个设备都被编程以拥有各自独特的地址范围。切换结构根据数据包中的内存地址，确定数据包需要去向哪里以访问那个地址。</p>
+<p>设备收到并处理请求后，响应数据将以 Completion TLP 的形式发送回去。完成或“响应”数据包可以而且通常会被分段为许多较小的 TLP，这些 TLP 发送整体响应的一部分。这是因为在枚举期间，已确定设备和总线可以处理最大有效载荷大小（MPS）。MPS 可根据平台和设备功能进行配置，从 128 开始，最高可达 4096 的 2 次方大小。通常，此值约为 256 字节，这意味着需要将大型读取请求拆分为许多较小的 TLP。这些数据包中的每一个都有一个字段，该字段指示完成响应的原始请求的偏移量，有效负载中是返回的数据块。</p>
+<p>有一个常见的误解，即内存 TLP 使用 BDF 来寻址数据包需要去往的位置。其实请求仅使用内存地址来指示数据包的目的地，并且设备和目标之间的桥接设备负责将该数据包发送到其正确的位置。。然而，完成数据包确实利用请求者的 BDF 将数据返回给发起请求的设备。</p>
+<p>以下是一个展示内存读取和响应过程的图表，图中展示出请求会使用一个地址来发起请求，而完成的操作会使用请求中 Request 字段的 BDF 来发送相应应答：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="现在回到实际的传输">现在回到实际的传输</h3>
+<p>让我们看看 DMA 引擎为了执行我们的请求而发送和接收的所有内容。由于我们请求了 32 字节的数据，因此只有一个单一的 Memory Read Request 和一个带有响应的单一 Memory Read Completion 数据包。为了便于您理解，请停止向前阅读，并考虑一下在此事务中哪个设备将发送和接收哪个 TLP。如果您需要再次查看第 2 步的图表，请向上滚动。</p>
+<p>现在，让我们深入研究一下传输的实际数据包。虽然我将继续绘制这个模拟示例，但我认为对于这个练习，当执行真实传输时，实际看到其中一些 TLP 是什么样子可能会很有趣。</p>
+<p>在实验中，我使用真实设备配置了如上文所示的同类通用参数，并启动了 DMA。这个设备会发送真实的 TLPs，将系统 RAM 中的内存读取到设备里。因此，你将有机会罕见地查看在执行这种 DMA 时发送的实际 TLPs 的例子，除非有分析器，否则这些在传输过程中几乎无法看到。</p>
+<p>要查看此实验，请点击此链接至配套文章：<a href="https://ctf.re/pcie/experiment/linux/keysight/protocol-analyzer/2024/03/26/pcie-experiment-1/">Experiment - Packet Dumping PCIe DMA TLPs with a Protocol Analyzer and Pcileech – Reversing Engineering for the Soul</a></p>
+<p>以下是器件生成的内存读取请求以及请求如何遍历层次结构的框图。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>勘误表：0x32 应该是 32</p>
+</blockquote>
+<p>此图中概述的步骤如下：</p>
+<ul>
+<li>DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。</li>
+<li>TLP 遍历层次结构 - PCIe 的交换层次结构通过桥接设备移动此请求，直到它到达其目的地，即 RC。回想一下，RC 负责处理所有用于访问系统 RAM 的传入数据包。</li>
+<li>通知 DRAM 控制器 - RC 在内部与 DRAM 控制器通信，该控制器负责实际访问系统 DRAM 的内存。</li>
+<li>从 DRAM 读取内存 - 从地址 0x001FF000 的 DRAM 请求给定长度的 32 字节，并将其返回到值为 01 02 03 04&hellip;</li>
+</ul>
+<p>尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。</p>
+<blockquote>
+<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p>
+</blockquote>
+<p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
+<p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>以下是响应数据包概述的步骤，如上所示：</p>
+<ul>
+<li>从 DRAM 读取内存 - DRAM 控制器从系统 DRAM 中 0x001FF000 的 DMA 缓冲区地址读取 32 字节。</li>
+<li>DRAM 控制器响应根复合体 - DRAM 控制器在内部响应从 DRAM 向 RC 请求的内存</li>
+<li>RC 生成完成 - RC 跟踪传输并为从 DRAM 读取的值创建完成 TLP。在此 TLP 中，元数据值是根据 RC 对待处理传输的了解来设置的，例如发送的字节数、传输的标记以及从原始请求的 Requester 字段复制的目标 BDF。</li>
+<li>DMA 引擎接收 TLP - DMA 引擎通过 PCIe 链路接收 TLP，并查看标签是否与原始请求的相同标签匹配。它还会在内部跟踪此值，并知道有效负载中的内存应写入 Target Memory，该内存在设备内部 RAM 中处于 0x8000。</li>
+<li>Target Memory is Written（目标内存已写入） - 设备内存中的值将更新为从数据包的 Payload 中复制的值。</li>
+<li>系统中断 - 虽然这是可选的，但大多数 DMA 引擎将配置为在 DMA 完成时中断主机 CPU。这会在设备成功完成 DMA 时向设备驱动程序发出通知。</li>
+</ul>
+<p>同样，仅处理这个 complete 数据包就涉及很多步骤。但是，同样，您可以将整个过程简单地视为“从设备的请求中收到 32 字节的响应”。这些步骤的其余部分只是为了向您展示此响应处理的完整端到端是什么样子。</p>
+<p>从这里，设备驱动程序会收到 DMA 已完成的通知，设备驱动程序的代码负责清理 DMA 缓冲区或将其存储起来以供下次使用。</p>
+<p>在我们的艰苦努力后，我们终于完成了一次单一的 DMA 传输事务！想到这就是我能提供的最“简单”的传输方式，真是让人惊讶。有了 IOMMU 重映射和 Scatter-Gather 能力的加入，这些事务甚至可能变得更复杂。但就现在而言，你应该对 DMA 的全部内容以及它如何在真实设备中运作有了深入的理解。</p>
+<h2 id="尾声---关于复杂性的小说明">尾声 - 关于复杂性的小说明</h2>
+<p>如果您读完这篇文章并觉得自己没有完全掌握所有抛给您的概念，或者对复杂性感到不知所措，您不必担心。这些帖子如此复杂的原因是它不仅涵盖广泛的主题，而且还涵盖广泛的专业。通常，整个系统的每个部分在行业中都有不同的团队，他们只关注他们在这个复杂机器中的“齿轮”。通常，硬件开发人员专注于设备，驱动程序开发人员专注于驱动程序代码，而操作系统开发人员专注于资源管理。这些团队之间很少有太多重叠，除非在他们的边界交接，以便另一支团队可以连接到它。</p>
+<p>这些帖子有点独特，因为它们试图将系统作为一个整体进行记录，以便于概念理解，而不是实现。这意味着，在通常划定团队边界的地方，这些帖子根本不关心。我鼓励觉得这个话题有趣的读者在自己的时间里继续深入研究。也许您可以了解一些 FPGA 并开始制作自己的设备，或者您可以购买一个设备并开始尝试对其进行逆向工程，并通过您自己的定制软件与它进行通信。</p>
+<h2 id="总结">总结</h2>
+<p>希望您喜欢这篇深入探讨 PCIe 内存传输的文章！虽然我在这篇文章中涵盖了大量信息，但兔子洞总是更深。值得庆幸的是，通过学习配置空间访问、MMIO（BAR）和 DMA，您现在已经涵盖了 PCIe 中可用的各种形式的数据通信！对于连接到 PCIe 总线的每个设备，主机系统和设备之间的通信将通过这三种方法中的一种进行。设备的链接、资源和驱动程序软件的所有设置和配置最终都是为了促进这三种形式的通信。</p>
+<p>这篇文章花了这么长时间才发布的一个重要原因是，为了理解这一切，我必须向读者展示大量信息。很难决定什么值得写，什么太深以至于理解变得模糊。这个决定瘫痪使博客写作过程花费的时间比我预期的要长得多。再加上全职工作，很难找到时间来撰写这些帖子。</p>
+<p>在即将发布的帖子中，我期待着讨论以下一些或所有的话题：</p>
+<ul>
+<li>层次结构的 PCIe 交换/桥接和枚举</li>
+<li>更高级的 DMA 主题，例如 DMA 重新映射</li>
+<li>电源管理;设备如何“睡眠”和“唤醒”</li>
+<li>平台/OS 的中断及其分配和处理</li>
+<li>设备的简单驱动程序开发示例</li>
+</ul>
+<p>与往常一样，如果你有任何问题或想评论或讨论这个系列的某个方面，你最好在我的 discord 的 #hardware 频道中通过“@gbps”找到我，逆向工程 <a href="https://discord.com/invite/rtfm">discord</a></p>
+<p>请期待未来的帖子！</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>ZH-UEFI 规范 -1-引言</title>
+      <link>https://lifeislife.cn/posts/zh-uefi%E8%A7%84%E8%8C%83-1-%E5%BC%95%E8%A8%80/</link>
+      <pubDate>Tue, 18 Oct 2022 20:07:10 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/zh-uefi%E8%A7%84%E8%8C%83-1-%E5%BC%95%E8%A8%80/</guid>
+      <description>引言 统一可扩展固件接口 (UEFI) 规范描述了操作系统和平台固件之间的接口。UEFI 之前是可扩展固件接口规范 1.10 (EFI)。因此，一些代码和某些协议名称保</description>
+      <content:encoded><![CDATA[<h1 id="引言">引言</h1>
+<p>统一可扩展固件接口 (UEFI) 规范描述了操作系统和平台固件之间的接口。UEFI 之前是可扩展固件接口规范 1.10 (EFI)。因此，一些代码和某些协议名称保留了 EFI 名称。除非另有说明，本规范中的 EFI 名称可假定为 UEFI 的一部分。</p>
+<p>该接口采用数据表的形式，其中包含与平台相关的信息，以及可供 OS 加载程序和 OS 使用的引导和运行时服务调用。它们共同提供了一个引导操作系统的标准环境。本规范是作为一个纯粹的接口规范设计的。因此，<strong>该规范定义了平台固件必须实现的接口和结构集</strong>。类似地，该规范定义了操作系统在引导时可能使用的一组接口和结构。无论是固件开发者选择如何实现所需的元素，还是操作系统开发者选择如何利用这些接口和结构，都由开发者自己决定。</p>
+<p>该规范的目的是定义一种方法，使操作系统和平台固件仅通信支持操作系统引导过程所必需的信息。这是通过平台和固件提供给操作系统的软件可见接口的正式和完整的抽象规范来实现的。</p>
+<p>本规范的目的是为操作系统和平台固件定义一种方式，以仅传递支持操作系统启动过程所需的信息。这是通过平台和固件呈现给操作系统的软件可见接口的抽象规范来实现的。</p>
+<p>使用这一正式定义，旨在运行在与受支持的处理器规范兼容的平台上的收缩包装操作系统将能够在各种系统设计上启动，而无需进一步的平台或操作系统定制。该定义还允许平台创新引入新特性和功能，以增强平台的能力，而不需要按照操作系统的引导顺序编写新代码。</p>
+<p>此外，抽象规范开辟了一条替代遗留设备和固件代码的路径。新的设备类型和相关代码可以通过相同定义的抽象接口提供同等的功能，同样不会影响 OS 引导支持代码。</p>
+<p>该规范适用于从移动系统到服务器的所有硬件平台。该规范提供了一组核心服务以及一组协议接口。协议接口的选择可以随着时间的推移而发展，并针对不同的平台市场细分进行优化。与此同时，该规范允许 oem 提供最大限度的可扩展性和定制能力，以实现差异化。在这方面，UEFI 的目的是定义一个从传统的“PC-AT”风格的引导世界到一个没有遗留 API 的环境的进化路径。</p>
+<h2 id="uefi-驱动模型扩展">UEFI 驱动模型扩展</h2>
+<p>对启动设备的访问是通过一系列的协议接口提供的。UEFI 驱动模型的一个目的是为 &ldquo;PC-AT&quot;式的 Option ROM（TODO）提供一个替代品。需要指出的是，写在 UEFI 驱动模型上的驱动，被设计为在预启动环境中访问启动设备。它们并不是为了取代高性能的、针对操作系统的驱动程序。</p>
+<p>UEFI 驱动模型被设计为支持执行模块化的代码，也被称为驱动，在预启动环境中运行。这些驱动程序可以管理或控制平台上的硬件总线和设备，也可以提供一些软件衍生的、平台特定的服务。</p>
+<p>UEFI 驱动模型还包含了 UEFI 驱动编写者所需的信息，以设计和实现平台启动 UEFI 兼容的操作系统可能需要的任何总线驱动和设备驱动的组合。</p>
+<p>UEFI 驱动模型被设计为通用的，可以适应任何类型的总线或设备。UEFI 规范描述了如何编写 PCI 总线驱动程序、PCI 设备驱动程序、USB 总线驱动程序、USB 设备驱动程序和 SCSI 驱动程序。提供了允许将 UEFI 驱动程序存储在 PCI Option ROM 中的其他详细信息，同时保持了与旧 Option ROM 镜像的兼容性。</p>
+<p>UEFI 规范的一个设计目标是使驱动镜像尽可能的小。然而，如果一个驱动程序需要支持多个处理器架构，那么也需要为每个支持的处理器架构提供一个驱动程序对象文件。为了解决这个空间问题，本规范还定义了 EFI 字节代码虚拟机（EFI Byte Code Virtual Machine）。一个 UEFI 驱动可以被编译成一个 EFI 字节代码对象文件。UEFI Specification-complaint（TODO）的固件必须包含一个 EFI 字节代码解释器。这使得支持多种处理器架构的单一 EFI 字节代码对象文件可以被运出。另一种节省空间的技术是使用压缩。该规范定义了压缩和解压算法，可用于减少 UEFI 驱动程序的大小，从而减少 UEFI 驱动程序存储在 ROM 设备中时的开销。</p>
+<p>OSV、IHV、OEM 和固件供应商可以使用 UEFI 规范中包含的信息来设计和实现符合本规范的固件、生成标准协议接口的驱动程序以及可用于引导 UEFI 兼容的操作系统加载程序操作系统。</p>
+<h2 id="章节安排">章节安排</h2>
+<p>本规范的章节组织如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">章节名</th>
+<th style="text-align:left">内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">引言/概述</td>
+<td style="text-align:left">介绍 UEFI 规范，并描述 UEFI 的主要组件。</td>
+</tr>
+<tr>
+<td style="text-align:left">启动管理器</td>
+<td style="text-align:left">管理器用于加载写入此规范的驱动程序和应用程序。</td>
+</tr>
+<tr>
+<td style="text-align:left">EFI 系统表和分区</td>
+<td style="text-align:left">描述了一个 EFI 系统表，它被传递给每个兼容的驱动程序和应用程序，并定义了一个基于 GUID 的分区方案。</td>
+</tr>
+<tr>
+<td style="text-align:left">块转换表</td>
+<td style="text-align:left">用于执行块 I/O 的布局和规则集，可提供单个块的断电写入原子性。</td>
+</tr>
+<tr>
+<td style="text-align:left">引导服务</td>
+<td style="text-align:left">包含在引导操作系统之前存在于 UEFI 兼容系统中的基本服务的定义。</td>
+</tr>
+<tr>
+<td style="text-align:left">运行时服务</td>
+<td style="text-align:left">包含在操作系统启动之前和之后存在于兼容系统中的基本服务的定义。</td>
+</tr>
+<tr>
+<td style="text-align:left">协议</td>
+<td style="text-align:left">EFI 加载图像协议描述已加载到内存的 UEFI 镜像。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">设备路径协议提供了在 UEFI 环境中构建和管理设备路径所需的信息。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">UEFI 驱动模型描述了一组服务和协议，适用于每个总线和设备类型。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">控制台支持协议定义了I/O协议，处理系统用户在启动服务环境中执行的基于文本的信息的输入和输出。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">媒介访问协议定义了加载文件协议，文件系统格式和媒介格式处理可移动媒介。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">PCI 总线支持协议定义 PCI 总线驱动程序，PCI 设备驱动程序和 PCI Option ROM 布局。所描述的协议包括 PCI 根桥 I/O 协议和 PCI I/O协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">SCSI 驱动程序模型和总线支持定义了 SCSI I/O协议和扩展SCSI Pass Thru 协议，用于抽象访问由 SCSI 主机控制器产生的 SCSI 通道。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">iSCSI协议定义了通过TCP/IP传输SCSI数据。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">USB 支持协议定义了 USB 总线驱动程序和 USB 设备驱动程序。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">调试器支持协议描述了一组可选的协议，提供所需的服务，以实现一个源级调试器的 UEFI 环境。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">压缩算法规范详细描述了压缩/解压缩算法，外加一个标准的EFI解压缩接口，用于启动时使用。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">ACPI 协议可用于从平台上安装或删除 ACPI 表。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">字符串服务：Unicode 排序协议允许在启动服务环境中运行的代码对给定语言的 Unicode 字符串执行词法比较函数;正则表达式协议用于根据正则表达式模式匹配 Unicode 字符串。</td>
+</tr>
+<tr>
+<td style="text-align:left">EFI 字节码虚拟机</td>
+<td style="text-align:left">定义 EFI 字节码虚拟处理器及其指令集。它还定义了如何将 EBC 对象文件加载到内存中，以及从本机代码到 EBC 代码再转换到本机代码的机制。</td>
+</tr>
+<tr>
+<td style="text-align:left">固件更新和报告</td>
+<td style="text-align:left">为设备提供一个抽象，以提供固件管理支持。</td>
+</tr>
+<tr>
+<td style="text-align:left">网络协议</td>
+<td style="text-align:left">SNP、PXE、BIS 和 HTTP 启动协议定义了在 UEFI 启动服务环境中执行时提供对网络设备访问的协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">受管网络协议定义了 EFI 受管网络协议，它提供原始 (未格式化) 异步网络数据包 I/O 服务和托管网络服务绑定协议，用于定位 MNP 驱动支持的通信设备。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">VLAN、EAP、Wi-Fi 和 Supplicant 协议定义了一个协议，为 VLAN 配置提供可管理性接口。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">蓝牙协议定义。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">TCP、IP、PIPsec、FTP、GTLS 和 Configurations 协议定义了 EFI TCPv4 (Transmission Control Protocol version 4) 协议和 EFI IPv4 (Internet Protocol version 4) 协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">ARP、DHCP、DNS、HTTP 和 REST 协议定义了 ARP (Address Resolution Protocol) 协议接口和 EFI DHCPv4 协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">UDP 和 MTFTP 协议定义了 EFI UDPv4 (User Datagram Protocol version 4) 协议，该协议在 EFI IPv4 协议上接口，并定义了 EFI MTFTPv4 协议接口，该接口建立在 EFI UDPv4 协议之上。</td>
+</tr>
+<tr>
+<td style="text-align:left">安全引导和驱动程序签名</td>
+<td style="text-align:left">介绍 Secure Boot 和生成 UEFI 数字签名的方法。</td>
+</tr>
+<tr>
+<td style="text-align:left">人机界面基础设施 (HII)</td>
+<td style="text-align:left">定义实现人机接口基础设施 (HII) 所需的核心代码和服务，包括管理用户输入和相关协议的代码定义的基本机制。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">描述用于管理系统配置的数据和 api:描述旋钮和设置的实际数据。</td>
+</tr>
+<tr>
+<td style="text-align:left">用户标识</td>
+<td style="text-align:left">描述描述平台当前用户的服务。</td>
+</tr>
+<tr>
+<td style="text-align:left">安全技术</td>
+<td style="text-align:left">描述用于利用安全技术的协议，包括加密散列和密钥管理。</td>
+</tr>
+<tr>
+<td style="text-align:left">杂项协议</td>
+<td style="text-align:left">Timestamp 协议提供了一个独立于平台的接口来检索高分辨率的时间戳计数器。当调用 ResetSystem 时，重置通知协议提供注册通知的服务。</td>
+</tr>
+<tr>
+<td style="text-align:left">附录</td>
+<td style="text-align:left">GUID 和时间格式。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">基于基本文本的控制台要求，符合 efi 系统需要提供通信能力。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">设备路径使用数据结构的例子，定义各种硬件设备的引导服务。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">状态代码列出了 UEFI 接口返回的成功、错误和警告代码。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">通用网络驱动程序接口定义了32/64位硬件和软件通用网络驱动程序接口(UNDIs)。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">使用简单指针协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">使用 EFI 扩展 SCISI 直通协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">压缩源代码的一个压缩算法的实现。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">一个 EFI 解压缩算法的实现的解压源代码。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">EFI 字节码虚拟机操作码列表提供了相应指令集的摘要。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">字母功能列表按字母顺序标识所有 UEFI 接口功能。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">EFI 1.10 协议变更和折旧清单标识了协议、GUID、修订标识符名称变更以及与 EFI 1.10 规范相比已弃用的协议。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">平台错误记录描述了用于表示平台硬件错误的常见平台错误记录格式。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">UEFI ACPI Data Table 定义了 UEFI ACPI 表格式。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">硬件错误记录持久性使用。</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">引用</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">术语表</td>
+</tr>
+<tr>
+<td style="text-align:left">索引</td>
+<td style="text-align:left">提供规范中关键术语和概念的索引。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="目标">目标</h2>
+<p>“PC-AT”启动环境对行业内的创新提出了重大挑战。每一个新的平台功能或硬件创新都要求固件开发人员设计越来越复杂的解决方案，并且通常要求操作系统开发人员修改引导代码，然后客户才能从创新中受益。这可能是一个耗时的过程，需要大量的资源投资。</p>
+<p>UEFI 规范的主要目标是定义一个替代引导环境，可以减轻这些考虑。在这个目标中，该规范类似于其他现有的引导规范。本规范的主要属性可以概括为以下属性：</p>
+<ul>
+<li>
+<p><strong>一致的、可扩展的平台环境</strong>。该规范为固件定义了一个完整的解决方案，以描述所有平台特性和 OS 的 surface platform(TODO) 功能在引导过程中。这些定义非常丰富，足以涵盖一系列当代处理器设计。</p>
+</li>
+<li>
+<p><strong>从固件中抽象操作系统</strong>。该规范定义了平台功能的接口。通过使用抽象接口，该规范允许在构建 OS 加载器时，而无需了解作为这些接口基础的平台和固件。这些接口代表了底层平台和固件实现与操作系统加载程序之间定义良好的稳定边界。这样的边界允许底层固件和操作系统加载程序更改，前提是两者都将交互限制在定义的接口上。</p>
+</li>
+<li>
+<p><strong>合理的设备抽象，不需要遗留接口</strong>。“PC-AT”BIOS 接口要求操作系统加载程序对某些硬件设备的工作有特定的了解。该规范为 OS 加载器开发人员提供了一些不同的东西：抽象接口使得可以构建在一系列底层硬件设备上工作的代码，而无需明确了解该范围内每个设备的细节。</p>
+</li>
+<li>
+<p><strong>从固件中提取 Option ROM</strong>。该规范定义了平台功能的接口，包括 PCI、USB 和 SCSI 等标准总线类型。支持的总线类型可能会随着时间的推移而增加，因此包括了一种扩展到未来总线类型的机制。这些定义的接口以及扩展到未来总线类型的能力是 UEFI 驱动程序模型的组件。UEFI 驱动模型的一个目的是解决现有“PC-AT”Option ROM 中存在的广泛问题。与 OS 加载程序一样，驱动程序使用抽象接口，因此可以构建设备驱动程序和总线驱动程序，而无需了解作为这些接口基础的平台和固件。</p>
+</li>
+<li>
+<p><strong>架构上可共享的系统分区</strong>。扩展平台功能和添加新设备的计划通常需要软件支持。在许多情况下，当这些平台创新（TODO）在操作系统控制平台之前被激活时，它们必须由特定于平台而不是客户选择的操作系统的代码支持。解决这个问题的传统方法是在制造过程中将代码嵌入平台中（例如，在闪存设备中）。对这种持久存储的需求正在快速增长。该规范定义了大型海量存储媒介类型上的持久存储，以供平台支持代码扩展使用，以补充传统方法。规范中明确了其工作原理的定义，以确保固件开发商、OEM、操作系统供应商甚至第三方可以安全地共享空间，同时增加平台功能。</p>
+</li>
+</ul>
+<p>可以通过多种方式定义提供这些属性的引导环境。实际上，在编写本规范时，已经存在几种替代方案，从学术角度来看可能是可行的。然而，考虑到当前围绕支持的处理器平台的基础设施能力，这些替代方案通常会带来很高的门槛。本规范旨在提供上面列出的属性，同时也认识到行业的独特需求，该行业在兼容性方面进行了大量投资，并且拥有大量无法立即放弃的系统安装基础。这些需求推动了对本规范中体现的附加属性的要求：</p>
+<ul>
+<li><strong>进化性的，而不是革命性的</strong>。规范中的接口和结构旨在尽可能地减少初始实现的负担。虽然已经小注意保在接口本身中维护适当的抽象，但该设计还确保可以重用 BIOS 代码来实现接口，而只需要最少的额外编码工作。换句话说，在 PC-AT 平台上，规范最初可以作为基于现有代码的底层实现之上的薄接口（thin Interface TODO）层来实现。同时，抽象接口的引入提供了将来从遗留代码的迁移。一旦抽象被确立为固件和操作系统加载程序在引导期间交互的手段，开发人员就可以随意替换抽象接口下的遗留代码。类似的硬件遗留迁移也是可能的。由于抽象隐藏了设备的细节，因此可以移除底层硬件，并用提供改进功能、降低成本或两者兼而有之的新硬件替换它。显然，这需要编写新的平台固件来支持设备并通过抽象接口将其呈现给 OS 加载器。但是，如果没有接口抽象，则可能根本无法移除旧设备。</li>
+<li><strong>设计上的兼容性</strong>。系统分区结构的设计还保留了当前在“PC-AT”引导环境中使用的所有结构。因此，构建一个能够从同一磁盘引导传统操作系统或 EFI-aware 操作系统的单一系统是一件简单的事情。</li>
+<li><strong>简化了操作系统中立的平台增值的添加</strong>。该规范定义了一个开放的、可扩展的接口，它有助于创建平台“驱动程序”。这些可能类似于操作系统驱动程序，在引导过程中为新设备类型提供支持，或者它们可能用于实现增强的平台功能，例如容错或安全性。此外，这种扩展平台能力的能力从一开始就被设计到规范中。这旨在帮助开发人员避免在尝试将新代码挤入传统 BIOS 环境时所固有的许多挫败感。由于包含用于添加新协议的接口，OEM 或固件开发人员拥有以模块化方式向平台添加功能的基础设施。由于规范中定义的调用约定和环境，此类驱动程序可能会使用高级编码语言来实现。这反过来可能有助于降低创新的难度和成本。系统分区选项为此类扩展提供了非易失性存储器存储的替代方案。</li>
+<li><strong>建立在现有投入的基础上</strong>。在可能的情况下，规范避免在现有行业规范提供足够覆盖的领域重新定义接口和结构。例如，ACPI 规范为操作系统提供了发现和配置平台资源所需的所有信息。同样，规范设计的这种哲学选择旨在尽可能降低采用该规范的障碍。</li>
+</ul>
+<h2 id="目标受众">目标受众</h2>
+<p>本文档主要适用于以下读者：</p>
+<ul>
+<li>将实现 UEFI 驱动程序的 IHV 和 OEM。</li>
+<li>将创建支持的处理器平台的 OEM 厂商，旨在启动 shrink-wrap（TODO）的操作系统。</li>
+<li>BIOS 开发人员，无论是创建通用 BIOS 和其他固件产品的人员，还是修改这些产品的支持人员。</li>
+<li>操作系统开发人员将调整他们的 shrink-wrap（TODO）操作系统产品，用来在支持的基于处理器的平台上运行。</li>
+</ul>
+<h2 id="uefi-设计概述">UEFI 设计概述</h2>
+<p>UEFI 的设计基于以下基本要素：</p>
+<ul>
+<li><strong>重用现有的基于表格的接口</strong>。为了保持对现有基础支持代码（包括操作系统和固件）的投资，必须在希望符合 UEFI 规范的平台上，实现通常在与支持的处理器规范兼容的平台上，实现的许多现有规范。 （有关更多信息，请参阅附录 Q：参考资料。）</li>
+<li><strong>系统分区</strong>。系统分区定义了一个分区和文件系统，可允许多个供应商之间安全共享，并用于不同目的。包含单独的、可共享的系统分区的能力提供了增加平台附加值的机会，而不会显著增加对非易失性平台存储器的需求。</li>
+<li><strong>引导服务</strong>。引导服务为可在引导期间使用的设备和系统功能提供接口。设备访问是通过“句柄”（handles）和“协议”(protocols) 抽象出来的。这有利于重用现有 BIOS 代码，将基本实现要求保持在规范之外，而不会给访问设备的消费者带来负担。</li>
+<li><strong>运行时服务</strong>。提供了一组最小的运行时服务，以确保对基础平台的硬件资源进行适当的抽象，这些资源可能是操作系统在正常运行时需要的。</li>
+</ul>
+<hr>
+<p><img loading="lazy" src="../pic/1-1.jpg" alt="UEFI 概念概述"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="../pic/1-1.jpg">
+<img src="../pic/1-1.jpg" alt="UEFI 概念概述"  />
+</a>
+</div>
+
+</p>
+<hr>
+<p>图 1-1 描述了用于完成平台和操作系统引导的符合 UEFI 规范的系统的各种组件的交互。</p>
+<p>平台固件能够从系统分区中检索操作系统加载器镜像。该规范提供了各种大容量存储设备类型，包括磁盘、CD-ROM 和 DVD，以及通过网络的远程启动。通过可扩展的协议接口，有可能增加其他的引导媒介类型，尽管如果这些媒介需要使用本文件中定义的协议以外的协议，可能需要修改操作系统加载器。</p>
+<p>一旦启动，操作系统加载程序将继续引导整个操作系统。为此，它可以使用本规范或其他所需规范定义的 EFI 引导服务和接口来探测、解析和初始化各种平台组件和管理它们的操作系统软件。在引导阶段，EFI 运行时服务也可供 OS 加载器使用。</p>
+<h2 id="uefi-驱动模型">UEFI 驱动模型</h2>
+<p>本节描述了符合本规范的固件的驱动模型的目标。目标是让这个驱动模型为所有类型的总线和设备提供一个实现总线驱动和设备驱动的机制。在撰写本文时，支持的总线类型包括 PCI、USB 等。</p>
+<p>随着硬件架构的不断发展，平台中存在的总线数量和类型也在不断增加。这种趋势在高端服务器中尤为明显。然而，更多样化的总线类型被设计到桌面和移动系统，甚至一些嵌入式系统中。这种日益增长的复杂性，意味着在预启动环境中，需要一种简单的方法来描述和管理平台中的所有总线和设备。UEFI 驱动模型以协议、服务和启动服务的形式提供了这种简单的方法。</p>
+<h3 id="uefi-驱动程序模型目标">UEFI 驱动程序模型目标</h3>
+<p>UEFI 驱动模型有以下目标：</p>
+<ul>
+<li><strong>兼容</strong> – 符合此规范的驱动程序必须保持与 EFI 1.10 规范和 UEFI 规范的兼容性。这意味着 UEFI 驱动程序模型利用 UEFI 2. 0 规范中的可扩展性机制来添加所需的功能。</li>
+<li><strong>简单</strong> - 符合本规范的驱动程序必须易于实现，易于维护。UEFI 驱动模型必须允许驱动编写者专注于正在开发的特定设备的驱动。驱动程序不应关注平台策略或平台管理问题。这些考虑应该留给系统固件。</li>
+<li><strong>可扩展性</strong> - UEFI 驱动模型必须能够适应所有类型的平台。这些平台包括嵌入式系统、移动和桌面系统，以及工作站和服务器。</li>
+<li><strong>灵活</strong> - UEFI 驱动模型必须支持枚举所有设备的能力，或者只枚举启动所需操作系统的那些设备。最小的设备枚举提供了对更快速的启动能力的支持，而完整的设备媒体提供了在系统中存在的任何启动设备上执行操作系统安装、系统维护或系统诊断的能力。</li>
+<li><strong>可扩展性</strong> - UEFI 驱动模型必须能够扩展到未来定义的总线类型。</li>
+<li><strong>可移植性</strong> - 根据 UEFI 驱动模型编写的驱动，必须在不同平台和支持的处理器架构之间可移植。</li>
+<li><strong>可互操作性</strong> - 驱动程序必须与其他驱动程序和系统固件共存，并且必须在不产生资源冲突的情况下进行操作。</li>
+<li><strong>描述复杂的总线层次结构</strong> - UEFI 驱动模型必须能够描述各种总线拓扑结构，从非常简单的单总线平台到包含许多不同类型总线的非常复杂的平台。</li>
+<li><strong>驱动占用空间小</strong> - 由 UEFI 驱动程序模型产生的可执行文件的大小必须最小化，以减少整体平台成本。虽然灵活性和可扩展性是目标，但支持这些所需的额外开销必须保持在最低水平，以防止固件组件的大小变得无法管理。</li>
+<li><strong>解决遗留 Option ROM 的问题</strong> - UEFI 驱动模型必须直接解决遗留 Option ROM 的约束和限制。具体来说，必须能够建立同时支持 UEFI 驱动和传统 Option ROM 的插件卡，这种卡可以在传统 BIOS 系统和符合 UEFI 的平台上执行，而无需修改卡上的代码。该解决方案必须提供一个从传统 Option ROM 驱动程序迁移到 UEFI 驱动程序的进化路径。</li>
+</ul>
+<h3 id="遗留-option-rom-问题">遗留 Option ROM 问题</h3>
+<p>这个支持驱动模型的想法来自于对 UEFI 规范的反馈，它提供了一个明确的、由市场驱动的对传统选项 ROM（有时也被称为扩展 ROM）的替代要求。人们认为，UEFI 规范的出现代表了一个机会，通过用一种在 UEFI 规范框架内工作的替代机制来取代传统选项 ROM 镜像的构建和操作，从而摆脱隐含的限制。</p>
+<h2 id="迁移要求">迁移要求</h2>
+<p>迁移要求涵盖了从最初实施本规范到未来所有平台和操作系统都实施本规范的过渡时期。在这一时期，有两个主要的兼容性考虑是很重要的。</p>
+<ul>
+<li>能够继续启动传统的操作系统；</li>
+<li>能够在现有的平台上实现 UEFI，尽可能多地复用现有的固件代码，将开发资源和时间要求降到最低。</li>
+</ul>
+<h3 id="旧版操作系统支持">旧版操作系统支持</h3>
+<p>UEFI 规范代表了收缩式操作系统和固件在启动过程中进行通信的首选方式。然而，选择制作一个符合该规范的平台，并不排除该平台，也支持不了解 UEFI 规范的，现有传统操作系统二进制文件。</p>
+<p>UEFI 规范并不限制平台设计者，选择同时支持 UEFI 规范和更传统的 &ldquo;PC-AT &ldquo;启动基础架构。如果要实现这样的传统基础架构，应该按照现有的行业惯例来开发，这些惯例是在本规范范围之外定义的。在任何给定的平台上，支持的传统操作系统的选项是由该平台的制造商决定的。</p>
+<h3 id="在旧平台上支持-uefi-规范">在旧平台上支持 UEFI 规范</h3>
+<p>UEFI 规范经过精心设计，允许以最少的开发工作扩展现有系统以支持它。特别是 UEFI 规范中定义的抽象结构和服务，都可以在遗留平台上得到支持</p>
+<p>例如，要在现有且受支持的基于 32 位的平台上实现此类支持，该平台使用传统 BIOS 来支持操作系统启动，需要提供额外的固件代码层。需要这些额外的代码来将服务和设备的现有接口转换为对本规范中定义的抽象的支持。</p>
+<h2 id="本文档中使用的约定">本文档中使用的约定</h2>
+<h3 id="数据结构描述">数据结构描述</h3>
+<p><strong>支持的处理器是“小端”机器</strong>。这种区别意味着内存中多字节数据项的低位字节位于最低地址，而高位字节位于最高地址。一些受支持的 64 位处理器可以配置为“小端”和“大端”操作。所有旨在符合本规范的实现都使用“小端”操作。</p>
+<p>在某些内存布局描述中，某些字段被标记为保留。软件必须将这些字段初始化为零并在读取时忽略它们。在更新操作中，软件必须保留任何保留字段。</p>
+<h3 id="协议描述">协议描述</h3>
+<p>协议描述一般有以下格式：</p>
+<ul>
+<li><strong>协议名称</strong>：协议接口的正式名称。</li>
+<li><strong>摘要</strong>：协议接口的简要描述。</li>
+<li><strong>GUID</strong>：协议接口的 128 位 GUID (Globally Unique Identifier)。</li>
+<li><strong>协议接口结构</strong>：一种“c 风格”的数据结构定义，包含由该协议接口产生的过程和数据字段。</li>
+<li><strong>参数</strong>：协议接口结构中各字段的简要说明。</li>
+<li><strong>描述</strong>：对接口提供的功能的描述，包括调用者应该知道的任何限制和警告。</li>
+<li><strong>相关定义</strong>：协议接口结构或其任何过程中使用的类型声明和常量。</li>
+</ul>
+<h3 id="过程描述">过程描述</h3>
+<p>过程描述通常具有以下格式：</p>
+<ul>
+<li><strong>过程名称</strong>：过程的正式名称。</li>
+<li><strong>摘要</strong>：过程的简要说明。</li>
+<li><strong>原型</strong>：定义调用序列的“C 风格”过程标头。</li>
+<li><strong>参数</strong>：对程序原型中每个字段的简要描述。</li>
+<li><strong>描述</strong>：对接口所提供的功能的描述，包括调用者应该注意的任何限制和注意事项。</li>
+<li><strong>相关定义</strong>：仅由该过程使用的类型声明和常量。</li>
+<li><strong>返回的状态代码</strong>：对接口所返回的任何代码的描述。该过程需要实现本表中列出的任何状态代码。可以返回更多的错误代码，但是它们不会被标准的符合性测试所测试，而且任何使用该程序的软件，都不能依赖于实现可能提供的任何扩展错误代码。</li>
+</ul>
+<h3 id="指令描述">指令描述</h3>
+<p>EBC 指令的指令描述一般有以下格式：</p>
+<ul>
+<li><strong>指令名称</strong>：指令的正式名称。</li>
+<li><strong>语法</strong>：指令的简要描述。</li>
+<li><strong>描述</strong>：对指令所提供的功能的描述，并附有指令编码的详细表格。</li>
+<li><strong>操作</strong>：详细说明对操作数进行的操作。</li>
+<li><strong>行为和限制</strong>：逐项描述指令中涉及的每个操作数的行为，以及适用于操作数或指令的任何限制。</li>
+</ul>
+<h3 id="伪代码约定">伪代码约定</h3>
+<p>提出伪代码是为了以更简洁的形式描述算法。本文件中的所有算法都不打算直接进行编译。代码是在与周围文本相对应的水平上呈现的。</p>
+<p>在描述变量时，列表是一个无序的同质对象的集合。一个队列是一个同质对象的有序列表。除非另有说明，否则假设排序为先进先出。</p>
+<p>伪代码以类似于 C 的格式呈现，在适当的地方使用 C 约定。编码风格，特别是缩进风格，是为了可读性，不一定符合 UEFI 规范的实现。</p>
+<h3 id="排版约定">排版约定</h3>
+<p>本文件采用了以下描述的排版和说明性惯例。</p>
+<ul>
+<li>纯文本：规范中的绝大部分描述性文本都使用普通文本字体。</li>
+<li>纯文本（蓝色）：任何有下划线和蓝色的纯文本都表示与交叉参考资料的活动链接。点击该词，就可以跟踪超链接。</li>
+<li>加粗：在文本中，粗体字标识了一个处理器寄存器的名称。在其他情况下，黑体字可以作为段落中的标题。</li>
+<li>斜体：在文本中，斜体字可以用作强调，以引入一个新的术语或表示手册或规范的名称。</li>
+<li>加粗等宽（暗红色）：计算机代码、示例代码段和所有原型代码段使用 BOLD Monospace 字体，颜色为暗红色。这些代码列表通常出现在一个或多个独立的段落中，尽管单词或片段也可以嵌入到一个正常的文本段落中。</li>
+<li>加粗等宽（蓝色）：用粗体单色字体的字，下划线和蓝色的字，表示该功能或类型定义的代码定义的活动超链接。点击该词，即可进入超链接。</li>
+</ul>
+<p><strong>注意</strong>：出于管理和文件大小的考虑，每一页上只有第一次出现的参考文献是一个主动链接。同一页上的后续参考文献不会被主动链接到定义上，而是使用标准的、无下划线的 BOLD Monospace 字体。在页面上找到该名称的第一个实例（使用下划线的 BOLD Monospace 字体），点击该词即可跳转到该功能或类型的定义。</p>
+<ul>
+<li>斜体等宽：在代码或文本中，斜体字表示必须提供的变量信息的占位符名称（即参数）。</li>
+</ul>
+<h3 id="数字格式">数字格式</h3>
+<p>在本标准中，二进制数字是由仅由西方阿拉伯数字 0 和 1 组成的任何数字序列表示的，后面紧跟一个小写的 b（例如，0101b）。在二进制数字表示中的字符之间可以包含下划线或空格，以增加可读性或划分领域边界（例如，0 0101 1010b 或 0_0101_1010b）。</p>
+<h4 id="十六进制">十六进制</h4>
+<p>十六进制数字在本标准中用 0x 表示，前面是仅由西阿拉伯数字 0 至 9 和/或大写英文字母 A 至 F 组成的任何数字序列（例如，0xFA23）。十六进制数字表示中的字符之间可以包含下划线或空格，以增加可读性或划定字段边界（例如，0xB FD8C FA23 或 0xB_FD8C_FA23）。</p>
+<h4 id="十进制">十进制</h4>
+<p>在本标准中，小数是由仅由阿拉伯数字 0 到 9 组成的任何数字序列来表示的，后面不紧跟小写的 b 或小写的 h（例如，25）。本标准使用以下惯例来表示小数：</p>
+<ul>
+<li>小数点分隔符（即分隔数字的整数部分和小数部分）是一个句号；</li>
+<li>千位数分隔符（即分隔数字部分的三位数组）是一个逗号；</li>
+<li>千位数分隔符用于数字的整数部分，不用于数字的小数部分。</li>
+</ul>
+<h3 id="二进制前缀">二进制前缀</h3>
+<p>本标准使用国际单位制（SI）中定义的前缀来表示 10 的幂值。见 &ldquo;SI 二进制前缀 &ldquo;标题下的 &ldquo;UEFI 相关文件链接&rdquo;（<a href="http://uefi.org/uefi">http://uefi.org/uefi</a>）。</p>
+<p><img loading="lazy" src="../pic/table1-1.jpg" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="../pic/table1-1.jpg">
+<img src="../pic/table1-1.jpg" alt=""  />
+</a>
+</div>
+
+</p>
+<p>本标准使用ISO/IEC 80000-13《数量和单位&ndash;第 13 部分：信息科学和技术》和 IEEE 1514《二进制倍数前缀标准》中定义的二进制前缀，用于表示 2 的幂值。</p>
+<p><img loading="lazy" src="../pic/table1-2.jpg" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="../pic/table1-2.jpg">
+<img src="../pic/table1-2.jpg" alt=""  />
+</a>
+</div>
+
+</p>
+<p>例如，4 KB 意味着 4000 个字节，4 KiB 意味着 4096 个字节。</p>
+<h3 id="修订号">修订号</h3>
+<p>对 UEFI 规范的更新被认为是新的修订或勘误表，如下所述：</p>
+<ul>
+<li>当有实质性的新内容或可能修改现有行为的变化时，就会产生一个新的修订。新的修订版由一个主要的。次要的版本号来指定（例如：xx.yy）。在变化特别小的情况下，我们可能有一个 major.minor.minor 的命名惯例（例如 xx.yy.zz）。</li>
+<li>当批准的规范更新不包括任何重要的新材料或修改现有行为时，就会产生勘误的版本。勘误的指定方法是在版本号后面加上一个大写字母，如 xx.yy 勘误 A。</li>
+</ul>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>ZH-The RISC-V Instruction Set Manual Volume 2-特权级架构</title>
+      <link>https://lifeislife.cn/posts/zh-the-risc-v-instruction-set-manual-volume-2-%E7%89%B9%E6%9D%83%E7%BA%A7%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Thu, 22 Sep 2022 09:37:54 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/zh-the-risc-v-instruction-set-manual-volume-2-%E7%89%B9%E6%9D%83%E7%BA%A7%E6%9E%B6%E6%9E%84/</guid>
+      <description>Introduction Document Version 20211203 Control and Status Registers (CSRs) Machine-Level ISA, Version 1.12 本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，</description>
+      <content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
+<blockquote>
+<p>Document Version 20211203</p>
+</blockquote>
+<h1 id="control-and-status-registers-csrs">Control and Status Registers (CSRs)</h1>
+<h1 id="machine-level-isa-version-112">Machine-Level ISA, Version 1.12</h1>
+<p>本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。</p>
+<h2 id="machine-level-csrs">Machine-Level CSRs</h2>
+<p>除了本节中描述的机器级 CSRs 外，M-mode 代码还可以访问较低特权级别的所有 CSRs。</p>
+<h3 id="machine-isa-register-misa">Machine ISA Register <code>misa</code></h3>
+<p>misa CSR 是 WARL 读写寄存器，报告硬件 (hart) 支持的 ISA。该寄存器在任何实现中都必须是可读的，但是可以返回零值以指示未实现 misa 寄存器，这就需要通过一个单独的非标准机制确定 CPU 功能。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)" />
+</a>
+</div>
+
+</p>
+<p>MXL（机器 XLEN）字段编码本机基本整数 ISA 宽度，如表 3.1 所示。MXL 字段在支持多个基本 ISA 宽度的实现中可能是可写的。M-mode 下的有效 XLEN, MXLEN，由 MXL 的设置给出，如果 misa 为零，则有一个固定的值。重置时，MXL 字段始终设置为最广泛支持的 ISA 变种。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。</p>
+<blockquote>
+<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p>
+</blockquote>
+<p>Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。</p>
+<p>Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。</p>
+<p>复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。</p>
+<p>在通过清除 misa 中相应 bit 来禁止一个标准扩展时，由该扩展所定义或修改的指令和 CSR 将恢复为该扩展未实现时的定义，或者保留行为（revert to their defined or reserved behaviors as if the extension is not implemented）。</p>
+<p>RV128 base ISA 的设计尚未完工，尽管预计本 specification 中大部分的剩余部分都将适用于 RV128，但本版本的文档仅关注 RV32 和 RV64。</p>
+<p>如果支持用户模式（user mode），则将“U”bit 置位；如果支持主管模式（supervisor mode），则将“S”bit 置位。</p>
+<p>如果存在任何非标准扩展（non-standard extensions），则将“X”bit 置位。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>“E”位是只读的。除非将 misa 硬连线为零，否则“E”位始终读取为“I”位的补码（补集？）。同时支持 RV32E 和 RV32I 的实现可以通过清除“I”位来选择 RV32E。</p>
+<p>如果 ISA 功能 x 依赖 ISA 功能 y，则尝试启用功能 x 但禁用功能 y 会导致两个功能都被禁用。例如，设置“F” = 0 和“D” = 1 会导致同时清除“F”和“D”。</p>
+<p>具体实现可能会在 2 或多个 misa 字段的集体设置上施加额外约束，此时将它们的集体看作是一个 WARL 字段。试图向其中写入一个不支持的组合会导致这些 bits 被置为某个支持的组合。</p>
+<p>写 misa 可能会增加 IALIGN，例如，通过禁用 C 扩展。如果要写入 misa 的指令增加了 IALIGN，而后一条指令的地址未按 IALIGN 位对齐，则将抑制对 misa 的写入，从而使 misa 保持不变。</p>
+<p>在软件启用一个之前被禁用的扩展时，除该扩展另有规定（specified），否则所有单独与该扩展有关的状态都将是未指定的（unspecified）。</p>
+<h3 id="machine-vendor-id-register-mvendorid">Machine Vendor ID Register <code>mvendorid</code></h3>
+<p><code>mvendorid</code> CSR 是一个 32 位只读寄存器，提供内核供应商的 JEDEC 制造商 ID。此寄存器在任何实现中都必须是可读的，但可以返回 0，表示该字段未实现或这是非商业实现。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid" />
+</a>
+</div>
+
+</p>
+<p>JEDEC 制造商 ID 通常编码为单字节连续的 <code>0x7f</code> 代码的序列，以不等于 <code>0x7f</code> 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。<code>mvendorid</code> 在 Bank 字段中编码单字节的连续代码，并在 <code>Offset</code> 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID <code>0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a</code>（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 <code>0x60a</code>。</p>
+<blockquote>
+<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p>
+</blockquote>
+<blockquote>
+<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p>
+</blockquote>
+<blockquote>
+<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p>
+</blockquote>
+<h2 id="machine-mode-privileged-instructions">Machine-Mode Privileged Instructions</h2>
+<h3 id="environment-call-and-breakpoint">Environment Call and Breakpoint</h3>
+<h3 id="trap-return-instructions">Trap-Return Instructions</h3>
+<h3 id="wait-for-interrupt">Wait for Interrupt</h3>
+<p>等待中断指令 (WFI) 为实现提供了一个提示，即当前的 hart 可以停止，直到需要服务中断。WFI 指令的执行也可以用来通知硬件平台合适的中断应该优先路由到这个 hart。WFI 在所有特权模式下都可用，并且可用于 U 模式 (可选地)。当 mstatus 中的 TW = 1 时，该指令可能会引发非法指令异常，如第 3.1.6.5 节所述。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果在 hart 停止时存在或稍后出现启用的中断，则中断 trap 将在以下指令上执行，即在 trap 处理程序中恢复执行并且 <code>mepc = pc + 4</code>。</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>ZH-CS 可视化 - 常用的 Git 命令</title>
+      <link>https://lifeislife.cn/posts/zh-cs%E5%8F%AF%E8%A7%86%E5%8C%96-%E5%B8%B8%E7%94%A8%E7%9A%84git%E5%91%BD%E4%BB%A4/</link>
+      <pubDate>Thu, 07 Jul 2022 16:20:48 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/zh-cs%E5%8F%AF%E8%A7%86%E5%8C%96-%E5%B8%B8%E7%94%A8%E7%9A%84git%E5%91%BD%E4%BB%A4/</guid>
+      <description>CS 可视化 - 常用的 Git 命令 Author：Lydia Hallie 译：🌳🚀 CS Visualized: Useful Git Commands - DEV Community 尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是</description>
+      <content:encoded><![CDATA[<h1 id="cs-可视化---常用的-git-命令">CS 可视化 - 常用的 Git 命令</h1>
+<blockquote>
+<p>Author：Lydia Hallie
+译：<a href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p>
+</blockquote>
+<p>尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在<code>master</code>分支执行<code>hard reset</code>、<code>force push</code>到 <code>origin</code>、在<code>.git</code>文件夹执行<code>rimraf</code>的时候，为什么我的同事都哭了？</p>
+<p>我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！</p>
+<h2 id="merging">Merging</h2>
+<p>拥有多个分支非常方便，可以将新更改彼此分开，并确保您不会意外地将未经批准或损坏的更改推送到生产环境。一旦更改获得批准，我们希望在我们的生产分支中获得这些更改！</p>
+<p>将更改从一个分支转移到另一个分支的一种方法是执行 <code>git merge</code>！Git 可以执行两种类型的合并：<code>fast-forward</code> 或​​ <code>no-fast-forward</code>。</p>
+<p>现在这可能没有多大意义，所以让我们看看差异！</p>
+<h3 id="fast-forward---ff">Fast-forward (<code>--ff</code>)</h3>
+<p>如果当前分支与即将合并过来的分支相比，没有额外的提交，这种就是<code>fast-forward</code>合并。Git 很会偷懒，它会首先尝试最简单的方案，即<code>fast-forward</code>。这种合并方式不会创建新的提交，只是把另一个分支的提交记录直接合并到当前分支。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美的！我们现在可以在 <code>master</code> 分支上使用在 <code>dev</code> 分支上所做的所有更改。那么，<code>no-fast-forward</code> 到底是什么？</p>
+<h3 id="no-fast-foward---no-ff">No-fast-foward (<code>--no-ff</code>)</h3>
+<p>如果与您要合并的分支相比，您当前的分支没有任何额外的提交，那就太好了，但不幸的是，这种情况很少见！如果我们在当前分支上提交了我们想要合并的分支没有的更改，Git 将执行 <code>no-fast-forward</code> 合并。</p>
+<p>使用 <code>no-fast-forward</code> 合并，Git 在活动分支上创建一个新的<strong>合并提交</strong>。提交的父提交指向活动分支和我们要合并的分支！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>没什么大不了的，完美的合并！ <code>master</code> 分支现在包含我们在 <code>dev</code> 分支上所做的所有更改。</p>
+<h3 id="merge-conflicts">Merge Conflicts</h3>
+<p>尽管 Git 擅长决定如何合并分支和向文件添加更改，但它不能总是自己做出这个决定。当我们尝试合并的两个分支在同一个文件的同一行上发生更改时，可能会发生这种情况，或者如果一个分支删除了另一个分支修改的文件，等等。</p>
+<p>在这种情况下，Git 会要求您帮助决定我们要保留两个选项中的哪一个！假设在两个分支上，我们编辑了 <code>README.md</code> 中的第一行。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果我们想将 <code>dev</code> 合并到 <code>master</code> 中，这将导致合并冲突：您希望标题是 <code>Hello!</code> 还是 <code>Hey!</code>？</p>
+<p>当试图合并分支时，Git 会告诉你冲突发生在哪里。我们可以手动删除不想保留的更改，保存更改，再次添加更改的文件，然后提交更改</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>耶！尽管合并冲突通常很烦人，但它完全有道理：Git 不应该自己决定选择哪一个更改。</p>
+<h2 id="rebasing">Rebasing</h2>
+<p>我们刚刚看到了如何通过执行 <code>git merge</code> 将更改从一个分支应用到另一个分支。另一种将更改从一个分支添加到另一个的方法是执行<code>git rebase</code>。</p>
+<p><code>git rebase</code> <em>复制</em>当前分支的提交，并将这些复制的提交放在指定分支的顶部。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美，我们现在可以在 <code>dev</code> 分支上使用在 <code>master</code> 分支上所做的所有更改！</p>
+<p>与合并相比，一个很大的区别是 Git 不会尝试找出要保留和不保留的文件。我们正在变基的分支总是有我们想要保留的最新更改！通过这种方式，您不会遇到任何合并冲突，并保持良好的线性 Git 历史记录。</p>
+<p>这个例子展示了基于 <code>master</code> 分支的变基。然而，在更大的项目中，您通常不想这样做。 <code>git rebase</code> <strong>改变了项目的历史</strong>，因为为复制的提交创建了新的哈希！</p>
+<p>每当您在功能分支上工作并且主分支已更新时，重新定基都很棒。您可以获得分支上的所有更新，这将防止未来的合并冲突！</p>
+<h3 id="interactive-rebase">Interactive Rebase</h3>
+<p>在重新提交提交之前，我们可以修改它们！我们可以使用 <em>interactive rebase</em> 来做到这一点。交互式变基对于您当前正在处理的分支也很有用，并且想要修改一些提交。</p>
+<p>我们可以对我们正在变基的提交执行 6 项操作：</p>
+<ul>
+<li><code>reword</code>: Change the commit message</li>
+<li><code>edit</code>: Amend this commit</li>
+<li><code>squash</code>: Meld commit into the previous commit</li>
+<li><code>fixup</code>: Meld commit into the previous commit, without keeping the commit&rsquo;s log message</li>
+<li><code>exec</code>: Run a command on each commit we want to rebase</li>
+<li><code>drop</code>: Remove the commit</li>
+</ul>
+<p>惊人的！这样，我们可以完全控制我们的提交。如果我们想删除一个提交，我们可以直接 <code>drop</code> 它。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>或者，如果我们想将多个提交压缩在一起以获得更清晰的历史记录，没问题！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>交互式变基使您可以对尝试变基的提交进行大量控制，即使在当前活动分支上也是如此！</p>
+<h2 id="resetting">Resetting</h2>
+<p>我们可能会提交我们以后不想要的更改。也许它是一个<code>WIP</code>提交，或者是一个引入错误的提交！在这种情况下，我们可以执行 <code>git reset</code>。</p>
+<p><code>git reset</code> 会删除所有当前暂存的文件，并让我们控制 <code>HEAD</code> 应该指向的位置。</p>
+<h3 id="soft-reset">Soft reset</h3>
+<p><em>软重置</em>将 <code>HEAD</code> 移动到指定的提交（或提交的索引与 <code>HEAD</code> 相比），而不会消除随后在提交中引入的更改！</p>
+<p>假设我们不想保留添加了<code>style.css</code>文件的提交<code>9e78i</code>，也不想保留添加了<code>index.js</code>文件的提交<code>035cc</code>。但是，我们确实希望保留新添加的 <code>style.css</code> 和 <code>index.js</code> 文件！软重置的完美用例。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>输入 <code>git status</code> 时，您会看到我们仍然可以访问对先前提交所做的所有更改。这很棒，因为这意味着我们可以修复这些文件的内容并在以后再次提交它们！</p>
+<h3 id="hard-reset">Hard reset</h3>
+<p>有时，我们不想保留某些提交引入的更改。与软重置不同，我们不再需要访问它们。Git 应该简单地将其状态重置回指定提交时的状态：这甚至包括工作目录和暂存文件中的更改！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Git 丢弃了在 <code>9e78i</code> 和 <code>035cc</code> 上引入的更改，并将其状态重置为提交 <code>ec5be</code> 时的状态。</p>
+<h3 id="reverting">Reverting</h3>
+<p>撤消更改的另一种方法是执行<code>git revert</code>。通过恢复某个提交，我们创建了一个包含恢复的更改的新提交！</p>
+<p>假设 <code>ec5be</code> 添加了一个 <code>index.js</code> 文件。后来，我们实际上意识到我们不再希望这次提交引入的这种变化！让我们恢复 <code>ec5be</code> 提交。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>完美的！提交<code>9e78i</code>恢复了由<code>ec5be</code>提交引入的更改。执行 <code>git revert</code> 非常有用，可以撤消某个提交，而无需修改分支的历史记录。</p>
+<h2 id="cherry-picking">Cherry-picking</h2>
+<p>当某个分支包含在活动分支上引入了我们需要的更改的提交时，我们可以 <code>cherry-pick</code> 该命令！通过 <code>cherry-pick</code> 提交，我们在活动分支上创建了一个新提交，其中包含由 <code>cherry-pick</code> 提交所引入的更改。</p>
+<p>假设 <code>dev</code> 分支上的提交 <code>76d12</code> 添加了我们想要在 <code>master</code> 分支中的 <code>index.js</code> 文件的更改。我们不想要<em>整个</em>，我们只关心这一次提交！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>很酷，<code>master</code> 分支现在包含了 <code>76d12</code> 引入的更改！</p>
+<h2 id="fetching">Fetching</h2>
+<p>如果我们有一个远程 Git 分支，例如 GitHub 上的一个分支，则可能会发生远程分支具有当前分支没有的提交！也许另一个分支被合并了，你的同事推送了一个快速修复，等等。</p>
+<p>我们可以通过在远程分支上执行 <code>git fetch</code> 在本地获取这些更改！它不会以任何方式影响您的本地分支：<code>fetch</code> 只是下载新数据。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们现在可以看到自上次推送以来所做的所有更改！既然我们在本地拥有新数据，我们就可以决定要如何处理这些数据。</p>
+<h2 id="pulling">Pulling</h2>
+<p>虽然 <code>git fetch</code> 对于获取分支的远程信息非常有用，但我们也可以执行 <code>git pull</code>。 <code>git pull</code> 实际上是两个命令合二为一：<code>git fetch</code> 和 <code>git merge</code>。当我们从源中提取更改时，我们首先像使用 <code>git fetch</code> 一样获取所有数据，之后最新的更改会自动合并到本地分支中。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>太棒了，我们现在与远程分支完美同步，并拥有所有最新更改！</p>
+<h2 id="reflog">Reflog</h2>
+<p>每个人都会犯错，这完全没关系！有时你可能会觉得你把你的 <code>git repo</code> 搞砸了，以至于你只想完全删除它。</p>
+<p><code>git reflog</code> 是一个非常有用的命令，用于显示所有已采取的操作的日志！这包括合并、重置、恢复：基本上是对分支的任何更改。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果您犯了错误，您可以根据 <code>reflog</code> 提供给我们的信息通过重置 <code>HEAD</code> 轻松地重做此操作！</p>
+<p>假设我们实际上并不想合并 <code>origin</code> 分支。当我们执行 <code>git reflog</code> 命令时，我们看到合并前 repo 的状态是在 <code>HEAD@{1}</code>。让我们执行 <code>git reset</code> 将 HEAD 指向它在 <code>HEAD@{1}</code> 上的位置！</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们可以看到最新的 action 已经推送到<code>reflog</code>了！</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>ZH-什么是 Die-to-Die 接口</title>
+      <link>https://lifeislife.cn/posts/zh-%E4%BB%80%E4%B9%88%E6%98%AFdie-to-die%E6%8E%A5%E5%8F%A3/</link>
+      <pubDate>Mon, 28 Mar 2022 19:06:56 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/zh-%E4%BB%80%E4%B9%88%E6%98%AFdie-to-die%E6%8E%A5%E5%8F%A3/</guid>
+      <description>什么是 Die-to-Die 接口 Author：Synopsys 译：What is a Die-to-Die Interface? – How it Works | Synopsys 定义 裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一</description>
+      <content:encoded><![CDATA[<h1 id="什么是-die-to-die-接口">什么是 Die-to-Die 接口</h1>
+<blockquote>
+<p>Author：Synopsys
+译：<a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p>
+</blockquote>
+<h2 id="定义">定义</h2>
+<p>裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一封装中的两个硅管芯之间的数据接口。芯片到芯片接口利用非常短的通道连接封装内的两个芯片，以实现功率效率和非常高的带宽效率，这超出了传统芯片到芯片接口所能达到的效果。</p>
+<p>Die2Die 接口通常由 PHY 和控制器块组成，控制器块在两个 die 上的内部互连结构之间提供无缝连接。Die2Die 的 PHY 使用高速 SerDes 架构或高密度并行架构实现，经过优化以支持多种先进的 2D、2.5D 和 3D 封装技术。</p>
+<p>Die2Die 接口是推动行业趋势从单片 SoC 设计转向同一封装中的多 Die SoC 组件的关键推动力。这种方法减轻了人们对小型工艺节点的高成本/低产量日益增长的担忧，并提供了额外的产品模块化和灵活性。</p>
+<h2 id="die-to-die-接口如何工作">Die-to-Die 接口如何工作？</h2>
+<p>Die2Die 的接口，就像任何其他芯片到芯片的接口一样，在两个芯片之间建立了可靠的数据链路。</p>
+<p>接口在逻辑上分为物理层、链路层和事务层。它在芯片运行期间建立和维护链路，同时向应用程序提供连接到内部互连结构的标准化并行接口。</p>
+<p>通过添加诸如前向纠错 (FEC) 和/或循环冗余码 (CRC) 和重试等错误检测和纠正机制来保证链路可靠性。</p>
+<p>物理层架构可以是基于 SerDes 或基于并行的。</p>
+<ul>
+<li>
+<p>基于 SerDes 的架构包括并行到串行（串行到并行）数据转换、阻抗匹配电路和时钟数据恢复或时钟转发功能。它可以支持更高带宽的 NRZ 信令或 PAM-4 信令，最高可达 112 Gbps。SerDes 架构的主要作用是尽量减少简单 2D 类型封装（如有机基板）中的 I/O 互连数量。</p>
+</li>
+<li>
+<p>基于并行的架构包括许多并行的低速简单收发器，每个收发器都由驱动器和具有转发时钟技术的接收器组成，以进一步简化架构。它支持 DDR 类型的信令。并行架构的主要作用是最大限度地降低密集 2.5D 型封装（如硅中介层）的功耗。</p>
+</li>
+</ul>
+<h2 id="die2die-的优势">Die2Die 的优势</h2>
+<p>现代芯片实现趋向于基于在封装中组装多个裸片以提高模块化和灵活性的解决方案。当（单片）芯片尺寸接近全光罩尺寸时，这种多管芯方法还通过将功能分成几个管芯来提高产量，从而促进更具成本效益的解决方案。</p>
+<p>Die 之间的接口必须满足此类系统的所有关键要求：</p>
+<ul>
+<li>
+<p><strong>电源效率</strong>。多芯片系统实现应该与等效的单片实现一样节能。Die2Die 链接使用短距离、低损耗的信道，没有明显的不连续性。PHY 架构利用良好的通道特性来降低 PHY 复杂性并节省功耗。</p>
+</li>
+<li>
+<p><strong>低延迟</strong>。将服务器或加速器 SoC 划分为多个 Die 不应导致内存架构不统一，因为访问不同 Die 中的内存具有显着不同的延迟。Die2Die 接口实现了简化的协议，并直接连接到芯片互连结构，以最大限度地减少延迟。</p>
+</li>
+<li>
+<p><strong>高带宽效率</strong>。高级服务器、加速器和网络交换机需要在 Die 之间传输大量数据。Die2Die 接口必须能够支持所有需要的带宽，同时减少 Die 边缘的占用。通常使用两种替代方案来实现此目标：通过以非常高的每通道数据速率（高达 112 Gbps）部署 PHY 来最小化所需通道的数量，或者通过使用更精细的凸块间距（微凸块）来增加 PHY 的密度) 在大量并行化以实现所需带宽的低数据速率通道（高达 8 Gbps/通道）上。</p>
+</li>
+<li>
+<p><strong>健壮的链接</strong>。Die2Die 链接必须没有错误。该接口必须实现足够强大的低延迟错误检测和纠正机制，以检测所有错误并以低延迟纠正它们。这些机制通常包括 FEC 和重试协议。</p>
+</li>
+</ul>
+<h2 id="die-to-die-接口用例">Die-to-Die 接口用例</h2>
+<p>通过将多个 Die 组合到一个封装中，小芯片提供了另一种扩展摩尔定律的方法，同时实现了产品模块化和工艺节点优化。小芯片用于计算密集型、工作负载繁重的应用程序，如高性能计算 (HPC)。</p>
+<p>针对 HPC、网络、超大规模数据中心和人工智能 (AI) 等应用程序的 die-to-die 接口有四个主要用例：</p>
+<h3 id="scale-soc">Scale SoC</h3>
+<p>目标是通过虚拟（裸片到裸片）连接来连接裸片，从而提高计算能力并为服务器和 AI 加速器创建多个 SKU，从而实现裸片之间的紧密耦合性能。</p>
+<h3 id="split-soc">Split SoC</h3>
+<p>目标是启用非常大的 SoC。大型计算和网络交换机芯片正在接近光罩限制。将它们分成几个裸片会带来技术可行性、提高产量、降低成本并扩展摩尔定律。</p>
+<h3 id="aggregate">Aggregate</h3>
+<p>其目的是聚合在不同模具中实现的多种不同的功能，以利用每个功能的最佳工艺节点，降低功率，并改善 FPGA、汽车和 5G 基站等应用的外形尺寸。</p>
+<h3 id="disaggregate">Disaggregate</h3>
+<p>目标是将中央芯片与 I/O 芯片分离，以便将中央芯片轻松迁移到高级工艺，同时将 I/O 芯片保持在保守节点中，以降低产品演进的风险/成本，实现重用并缩短时间在服务器、FPGA、网络交换机和其他应用程序中投放市场。</p>
+<h2 id="die-to-die-接口和-synopsys">Die-to-Die 接口和 Synopsys</h2>
+<p>Synopsys 结合了广泛的 Die2Die 112G USR/XSR 和 HBI PHY IP、控制器 IP 和中介层专业知识产品组合，提供全面的 die-to-die IP 解决方案，以支持芯片拆分、芯片分解、计算扩展和聚合的功能。基于 SerDes 的 112G USR/XSR PHY 和基于并行的 8G OpenHBI PHY 可用于高级 FinFET 工艺。可配置控制器使用具有重放和可选 (FEC) 功能的纠错机制，以最大限度地降低可靠芯片到芯片链接的误码率。它支持用于连贯和非连贯数据通信的 Arm® 特定接口。</p>
+<h2 id="qa">Q&amp;A</h2>
+<ul>
+<li>PHY 架构</li>
+<li>SerDes 架构</li>
+<li>reticle
+<a href="https://www.zhihu.com/question/457213984">LCD 厂掩膜版叫 Mask,Fab 里掩膜版叫 reticle，两者有什么区别？ - 知乎</a></li>
+</ul>
+<h2 id="原文参考">原文参考</h2>
+<p><a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>ZH-Unix 是什么，为什么重要？</title>
+      <link>https://lifeislife.cn/posts/zh-unix%E6%98%AF%E4%BB%80%E4%B9%88%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81/</link>
+      <pubDate>Tue, 20 Jul 2021 15:44:05 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/zh-unix%E6%98%AF%E4%BB%80%E4%B9%88%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81/</guid>
+      <description>Unix 是什么，为什么重要？ Author：CHRIS HOFFMAN 译：What Is Unix, and Why Does It Matter? 大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几</description>
+      <content:encoded><![CDATA[<h1 id="unix-是什么为什么重要">Unix 是什么，为什么重要？</h1>
+<blockquote>
+<p>Author：CHRIS HOFFMAN
+译：<a href="https://www.howtogeek.com/182649/htg-explains-what-is-unix/">What Is Unix, and Why Does It Matter?</a></p>
+</blockquote>
+<p>大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几乎所有其他系统的祖宗都是 Unix。</p>
+<p>Linux、Mac OS X、Android、iOS、Chrome OS、PlayStation 4 上使用的 Orbis 操作系统，无论路由器上运行的是什么固件——所有这些操作系统通常都被称为“类 Unix”操作系统。</p>
+<h2 id="unix-的设计延续至今">Unix 的设计延续至今</h2>
+<p>19 世纪中后期 Unix 在贝尔实验室中被开发出来。最初版的 Unix 有许多重要的设计特性至今仍然在使用。</p>
+<p>“Unix 哲学”之一就是，创建小型、模块化的程序，一个程序只做一件事并把它做好。如果你经常使用 Linux 终端，那么你应该对此很熟悉——系统提供了许多实用程序，这些程序可以通过管道和其他功能以不同方式组合以执行更复杂的任务。甚至图形程序也可能在后台调用更简单的实用程序来完成复杂的工作。这也使得创建 shell 脚本变得容易，将简单的工具串在一起来完成复杂的事情。</p>
+<p>Unix 有一个程序之间通信用的单一文件系统。这就是为什么在 Linux 上“一切都是文件” ——包括硬件设备和提供系统信息或其他数据的特殊文件。这也是为什么只有 Windows 有驱动器号（C、D、E 盘）的原因，它是从 DOS 继承的——在其他操作系统上，系统上的每个文件都是单个目录层次结构的一部分。</p>
+<h2 id="追寻-unix-的后代">追寻 Unix 的后代</h2>
+<p>Unix 及其后代的历史错综复杂，简化起见，我们大致将 Unix 的后代分为两类。</p>
+<p>一类 Unix 后代是在学术界发展起来的。第一个是 BSD（BerkeleySoftwareDistribution），一个开源、类 Unix 操作系统。BSD 通过 FreeBSD、NetBSD 和 OpenBSD 延续至今。NeXTStep 也是基于最初的 BSD 开发的，Apple 的 Mac OS X 是基于 NeXTStep 开发出来的，而 iOS 则基于 Mac OS X。还有一些操作系统，包括 PlayStation 4 上使用的 Orbis OS，都是从 BSD 操作系统衍生而来的。</p>
+<p>Richard Stallman 的 GNU 项目也是为了应对 AT&amp;T 日益严格的 Unix 软件许可条款而启动的。MINIX 是一个为教育目的而创建的类 Unix 操作系统，Linux 的灵感来自于 MINIX。我们今天所知道的 Linux 实际上是 GNU/Linux，因为它由 Linux 内核和许多 GNU 实用程序组成。GNU/Linux 并非直接继承自 BSD，但它继承了 Unix 的设计并植根于学术界。当今的许多操作系统，包括 Android、ChromeOS、SteamOS 以及大量设备的嵌入式操作系统，都基于 Linux。</p>
+<p>另一类就是商业 Unix 操作系统。AT&amp;T UNIX、SCO UnixWare、Sun Microsystems Solaris、HP-UX、IBM AIX、SGI IRIX——许多大公司想要创建他们自己的 Unix 版本。这些在今天并不常见，但其中一些仍然存在。</p>
+<h2 id="dos-和-windows-nt-的崛起">DOS 和 Windows NT 的崛起</h2>
+<p>许多人期望 Unix 成为行业标准操作系统，但 DOS 系统和“IBM PC 兼容”的计算机最终流行起来。Microsoft 的 DOS 成为其中最成功的 DOS 系统。DOS 系统完全不同于 Unix，这就是为什么 Windows 使用反斜杠作为文件路径，而其他一切都使用正斜杠。这个决定是在 DOS 系统早期做出的，后来的 Windows 版本继承了它，就像 BSD、Linux、Mac OS X 和其他类 Unix 操作系统继承了许多 Unix 的设计一样。</p>
+<p>Windows 3.1、Windows 95、Windows 98 和 Windows ME 都基于底层的 DOS。当时，微软正在开发一种更现代、更稳定的操作系统，他们将其命名为 Windows NT——即“Windows  New Technology”。Windows NT 最终以 Windows XP 的形式出现在普通用户的计算机中，但在此之前，它以 Windows 2000 和 Windows NT 的形式供公司使用。</p>
+<p>今天，微软的所有操作系统都基于 Windows NT 内核。Windows 7、Windows 8、Windows RT、Windows Phone 8、Windows Server 和 Xbox One 的操作系统都使用 Windows NT 内核。与大多数其他操作系统不同，Windows NT 并不是作为类 Unix 操作系统开发的。</p>
+<p>当然，微软并不是完全重新开始。为了保持与 DOS 和旧的 Windows 软件的兼容性，Windows NT 继承了许多 DOS 约定，如驱动器号、文件路径的反斜杠和命令行的正斜杠。</p>
+<blockquote>
+<p>“在绝大多数地方，用的都是/（slash），包括 Mac/Linux，也包括 URL。你唯一需要记住的是，Microsoft 这个怪鸡在自己的操作系统里面偏要用\（backslash），使得自己与众不同。
+在 Windows 中，正斜杠/表示除法，用来进行整除运算；反斜杠\用来表示目录。
+在 Unix 系统中，/表示目录；\表示跳脱字符将特殊字符变成一般字符
+Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。</p>
+</blockquote>
+<h2 id="为什么重要">为什么重要？</h2>
+<p>你是否曾经看过 Mac OS X 终端或文件系统，并注意到它与 Linux 的相似之处，以及它们与 Windows 的不同之处？嗯，这就是为什么——Mac OSX 和 Linux 都是类 Unix 操作系统。</p>
+<p>了解这段历史有助于您了解什么是“类 Unix”操作系统，以及为什么这么多操作系统看起来彼此如此相似而 Windows 似乎如此不同。这解释了为什么 Linux 极客会觉得 Mac OS X 上的终端如此熟悉，而 Windows 上的命令提示符和 PowerShell 与其他命令行环境如此不同。</p>
+<p>这只是一个简短的历史，它将帮助您了解我们如何到达今天的位置，而不会陷入细节中。如果您想了解更多信息，可以找到有关 Unix 历史的整本书。</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

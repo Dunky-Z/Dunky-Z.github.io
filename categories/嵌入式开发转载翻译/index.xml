@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>嵌入式开发，转载翻译 on 夜云泊</title>
+    <link>https://lifeislife.cn/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/</link>
+    <description>Recent content in 嵌入式开发，转载翻译 on 夜云泊</description>
+    <generator>Hugo -- 0.133.1</generator>
+    <language>zh</language>
+    <lastBuildDate>Sat, 31 Aug 2024 10:00:13 +0800</lastBuildDate>
+    <atom:link href="https://lifeislife.cn/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PCIe Part 1 - 面向 Windows 初学者的 PCIe 实用教程</title>
+      <link>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part1/</link>
+      <pubDate>Sat, 31 Aug 2024 10:00:13 +0800</pubDate>
+      <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part1/</guid>
+      <description>本文翻译自：面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &amp;mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul Hello！我最近一直在与一些朋友和同</description>
+      <content:encoded><![CDATA[<blockquote>
+<p>本文翻译自：<a href="https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1/">面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul</a></p>
+</blockquote>
+<p>Hello！我最近一直在与一些朋友和同事交谈，他们有兴趣了解更多关于 PCIe 的信息，但对复杂性或缺乏适合初学者的简单资源感到害怕。我最近经常使用 PCIe，觉得可能值得以博客文章的形式分享我的一些经验。</p>
+<p>本文主要供具有计算机系统背景并且喜欢亲身实践的人员使用。它也适用于 PCIe 的初学者，或者是对通用概念有所理解但却无法将它们联系在一起的人。</p>
+<p>第一件事是第一件事：不要被吓倒。有很多首字母缩略词和令人困惑的概念，当你&quot;明白&quot;时，它们就会变得简单。当时要迈出一步，不要害怕提出问题！（如果你想问我问题，可以考虑在 <a href="https://discord.gg/rtfm">Reverse Engineering Discord</a> 的 #hardware 频道@Gbps ping 我）</p>
+<p>我<strong>打算</strong>在这个系列中做几件事：</p>
+<ul>
+<li>从软件方面将 PCIe 分解为我认为最重要的内容，以学习和为现代 PC/服务器系统构建一个良好的基线思想模型。</li>
+<li>展示使用各种工具（通常是 WinDbg）在 Windows 上调查 PCIe 层次结构和设备的实际示例。</li>
+<li>为避免造成混淆，我会有意识地简化或略过一些具体的细节。在这里，可能会有一些术语的使用不准确，甚至信息本身也可能在技术上有所出入。但是，这样做的目的是为了学习整个系统，而不是规范的具体细节。PCIe 是复杂的，当我们处于初学阶段时，陷入过多的细节和特殊情况是没有意义的。</li>
+<li>我们希望通过将这项技术与你已经熟悉的概念相联系，来揭开其神秘面纱。PCIe 并未重新发明轮子，通过理解与它类似的技术，你可能已经比你自己意识到的了解得更多。</li>
+</ul>
+<p>我<strong>不打算</strong>用这个系列做以下事情：</p>
+<ul>
+<li>详细了解传统 PCI 或 PCI-X。一般来说，这项技术除了历史价值之外并不重要。</li>
+<li>演示如何为 PCIe 设备编写设备驱动程序。这是非常特定于操作系统的，并且比这里要讨论的要高得多。</li>
+<li>详细介绍 PCIe 的链路层。该规范的一半以上都花在了这个主题上，并包含了一些世界上最前沿的高速数据传输技术。我不处理这边的事情，但是将来我可能会谈论使用 FPGA 构建 PCIe 设备（我以前做过）。</li>
+<li>帮助您使用 PCIe 在视频游戏中作弊。是的，它存在。不，我不会帮忙。</li>
+</ul>
+<p>这并不是对技术或协议的全面研究。要获得真正详尽的了解，您应该参考永远难以捉摸的 PCI-SIG PCI Express 基本规范。这是实现所有 PCIe 代码所依据的规范。目前，在撰写本文时，我们使用的是该规范的 6.0 版，但 3.0 及更高版本的版本都与现代 PCIe 完全相关。如何获得这种昂贵的规格对读者来说是一项练习。</p>
+<blockquote>
+<p>注意：我有时会在“PCI”和“PCIe”之间来回切换，将技术描述为一种习惯的力量。除非另有说明，否则本系列中的所有内容都是关于 PCIe 的。</p>
+</blockquote>
+<h2 id="什么是-pcie我为什么要关注">什么是 PCIe，我为什么要关注？</h2>
+<p>PCIe 代表 Peripheral Component Interconnect Express，外围设备组件互联传输。它于 2003 年首次推出，是从早期 PC 时代越来越流行的旧 PCI 和 PCI-X 规范演变而来的（为 Express 添加了“e”以区分它）。</p>
+<p>大多数使用计算机的人都认为它是主板上插入显卡或适配器卡的 PCIe 插槽，但 PCIe 不仅仅是这几个扩展 Port。PCIe 是现代 CPU 与连接到系统的几乎所有设备通信的基础。</p>
+<p>自推出以来，PCIe 的受欢迎程度飙升，成为短距离高速数据传输的近乎通用的标准。几乎所有的 M.2 SSD 都使用 NVMe over PCIe 作为其传输协议。Thunderbolt 3 能够使用外部线将 PCIe 设备直接动态热插拔到系统（支持扩展坞和 eGPU 等技术）。在此基础上，USB4 正在扩展 Thunderbolt 3，以使这种 PCIe 路由技术能够达到开放的 USB 规范。CXL 等新型传输协议，用于数据中心服务器，以 PCIe 为基础规范并在其上扩展他们的特别功能。</p>
+<p>即使与之通信的设备本身不使用 PCIe 作为其物理层协议，系统仍必须使用 PCI 的软件接口进行通信。这是因为系统使用适配器（通常称为主机控制器），这些适配器是 PCI 设备，有助于将来自 CPU 的 PCI 请求转换为主机控制器支持的任何协议或总线。例如，此测试计算机上的所有 USB 3.1 都使用 USB XHCI 协议，该协议是一种通信协议，通过与 USB 主机控制器通信的 PCI 驱动程序将 PCIe 桥接到 USB。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png" alt="USB 3.1 主机控制器。此系统上的所有 USB 都将通过此控制器进行，该控制器位于 PCI 总线上。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png" alt="USB 3.1 主机控制器。此系统上的所有 USB 都将通过此控制器进行，该控制器位于 PCI 总线上。"  />
+</a>
+</div>
+
+</p>
+<p>毋庸置疑，PCI 如今无处不在，并且已被计算机世界的各个部分完全采用。因此，我们必须对这项技术有很好的理解，以更好地理解现代计算。</p>
+<h2 id="研究-pcie-层次结构---一种分组交换网络">研究 PCIe 层次结构 - 一种分组交换网络</h2>
+<p>从传统的 PCI 转变到 PCIe 最重要的变化是从真正的总线拓扑结构转变为点对点链接。你可以将这看作是以太网集线器向今天的以太网交换机的演变。每个链接都是一个单独的点对点链接，其路由方式就像在一个分组交换的以太网网络上的以太网线一样。这意味着 PCIe 实际上并不是一个“总线协议”，尽管在各种文献和技术规范中让人困惑的频繁使用“总线”这个词。人们必须仔细理解，这个词“总线”并不意味着多个 PCIe 设备在同一个物理链接上进行通信。数据包（也被称为 TLPs）经过每个单独的链接，层次结构中的交换设备使用数据包内的路由信息将数据包传送到正确的 Port。</p>
+<p>在我们进入 PCIe 的技术细节之前，首先我们需要谈谈整个系统的布局。我们研究 PCIe 层次结构的第一种方法是通过 Windows 设备管理器。大多数熟悉 Windows 的人以前都用过它，但没有多少人知道 View &gt; Devices by Connection 中发现的非常方便的功能。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>通过选择此视图，我们可以从根 PNP（Plug-N-Play）节点看到系统的完整拓扑。PNP 根节点是 Windows 上所有设备树的根，无论它们使用什么总线或协议。每个设备（无论是虚拟设备还是物理设备）都被枚举并放置在此 PNP 树上。我们可以利用 Device Manager 的这个视图来查看这个树的布局。</p>
+<p>特别是，我们希望在系统上找到 PCI 设备的布局。这样，我们就可以开始构建 PCI 树在这台机器上的外观的可视化模型。为此，我们需要找到 PCI 树的根：Root Complex。Root Complex（缩写为 RC）是系统上所有 PCIe 的所有者。它物理上位于 CPU 芯片上，负责充当所有 PCIe 设备接收和发送数据包的主机。它可以被认为是软件（在你的机器上执行的指令）和硬件（PCIe 和 RAM 的外部世界）之间的桥梁。</p>
+<p>在这个系统中，它位于这里的 PNP 层次结构中：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>注意：您现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然您永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们根复合体在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。</p>
+</blockquote>
+<p>所以现在我们知道 Root Complex 是 PCIe 树的顶部，现在让我们看一下它下面的所有内容：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>不出所料，此 PCI 总线上有许多设备。在这里，我们可以看到负责音频、集成显卡、USB、串行和 SATA 的各种控制器。此外，我们还看到其中一些设备称为 PCI Express Root Port。Root Port 是根复合体上的一个 Port，另一个 PCIe 端点（又名物理“设备”）或交换机（又名“路由器”）可以连接到该 Port。出于 PCI 规范的考虑，您将听到 Endpoint 称为 Type 0 设备，而 Switch（或网桥）称为 Type 1 设备，因为一个被配置为用于通信的设备，另一个被配置为用于路由数据包的设备。RC 将具有与其物理支持的一样多的 Root Port。也就是说，可以连接到 CPU 芯片的次数越多。CPU 上的一些 Root Port 可能直接路由到物理 PCIe 插槽，而其他 Root Port 可能路由到其他类型的插槽，如 NVMe 插槽。它也可能被路由到另一个 PCIe 交换设备，该设备可以将数据包路由到多个 Port，从而一次路由到多个端点。</p>
+<p>我会继续提出这个比较，但我觉得这很重要——如果你已经了解以太网交换机，你就已经了解 PCIe 交换机。您可以想象这些 Root Port 就像台式计算机上的以太网 Port。您可以将这些直接连接到其他设备（例如摄像头），也可以将它们连接到像家用路由器/调制解调器这样的交换机，这将交换数据包以公开更多连接，以便与更多设备和机器通信。在这种情况下，以太网线是将一个 PCIe Port 连接到另一个 PCIe Port 的铜线，从而使其成为“点对点”。</p>
+<p>考虑到这一点，让我们开始绘制这个层次结构（部分）图表，以便我们直观地看到它的全部布局：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在 PCI 中，系统上的所有“总线”都用 0 到 255（含）之间的数字标识。此外，所有设备都使用“设备 ID”和“功能 ID”进行标识。这通常被描述为 Bus/Device/Function，或简称为 BDF。在更正确的规范术语中，这称为 RID（请求者 ID）。为了减少混淆，我将它称为 BDF。BDF 很重要，因为它专门告诉我们设备在 PCIe 层次结构中的位置，以便我们可以与之通信。</p>
+<p>因为这些都位于层级结构的顶层，所以我们将为这个“bus”提供一个数字标识符，即“Bus 0”或 Root Bus。我们可以通过右键单击顶级设备并选择 Properties 并查看 Location 来验证所有这些设备是否都是 Bus 0 设备：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>对于此集成图形设备，它的 BDF 为 0:2.0。它位于总线 0（根总线）上，设备 ID 为 2，功能 ID 为 0。在这种情况下，“设备”表示物理设备，例如显卡。“功能”是物理设备向系统公开的独特功能。无论出于何种意图和目的，都可以将其视为一个单独的实体。公开多个功能的设备被恰当地称为多功能设备（MFD）。这意味着它向系统公开两个或多个 PCI 连接，而实际上只有一个设备。我们很快就会看到一个真正的 MFD 示例。</p>
+<p>敏锐的读者会注意到，我们已经打破了我之前提到的“规则”：与这个独特的总线 0 相连的设备有很多。这是 PCIe 中“点对点”规则的第一个例外，只有在因为总线 0 物理上位于 CPU 的硅片上的情况下才允许这样做。也就是说，这些设备之间没有电气路径，这是一个想象中的连接。所有这些设备都存在于 CPU 封装内，并使用极高速电气互连进行路由。这些处理器互连使用的是特定于 CPU 供应商的内部协议，尽管这些协议并未公开文档，但我们仍然以 PCIe 的“语言”与它进行通信。这些端点（标记为绿色），由于其特殊性质，将被赋予一个特殊的名称：根复合集成端点（Root Complex Integrated Endpoints，简称 RCIE），因为它们直接集成在 RC 上。</p>
+<p>这并不奇怪，你会期望集成 UHD 图形等设备将物理位于 CPU 上（因为它是 CPU 规格的一部分）。但是，我们可以通过观察其他 RCIE 来了解系统的一些更有趣的拓扑结构，例如这里也存在 RAM 控制器（与内存的 DRAM DIMM 通信的硅）和 USB 控制器（与外部 USB 设备通信的硅）。这就是为什么某些 CPU 仅支持某些类型的 RAM 和 USB 规范的原因——因为通信的设备在物理上位于 CPU 上，并且仅支持它们在物理上创建时要支持的规范。</p>
+<blockquote>
+<p>更新：这种说法是不正确的。一些 IO 控制器仍然可以在称为 PCH（Intel）或也称为芯片组（AMD）的分立芯片上找到，该芯片位于 CPU 附近，并且具有高速链路，使其看起来像是集成到 CPU 芯片中。上面这句话错误地说你可以在物理 CPU 上找到 USB 控制器，而它更有可能在“芯片组”上。但是，为了提高速度，与 RAM 通信的内存控制器位于 CPU 芯片上。</p>
+</blockquote>
+<p>此图是层次结构第一级的最小化版本，但现在让我们通过在设备管理器中展开其余的 Root Ports 来构建层次结构的其余部分。</p>
+<p>这是填充的图表的样子：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。</p>
+</blockquote>
+<p>这些 Root Port 物理上位于 CPU 上，但连接到它的设备并不在其中。这台机器的外部 PCIe 插槽上连接了 3 个设备：一块 NVIDIA Quadro P400 图形卡和两个 NVMe 驱动器。通过进入设备管理器中每个设备的属性，我们可以获取并更新它们在视觉上的 BDF(总线、设备、功能) 信息。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在每个 Root Port 下，我们可以看到一个设备已物理连接。但是，我们还可以看到，我们在每个 Bus 下都公开了一个新的 Bus。Root Port 充当了桥，它将我们从总线 0 桥接到新的总线，因此必须为新总线分配一个新的数字 ID，并且该 Port 下的所有设备/功能都将继承该新总线编号。这与 OS/固件在引导期间的总线枚举期间使用的逻辑相同：所有网桥和交换机都公开一条新总线，必须为其分配新的总线 ID 号。</p>
+<p>在这种情况下，我们还可以看到一个多功能设备的好例子。Quadro P400 显卡充当具有两种功能的 MFD。第一个函数是 0（BDF 01:00.0），是显卡设备本身。第二个功能是 1（BDF 01:00.1），它是音频控制器，允许从 HDMI 等 Port 播放音频。这两个功能是不同的——它们用于完全不同的目的，并且具有与之关联的单独驱动程序和配置，但它们仍然由相同的物理设备（即设备 0）实现，并且位于同一总线（即总线 1）上。这与 PCIe 的点对点规则是一致的，一个链路上只能连接一个物理设备，因此总线上只能存在一个物理设备（除了例外，总线 0）。</p>
+<h2 id="从-windbg-探索-pcie-层次结构和设备">从 WinDbg 探索 PCIe 层次结构和设备</h2>
+<p>到目前为止，我们已经通过使用 Device Manager 的“View by Connection”功能看到了标准的 PCI 总线层次结构。还有另一种更详细的方法来调查 PCIe 层次结构：使用 WinDbg 提供的可靠内核调试扩展。</p>
+<blockquote>
+<p>注意：我们假设你了解如何在一台机器上设置内核调试器来继续下面的操作。你也可以用 LiveKD 来完成大部分练习。如果你并不了解如何设置，可以参考微软提供的指南：<a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-a-network-debugging-connection-automatically">设置 KDNET</a>。</p>
+</blockquote>
+<p>我已经连接到了一台与上述使用的机器不同的新测试机。我们将通过调试器的输出，来演练如何绘制这台机器的层次结构图。我们也将学习如何通过其配置内存来查找设备的信息。</p>
+<p>放入调试器后，我们将使用！pcitree 命令开始。这将转储系统上列举的 PCI 设备的文本树形图。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !pcitree
+</span></span><span class="line"><span class="cl">Bus 0x0 <span class="o">(</span>FDO Ext ffffdc89b9f75920<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f00 devext 0xffffdc89b0759270 devstack 0xffffdc89b0759120 <span class="m">0600</span> Bridge/HOST to PCI
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f02 devext 0xffffdc89ba0c74c0 devstack 0xffffdc89ba0c7370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x1 <span class="o">(</span>FDO Ext ffffdc89ba0aa190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>2,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f04 devext 0xffffdc89ba0c94c0 devstack 0xffffdc89ba0c9370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x2 <span class="o">(</span>FDO Ext ffffdc89ba0a8190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 10de13bb devext 0xffffdc89ba04f270 devstack 0xffffdc89ba04f120 <span class="m">0300</span> Display Controller/VGA
+</span></span><span class="line"><span class="cl">    <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>1<span class="o">)</span> 10de0fbc devext 0xffffdc89ba051270 devstack 0xffffdc89ba051120 <span class="m">0403</span> Multimedia Device/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>3,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f08 devext 0xffffdc89ba0cb4c0 devstack 0xffffdc89ba0cb370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x3 <span class="o">(</span>FDO Ext ffffdc89ba08f190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>5,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f28 devext 0xffffdc89ba0cd4c0 devstack 0xffffdc89ba0cd370 <span class="m">0880</span> Base System Device/<span class="s1">&#39;Other&#39;</span> base system device
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>5,  <span class="nv">f</span><span class="o">=</span>1<span class="o">)</span> 80866f29 devext 0xffffdc89ba0cf4c0 devstack 0xffffdc89ba0cf370 <span class="m">0880</span> Base System Device/<span class="s1">&#39;Other&#39;</span> base system device
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>5,  <span class="nv">f</span><span class="o">=</span>2<span class="o">)</span> 80866f2a devext 0xffffdc89ba0d14c0 devstack 0xffffdc89ba0d1370 <span class="m">0880</span> Base System Device/<span class="s1">&#39;Other&#39;</span> base system device
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>5,  <span class="nv">f</span><span class="o">=</span>4<span class="o">)</span> 80866f2c devext 0xffffdc89ba0d34c0 devstack 0xffffdc89ba0d3370 <span class="m">0800</span> Base System Device/Interrupt Controller
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>11, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d7c devext 0xffffdc89ba0d84c0 devstack 0xffffdc89ba0d8370 ff00 <span class="o">(</span>Explicitly<span class="o">)</span> Undefined/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>11, <span class="nv">f</span><span class="o">=</span>4<span class="o">)</span> 80868d62 devext 0xffffdc89ba0da4c0 devstack 0xffffdc89ba0da370 <span class="m">0106</span> Mass Storage Controller/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>14, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d31 devext 0xffffdc89ba0dc4c0 devstack 0xffffdc89ba0dc370 0c03 Serial Bus Controller/USB
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>16, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d3a devext 0xffffdc89ba0de4c0 devstack 0xffffdc89ba0de370 <span class="m">0780</span> Simple Serial Communications Controller/<span class="s1">&#39;Other&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>16, <span class="nv">f</span><span class="o">=</span>3<span class="o">)</span> 80868d3d devext 0xffffdc89ba0e04c0 devstack 0xffffdc89ba0e0370 <span class="m">0700</span> Simple Serial Communications Controller/Serial Port
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>19, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 808615a0 devext 0xffffdc89ba0e24c0 devstack 0xffffdc89ba0e2370 <span class="m">0200</span> Network Controller/Ethernet
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1a, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d2d devext 0xffffdc89ba0e44c0 devstack 0xffffdc89ba0e4370 0c03 Serial Bus Controller/USB
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1b, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d20 devext 0xffffdc89ba0254c0 devstack 0xffffdc89ba025370 <span class="m">0403</span> Multimedia Device/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1c, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d10 devext 0xffffdc89ba0274c0 devstack 0xffffdc89ba027370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x4 <span class="o">(</span>FDO Ext ffffdc89ba0a9190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1c, <span class="nv">f</span><span class="o">=</span>1<span class="o">)</span> 80868d12 devext 0xffffdc89ba02c4c0 devstack 0xffffdc89ba02c370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x5 <span class="o">(</span>FDO Ext ffffdc89b9fe6190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1c, <span class="nv">f</span><span class="o">=</span>3<span class="o">)</span> 80868d16 devext 0xffffdc89ba02e4c0 devstack 0xffffdc89ba02e370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x6 <span class="o">(</span>FDO Ext ffffdc89ba0a7190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> <span class="m">12838893</span> devext 0xffffdc89ba062270 devstack 0xffffdc89ba062120 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">    Bus 0x7 <span class="o">(</span>FDO Ext ffffdc89ba064250<span class="o">)</span>
+</span></span><span class="line"><span class="cl">      No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1c, <span class="nv">f</span><span class="o">=</span>4<span class="o">)</span> 80868d18 devext 0xffffdc89ba0304c0 devstack 0xffffdc89ba030370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x8 <span class="o">(</span>FDO Ext ffffdc89ba0b2190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1d, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d26 devext 0xffffdc89ba0364c0 devstack 0xffffdc89ba036370 0c03 Serial Bus Controller/USB
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1f, <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80868d44 devext 0xffffdc89ba0384c0 devstack 0xffffdc89ba038370 <span class="m">0601</span> Bridge/PCI to ISA
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1f, <span class="nv">f</span><span class="o">=</span>2<span class="o">)</span> 80868d02 devext 0xffffdc89ba03a4c0 devstack 0xffffdc89ba03a370 <span class="m">0106</span> Mass Storage Controller/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1f, <span class="nv">f</span><span class="o">=</span>3<span class="o">)</span> 80868d22 devext 0xffffdc89ba03c4c0 devstack 0xffffdc89ba03c370 0c05 Serial Bus Controller/Unknown Sub Class
+</span></span></code></pre></div><blockquote>
+<p>注意：如果你遇到“无法获取 PciFdoExtensionListHead 地址”的错误，确保你的符号设置正确，并执行.reload pci.sys 操作来重新加载 PCI 的符号。</p>
+</blockquote>
+<p>当显示此输出时，由于空格的格式设置方式，可能很难直观地看到“tree”。解释此输出的方法是查看 Bus 0x 文本的缩进。任何比 Bus 0x 行进一步缩进一组空格的东西都是该总线上的设备。我们可以看到，在器件的正下方还有其他 Bus 0x 线路。这意味着 Bus 0x 线上方的器件正在向我们公开一条新总线，并且总线编号在那里给出。</p>
+<p>让我们看一下此输出的特定部分：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Bus 0x0 <span class="o">(</span>FDO Ext ffffdc89b9f75920<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f00 devext 0xffffdc89b0759270 devstack 0xffffdc89b0759120 <span class="m">0600</span> Bridge/HOST to PCI
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f02 devext 0xffffdc89ba0c74c0 devstack 0xffffdc89ba0c7370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x1 <span class="o">(</span>FDO Ext ffffdc89ba0aa190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>2,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f04 devext 0xffffdc89ba0c94c0 devstack 0xffffdc89ba0c9370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x2 <span class="o">(</span>FDO Ext ffffdc89ba0a8190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 10de13bb devext 0xffffdc89ba04f270 devstack 0xffffdc89ba04f120 <span class="m">0300</span> Display Controller/VGA
+</span></span><span class="line"><span class="cl">    <span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>1<span class="o">)</span> 10de0fbc devext 0xffffdc89ba051270 devstack 0xffffdc89ba051120 <span class="m">0403</span> Multimedia Device/Unknown Sub Class
+</span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>3,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 80866f08 devext 0xffffdc89ba0cb4c0 devstack 0xffffdc89ba0cb370 <span class="m">0604</span> Bridge/PCI to PCI
+</span></span><span class="line"><span class="cl">  Bus 0x3 <span class="o">(</span>FDO Ext ffffdc89ba08f190<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
+</span></span></code></pre></div><p>在此输出中，我们可以看到每个设备显示的 BDF。我们还可以看到总线 0 上存在的一组 Root Port，这些 Port 下面没有列举任何设备，这意味着插槽尚未连接到任何设备。</p>
+<p>在这里看到树结构应该更容易，但无论如何，让我们把它画出来：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>注意：这只是一个巧合，即公交号恰好与桥梁/PCI 的设备编号匹配到 PCI 端口。</p>
+</blockquote>
+<p>如你现在所知，标记为 Bridge/PCI to PCI 的设备实际上是 Root Port，而总线 2 上的设备实际上是一个多功能设备。与设备管理器不同，我们看不到！pcitree 中的设备真实名称。相反，我们只得到了一个通用的 PCI 名称，用于设备“类型”将自己宣传为什么。这是因为设备管理器 从驱动程序读取设备名称，而不是直接从 PCI 读取设备名称。</p>
+<p>要了解更多关于这个显示控制器设备的信息，我们可以使用命令 <code>！devext [pointer]</code>，其中 <code>[pointer]</code> 是布局中单词 <code>devext</code> 后面的值。在本例中，它是：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 10de13bb devext 0xffffdc89ba04f270 devstack 0xffffdc89ba04f120 <span class="m">0300</span> Display Controller/VGA
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">!devext 0xffffdc89ba04f270
+</span></span></code></pre></div><p>从这里，我们将从 Windows 中的 PCI 总线驱动程序获得此 PCI 设备的摘要的打印输出，<code>pci.sys</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !devext 0xffffdc89ba04f270
+</span></span><span class="line"><span class="cl">PDO Extension, Bus 0x2, Device 0, Function 0.
+</span></span><span class="line"><span class="cl">  DevObj 0xffffdc89ba04f120  Parent FDO DevExt 0xffffdc89ba0a8190
+</span></span><span class="line"><span class="cl">  Device <span class="nv">State</span> <span class="o">=</span> PciStarted
+</span></span><span class="line"><span class="cl">  Vendor ID 10de <span class="o">(</span>NVIDIA CORPORATION<span class="o">)</span>  Device ID 13BB
+</span></span><span class="line"><span class="cl">  Subsystem Vendor ID 103c <span class="o">(</span>HEWLETT-PACKARD COMPANY<span class="o">)</span>  Subsystem ID <span class="m">1098</span>
+</span></span><span class="line"><span class="cl">  Header Type 0, Class Base/Sub 03/00  <span class="o">(</span>Display Controller/VGA<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  Programming Interface: 00, Revision: a2, IntPin: 01, RawLine <span class="m">00</span>
+</span></span><span class="line"><span class="cl">  Possible Decodes <span class="o">((</span>cmd <span class="p">&amp;</span> 7<span class="o">)</span> <span class="o">=</span> 7<span class="o">)</span>: BMI
+</span></span><span class="line"><span class="cl">  Capabilities: <span class="nv">Ptr</span><span class="o">=</span>60, power msi express 
+</span></span><span class="line"><span class="cl">  Express capabilities: <span class="o">(</span>BIOS controlled<span class="o">)</span> 
+</span></span><span class="line"><span class="cl">  Logical Device Power State: D0
+</span></span><span class="line"><span class="cl">  Device Wake Level:          Unspecified
+</span></span><span class="line"><span class="cl">  WaitWakeIrp:                &lt;none&gt;
+</span></span><span class="line"><span class="cl">  Requirements:     Alignment Length    Minimum          Maximum
+</span></span><span class="line"><span class="cl">    BAR0    Mem:    <span class="m">01000000</span>  <span class="m">01000000</span>  <span class="m">0000000000000000</span> 00000000ffffffff
+</span></span><span class="line"><span class="cl">    BAR1    Mem:    <span class="m">10000000</span>  <span class="m">10000000</span>  <span class="m">0000000000000000</span> ffffffffffffffff
+</span></span><span class="line"><span class="cl">    BAR3    Mem:    <span class="m">02000000</span>  <span class="m">02000000</span>  <span class="m">0000000000000000</span> ffffffffffffffff
+</span></span><span class="line"><span class="cl">    BAR5     Io:    <span class="m">00000080</span>  <span class="m">00000080</span>  <span class="m">0000000000000000</span> 00000000ffffffff
+</span></span><span class="line"><span class="cl">      ROM BAR:      <span class="m">00080000</span>  <span class="m">00080000</span>  <span class="m">0000000000000000</span> 00000000ffffffff
+</span></span><span class="line"><span class="cl">    VF BAR0 Mem:    <span class="m">00080000</span>  <span class="m">00080000</span>  <span class="m">0000000000000000</span> 00000000ffffffff
+</span></span><span class="line"><span class="cl">  Resources:        Start            Length
+</span></span><span class="line"><span class="cl">    BAR0    Mem:    00000000f2000000 <span class="m">01000000</span>
+</span></span><span class="line"><span class="cl">    BAR1    Mem:    00000000e0000000 <span class="m">10000000</span>
+</span></span><span class="line"><span class="cl">    BAR3    Mem:    00000000f0000000 <span class="m">02000000</span>
+</span></span><span class="line"><span class="cl">    BAR5     Io:    <span class="m">0000000000001000</span> <span class="m">00000080</span>
+</span></span><span class="line"><span class="cl">  Interrupt Requirement:
+</span></span><span class="line"><span class="cl">    Line Based - Min <span class="nv">Vector</span> <span class="o">=</span> 0x0, Max <span class="nv">Vector</span> <span class="o">=</span> 0xffffffff
+</span></span><span class="line"><span class="cl">    Message Based: Type - Msi, 0x1 messages requested
+</span></span><span class="line"><span class="cl">  Interrupt Resource:    Type - MSI, 0x1 Messages Granted
+</span></span></code></pre></div><p>这里有很多内核知道的关于这个设备的信息。此信息是通过 Configuration Space（缩写为“config space”）检索的，Configuration Space 是系统上的内存部分，允许内核以标准化的方式枚举、查询信息和设置 PCI 设备。软件从设备读取内存以查询供应商 ID 等信息，设备（如果已打开电源）使用该信息进行响应。在下一节中，我将更多地讨论这实际上是如何发生的，但要知道这里查询的信息是从配置空间生成的。</p>
+<p>因此，让我们分解一些重要的东西：</p>
+<ul>
+<li>DevObj：指向 <code>nt！_DEVICE_OBJECT</code> 结构的指针，该结构表示内核中的物理设备。</li>
+<li>Vendor ID：注册给特定设备制造商的 16 位 ID 号。此值是标准化的，PCI-SIG 必须为新供应商分配一个唯一 ID，以便它们不会重叠。在本例中，我们看到这是 NVIDIA 显卡。</li>
+<li>Device  ID：执行 PCIe 的特定芯片的 16 位 ID 号。类似的想法是，公司必须为其芯片请求一个唯一的 ID，这样它就不会与任何其他芯片冲突。</li>
+<li>Subsystem Vendor ID：芯片所在电路板的供应商 ID。在这种情况下，“HP”是显卡的生产商，而“NVIDIA”设计了图形芯片。</li>
+<li>Subsystem Device ID：芯片所在电路板的设备 ID。</li>
+<li>Logical Device Power State：此设备的电源状态。PCI 中有两种主要的电源状态，D0 = 设备已通电，D3 = 设备处于低功耗状态或完全关闭。</li>
+<li>Requirements：设备要求 OS 为其分配的内存要求。稍后会详细介绍。</li>
+<li>Resources：操作系统分配给此设备的内存资源。此设备已打开电源并启动，因此已为其分配了资源。</li>
+<li>Interrupt Requirement/Resource：与上述相同，但是对于中断则不同。</li>
+</ul>
+<p>要实际获取有关此设备的完整信息，我们可以使用 <a href="https://pcilookup.com/">PCI Lookup</a> 中的出色工具来查询有关在 PCI-SIG 中注册的 PCI 设备的公共信息。让我们将有关设备和 Vendor ID 的信息放入框中：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>当我们搜索时，我们得到这个：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>这告诉我们该设备是 NVIDIA 创建的 Quadro K620 显卡。子系统 ID 告诉我们，这个特定的卡 PCB 是由 HP 生产的，该公司已获得 NVIDIA 的许可。</p>
+<p>我们在 <code>！devext</code> 中看到的很好地概述了 <code>pci.sys</code> 在摘要中特别关心向我们展示的内容，但它只触及了配置空间中所有信息的皮毛。要将所有信息转储到配置空间中，我们可以使用扩展名 <code>！pci 100 B D F</code>，其中 BDF 是我们相关设备的 BDF。100 是一组标志，指定我们要转储有关设备的所有信息。显示的信息将按照它在设备的 config space 中存在的顺序进行布局。每个部分的前缀是一个偏移量，例如 <code>02</code> 表示 Device ID。这指定了从中读取此值的 config 空间的偏移量。这些偏移量在 PCI 规范中进行了详细说明，并且不会出于向后兼容性目的在 PCI 版本之间更改。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !pci <span class="m">100</span> <span class="m">2</span> <span class="m">0</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">PCI Configuration Space <span class="o">(</span>Segment:0000 Bus:02 Device:00 Function:00<span class="o">)</span>
+</span></span><span class="line"><span class="cl">Common Header:
+</span></span><span class="line"><span class="cl">    00: VendorID       10de Nvidia Corporation
+</span></span><span class="line"><span class="cl">    02: DeviceID       13bb
+</span></span><span class="line"><span class="cl">    04: Command        <span class="m">0507</span> IOSpaceEn MemSpaceEn BusInitiate SERREn InterruptDis 
+</span></span><span class="line"><span class="cl">    06: Status         <span class="m">0010</span> CapList 
+</span></span><span class="line"><span class="cl">    08: RevisionID     a2
+</span></span><span class="line"><span class="cl">    09: ProgIF         <span class="m">00</span> VGA
+</span></span><span class="line"><span class="cl">    0a: SubClass       <span class="m">00</span> VGA Compatible Controller
+</span></span><span class="line"><span class="cl">    0b: BaseClass      <span class="m">03</span> Display Controller
+</span></span><span class="line"><span class="cl">    0c: CacheLineSize  <span class="m">0000</span>
+</span></span><span class="line"><span class="cl">    0d: LatencyTimer   <span class="m">00</span>
+</span></span><span class="line"><span class="cl">    0e: HeaderType     <span class="m">80</span>
+</span></span><span class="line"><span class="cl">    0f: BIST           <span class="m">00</span>
+</span></span><span class="line"><span class="cl">    10: BAR0           f2000000
+</span></span><span class="line"><span class="cl">    14: BAR1           e000000c
+</span></span><span class="line"><span class="cl">    18: BAR2           <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    1c: BAR3           f000000c
+</span></span><span class="line"><span class="cl">    20: BAR4           <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    24: BAR5           <span class="m">00001001</span>
+</span></span><span class="line"><span class="cl">    28: CBCISPtr       <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    2c: SubSysVenID    103c
+</span></span><span class="line"><span class="cl">    2e: SubSysID       <span class="m">1098</span>
+</span></span><span class="line"><span class="cl">    30: ROMBAR         <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    34: CapPtr         <span class="m">60</span>
+</span></span><span class="line"><span class="cl">    3c: IntLine        <span class="m">00</span>
+</span></span><span class="line"><span class="cl">    3d: IntPin         <span class="m">01</span>
+</span></span><span class="line"><span class="cl">    3e: MinGnt         <span class="m">00</span>
+</span></span><span class="line"><span class="cl">    3f: MaxLat         <span class="m">00</span>
+</span></span><span class="line"><span class="cl">Device Private:
+</span></span><span class="line"><span class="cl">    40: 1098103c <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    50: <span class="m">00000000</span> <span class="m">00000001</span> 0023d6ce <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    60: <span class="m">00036801</span> <span class="m">00000008</span> <span class="m">00817805</span> fee001f8
+</span></span><span class="line"><span class="cl">    70: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00120010</span> 012c8de1
+</span></span><span class="line"><span class="cl">    80: <span class="m">00003930</span> 00453d02 <span class="m">11010140</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    90: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00040013</span>
+</span></span><span class="line"><span class="cl">    a0: <span class="m">00000000</span> <span class="m">00000006</span> <span class="m">00000002</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    b0: <span class="m">00000000</span> <span class="m">01140009</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    c0: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    d0: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    e0: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    f0: <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span> <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">Capabilities:
+</span></span><span class="line"><span class="cl">    60: CapID          <span class="m">01</span> PwrMgmt Capability
+</span></span><span class="line"><span class="cl">    61: NextPtr        <span class="m">68</span>
+</span></span><span class="line"><span class="cl">    62: PwrMgmtCap     <span class="m">0003</span> <span class="nv">Version</span><span class="o">=</span><span class="m">3</span>
+</span></span><span class="line"><span class="cl">    64: PwrMgmtCtrl    <span class="m">0008</span> DataScale:0 DataSel:0 D0 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    68: CapID          <span class="m">05</span> MSI Capability
+</span></span><span class="line"><span class="cl">    69: NextPtr        <span class="m">78</span>
+</span></span><span class="line"><span class="cl">    6a: MsgCtrl        64BitCapable MSIEnable MultipleMsgEnable:0 <span class="o">(</span>0x1<span class="o">)</span> MultipleMsgCapable:0 <span class="o">(</span>0x1<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    6c: MsgAddrLow     fee001f8
+</span></span><span class="line"><span class="cl">    70: MsgAddrHi      <span class="m">0</span>
+</span></span><span class="line"><span class="cl">    74: MsgData        <span class="m">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    78: CapID          <span class="m">10</span> PCI Express Capability
+</span></span><span class="line"><span class="cl">    79: NextPtr        <span class="m">00</span>
+</span></span><span class="line"><span class="cl">    7a: Express Caps   <span class="m">0012</span> <span class="o">(</span>ver. 2<span class="o">)</span> Type:LegacyEP
+</span></span><span class="line"><span class="cl">    7c: Device Caps    012c8de1
+</span></span><span class="line"><span class="cl">    80: Device Control <span class="m">3930</span> bcre/flr MRR:1K NS ap pf ET MP:256 RO ur fe nf ce
+</span></span><span class="line"><span class="cl">    82: Device Status  <span class="m">0000</span> tp ap ur fe nf ce
+</span></span><span class="line"><span class="cl">    84: Link Caps      00453d02
+</span></span><span class="line"><span class="cl">    88: Link Control   <span class="m">0140</span> es CC rl ld RCB:64 ASPM:None 
+</span></span><span class="line"><span class="cl">    8a: Link Status    <span class="m">1101</span> SCC lt lte NLW:x16 LS:2.5 
+</span></span><span class="line"><span class="cl">    9c: DeviceCaps2    <span class="m">00040013</span> CTR:3 CTDIS arifwd aor aoc32 aoc64 cas128 noro ltr TPH:0 OBFF:1 extfmt eetlp EETLPMax:0
+</span></span><span class="line"><span class="cl">    a0: DeviceControl2 <span class="m">0000</span> CTVal:0 ctdis arifwd aor aoeb idoreq idocom ltr OBFF:0 eetlp
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Enhanced Capabilities:
+</span></span><span class="line"><span class="cl">    100: CapID         <span class="m">0002</span> Virtual Channel Capability
+</span></span><span class="line"><span class="cl">         Version       <span class="m">1</span>
+</span></span><span class="line"><span class="cl">         NextPtr       <span class="m">258</span>
+</span></span><span class="line"><span class="cl">    0104: Port VC Capability <span class="m">1</span>        <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    0108: Port VC Capability <span class="m">2</span>        <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    010c: Port VC Control             <span class="m">0000</span>
+</span></span><span class="line"><span class="cl">    010e: Port VC Status              <span class="m">0000</span>
+</span></span><span class="line"><span class="cl">    0110: VC Resource<span class="o">[</span>0<span class="o">]</span> Cap          <span class="m">00000000</span>
+</span></span><span class="line"><span class="cl">    0114: VC Resource<span class="o">[</span>0<span class="o">]</span> Control      800000ff
+</span></span><span class="line"><span class="cl">    011a: VC Resource<span class="o">[</span>0<span class="o">]</span> Status       <span class="m">0000</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    258: CapID         001e L1 PM SS Capability
+</span></span><span class="line"><span class="cl">         Version       <span class="m">1</span>
+</span></span><span class="line"><span class="cl">         NextPtr       <span class="m">128</span>
+</span></span><span class="line"><span class="cl">    25c: Capabilities  0028ff1f  PTPOV:5 PTPOS:0 PCMRT:255 L1PMS ASPML11 ASPML12 PCIPML11 PCIPML12
+</span></span><span class="line"><span class="cl">    260: Control1      <span class="m">00000000</span>  LTRL12TS:0 LTRL12TV:0 CMRT:0 aspml11 aspml12 pcipml11 pcipml12
+</span></span><span class="line"><span class="cl">    264: Control2      <span class="m">00000028</span>  TPOV:5 TPOS:0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    128: CapID         <span class="m">0004</span> Power Budgeting Capability
+</span></span><span class="line"><span class="cl">         Version       <span class="m">1</span>
+</span></span><span class="line"><span class="cl">         NextPtr       <span class="m">600</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    600: CapID         000b Vendor Specific Capability
+</span></span><span class="line"><span class="cl">         Version       <span class="m">1</span>
+</span></span><span class="line"><span class="cl">         NextPtr       <span class="m">000</span>
+</span></span><span class="line"><span class="cl">         Vendor Specific ID <span class="m">0001</span> - Ver. <span class="m">1</span>  Length: <span class="m">024</span>
+</span></span></code></pre></div><p>这个视图的好处是，我们可以看到有关配置空间的 Capabilities 部分的详细信息。Capabilities 是 config 空间中的一组结构，它准确描述了 device 能够实现的功能。Capabilities 包括链接速度和设备支持的中断类型等信息。PCI 规范中添加的任何新功能都将通过这些结构进行公布，这些结构在配置空间中形成了一个功能链表，可以迭代以发现设备的所有功能。并非所有这些功能都与操作系统相关，有些功能仅与本文未涵盖的硬件方面相关。现在，我不会详细介绍该设备的功能。</p>
+<h2 id="pcie一切都与内存相关">PCIe：一切都与内存相关</h2>
+<p>现在我们已经研究了几个设备和 PCI 总线的层次结构，让我们谈谈与软件和 PCI 设备的通信实际上是如何运作的。当我第一次学习 PCI 时，我很难理解当软件与 PCI 设备连接时到底发生了什么。因为整个事务对作为软件开发人员的您来说是抽象出来的，所以很难仅通过从调试工具中探入 PCI 内存来构建所发生的事情的心智模型。希望这篇文章能提供比我刚开始时所能得到的更好的概述。</p>
+<p>首先，我要做一个大胆的声明：<strong>所有现代 PCIe 通信都是通过内存读写完成的</strong>。如果您了解 PCIe 中的内存如何工作，您就会了解 PCIe 软件通信的工作原理。（是的，在某些平台上还有其他传统的通信方式，但我们不会讨论这些方式，因为它们已被弃用。</p>
+<p>现在，让我们谈谈现代平台上不同类型的内存。在启动的早期，操作系统的 CPU 将使用虚拟内存。也就是说，CPU 看到的内存地址是映射到物理内存世界的内存视图。</p>
+<p>就我们的目的而言，系统上有两种类型的物理内存：</p>
+<ul>
+<li>RAM - 读取或写入时从计算机上的 DRAM DIMM 存储和检索的地址。这就是大多数人在想到“内存”时所想到的。</li>
+<li>Device Memory （设备内存） - 在读取或写入时与系统上的设备通信的地址。这里的关键词是 talks。它不会在设备上存储内存，也不会检索设备上的内存（尽管设备可能同时能够同时检索两者）。您可能正在与之通信的地址甚至可能根本不是内存，而是一个更空灵的 “device register” ，用于配置设备的内部工作。这种访问会发生什么取决于设备。您所做的只是与设备通信。您通常会看到这称为 MMIO，它代表内存映射 I/O。</li>
+</ul>
+<blockquote>
+<p>注意：每当设备不响应设备内存区域中访问的地址时，PCI 的设备内存将始终读取“全 1”或“所有 FF”。这是了解设备何时实际响应的便捷方法。如果您看到所有 FF，则表示您正在读取无效的设备地址。</p>
+</blockquote>
+<p>初学者认为所有物理内存都是 RAM，这是错误的。当软件与 PCI 区域中的 PCI 设备通信时，它不会从 RAM 读取和写入数据。相反，该设备从 Root Complex 接收一个数据包（TLP，传输层数据包），当 PCI 区域内的地址被读/写时，您的 CPU 会立即自动生成该数据包。您无需在软件中创建这些数据包，所有这些数据包都是在访问此内存后立即完全在后台生成的。在软件中，您甚至无法查看或捕获这些数据包，而需要一个特殊的硬件测试设备来拦截和查看正在发送的数据包。稍后会详细介绍。</p>
+<p>如果有帮助，请将物理内存视为设备的映射。RAM 是为您映射到物理内存中的设备。PCI 还会自动为您映射区域。尽管它们截然不同且行为也非常不同，但它们在软件中看起来是相同的。</p>
+<p>在下图中，我们可以看到典型系统如何将虚拟内存映射到物理内存。请注意，有两个 RAM 区域和两个 PCI 内存区域。这是因为某些较旧的 PCI 设备只能寻址 32 位内存。因此，如果您的 RAM 不适合 4GB 以下的地址窗口，则一些 RAM 会上移到 4GB 以上。由于您的处理器支持 64 位地址，因此这不是问题。此外，在 4GB 行上方为支持 64 位地址的 PCI 设备创建第二个窗口。由于 4GB 区域可能非常有限，因此设备最好在 4GB 以上移动尽可能多的内存，以免弄乱下面的空间。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png" alt=""  title="如何将虚拟地址范围映射到物理地址的非常简化的视图。这忽略了物理内存中的大量 “特殊” 区域，但展示了 RAM 和设备内存是如何不同的。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png" alt=""  title="如何将虚拟地址范围映射到物理地址的非常简化的视图。这忽略了物理内存中的大量 “特殊” 区域，但展示了 RAM 和设备内存是如何不同的。" />
+</a>
+</div>
+
+</p>
+<p>首先，让我们来谈谈我们已经看到的那种类型的存储器：配置空间。</p>
+<p>配置空间位于一个名为ECAM（扩展配置访问管理）的内存部分。因为它是一种设备内存，所以要从内核（使用虚拟内存）访问这段内存，内核必须请求内存管理器将这部分物理内存映射到一个虚拟地址上。然后，软件指令可以使用映射的虚拟地址来从物理地址读取和写入。在Windows上，定位和映射这段内存的工作部分由<code>pci.sys</code>处理，部分由<code>acpi.sys</code>处理，还有部分由内核（具体来说是HAL）处理。</p>
+<blockquote>
+<p>注意：通常，在 Windows 中映射设备内存的方式是通过 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmmapiospaceex">MmMapIoSpaceEx</a>，这是驱动程序可用于映射物理设备内存的 API。但是，为了进行配置空间访问，软件必须使用 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halgetbusdatabyoffset">HalGetBusDataByOffset</a> 和 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halsetbusdatabyoffset">HalSetBusDataByOffset</a> 来确保 <code>pci.sys</code> 的内部状态与您正在执行的配置空间读/写保持同步。如果您尝试自己映射和更改配置空间，则可能会使 <code>pci.sys</code> 状态不同步并导致蓝屏死机。</p>
+</blockquote>
+<blockquote>
+<p>注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。</p>
+</blockquote>
+<p>因此，为了进行配置空间访问，内核必须将配置空间 （ECAM） 映射到虚拟内存。这是这样的事情会是什么样子：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png" alt=""  title="ECAM 到虚拟内存的映射。可怕的是没有规模。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png" alt=""  title="ECAM 到虚拟内存的映射。可怕的是没有规模。" />
+</a>
+</div>
+
+</p>
+<p>在此之后，内核现在可以使用虚拟映射与设备的配置空间进行通信。但是这个配置空间是什么样的呢？嗯，它只是我们上面讨论的一堆配置空间结构块。设备可能具有的每个可能的 BDF 都在 ECAM 中提供了空间来对其进行配置。它的布局方式是，设备的 BDF 会告诉您其配置空间在 ECAM 中的确切位置。也就是说，给定一个 BDF，我们可以计算要添加到 ECAM 区域基数的偏移量，以便与设备通信，因为每个函数的所有 ECAM 区域的大小都相同。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png" alt=""  title="如果设备不存在，系统将读回所有 FF（二进制中的所有 1）。这将表明设备当前在系统上未处于活动状态"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png" alt=""  title="如果设备不存在，系统将读回所有 FF（二进制中的所有 1）。这将表明设备当前在系统上未处于活动状态" />
+</a>
+</div>
+
+</p>
+<p>从这张图中，我们可以开始看到 PCIe 的枚举实际上是如何发生的。当我们读回有效的配置空间数据时，我们知道该 BDF 上存在设备。如果我们改为读回 FF，我们知道设备不在该插槽或功能中。当然，我们不会为了枚举所有设备而暴力破解每个地址，因为由于 MMIO 的开销，这将是昂贵的。但是，这种蛮力的智能版本是我们如何快速枚举所有已通电并在配置空间上响应我们的设备。</p>
+<h2 id="把它们放在一起---软件配置空间访问">把它们放在一起 - 软件配置空间访问</h2>
+<p>现在我们了解了如何访问配置空间，我们可以将两端（层次结构和 MMIO）放在一起，以查看从内核模式读取配置空间的指令的完整路径。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>让我们逐步完成此处采用的整个路径（从左到右）：</p>
+<ul>
+<li>在内核模式下运行的某些代码从 ECAM 虚拟映射中读取偏移量。</li>
+<li>虚拟映射由 CPU 的页表转换为 ECAM 中的物理地址。</li>
+<li>读取物理地址，导致内部 CPU 互连中发生操作，以通知根复合体访问。</li>
+<li>根复合体将请求的数据包化版本生成为 TLP，该 TLP 显示“读取设备 02：00.0 的偏移量 0x0 处的值”，并通过层次结构发送该请求。</li>
+<li>TLP 由总线 2 上的此显示控制器接收，并看到它是一个配置空间 TLP。现在，它知道使用包含偏移量 0x0 处的值内容的配置空间响应 TLP 进行响应。</li>
+</ul>
+<p>现在让我们看看响应：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>响应路径没那么有趣了。设备以含有偏移0处的值（我们知道这是供应商ID）的特殊TLP进行响应。这个数据包找到回到请求者（即根复合体），然后互连通知CPU更新rax的值为0x10DE，这是NVIDIA显卡的供应商ID。然后，CPU开始执行下一条指令。</p>
+<p>如你所想那样，通过这种方式进行访问可能比通过全部的TLP生成的RAM慢很多。这确实是事实，并且这也是存在比这种MMIO方法更多的方式去与设备通信的主要原因之一。在接下来的文章中，我将详细介绍另一种方法，即DMA，以及它对于确保软件能够尽可能快地在CPU和设备之间传输内存的至关重要性。</p>
+<h2 id="练习通过windbg手动访问ecam">练习：通过WinDbg手动访问ECAM</h2>
+<p>我们看了一下 config space access 理论上是如何发生的，但让我们自己用 debugger 做同样的事情。为此，我们希望：</p>
+<ul>
+<li>找到 ECAM 在系统上的位置。</li>
+<li>计算到 ECAM 的偏移量以读取设备的供应商 ID。为此，我选择了 NVIDIA 显卡上的<code> Multimedia Device @ 02:00.1</code></li>
+<li>在该地址执行物理内存读取以检索值。</li>
+</ul>
+<p>第一步是找到 ECAM。鉴于 ECAM 的位置来自 ACPI，特别是 ACPI 中的 MCFG 表，这部分有点棘手。这是 firmware 用来告诉操作系统 ECAM 在系统的物理内存映射中的位置的表。关于 ACPI 以及如何将其与 PCI 结合使用，有很多内容要讨论，但现在，我将快速跳到相关部分以实现我们的目标。</p>
+<p>在我们的调试器中，我们可以通过使用<code>!acpicache</code>来转储所有ACPI表的缓存副本。要转储MCFG，请点击链接MCFG来转储其内容，或手动键入<code>!acpitable MCFG</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !acpicache
+</span></span><span class="line"><span class="cl">Dumping cached ACPI tables...
+</span></span><span class="line"><span class="cl">  XSDT @<span class="o">(</span>fffff7b6c0004018<span class="o">)</span> Rev: 0x1 Len: 0x0000bc TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  MCFG @<span class="o">(</span>fffff7b6c0005018<span class="o">)</span> Rev: 0x1 Len: 0x00003c TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  FACP @<span class="o">(</span>fffff7b6c0007018<span class="o">)</span> Rev: 0x4 Len: 0x0000f4 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  APIC @<span class="o">(</span>fffff7b6c0008018<span class="o">)</span> Rev: 0x2 Len: 0x000afc TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  DMAR @<span class="o">(</span>fffff7b6c000a018<span class="o">)</span> Rev: 0x1 Len: 0x0000c0 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  HPET @<span class="o">(</span>fffff7b6c015a018<span class="o">)</span> Rev: 0x1 Len: 0x000038 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  TCPA @<span class="o">(</span>ffffdc89b07209f8<span class="o">)</span> Rev: 0x2 Len: 0x000064 TableID: EDK2    
+</span></span><span class="line"><span class="cl">  SSDT @<span class="o">(</span>ffffdc89b0720a88<span class="o">)</span> Rev: 0x2 Len: 0x0003b3 TableID: Tpm2Tabl
+</span></span><span class="line"><span class="cl">  TPM2 @<span class="o">(</span>ffffdc89b0720e68<span class="o">)</span> Rev: 0x3 Len: 0x000034 TableID: EDK2    
+</span></span><span class="line"><span class="cl">  SSDT @<span class="o">(</span>ffffdc89b07fc018<span class="o">)</span> Rev: 0x1 Len: 0x0013a1 TableID: Plat_Wmi
+</span></span><span class="line"><span class="cl">  UEFI @<span class="o">(</span>ffffdc89b07fd3e8<span class="o">)</span> Rev: 0x1 Len: 0x000042 TableID: 
+</span></span><span class="line"><span class="cl">  BDAT @<span class="o">(</span>ffffdc89b07fd458<span class="o">)</span> Rev: 0x1 Len: 0x000030 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  MSDM @<span class="o">(</span>ffffdc89b07fd4b8<span class="o">)</span> Rev: 0x3 Len: 0x000055 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  SLIC @<span class="o">(</span>ffffdc89b07fd538<span class="o">)</span> Rev: 0x1 Len: 0x000176 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  WSMT @<span class="o">(</span>ffffdc89b07fd6d8<span class="o">)</span> Rev: 0x1 Len: 0x000028 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  WDDT @<span class="o">(</span>ffffdc89b0721a68<span class="o">)</span> Rev: 0x1 Len: 0x000040 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  SSDT @<span class="o">(</span>ffffdc89b2580018<span class="o">)</span> Rev: 0x2 Len: 0x086372 TableID: SSDT  PM
+</span></span><span class="line"><span class="cl">  NITR @<span class="o">(</span>ffffdc89b26063b8<span class="o">)</span> Rev: 0x2 Len: 0x000071 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">  ASF! @<span class="o">(</span>ffffdc89b2606548<span class="o">)</span> Rev: 0x20 Len: 0x000074 TableID:  HCG
+</span></span><span class="line"><span class="cl">  BGRT @<span class="o">(</span>ffffdc89b26065e8<span class="o">)</span> Rev: 0x1 Len: 0x000038 TableID: TIANO   
+</span></span><span class="line"><span class="cl">  DSDT @<span class="o">(</span>ffffdc89b0e94018<span class="o">)</span> Rev: 0x2 Len: 0x021c89 TableID: SLIC-WKS
+</span></span><span class="line"><span class="cl">8: kd&gt; !acpitable MCFG
+</span></span><span class="line"><span class="cl">HEADER - fffff7b6c0005018
+</span></span><span class="line"><span class="cl">  Signature:               MCFG
+</span></span><span class="line"><span class="cl">  Length:                  0x0000003c
+</span></span><span class="line"><span class="cl">  Revision:                0x01
+</span></span><span class="line"><span class="cl">  Checksum:                0x3c
+</span></span><span class="line"><span class="cl">  OEMID:                   HPQOEM
+</span></span><span class="line"><span class="cl">  OEMTableID:              SLIC-WKS
+</span></span><span class="line"><span class="cl">  OEMRevision:             0x00000001
+</span></span><span class="line"><span class="cl">  CreatorID:               INTL
+</span></span><span class="line"><span class="cl">  CreatorRev:              0x20091013
+</span></span><span class="line"><span class="cl">BODY - fffff7b6c000503c
+</span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000503c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> 00-00 <span class="m">00</span> <span class="m">00</span> d0 <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>  ................
+</span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000504c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> ff <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>                          ........
+</span></span></code></pre></div><p>要了解如何阅读此表，遗憾的是，我们需要查看 ACPI 规范。与其让你这样做，不如省去你的痛苦，把相关部分拉到这里：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>由于 <code>！acpitable</code> 命令已经解析并显示此表中 <code>Creator Revision</code> 之前的所有内容，因此 <code>BODY</code> 的前 8 个字节将是偏移量 36 处的 8 个字节的 <code>Reserved</code> 内存。因此，我们跳过这 8 个字节并找到以下结构：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>此字节的前 8 个字节是 <code>Reserved</code> 后面的区域的 <code>ECAM</code> 区域的地址。这意味着 <code>ECAM</code> 基址的偏移量为偏移量 8。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">BODY - fffff7b6c000503c
+</span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000503c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> 00-00 <span class="m">00</span> <span class="m">00</span> d0 <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>  ................
+</span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000504c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> ff <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>                          ........
+</span></span></code></pre></div><p>对于这个系统，ECAM位于地址：<code>0xD0000000</code>。（请别忘了以小端序来读取这个地址）</p>
+<p>为了验证我们得到了正确的地址，让我们读取<code>00:00.0</code>的供应商ID，这也是ECAM的前两个字节。我们将使用<code>!dw</code>命令来完成这个操作，该命令代表的<code>dump physical word</code>（感叹号代表物理）。这个命令要求你指定一个缓存类型，在我们的情况下，总是使用<code>[uc]</code>或者说未缓存。它还提供了一个长度，这是由L1指定要读取的word的数量。</p>
+<blockquote>
+<p>注意：请务必始终将目标设备内存的大小与我们从软件中读取的大小相匹配。这意味着，如果我们要读取的值是 16 位值（如供应商 ID），则必须执行 16 位读取。执行 32 位读取可能会更改设备响应的结果。对于配置空间，我们可以读取供应商 ID 的更大大小，但并非在所有情况下都是如此。最好养成将读取大小与目标大小匹配的习惯，以避免任何意外结果。请记住：设备内存不是 RAM。</p>
+</blockquote>
+<p>综上所述，我们读取 <code>00：00.0</code> 的 VendorID，如下所示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !dw <span class="o">[</span>uc<span class="o">]</span> D0000000 L1
+</span></span><span class="line"><span class="cl"><span class="c1">#d0000000 8086</span>
+</span></span></code></pre></div><p>我们读取的结果值为 <code>0x8086</code>，它恰好是 <code>Intel</code> 的供应商 ID。为了验证这是正确的，让我们使用 <code>！pci</code> 转储相同的内容。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !pci <span class="m">100</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">PCI Configuration Space <span class="o">(</span>Segment:0000 Bus:00 Device:00 Function:00<span class="o">)</span>
+</span></span><span class="line"><span class="cl">Common Header:
+</span></span><span class="line"><span class="cl">    00: VendorID       <span class="m">8086</span> Intel Corporation
+</span></span></code></pre></div><h3 id="从特定函数读取-vendorid">从特定函数读取 VendorID</h3>
+<p>现在要计算我们希望与之通信的另一个函数（<code>02：00.1</code> 的 NVIDIA 卡）的 ECAM 地址，我们需要通过使用目标函数的 BDF 和一些位数学计算到 ECAM 的偏移量来手动执行“数组访问”。</p>
+<p>计算方法存在于 PCIe 规范中，该规范为总线、器件和函数分配了一定数量的 ECAM 位来计算偏移量：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="p">|</span> <span class="m">27</span> - <span class="m">20</span> <span class="p">|</span> <span class="m">19</span> - <span class="m">15</span> <span class="p">|</span> <span class="m">14</span> - <span class="m">12</span>     <span class="p">|</span>  <span class="m">11</span> - <span class="m">0</span>       <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> Bus Nr  <span class="p">|</span> Dev Nr  <span class="p">|</span> Function Nr <span class="p">|</span> Register      <span class="p">|</span>
+</span></span></code></pre></div><p>通过填写 BDF 并根据每个元素的位位置对结果进行移位和 OR 运算，我们可以计算出要添加到 ECAM 的偏移量。</p>
+<p>我将使用 python，但您可以使用任何您想要的计算器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">&gt;&gt;&gt; hex<span class="o">(</span>0xD0000000 + <span class="o">((</span><span class="m">2</span> <span class="s">&lt;&lt; 20) | (0 &lt;&lt; 15) | (1 &lt;&lt; 12)))
+</span></span></span><span class="line"><span class="cl"><span class="s">&#39;0xd020</span>1000<span class="err">&#39;</span>
+</span></span></code></pre></div><p>这意味着 <code>02：00.1</code> 的 ECAM 区域位于 <code>0xD0201000</code>。</p>
+<p>现在，要从函数中读取 VendorID 的值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !dw <span class="o">[</span>uc<span class="o">]</span> D0201000 L1
+</span></span><span class="line"><span class="cl"><span class="c1">#d0201000 10de</span>
+</span></span></code></pre></div><p>结果是 <code>0x10de</code>，我们从上面知道它是 NVIDIA Corporation！这意味着我们成功地从 ECAM 中读取了此函数的第一个值。</p>
+<h2 id="总结">总结</h2>
+<p>这篇帖子最终比我预期的要长得多！我不会继续这篇文章，而是将其拆分并随着时间的推移充实该系列。关于 PCIe，我想介绍的主题太多了，但空闲时间却很少，但在下一篇文章中，我将更详细地介绍设备 BAR（一种特定于设备的 MMIO 形式）和 DMA（直接内存访问）。本系列将继续使用与以前相同的租户，更侧重于理解而不是具体细节。</p>
+<p>希望您喜欢这个对 PCIe 世界的小小了解！期待更多精彩。</p>
+<p>单击此处查看第 2 部分！</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

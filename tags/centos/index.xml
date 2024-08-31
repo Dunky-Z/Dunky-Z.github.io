@@ -14,6 +14,135 @@
       <pubDate>Wed, 17 Jan 2024 21:32:04 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/repo%E6%BA%90%E9%85%8D%E7%BD%AE%E8%A7%A3%E6%9E%90/</guid>
       <description>repo 源配置解析 openEuler 的软件源配置文件位于/etc/yum.repos.d/目录下，以.repo 为后缀名，文件名可以任意取，但是必须以.repo 结尾</description>
+      <content:encoded><![CDATA[<h1 id="repo-源配置解析">repo 源配置解析</h1>
+<p>openEuler 的软件源配置文件位于/etc/yum.repos.d/目录下，以.repo 为后缀名，文件名可以任意取，但是必须以.repo 结尾。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#generic-repos is licensed under the Mulan PSL v2.
+</span></span><span class="line"><span class="cl">#You can use this software according to the terms and conditions of the Mulan PSL v2.
+</span></span><span class="line"><span class="cl">#You may obtain a copy of Mulan PSL v2 at:
+</span></span><span class="line"><span class="cl">#    http://license.coscl.org.cn/MulanPSL2
+</span></span><span class="line"><span class="cl">#THIS SOFTWARE IS PROVIDED ON AN &#34;AS IS&#34; BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR
+</span></span><span class="line"><span class="cl">#IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
+</span></span><span class="line"><span class="cl">#PURPOSE.
+</span></span><span class="line"><span class="cl">#See the Mulan PSL v2 for more details.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[OS]
+</span></span><span class="line"><span class="cl">name=OS
+</span></span><span class="line"><span class="cl">baseurl=http://repo.openeuler.org/openEuler-23.09/OS/$basearch/
+</span></span><span class="line"><span class="cl">metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/OS&amp;arch=$basearch
+</span></span><span class="line"><span class="cl">metadata_expire=1h
+</span></span><span class="line"><span class="cl">enabled=1
+</span></span><span class="line"><span class="cl">gpgcheck=1
+</span></span><span class="line"><span class="cl">gpgkey=http://repo.openeuler.org/openEuler-23.09/OS/$basearch/RPM-GPG-KEY-openEuler
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[source]
+</span></span><span class="line"><span class="cl">name=source
+</span></span><span class="line"><span class="cl">baseurl=http://repo.openeuler.org/openEuler-23.09/source/
+</span></span><span class="line"><span class="cl">metalink=https://mirrors.openeuler.org/metalink?repo=$releasever&amp;arch=source
+</span></span><span class="line"><span class="cl">metadata_expire=1h
+</span></span><span class="line"><span class="cl">enabled=1
+</span></span><span class="line"><span class="cl">gpgcheck=1
+</span></span><span class="line"><span class="cl">gpgkey=http://repo.openeuler.org/openEuler-23.09/source/RPM-GPG-KEY-openEuler
+</span></span></code></pre></div><p>其中各个配置项的含义如下：</p>
+<ul>
+<li>[repoid]中的 repoid 为软件仓库（repository）的 ID 号，所有.repo 配置文件中的各 repoid 不能重复，必须唯一。示例中 repoid 为 OS 和 source。</li>
+<li>name 为软件仓库描述的字符串，可以任意取，但是建议取一个有意义的名称，方便用户理解。示例中 name 为 OS 和 source。</li>
+<li>baseurl 为软件仓库的地址，可以是 http、https、ftp 等协议，也可以是本地目录。</li>
+<li>enabled 为是否启用该软件源仓库，可选值为 1 和 0。默认值为 1，表示启用该软件源仓库。示例中 enabled 为 1。</li>
+<li>metalink 为动态的镜像地址，用于镜像加速。</li>
+<li>metadata_expire 为元数据过期时间，单位为秒。默认值为 90 分钟，即 5400 秒。示例中 metadata_expire 为 1h，即 1 小时。</li>
+<li>gpgcheck 可设置为 1 或 0，1 表示进行 gpg（GNU Private Guard）校验，0 表示不进行 gpg 校验，gpgcheck 可以确定 rpm 包的来源是有效和安全的。</li>
+<li>gpgkey 为验证签名用的公钥地址，如果 gpgcheck 为 1，则必须设置 gpgkey。</li>
+</ul>
+<h2 id="gpgcheck-详解">gpgcheck 详解</h2>
+<p><code>RPM-GPG-KEY</code> 是一个公共密钥，用于验证由该密钥签名的RPM包的真实性和完整性。在使用 <code>yum</code> 或 <code>dnf</code> 这样的包管理工具时，这些工具会使用 GPG 密钥来验证软件包的签名，以确保软件包来自于可信的源，且未被篡改。</p>
+<ol>
+<li>
+<p><strong>命名约定：</strong> <code>RPM-GPG-KEY</code> 是一个命名约定，通常与其所属的仓库或发行版相关。例如，如果你在使用某个特定发行版的官方仓库，它可能会提供一个 <code>RPM-GPG-KEY</code> 文件来进行软件包签名验证。如openEuler官方仓库提供的 <code>RPM-GPG-KEY</code> 文件名为 <code>RPM-GPG-KEY-openEuler</code>。</p>
+</li>
+<li>
+<p><strong>密钥生成：</strong> 这个密钥是通过 GPG（GNU Privacy Guard）工具生成的。GPG 是一个用于进行加密和签名的开源工具。<code>RPM-GPG-KEY</code> 文件包含了一个公钥，该公钥由仓库所有者使用私钥签署软件包，而用户使用公钥验证软件包。</p>
+</li>
+<li>
+<p><strong>验证软件包：</strong> 当用户使用 <code>yum</code> 或 <code>dnf</code> 安装软件包时，这些工具会检查软件包的签名，并使用相应的 <code>RPM-GPG-KEY</code> 文件中的公钥来验证签名。如果验证通过，工具会认为软件包是可信的，否则将会发出警告或拒绝安装。</p>
+</li>
+<li>
+<p><strong>导入密钥：</strong> 为了使用 <code>RPM-GPG-KEY</code> 文件，用户通常需要将密钥导入到本地系统中。这通常可以通过运行类似于以下命令的导入密钥的操作来完成：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-openEuler
+</span></span></code></pre></div><p>上述命令中的 <code>/etc/pki/rpm-gpg/RPM-GPG-KEY-openEuler</code> 路径可能会因发行版和配置而有所不同。</p>
+</li>
+</ol>
+<h2 id="rpm包签名">RPM包签名</h2>
+<p>对于发布的 RPM 包进行 GPG 签名是一种重要的安全措施，可以确保接收者能够验证软件包的真实性和完整性。以下是一般的步骤：</p>
+<ol>
+<li>
+<p><strong>生成 GPG 密钥：</strong> 如果你还没有 GPG 密钥对，你需要使用 GPG 工具生成一对密钥，包括私钥和公钥。你可以运行以下命令来生成密钥：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg --gen-key 
+</span></span></code></pre></div><p>当你运行 <code>gpg --gen-key</code> 命令时，它会启动 GPG（GNU Privacy Guard）的密钥生成过程。这个过程将引导你提供一些必要的信息以生成密钥对，包括私钥和公钥。以下是这个命令的详细步骤：</p>
+<ul>
+<li>
+<p><strong>选择密钥类型：</strong> 你将被要求选择密钥的类型。通常，默认的 RSA 和 DSA 都是可接受的选择，你可以通过键入数字来选择。</p>
+</li>
+<li>
+<p><strong>选择密钥大小：</strong> 你将被要求选择密钥的大小。通常，默认值（通常是2048位）是足够的，但你也可以选择更大的值。</p>
+</li>
+<li>
+<p><strong>选择密钥的有效期：</strong> 你将被要求选择密钥的有效期。你可以选择密钥永久有效，或者在一段特定的时间内有效。如果你选择了特定的时间，你需要输入一个表示有效期的值，例如1y表示一年，1m表示一个月。</p>
+</li>
+<li>
+<p><strong>提供用户标识信息：</strong> 你将被要求提供与密钥相关联的用户标识信息。这包括你的真实姓名、电子邮件地址和一个可选的注释。</p>
+</li>
+<li>
+<p><strong>确认提供的信息：</strong> GPG 将显示你提供的信息并询问你是否确认。如果确认无误，你可以输入 <code>O</code> 或直接按回车键。</p>
+</li>
+<li>
+<p><strong>输入保护密语（passphrase）：</strong> 你将被要求输入保护密语，用于保护你的私钥。请确保选择一个强密码。</p>
+</li>
+<li>
+<p><strong>等待密钥生成：</strong> GPG 将使用提供的信息生成密钥对。这可能需要一些时间，具体取决于你选择的密钥大小。</p>
+</li>
+<li>
+<p><strong>生成完成：</strong> 一旦生成完成，你将看到一条消息表明密钥生成成功。</p>
+</li>
+</ul>
+<p>在整个过程中，你将看到类似以下的一些提示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg: key ABCDEFGH marked as ultimately trusted
+</span></span><span class="line"><span class="cl">gpg: revocation certificate stored as <span class="s1">&#39;/home/your_user/.gnupg/openpgp-revocs.d/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.rev&#39;</span>
+</span></span><span class="line"><span class="cl">public and secret key created and signed.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">gpg: checking the trustdb
+</span></span><span class="line"><span class="cl">gpg: <span class="m">3</span> marginal<span class="o">(</span>s<span class="o">)</span> needed, <span class="m">1</span> complete<span class="o">(</span>s<span class="o">)</span> needed, PGP trust model
+</span></span><span class="line"><span class="cl">gpg: depth: <span class="m">0</span>  valid:   <span class="m">2</span>  signed:   <span class="m">0</span>  trust: 0-, 0q, 0n, 0m, 0f, 2u
+</span></span><span class="line"><span class="cl">pub   2048R/XXXXXXXX 2024-01-01 <span class="o">[</span>expires: 2024-01-01<span class="o">]</span>
+</span></span><span class="line"><span class="cl">    Key <span class="nv">fingerprint</span> <span class="o">=</span> XXXX YYYY ZZZZ AAAA BBBB  CCCC DDDD EEEE FFFF <span class="m">1111</span>
+</span></span><span class="line"><span class="cl">uid                  Your Name &lt;your.email@example.com&gt;
+</span></span><span class="line"><span class="cl">sub   2048R/YYYYYYYY 2024-01-01 <span class="o">[</span>expires: 2024-01-01<span class="o">]</span>
+</span></span></code></pre></div><p>在这个例子中，<code>XXXXXXXX</code> 是你的密钥 ID，<code>YYYYYYYY</code> 是子密钥的 ID。你可以使用这些 ID 来引用你的密钥。</p>
+</li>
+<li>
+<p><strong>导出公钥：</strong> 生成密钥后，你需要将公钥导出。运行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg --output RPM-GPG-KEY-your-repo --armor --export your@email.com
+</span></span></code></pre></div><p>这将生成一个 ASCII 格式的公钥文件 <code>RPM-GPG-KEY-your-repo</code>，你可以与软件包一起发布。</p>
+</li>
+<li>
+<p><strong>为 RPM 包签名：</strong> 在构建 RPM 包时，使用 <code>rpmbuild</code> 命令时，可以通过添加 <code>--sign</code> 选项来指示 <code>rpmbuild</code> 对 RPM 包进行签名。例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpmbuild -ba your-package.spec --sign
+</span></span></code></pre></div><p>当你执行 <code>rpmbuild -ba your-package.spec --sign</code> 命令时，<code>rpmbuild</code> 会使用默认的 GPG 密钥进行签名。这通常是你在系统上配置为默认 GPG 密钥的密钥。</p>
+<p>你可以通过检查 <code>rpmbuild</code> 使用的 GPG 密钥来确认它是哪个密钥：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm -q gpg-pubkey --qf <span class="s1">&#39;%{name}-%{version}-%{release} --&gt; %{summary}\n&#39;</span>
+</span></span></code></pre></div><p>这个命令将显示系统上安装的 GPG 公钥，其中默认的密钥可能是 &ldquo;gpg-pubkey-xxxxxxxx-yyyyyyyy&rdquo;。你可以根据密钥的 &ldquo;xxxxxxxx-yyyyyyyy&rdquo; 部分来确定默认使用的 GPG 密钥。</p>
+<p>如果你想使用不同的 GPG 密钥进行签名，可以在 <code>rpmbuild</code> 命令中使用 <code>--signwith</code> 选项，例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpmbuild -ba your-package.spec --signwith &lt;key-id&gt;
+</span></span></code></pre></div><p>其中 <code>&lt;key-id&gt;</code> 是你想要使用的 GPG 密钥的 ID。这会覆盖默认的密钥。确保你在构建和签名 RPM 包时使用的是正确的 GPG 密钥。</p>
+</li>
+<li>
+<p><strong>导入密钥：</strong> 为了验证你的软件包，用户需要导入你的公钥。他们可以运行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm --import RPM-GPG-KEY-your-repo
+</span></span></code></pre></div></li>
+<li>
+<p><strong>发布：</strong> 将签名的 RPM 包和公钥一起发布。确保用户知道他们可以使用导入的公钥来验证软件包的签名。</p>
+</li>
+</ol>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

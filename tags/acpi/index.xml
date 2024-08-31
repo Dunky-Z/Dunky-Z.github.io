@@ -14,6 +14,182 @@
       <pubDate>Tue, 12 Jul 2022 15:06:51 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E6%9E%84%E5%BB%BA%E5%92%8C%E6%B5%8B%E8%AF%95risc-v%E6%9E%B6%E6%9E%84%E4%B8%8B%E5%90%AF%E7%94%A8acpi%E7%9A%84%E5%86%85%E6%A0%B8/</guid>
       <description>参考自PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki 准备环境及工具链 安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。 如果报错：riscv64-linux-gn</description>
+      <content:encoded><![CDATA[<blockquote>
+<p>参考自<a href="https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel">PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki</a></p>
+</blockquote>
+<h2 id="准备环境及工具链">准备环境及工具链</h2>
+<ol>
+<li>
+<p>安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。</p>
+<blockquote>
+<p>如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt remove gcc-riscv64-linux-gnu
+</span></span><span class="line"><span class="cl">sudo apt install gcc-8-riscv64-linux-gnu
+</span></span></code></pre></div></li>
+<li>
+<p>安装必要的三方库，以下为Ubuntu下的命令，其他平台可以参考<a href="https://risc-v-getting-started-guide.readthedocs.io/en/latest/linux-qemu.html#prerequisites">这个文档</a>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>                gawk build-essential bison flex texinfo gperf libtool patchutils bc <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>                zlib1g-dev libexpat-dev git
+</span></span></code></pre></div></li>
+</ol>
+<h2 id="下载源码">下载源码</h2>
+<p>可能无法一次搭建成功，一些环境变量会经常用到，所以干脆把所有环境变量放到<code>.bashrc</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">vim ~/.bashrc
+</span></span><span class="line"><span class="cl"><span class="c1"># 添加以下内容</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">WORK_DIR</span><span class="o">=</span>~/riscv64-acpi
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">GCC5_RISCV64_PREFIX</span><span class="o">=</span>riscv64-unknown-elf-
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">MAINSPACE</span><span class="o">=</span>~/riscv64-acpi/tianocore
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">PACKAGES_PATH</span><span class="o">=</span><span class="nv">$MAINSPACE</span>/edk2:<span class="nv">$MAINSPACE</span>/edk2-platforms
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">EDK_TOOLS_PATH</span><span class="o">=</span><span class="nv">$MAINSPACE</span>/edk2/BaseTools
+</span></span></code></pre></div><p>首先，创建一个工作目录，我们将在其中下载并构建所有源代码。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">source</span> ~/.bashrc
+</span></span><span class="line"><span class="cl"><span class="nv">WORK_DIR</span><span class="o">=</span><span class="nv">$PWD</span>/riscv64-acpi
+</span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$WORK_DIR</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>
+</span></span></code></pre></div><p>然后下载所有需要的源，它们是：<a href="https://github.com/ventanamicro/qemu/tree/dev-upstream">qemu</a>、<a href="https://github.com/ventanamicro/opensbi/tree/dev-upstream">opensbi</a>、<a href="https://github.com/ventanamicro/edk2/tree/dev-upstream">edk2</a>、<a href="https://github.com/ventanamicro/edk2-platforms/tree/dev-upstream">edk2-platforms</a>、<a href="https://github.com/ventanamicro/linux/tree/dev-upstream">linux</a>。</p>
+<p>下载地址更换成了加速镜像源，原来地址下载太慢，容易中断。下载地址更换成了加速镜像源，原来地址下载太慢，容易中断。有两个项目包含子模块，下载容易出错，所以<code>--depth=1</code>舍弃了多余的提交记录。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git clone --branch dev-upstream  https://hub.fastgit.xyz/ventanamicro/qemu.git qemu
+</span></span><span class="line"><span class="cl">git clone --branch dev-upstream  https://hub.fastgit.xyz/ventanamicro/opensbi.git opensbi
+</span></span><span class="line"><span class="cl">git clone --branch dev-upstream --recurse-submodules --depth<span class="o">=</span><span class="m">1</span>  https://hub.fastgit.xyz/ventanamicro/edk2.git tianocore/edk2
+</span></span><span class="line"><span class="cl">git clone --branch dev-upstream --recurse-submodules --depth<span class="o">=</span><span class="m">1</span>  https://hub.fastgit.xyz/ventanamicro/edk2-platforms.git  tianocore/edk2-platforms
+</span></span><span class="line"><span class="cl">git clone --branch dev-upstream  https://hub.fastgit.xyz/ventanamicro/linux.git linux
+</span></span></code></pre></div><h2 id="编译构建">编译构建</h2>
+<h3 id="qemu">QEMU</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/qemu
+</span></span><span class="line"><span class="cl">./configure --target-list<span class="o">=</span>riscv64-softmmu
+</span></span><span class="line"><span class="cl">make -j <span class="k">$(</span>nproc<span class="k">)</span>
+</span></span></code></pre></div><h3 id="opensbi">OPENSBI</h3>
+<blockquote>
+<p>此处我们使用以<code>riscv64-unknown-elf-</code>为前缀的版本，则表示该版本GCC工具链会使用newlib作为C运行库。原文使用<code>riscv64-linux-gnu-</code>，表示GCC工具链会使用Linux的Glibc作为C运行库。但是本人未编译成功。故后面编译工具均使用<code>riscv64-unknown-elf-</code>，与原文不同。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/opensbi
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-elf- make <span class="nv">PLATFORM</span><span class="o">=</span>generic
+</span></span></code></pre></div><h3 id="edk2-固件">EDK2 固件</h3>
+<blockquote>
+<p>此处原文里设置了一些环境变量在开头我们设置了，请不要重新设置，尤其不能<code>export WORKSPACE=pwd</code>，因为与源码脚本的WORKSPACE冲突。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/tianocore
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> edk2/edksetup.sh
+</span></span><span class="line"><span class="cl">make -C edk2/BaseTools clean
+</span></span><span class="line"><span class="cl">make -C edk2/BaseTools
+</span></span><span class="line"><span class="cl">make -C edk2/BaseTools/Source/C
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> edk2/edksetup.sh BaseTools
+</span></span><span class="line"><span class="cl"><span class="c1"># 原文使用 -buildtarget RELEASE。但是提示 Not supported target RELEASE</span>
+</span></span><span class="line"><span class="cl">build -a RISCV64 -b DEBUG -D <span class="nv">FW_BASE_ADDRESS</span><span class="o">=</span>0x80200000 -D EDK2_PAYLOAD_OFFSET -p Platform/Qemu/RiscvVirt/RiscvVirt.dsc -t GCC5
+</span></span></code></pre></div><h4 id="error">ERROR</h4>
+<ol>
+<li>
+<p><strong>StoreCurrentConfiguration:7: no such file or directory: /home/user/riscv64-acpi/tianocore/Conf/BuildEnv.sh</strong></p>
+<p>不要设置<code>export WORKSPACE=pwd</code>！！！如果所有方法都不可行，直接把路径写死<code>export CONF_PATH=$WORK_DIR/tianocore/edk2/Conf</code></p>
+</li>
+<li>
+<p><strong>uuid/uuid.h: No such file or directory</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt install uuid-dev
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Not supported target RELEASE</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="c1"># 将build命令改为如下，使用DEBUG版本。</span>
+</span></span><span class="line"><span class="cl">build -a RISCV64 -b DEBUG -D <span class="nv">FW_BASE_ADDRESS</span><span class="o">=</span>0x80200000 -D EDK2_PAYLOAD_OFFSET -p Platform/Qemu/RiscvVirt/RiscvVirt.dsc -t GCC5
+</span></span></code></pre></div></li>
+</ol>
+<h3 id="linux">Linux</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/linux
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-elf- defconfig
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-elf- -j <span class="k">$(</span>nproc<span class="k">)</span>
+</span></span></code></pre></div><h3 id="rootfs">Rootfs</h3>
+<p>您可以使用您选择的任何 rootfs。此示例使用 buildroot。</p>
+<blockquote>
+<p>此步耗时较久，与网络环境有关，如果网络不好可能按小时算。容易中断，需要重新下载。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/
+</span></span><span class="line"><span class="cl">git clone https://hub.fastgit.xyz/buildroot/buildroot.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/buildroot
+</span></span><span class="line"><span class="cl">make qemu_riscv64_virt_defconfig
+</span></span><span class="line"><span class="cl">make rootfs-cpio
+</span></span></code></pre></div><h2 id="创建-efi-分区并复制文件">创建 EFI 分区并复制文件</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">fallocate -l 512M efi.img
+</span></span><span class="line"><span class="cl">sgdisk -n 1:34: -t 1:EF00 <span class="nv">$WORK_DIR</span>/efi.img
+</span></span><span class="line"><span class="cl">sudo losetup -fP <span class="nv">$WORK_DIR</span>/efi.img
+</span></span><span class="line"><span class="cl"><span class="nv">loopdev</span><span class="o">=</span><span class="sb">`</span>losetup -j <span class="nv">$WORK_DIR</span>/efi.img <span class="p">|</span> awk -F: <span class="s1">&#39;{print $1}&#39;</span><span class="sb">`</span>
+</span></span><span class="line"><span class="cl"><span class="nv">efi_part</span><span class="o">=</span><span class="s2">&#34;</span><span class="nv">$loopdev</span><span class="s2">&#34;</span>p1
+</span></span><span class="line"><span class="cl">sudo mkfs.msdos <span class="nv">$efi_part</span>
+</span></span><span class="line"><span class="cl">mkdir -p /tmp/mnt
+</span></span><span class="line"><span class="cl">sudo mount <span class="nv">$efi_part</span> /tmp/mnt/
+</span></span><span class="line"><span class="cl">sudo cp <span class="nv">$WORK_DIR</span>/linux/arch/riscv/boot/Image /tmp/mnt/
+</span></span><span class="line"><span class="cl">sudo umount /tmp/mnt
+</span></span><span class="line"><span class="cl">sudo losetup -D <span class="nv">$loopdev</span>
+</span></span></code></pre></div><h2 id="运行">运行</h2>
+<h3 id="使用-virtio-blk-磁盘">使用 virtio-blk 磁盘</h3>
+<blockquote>
+<p>原文参数<code>-drive file=$WORK_DIR/buildroot/output/images/rootfs.ext2,format=raw,id=hd0</code>需要更改如下。因为在编译 Rootfs 时的命令是<code>make rootfs-cpio</code>所以生成的是<code>rootfs.cpio</code>。无法找到<code>rootfs.ext2</code></p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nv">$WORK_DIR</span>/qemu/build/qemu-system-riscv64 -nographic <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-machine virt,aclint<span class="o">=</span>on,aia<span class="o">=</span>aplic-imsic,acpi<span class="o">=</span>on -cpu rv64,sscofpmf<span class="o">=</span><span class="nb">true</span> -smp <span class="m">8</span>  -m 2G  <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-bios <span class="nv">$WORK_DIR</span>/opensbi/build/platform/generic/firmware/fw_jump.elf <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-kernel <span class="nv">$WORK_DIR</span>/tianocore/Build/RiscvVirt/DEBUG_GCC5/FV/RISCVVIRT.fd  <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/buildroot/output/images/rootfs.cpio,format<span class="o">=</span>raw,id<span class="o">=</span>hd0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-blk-device,drive<span class="o">=</span>hd0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/efi.img,format<span class="o">=</span>raw,id<span class="o">=</span>hd1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-blk-device,drive<span class="o">=</span>hd1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-net-device,netdev<span class="o">=</span>usernet <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-netdev user,id<span class="o">=</span>usernet,hostfwd<span class="o">=</span>tcp::9990-:22
+</span></span></code></pre></div><h4 id="error-1">ERROR</h4>
+<ol>
+<li>
+<p>无法找到<code>rootfs.ext2</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="c1"># 因为在编译 Rootfs 时的命令是 make rootfs-cpio 所以生成的是 rootfs.cpio</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 原文参数</span>
+</span></span><span class="line"><span class="cl">-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/buildroot/output/images/rootfs.ext2,format<span class="o">=</span>raw,id<span class="o">=</span>hd0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="c1"># 修改为</span>
+</span></span><span class="line"><span class="cl">-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/buildroot/output/images/rootfs.cpio,format<span class="o">=</span>raw,id<span class="o">=</span>hd0 <span class="se">\
+</span></span></span></code></pre></div></li>
+<li>
+<p>无法找到<code>RISCVVIRT.fd</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="c1"># 因为编译 EDK2 固件时，参数是-b DEBUG 版本，原文是 RELEASE 版本，这两个版本路径不一样，所以找不到</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 原文参数</span>
+</span></span><span class="line"><span class="cl">-kernel <span class="nv">$WORK_DIR</span>/tianocore/Build/RiscvVirt/RELEASE_GCC5/FV/RISCVVIRT.fd  <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="c1"># 修改为</span>
+</span></span><span class="line"><span class="cl">-kernel <span class="nv">$WORK_DIR</span>/tianocore/Build/RiscvVirt/DEBUG_GCC5/FV/RISCVVIRT.fd  <span class="se">\
+</span></span></span></code></pre></div></li>
+</ol>
+<p>At EFI Shell:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">Shell&gt; fs0:<span class="se">\I</span>mage <span class="nv">root</span><span class="o">=</span>/dev/vdb <span class="nv">console</span><span class="o">=</span>ttyS0 rootwait earlycon
+</span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153915.bmp" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153915.bmp">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153915.bmp" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153932.bmp" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153932.bmp">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713153932.bmp" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="使用-virtio-scsi-磁盘">使用 virtio-scsi 磁盘</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nv">$WORK_DIR</span>/qemu/build/qemu-system-riscv64 -nographic <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-machine virt,aclint<span class="o">=</span>on,aia<span class="o">=</span>aplic-imsic,acpi<span class="o">=</span>on -cpu rv64,ssofpmf<span class="o">=</span><span class="nb">true</span> -smp <span class="m">8</span>  -m 2G <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-bios <span class="nv">$WORK_DIR</span>/opensbi/build/platform/generic/firmware/fw_jump.elf <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-kernel <span class="nv">$WORK_DIR</span>/tianocore/Build/RiscvVirt/DEBUG_GCC5/FV/RISCVVIRT.fd  <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-scsi-pci,id<span class="o">=</span>scsi0,num_queues<span class="o">=</span><span class="m">4</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device scsi-hd,drive<span class="o">=</span>drive0,bus<span class="o">=</span>scsi0.0,channel<span class="o">=</span>0,scsi-id<span class="o">=</span>0,lun<span class="o">=</span><span class="m">0</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/buildroot/output/images/rootfs.cpio,format<span class="o">=</span>raw,if<span class="o">=</span>none,id<span class="o">=</span>drive0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-scsi-pci,id<span class="o">=</span>scsi1,num_queues<span class="o">=</span><span class="m">4</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device scsi-hd,drive<span class="o">=</span>drive1,bus<span class="o">=</span>scsi0.0,channel<span class="o">=</span>0,scsi-id<span class="o">=</span>1,lun<span class="o">=</span><span class="m">0</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-drive <span class="nv">file</span><span class="o">=</span><span class="nv">$WORK_DIR</span>/efi.img,format<span class="o">=</span>raw,if<span class="o">=</span>none,id<span class="o">=</span>drive1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-device virtio-net-device,netdev<span class="o">=</span>usernet <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>-netdev user,id<span class="o">=</span>usernet,hostfwd<span class="o">=</span>tcp::9990-:22
+</span></span></code></pre></div><p>At EFI Shell:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">Shell&gt; fs0:<span class="se">\I</span>mage <span class="nv">root</span><span class="o">=</span>/dev/sda <span class="nv">console</span><span class="o">=</span>ttyS0 rootwait earlycon
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

@@ -14,6 +14,37 @@
       <pubDate>Mon, 28 Aug 2023 23:24:53 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/windows%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84/</guid>
       <description>命令行 在 Windows 中，可以使用 netsh 命令来添加、查看和删除端口转发规则。 要添加一个端口转发规则，可以使用以下命令： netsh interface portproxy add v4tov4 listenaddress=&amp;lt;local_address&amp;gt; listenport=&amp;lt;local_port&amp;gt; connectaddress=&amp;lt;remote_address&amp;gt; connectport=&amp;lt;remote_port&amp;gt; 其中： &amp;lt;loc</description>
+      <content:encoded><![CDATA[<h1 id="命令行">命令行</h1>
+<p>在 Windows 中，可以使用 netsh 命令来添加、查看和删除端口转发规则。</p>
+<p>要<strong>添加一个端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>&lt;local_address&gt; <span class="nv">listenport</span><span class="o">=</span>&lt;local_port&gt; <span class="nv">connectaddress</span><span class="o">=</span>&lt;remote_address&gt; <span class="nv">connectport</span><span class="o">=</span>&lt;remote_port&gt;
+</span></span></code></pre></div><p>其中：</p>
+<ul>
+<li><code>&lt;local_address&gt;</code>是本地监听的地址（可以是 IP 地址或 0.0.0.0 表示所有地址）。</li>
+<li><code>&lt;local_port&gt;</code>是本地监听的端口。</li>
+<li><code>&lt;remote_address&gt;</code>是转发连接到的远程地址。</li>
+<li><code>&lt;remote_port&gt;</code>是转发连接到的远程端口。</li>
+</ul>
+<p>例如，要将本地的 8080 端口转发到远程服务器上的 80 端口，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>127.0.0.1 <span class="nv">listenport</span><span class="o">=</span><span class="m">8080</span> <span class="nv">connectaddress</span><span class="o">=</span>192.168.0.100 <span class="nv">connectport</span><span class="o">=</span><span class="m">80</span>
+</span></span></code></pre></div><p>要<strong>查看当前的端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy show v4tov4
+</span></span></code></pre></div><p>要<strong>删除特定的端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy delete v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>&lt;local_address&gt; <span class="nv">listenport</span><span class="o">=</span>&lt;local_port&gt;
+</span></span></code></pre></div><p>其中的<code>&lt;local_address&gt;</code>和<code>&lt;local_port&gt;</code>应该与你想删除的规则匹配。</p>
+<p>请注意，执行这些操作通常需要管理员权限。</p>
+<h1 id="gui">GUI</h1>
+<p>使用开源工具<a href="https://github.com/zmjack/PortProxyGUI/releases">PortProxyGUI</a>可以在 UI 界面快速增删改查端口映射。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
     <item>
       <title>内网穿透远程访问家里的 WSL2</title>
@@ -21,6 +52,83 @@
       <pubDate>Mon, 28 Aug 2023 22:45:01 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E5%AE%B6%E9%87%8C%E7%9A%84wsl2/</guid>
       <description>背景简介 WSL2 是 Windows 的子系统，可以在 Windows 上运行 Linux，但是 WSL2 是运行在虚拟机中的，所以无法直接访问 WSL2 中的服务，比如 SSH 服务。本文介绍如何使用内网穿透</description>
+      <content:encoded><![CDATA[<h1 id="背景简介">背景简介</h1>
+<p>WSL2 是 Windows 的子系统，可以在 Windows 上运行 Linux，但是 WSL2 是运行在虚拟机中的，所以无法直接访问 WSL2 中的服务，比如 SSH 服务。本文介绍如何使用内网穿透工具<strong>花生壳</strong>来实现远程访问 WSL2 中的服务。</p>
+<p>实现这一需求需要完成两个功能。</p>
+<ol>
+<li>WSL2 中的服务是运行在虚拟机中的，如何将公网的访问转发到 WSL2 中。</li>
+<li>Windows 没有公网 IP，如何通过公网来访问。</li>
+</ol>
+<h1 id="wsl2-端口转发">WSL2 端口转发</h1>
+<p>获取 WSL2 的 IP 地址：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hostname -I <span class="p">|</span> awk <span class="s1">&#39;{print $1}&#39;</span>
+</span></span><span class="line"><span class="cl">172.26.13.98
+</span></span></code></pre></div><p>Windows 自带的<code>netsh interface portproxy</code>可以实现端口转发。管理员身份打开 cmd，执行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>0.0.0.0 <span class="nv">listenport</span><span class="o">=</span><span class="m">2222</span> <span class="nv">connectaddress</span><span class="o">=</span>172.26.13.98 <span class="nv">connectport</span><span class="o">=</span><span class="m">22</span>
+</span></span></code></pre></div><ul>
+<li>listenport：公网访问的端口（改一个不冲突的就行）</li>
+<li>connectaddress：WSL2 的 IP 地址</li>
+<li>connectport：WSL2 中 SSH 服务的端口 (默认为 22，不需要更改)</li>
+</ul>
+<p>开启 Windows 防火墙入站规则，管理员身份打开 cmd，执行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh advfirewall firewall add rule <span class="nv">name</span><span class="o">=</span>WSL2 <span class="nv">dir</span><span class="o">=</span>in <span class="nv">action</span><span class="o">=</span>allow <span class="nv">protocol</span><span class="o">=</span>TCP <span class="nv">localport</span><span class="o">=</span><span class="m">2222</span>
+</span></span></code></pre></div><p>这个命令是用于在 Windows 高级防火墙中添加一条规则。下面是对每个参数的解释：</p>
+<ul>
+<li><code>name=WSL2</code>：将规则命名为 &ldquo;WSL2&rdquo;。</li>
+<li><code>dir=in</code>：指定规则适用于传入的网络流量。</li>
+<li><code>action=allow</code>：允许通过该规则的流量通过防火墙。</li>
+<li><code>protocol=TCP</code>：指定规则适用于 TCP 协议的流量。</li>
+<li><code>localport=2222</code>：指定本地端口号为 2222。</li>
+</ul>
+<p>验证端口转发是否成功：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ssh -p <span class="m">2222</span> user@localhost
+</span></span></code></pre></div><ul>
+<li>user 修改成 WSL2 的用户名</li>
+</ul>
+<p>如果配置成功，则会成功登录 WSL2。</p>
+<h1 id="安装配置花生壳">安装配置花生壳</h1>
+<p>进入官网<a href="https://hsk.oray.com/download">下载花生壳客户端</a>，安装后打开，注册账号，登录。<strong>需要实名认证</strong></p>
+<blockquote>
+<p>免费账户可以绑定<strong>2 个映射</strong>，对我来说暂时够用了，免费流量 1G/月。实测阅读代码不编译的话大概<strong>每天 50M</strong>左右。</p>
+</blockquote>
+<p>打开客户端，添加映射，配置如下：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>保存即可。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>验证是否配置成功，找一台不在同一个局域网的电脑，使用 SSH 连接 WSL2：</p>
+<p>如果复制出来的访问地址为<code>abcdjsj.goho.co:33445</code>，那么 SSH 命令修改为如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ssh -p <span class="m">33445</span>  user@abcdjsj.goho.co
+</span></span></code></pre></div><ul>
+<li>user 修改成 WSL2 的用户名</li>
+</ul>
+<p>如果配置成功，则会成功登录 WSL2。</p>
+<h1 id="题外话">题外话</h1>
+<ol>
+<li>WSL2 的 <strong>IP 会经常变化</strong>，如果连不上了，可以重新获取一下 IP，然后修改一下各个配置。或者想办法将 WSL2 的 IP 固定下来。</li>
+<li>带宽有限，登录时比较慢，耐心等待。后续准备使用 frp 自建一个穿透服务。</li>
+<li>PC 耗电伤不起啊，一百多瓦赶上三四台 NAS 了。这玩意只能应急，长时间挂机电费都够买个云服务器了。</li>
+</ol>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="system-is-booting-up-unprivileged-users-are-not-permitted-to-log-in-yet">&ldquo;System is booting up. Unprivileged users are not permitted to log in yet&rdquo;</h2>
+<p>登录服务端，也就是 WSL2，执行以下命令</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo rm /run/nologin
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

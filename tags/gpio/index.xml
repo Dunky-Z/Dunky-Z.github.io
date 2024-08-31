@@ -14,6 +14,49 @@
       <pubDate>Thu, 11 Nov 2021 10:11:32 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%A4%96%E8%AE%BE%E6%A8%A1%E6%8B%9F%E4%BB%A5gpio%E4%B8%BA%E4%BE%8B/</guid>
       <description>QEMU 模拟外设的原理 QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。 QEMU 的模拟外设的原理很简单：硬件即内存。 要在 QEMU 上模拟某个外设，思路就是： CPU 读某个地</description>
+      <content:encoded><![CDATA[<h2 id="qemu-模拟外设的原理">QEMU 模拟外设的原理</h2>
+<p>QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。
+QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
+要在 QEMU 上模拟某个外设，思路就是：</p>
+<ul>
+<li>CPU 读某个地址时，QEMU 模拟外设的行为，把数据返回给 CPU</li>
+<li>CPU 写某个地址时，QEMU 获得数据，用来模拟外设的行为。
+即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。</li>
+</ul>
+<p>以 GPIO 为例：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>QEMU 为<code>GPIO</code>内存地址提供读写回调函数，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="nf">sifive_gpio_write</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">opaque</span><span class="p">,</span> <span class="n">hwaddr</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">value</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">uint64_t</span> <span class="nf">sifive_gpio_read</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">opaque</span><span class="p">,</span> <span class="n">hwaddr</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="给外设地址提供读写函数">给外设地址提供读写函数</h2>
+<p>怎么描述某段地址：基地址、大小？如何给这段地址提供读写函数呢？这段地址设置好后，如何添加进<code>system_memory</code>去？有 2 种方法。</p>
+<p><strong>法 1：memory_region_init_io/memory_region_add_subregion</strong>
+以<code>SIFIVE_UART</code>为例，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">memory_region_init_io</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">mmio</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">uart_ops</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">TYPE_SIFIVE_UART</span><span class="p">,</span> <span class="mh">0x2000</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nf">memory_region_add_subregion</span><span class="p">(</span><span class="n">address_space</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">mmio</span><span class="p">);</span>
+</span></span></code></pre></div><p><code>memory_region_init_io</code>函数初始化<code>iomem</code>，读写函数，大小。
+<code>memory_region_add_subregion</code>函数<code>s-&gt;iomem</code>指定了基地址，并添加进<code>system_memory</code>中。
+以后，客户机上的程序读写这块地址时，就会导致对应的读写函数被调用。</p>
+<p><strong>法 2：memory_region_init_io/sysbus_init_mmio/sysbus_mmio_map</strong>
+以<code>SIFIVE_GPIO</code>为例，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">memory_region_init_io</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">mmio</span><span class="p">,</span> <span class="nf">OBJECT</span><span class="p">(</span><span class="n">dev</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">gpio_ops</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">TYPE_SIFIVE_GPIO</span><span class="p">,</span> <span class="n">SIFIVE_GPIO_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">sysbus_init_mmio</span><span class="p">(</span><span class="nf">SYS_BUS_DEVICE</span><span class="p">(</span><span class="n">dev</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">mmio</span><span class="p">);</span>
+</span></span></code></pre></div><p><code>memory_region_init_io</code>函数初始化<code>iomem</code>，读写函数，大小。
+<code>sysbus_init_mmio</code>将<code>mmin</code>传给设备；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">sysbus_mmio_map</span><span class="p">(</span><span class="nf">SYS_BUS_DEVICE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">gpio</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">memmap</span><span class="p">[</span><span class="n">SIFIVE_E_DEV_GPIO0</span><span class="p">].</span><span class="n">base</span><span class="p">);</span>
+</span></span></code></pre></div><p><code>sysbus_mmio_map</code>从设备中吧<code>mmio</code>添加进<code>system_memory</code>并指定基地址。</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

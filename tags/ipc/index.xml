@@ -14,6 +14,72 @@
       <pubDate>Thu, 19 Aug 2021 15:36:02 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E4%BF%A1%E5%8F%B7%E9%87%8Fsemaphore/</guid>
       <description>简介 为了防止出现因多个程序同时访问一个共享资源而引发的一系列问题，我们需要一种方法，它可以通过生成并使用令牌来授权，在任一时刻只能有一个执行</description>
+      <content:encoded><![CDATA[<h2 id="简介">简介</h2>
+<p>为了防止出现因多个程序同时访问一个共享资源而引发的一系列问题，我们需要一种方法，它可以通过生成并使用令牌来授权，在任一时刻只能有一个执行线程访问代码的临界区域。临界区域是指执行数据更新的代码需要独占式地执行。而信号量就可以提供这样的一种访问机制，让一个临界区同一时间只有一个线程在访问它，也就是说信号量是用来调协进程对共享资源的访问的。</p>
+<p>信号量是一个特殊的变量，程序对其访问都是原子操作，且只允许对它进行等待（即<code>P</code>) 和发送（即<code>V</code>) 信息操作。最简单的信号量是只能取 0 和 1 的变量，这也是信号量最常见的一种形式，叫做二进制信号量。而可以取多个正整数的信号量被称为通用信号量。这里主要讨论二进制信号量。</p>
+<p>由于信号量只能进行两种操作等待和发送信号，即 P(sv) 和 V(sv),他们的行为是这样的：</p>
+<p><code>P(sv)</code>：如果<code>sv</code>的值大于零，就给它减 1；如果它的值为零，就挂起该进程的执行</p>
+<p><code>V(sv)</code>：如果有其他进程因等待<code>sv</code>而被挂起，就让它恢复运行，如果没有进程因等待<code>sv</code>而挂起，就给它加 1.</p>
+<p>举个例子，就是两个进程共享信号量<code>sv</code>，一旦其中一个进程执行了<code>P(sv)</code>操作，它将得到信号量，并可以进入临界区，使<code>sv</code>减 1。而第二个进程将被阻止进入临界区，因为当它试图执行<code>P(sv)</code>时，<code>sv</code>为 0，它会被挂起以等待第一个进程离开临界区域并执行<code>V(sv)</code>释放信号量，这时第二个进程就可以恢复执行。</p>
+<p>本文<a href="https://github.com/Dunky-Z/learning-linux/blob/main/IPC/Semaphore/main.c">代码同步在这里</a>。</p>
+<h2 id="相关函数">相关函数</h2>
+<p>Linux 提供了一组精心设计的信号量接口来对信号进行操作，它们不只是针对二进制信号量，下面将会对这些函数进行介绍，但请注意，这些函数都是用来对成组的信号量值进行操作的。它们声明在头文件 sys/sem.h 中。</p>
+<h3 id="semget"><code>semget()</code></h3>
+<p>它的作用是创建一个新信号量或取得一个已有信号量，原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">semget</span><span class="p">(</span><span class="kt">key_t</span> <span class="n">key</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num_sems</span><span class="p">,</span> <span class="kt">int</span> <span class="n">sem_flags</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p><code>key</code>是整数值（唯一非零），不相关的进程可以通过它访问一个信号量，它代表程序可能要使用的某个资源，程序对所有信号量的访问都是间接的，程序先通过调用<code>semget()</code>函数并提供一个键，再由系统生成一个相应的信号标识符（<code>semget()</code>函数的返回值），只有<code>semget()</code>函数才直接使用信号量键，所有其他的信号量函数使用由<code>semget()</code>函数返回的信号量标识符。如果多个程序使用相同的<code>key</code>值，<code>key</code>将负责协调工作。</p>
+</li>
+<li>
+<p><code>num_sems</code>指定需要的信号量数目，它的值几乎总是 1。</p>
+</li>
+<li>
+<p><code>sem_flags</code>是一组标志，当想要当信号量不存在时创建一个新的信号量，可以和值<code>IPC_CREAT</code>做按位或操作。设置了<code>IPC_CREAT</code>标志后，即使给出的键是一个已有信号量的键，也不会产生错误。而<code>IPC_CREAT | IPC_EXCL</code>则可以创建一个新的，唯一的信号量，如果信号量已存在，返回一个错误。</p>
+</li>
+</ul>
+<p><code>semget()</code>函数成功返回一个相应信号标识符（非零），失败返回<code>-1</code>.</p>
+<h3 id="semop"><code>semop()</code></h3>
+<p>它的作用是改变信号量的值，原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">semop</span><span class="p">(</span><span class="kt">int</span> <span class="n">sem_id</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sembuf</span> <span class="o">*</span><span class="n">sem_opa</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">num_sem_ops</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p><code>sem_id</code>是由<code>semget()</code>返回的信号量标识符，<code>sembuf</code>结构的定义如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">sembuf</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">short</span> <span class="n">sem_num</span><span class="p">;</span> <span class="c1">// 除非使用一组信号量，否则它为0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">short</span> <span class="n">sem_op</span><span class="p">;</span>  <span class="c1">// 信号量在一次操作中需要改变的数据，通常是两个数，一个是-1，即 P（等待）操作，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// 一个是+1，即V（发送信号）操作。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">short</span> <span class="n">sem_flg</span><span class="p">;</span> <span class="c1">// 通常为 SEM_UNDO，使操作系统跟踪信号，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// 并在进程没有释放该信号量而终止时，操作系统释放信号量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></div></li>
+<li>
+<p><code>num_sem_ops</code>：操作<code>sops</code>中的操作个数，通常取值为 1</p>
+</li>
+</ul>
+<h3 id="semctl"><code>semctl()</code></h3>
+<p>该函数用来直接控制信号量信息，它的原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">semctl</span><span class="p">(</span><span class="kt">int</span> <span class="n">sem_id</span><span class="p">,</span> <span class="kt">int</span> <span class="n">sem_num</span><span class="p">,</span> <span class="kt">int</span> <span class="n">command</span><span class="p">,</span> <span class="p">...);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p>如果有第四个参数，它通常是一个<code>union semum</code>结构，定义如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">union</span> <span class="n">semun</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">val</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">semid_ds</span> <span class="o">*</span><span class="n">buf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">short</span> <span class="o">*</span><span class="n">arry</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div></li>
+<li>
+<p>前两个参数与前面一个函数中的一样，<code>command</code>通常是下面两个值中的其中一个</p>
+</li>
+<li>
+<p><code>SETVAL</code>：用来把信号量初始化为一个已知的值。p 这个值通过 union semun 中的 val 成员设置，其作用是在信号量第一次使用前对它进行设置。</p>
+</li>
+<li>
+<p><code>IPC_RMID</code>：用于删除一个已经无需继续使用的信号量标识符。</p>
+</li>
+</ul>
+]]></content:encoded>
     </item>
     <item>
       <title>进程间通信（IPC）之消息队列（MessageQueue）</title>
@@ -21,6 +87,201 @@
       <pubDate>Thu, 19 Aug 2021 10:53:09 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97messagequeue/</guid>
       <description>简介 消息队列提供了一种从一个进程向另一个进程发送一个数据块的方法。 每个数据块都被认为含有一个类型，接收进程可以独立地接收含有不同类型的数据结</description>
+      <content:encoded><![CDATA[<h2 id="简介">简介</h2>
+<p>消息队列提供了一种从一个进程向另一个进程发送一个数据块的方法。</p>
+<p>每个数据块都被认为含有一个类型，接收进程可以独立地接收含有不同类型的数据结构。我们可以通过发送消息来避免命名管道的同步和阻塞问题。但是消息队列与命名管道一样，每个数据块都有一个最大长度的限制。</p>
+<p>本文<a href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/MessageQueue">代码同步在这里</a>。</p>
+<h2 id="相关函数">相关函数</h2>
+<h3 id="msgget"><code>msgget()</code></h3>
+<p>该函数用来创建和访问一个消息队列。它的原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">msgget</span><span class="p">(</span><span class="kt">key_t</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kt">int</span> <span class="n">msgflg</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li><code>key</code>：与其他的 IPC 机制一样，程序<strong>必须提供一个键</strong>来命名某个特定的消息队列。</li>
+<li><code>msgflg</code>是一个权限标志，表示消息队列的<strong>访问权限</strong>，它与文件的访问权限一样。<code>msgflg</code>可以与<code>IPC_CREAT</code>做或操作，表示当 key 所命名的消息队列不存在时创建一个消息队列，如果 key 所命名的消息队列存在时，<code>IPC_CREAT</code>标志会被忽略，而只返回一个标识符。</li>
+</ul>
+<p>它返回一个以<code>key</code>命名的消息队列的标识符（非零整数），失败时返回<code>-1</code>.</p>
+<h3 id="msgsnd"><code>msgsnd()</code></h3>
+<p>该函数用来把消息添加到消息队列中。它的原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">msgsend</span><span class="p">(</span><span class="kt">int</span> <span class="n">msgid</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">msg_ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">msg_sz</span><span class="p">,</span> <span class="kt">int</span> <span class="n">msgflg</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p><code>msgid</code>是由<code>msgget</code>函数返回的消息队列标识符。</p>
+</li>
+<li>
+<p><code>msg_ptr</code>是一个指向准备发送消息的指针，但是消息的数据结构却有一定的要求，指针<code>msg_ptr</code>所指向的消息结构一定要是以一个<strong>长整型成员变量开始的结构体</strong>，接收函数将用这个成员来确定消息的类型。所以消息结构要定义成这样：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">my_message</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="kt">int</span> <span class="n">message_type</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="cm">/* The data you wish to transfer */</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div></li>
+<li>
+<p><code>msg_sz</code> 是<code>msg_ptr</code>指向的消息的长度</p>
+</li>
+<li>
+<p><code>msgflg</code> 用于控制当前消息队列满或队列消息到达系统范围的限制时将要发生的事情</p>
+</li>
+<li>
+<p>如果调用成功，消息数据的副本将被放到消息队列中，并返回<code>0</code>，失败时返回<code>-1</code>.</p>
+</li>
+</ul>
+<h3 id="msgrcv"><code>msgrcv()</code></h3>
+<p>该函数用来从一个消息队列获取消息，它的原型为</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">msgrcv</span><span class="p">(</span><span class="kt">int</span> <span class="n">msgid</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">msg_ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">msg_st</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">int</span> <span class="n">msgtype</span><span class="p">,</span> <span class="kt">int</span> <span class="n">msgflg</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>前三个参数参照前面的解释</li>
+<li><code>msgtype</code> 可以实现一种简单的接收优先级。如果<code>msgtype</code>为<code>0</code>，就获取队列中的第一个消息。如果它的值大于零，将获取具有相同消息类型的第一个信息。如果它小于零，就获取类型等于或小于<code>msgtype</code>的绝对值的第一个消息。</li>
+<li><code>msgflg</code> 用于控制当队列中没有相应类型的消息可以接收时将发生的事情。</li>
+<li>调用成功时，该函数返回放到接收缓存区中的字节数，消息被复制到由<code>msg_ptr</code>指向的用户分配的缓存区中，然后删除消息队列中的对应消息。失败时返回<code>-1</code>。</li>
+</ul>
+<h3 id="msgctl"><code>msgctl()</code></h3>
+<p>该函数用来控制消息队列，它与共享内存的shmctl函数相似，它的原型为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">msgctl</span><span class="p">(</span><span class="kt">int</span> <span class="n">msgid</span><span class="p">,</span> <span class="kt">int</span> <span class="n">command</span><span class="p">,</span> <span class="k">struct</span> <span class="n">msgid_ds</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p><code>msgid</code>同上</p>
+</li>
+<li>
+<p><code>command</code>是将要采取的动作，它可以取3个值:</p>
+<ul>
+<li><code>IPC_STAT</code>：把<code>msgid_ds</code>结构中的数据设置为消息队列的当前关联值，即用消息队列的当前关联值覆盖<code>msgid_ds</code>的值。</li>
+<li><code>IPC_SET</code>：如果进程有足够的权限，就把消息列队的当前关联值设置为msgid_ds结构中给出的值</li>
+<li><code>IPC_RMID</code>：删除消息队列</li>
+</ul>
+</li>
+<li>
+<p><code>buf</code>是指向<code>msgid_ds</code>结构的指针，它指向消息队列模式和访问权限的结构。<code>msgid_ds</code>结构至少包括以下成员：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">msgid_ds</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uid_t</span> <span class="n">shm_perm</span><span class="p">.</span><span class="n">uid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uid_t</span> <span class="n">shm_perm</span><span class="p">.</span><span class="n">gid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">mode_t</span> <span class="n">shm_perm</span><span class="p">.</span><span class="n">mode</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div></li>
+<li>
+<p>成功时返回 0，失败时返回 -1.</p>
+</li>
+</ul>
+<h2 id="demo">Demo</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//msgsnd
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/msg.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define MAX_TXT 512
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">msg_st</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="kt">int</span> <span class="n">msg_type</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">msg</span><span class="p">[</span><span class="n">MAX_TXT</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">msg_st</span> <span class="n">message</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">msgid</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="n">BUFSIZ</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">key_t</span> <span class="n">msgKey</span> <span class="o">=</span> <span class="nf">ftok</span><span class="p">(</span><span class="s">&#34;./msgsnd.c&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">msgid</span> <span class="o">=</span> <span class="nf">msgget</span><span class="p">(</span><span class="n">msgKey</span><span class="p">,</span> <span class="mo">0666</span> <span class="o">|</span> <span class="n">IPC_CREAT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">msgid</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;masget failed error: %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">errno</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Enter some text: </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fgets</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">BUFSIZ</span><span class="p">,</span> <span class="n">stdin</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">message</span><span class="p">.</span><span class="n">msg_type</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// 注意 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nf">strcpy</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 向队列里发送数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="nf">msgsnd</span><span class="p">(</span><span class="n">msgid</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">message</span><span class="p">,</span> <span class="n">MAX_TXT</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;msgsnd failed</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 输入 end 结束输入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="nf">strncmp</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="s">&#34;end&#34;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//msgrcv
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/msg.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define MAX_TXT 512
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">msg_st</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="kt">int</span> <span class="n">msg_type</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">msg</span><span class="p">[</span><span class="n">MAX_TXT</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">msg_st</span> <span class="n">message</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">msgid</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="kt">int</span> <span class="n">msgtype</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">key_t</span> <span class="n">msgKey</span> <span class="o">=</span> <span class="nf">ftok</span><span class="p">(</span><span class="s">&#34;./msgsnd.c&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">msgid</span> <span class="o">=</span> <span class="nf">msgget</span><span class="p">(</span><span class="n">msgKey</span><span class="p">,</span> <span class="mo">0666</span> <span class="o">|</span> <span class="n">IPC_CREAT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">msgid</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;masget failed error: %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">errno</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">msgrcv</span><span class="p">(</span><span class="n">msgid</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">message</span><span class="p">,</span> <span class="n">BUFSIZ</span><span class="p">,</span> <span class="n">msgtype</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;msgsnd failed</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;You wrote: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">message</span><span class="p">.</span><span class="n">msg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nf">strncmp</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">msg</span><span class="p">,</span> <span class="s">&#34;end&#34;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="n">EXIT_SUCCESS</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="运行结果">运行结果</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142858.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142858.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142858.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142913.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142913.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210819142913.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
     <item>
       <title>进程间通信（IPC）之信号（Signal）</title>
@@ -28,6 +289,60 @@
       <pubDate>Wed, 11 Aug 2021 10:59:22 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E4%BF%A1%E5%8F%B7signal/</guid>
       <description>关于进程间通信的概述可以查看Linux 操作系统 - 进程间通信，代码同步在这里。 本文通过实例介绍通过共享内存实现进程间通信。 简介 信号就像实际生产</description>
+      <content:encoded><![CDATA[<p>关于进程间通信的概述可以查看<a href="https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">Linux 操作系统 - 进程间通信</a>，<a href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory">代码同步在这里</a>。</p>
+<p>本文通过实例介绍通过共享内存实现进程间通信。</p>
+<h2 id="简介">简介</h2>
+<p>信号就像实际生产过程中的应急预案，发生了某个异常就会启动特定的应急预案，为了响应各类异常情况，所以就定义了很多个信号，信号的名称是在头文件<code>signal.h</code>中定义的，信号都以<code>SIG</code>开头，常用的信号并不多，常用的信号如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SIGALRM     #时钟定时信号, 计算的是实际的时间或时钟时间
+</span></span><span class="line"><span class="cl">SIGHUP      #终端的挂断或进程死亡
+</span></span><span class="line"><span class="cl">SIGINT      #来自键盘的中断信号
+</span></span><span class="line"><span class="cl">SIGKILL     #用来立即结束程序的运行. 本信号不能被阻塞、处理和忽略。
+</span></span><span class="line"><span class="cl">SIGPIPE     #管道破裂
+</span></span><span class="line"><span class="cl">SIGTERM     #程序结束(terminate)信号, 与SIGKILL不同的是该信号可以被阻塞和处理
+</span></span><span class="line"><span class="cl">SIGUSR1,SIGUSR2     #留给用户使用
+</span></span></code></pre></div><h2 id="实例">实例</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">signalHandler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">Ops! - I got signal %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">sig</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 恢复终端中断信号 SIGINT 的默认行为
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">signal</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">SIG_DFL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 改变终端中断信号 SIGINT 的默认行为，使之执行 ouch 函数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 而不是终止程序的执行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">signal</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signalHandler</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Hello World!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>我们可以用<code>signal()</code>函数处理指定的信号，主要通过忽略和恢复其默认行为来工作。signal() 函数的原型如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="nf">signal</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)(</span><span class="kt">int</span><span class="p">)))(</span><span class="kt">int</span><span class="p">);</span>
+</span></span></code></pre></div><p>这是一个相当复杂的声明，耐心点看可以知道 signal 是一个带有<code>sig</code>和<code>func</code>两个参数的函数，<code>func</code>是一个类型为<code>void (*)(int)</code>的函数指针。该函数返回一个与<code>func</code>相同类型的指针，指向先前指定信号处理函数的函数指针。准备捕获的信号的参数由<code>sig</code>给出，接收到的指定信号后要调用的函数由参数<code>func</code>给出。其实这个函数的使用是相当简单的，通过下面的例子就可以知道。注意信号处理函数的原型必须为<code>void func（int）</code>，或者是下面的特殊值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SIG_IGN : 忽略信号
+</span></span><span class="line"><span class="cl">SIG_DFL : 恢复信号的默认行为
+</span></span></code></pre></div><p>我们程序的目的是想要捕获键盘输入<code>Ctrl+C</code>，这个中断。通过表里可以查到，我们使用<code>SIGINT</code>这个信号，当我们的程序出现<code>SIGINT</code>信号时，让程序接下来干啥呢？正常情况下，我们的<code>Ctrl+C</code>会中断当前运行的程序，但是现在我们做了一些更改，更改的内容在我们自己编写的<code>signalHandler</code>中。我们让程序输出一行字符串加上信号值。然后再把信号的行为恢复原样。此时我们运行程序可以得到如下</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210811143147.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210811143147.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210811143147.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在我们第一输入<code>Ctrl+C</code>时，程序没有中断，而是调用了<code>signalHanlder</code>函数，因为我们更改了信号的行为。但是第二次输入<code>Ctrl+C</code>时，程序中断了。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>进程间通信（IPC）之共享内存 (SharedMemory)</title>
@@ -35,6 +350,217 @@
       <pubDate>Tue, 10 Aug 2021 17:41:26 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98sharedmemory/</guid>
       <description>关于进程间通信的概述可以查看Linux 操作系统 - 进程间通信，代码同步在这里。 本文通过实例介绍通过共享内存实现进程间通信。 shmget(得到一</description>
+      <content:encoded><![CDATA[<p>关于进程间通信的概述可以查看<a href="https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">Linux 操作系统 - 进程间通信</a>，<a href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory">代码同步在这里</a>。</p>
+<p>本文通过实例介绍通过共享内存实现进程间通信。</p>
+<h2 id="shmget得到一个共享内存标识符或创建一个共享内存对象">shmget(得到一个共享内存标识符或创建一个共享内存对象)</h2>
+<p>我们可以通过<code>shmget</code>函数创建或打开共享内存，通过函数签名</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//key_t key:  唯一定位一个共享内存对象
+</span></span></span><span class="line"><span class="cl"><span class="c1">//size_t size: 共享内存大小
+</span></span></span><span class="line"><span class="cl"><span class="c1">//int flag: 如果是 IPC_CREAT 表示创建新的共享内存空间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="nf">shmget</span><span class="p">(</span><span class="kt">key_t</span> <span class="n">key</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>第一个参数是共享内存的唯一标识，是需要我们指定的。那么如何指定<code>key</code>呢？如何保证唯一性呢？我们可以指定一个文件，<code>ftok</code>会根据这个文件的 <code>inode</code>，生成一个近乎唯一的 <code>key</code>。只要在这个消息队列的生命周期内，这个文件不要被删除就可以了。只要不删除，无论什么时刻，再调用 <code>ftok</code>，也会得到同样的<code>key</code>。</li>
+<li>第二个参数是申请的空间大小，我们就申请 1024B。</li>
+<li>第三个参数是权限标识，<code>IPC_CREAT</code>表示创建共享内存，<code>0644</code>表示允许一个进程创建的共享内存被内存创建者所拥有的进程向共享内存读取和写入数据，同时其他用户创建的进程只能读取共享内存。</li>
+</ul>
+<h2 id="shmat把共享内存区对象映射到调用进程的地址空间">shmat(把共享内存区对象映射到调用进程的地址空间)</h2>
+<p>第一次创建完共享内存时，它还不能被任何进程访问，<code>shmat()</code>函数的作用就是用来启动对该共享内存的访问，并把共享内存连接到当前进程的地址空间。它的签名如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="o">*</span><span class="nf">shmat</span><span class="p">(</span><span class="kt">int</span> <span class="n">shm_id</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">shm_addr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">shmflg</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>第一个参数就是上文产生的唯一标识。</li>
+<li>第二个参数，<code>shm_addr</code>指定共享内存连接到当前进程中的地址位置，通常为空，表示让系统来选择共享内存的地址。</li>
+<li>第三个参数，<code>shm_flg</code>是一组标志位，通常为 0。
+调用成功时返回一个指向共享内存第一个字节的指针，如果调用失败返回-1.</li>
+</ul>
+<p><code>(void *) - 1</code>把<code>-1</code>转换为指针<code>0xFFFFFFFF</code>，有时也会用到<code>(void*)0</code>，表示一个空指针。</p>
+<h2 id="shmdt断开共享内存连接">shmdt(断开共享内存连接)</h2>
+<p>与 shmat 函数相反，是用来断开与共享内存附加点的地址，禁止本进程访问此片共享内存</p>
+<p>函数签名如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">shmdt</span><span class="p">(</span><span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">shmaddr</span><span class="p">)</span>
+</span></span></code></pre></div><ul>
+<li>参数一<code>shmaddr</code>为连接共享内存的起始地址。</li>
+</ul>
+<p>需要注意的是，本函数调用并不删除所指定的共享内存区，而只是将先前用 shmat 函数连接（attach）好的共享内存脱离（detach）目前的进程。删除共享内存就需要下面的这个函数。</p>
+<h2 id="shmctl共享内存管理">shmctl(共享内存管理)</h2>
+<p>完成对共享内存的控制，包括改变状态，删除共享内存等。</p>
+<p>函数签名如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">shmctl</span><span class="p">(</span><span class="kt">int</span> <span class="n">shmid</span><span class="p">,</span> <span class="kt">int</span> <span class="n">cmd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">shmid_ds</span> <span class="o">*</span><span class="n">buf</span><span class="p">)</span>
+</span></span></code></pre></div><ul>
+<li><code>shmid</code>共享内存唯一标识符</li>
+<li><code>cmd</code>执行的操作，包括如下
+<ul>
+<li><code>IPC_STAT</code>：得到共享内存的状态，把共享内存的<code>shmid_ds</code>结构复制到<code>buf</code>中</li>
+<li><code>IPC_SET</code>：改变共享内存的状态，把<code>buf</code>所指的<code>shmid_ds</code>结构中的<code>uid</code>、<code>gid</code>、<code>mode</code>复制到共享内存的<code>shmid_ds</code>结构内</li>
+<li><code>IPC_RMID</code>：删除这片共享内存</li>
+</ul>
+</li>
+<li><code>buf</code>共享内存管理结构体。具体说明参见共享内存内核结构定义部分</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//server.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/ipc.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/shm.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">shmid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">key_t</span> <span class="n">shmkey</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="o">*</span><span class="n">shmptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">shmkey</span> <span class="o">=</span> <span class="nf">ftok</span><span class="p">(</span><span class="s">&#34;./client.c&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 创建或打开内存共享区域
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">shmid</span> <span class="o">=</span> <span class="nf">shmget</span><span class="p">(</span><span class="n">shmkey</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mo">0666</span> <span class="o">|</span> <span class="n">IPC_CREAT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">shmid</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;shmget error!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//将共享内存映射到当前进程的地址中，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//之后直接对进程中的地址 addr 操作就是对共享内存操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">shmptr</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="nf">shmat</span><span class="p">(</span><span class="n">shmid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">shmptr</span> <span class="o">==</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;shmat error!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 把用户的输入存到共享内存区域中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;input:&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">scanf</span><span class="p">(</span><span class="s">&#34;%s&#34;</span><span class="p">,</span> <span class="n">shmptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//client.c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/ipc.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/shm.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">shmid</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="o">*</span><span class="n">shmptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">key_t</span> <span class="n">shmkey</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">shmkey</span> <span class="o">=</span> <span class="nf">ftok</span><span class="p">(</span><span class="s">&#34;./client.c&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 创建或打开内存共享区域
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">shmid</span> <span class="o">=</span> <span class="nf">shmget</span><span class="p">(</span><span class="n">shmkey</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mo">0666</span> <span class="o">|</span> <span class="n">IPC_CREAT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">shmid</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;shmget error!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//将共享内存映射到当前进程的地址中，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//之后直接对进程中的地址 addr 操作就是对共享内存操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">shmptr</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="nf">shmat</span><span class="p">(</span><span class="n">shmid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">shmptr</span> <span class="o">==</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;shmat error!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 每隔 3 秒从共享内存中取一次数据并打印到控制台
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;string:%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">shmptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>在两个终端分别运行<code>client</code>和<code>server</code>，<code>client</code>会每三秒在终端打印出<code>server</code>输入的内容。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205816.png" alt=""  />
+</a>
+</div>
+
+
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210810205830.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="如何手动删除共享内存">如何手动删除共享内存？</h3>
+<p>列出所有的共享内存段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ipcs -m
+</span></span><span class="line"><span class="cl">------------ 共享内存段 --------------
+</span></span><span class="line"><span class="cl">键        shmid      拥有者  权限     字节     连接数  状态      
+</span></span><span class="line"><span class="cl">0x00000000 2          dominic    600        16384      1          目标       
+</span></span><span class="line"><span class="cl">0x00000000 753668     dominic    606        10089696   2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 622597     dominic    600        4194304    2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 753670     dominic    606        10089696   2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 688135     dominic    600        899976     2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 8          dominic    600        524288     2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 9          dominic    600        524288     2          目标       
+</span></span><span class="line"><span class="cl">0x00000000 753674     dominic    600        7127040    2          目标 
+</span></span><span class="line"><span class="cl">0x0000006f 720918     dominic    666        1024        0
+</span></span></code></pre></div><p>我们发现最后一个键值为<code>0x0000006f = 111</code>的共享内存段，就是我们创建的共享内存段。
+删除指定共享内存段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"> ipcrm -m 720918  
+</span></span><span class="line"><span class="cl"> 或者 
+</span></span><span class="line"><span class="cl"> ipcrm -M 0x0000006f  
+</span></span></code></pre></div><p>信号量和消息队列的操作，命令类似，只是参数不同。
+查看命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ipcs [-m|-q|-s]
+</span></span></code></pre></div><ul>
+<li><code>-m</code> 输出有关共享内存 (shared memory) 的信息</li>
+<li><code>-q</code> 输出有关信息队列 (message queue) 的信息</li>
+<li><code>-s</code> 输出有关“信号量”(semaphore) 的信息</li>
+</ul>
+<p>删除命令</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ipcrm [ -M key | -m id | -Q key | -q id | -S key | -s id ]
+</span></span></code></pre></div><ul>
+<li><code>-M</code>用 shmkey 删除共享内存</li>
+<li><code>-m</code>用 shmid 删除共享内存</li>
+<li><code>-Q</code>用 msgkey 删除消息队列</li>
+<li><code>-q</code>用 msgid 删除消息队列</li>
+<li><code>-S</code>用 semkey 删除信号量</li>
+<li><code>-s</code>用 semid 删除信号量</li>
+</ul>
+<h2 id="超过共享内存的大小限制">超过共享内存的大小限制</h2>
+<p>共享内存的总体大小是有限制的，这个大小通过 SHMMAX 参数来定义（以字节为单位），您可以通过执行以下命令来确定 SHMMAX 的值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">cat /proc/sys/kernel/shmmax
+</span></span></code></pre></div><p>如果机器上创建的共享内存的总共大小超出了这个限制，在程序中使用标准错误<code>perror</code>可能会出现以下的信息：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">unable to attach to shared memory
+</span></span></code></pre></div><p>1、设置 SHMMAX</p>
+<p>　　SHMMAX 的默认值是 <code>32MB</code> 。一般使用下列方法之一种将 SHMMAX 参数设为 <code>2GB</code> ：
+通过直接更改 <code>/proc</code> 文件系统，你不需重新启动机器就可以改变 SHMMAX 的默认设置。我使用的方法是将以下命令放入 <code>/&gt;etc/rc.local</code> 启动文件中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">echo &#34;2147483648&#34; &gt; /proc/sys/kernel/shmmax
+</span></span></code></pre></div><p>您还可以使用 <code>sysctl</code> 命令来更改 SHMMAX 的值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">sysctl -w kernel.shmmax=2147483648
+</span></span></code></pre></div><p>最后，通过将该内核参数插入到<code>/etc/sysctl.conf</code> 启动文件中，您可以使这种更改永久有效：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">echo &#34;kernel.shmmax=2147483648&#34; &gt;&gt; /etc/sysctl.conf
+</span></span></code></pre></div><p>2、设置 SHMMNI</p>
+<p>我们现在来看 SHMMNI 参数。这个内核参数用于设置系统范围内共享内存段的最大数量。该参数的默认值是 <code>4096</code> 。这一数值已经足够，通常不需要更改。您可以通过执行以下命令来确定 SHMMNI 的值：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">cat /proc/sys/kernel/shmmni
+</span></span></code></pre></div><p>3、设置 SHMALL</p>
+<p>最后，我们来看 SHMALL 共享内存内核参数。该参数控制着系统一次可以使用的共享内存总量（以页为单位）。简言之，该参数的值始终应该至少为：<code>ceil(SHMMAX/PAGE_SIZE)</code></p>
+<p>SHMALL 的默认大小为 <code>2097152</code> ，可以使用以下命令进行查询：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">cat /proc/sys/kernel/shmall
+</span></span></code></pre></div><p>　　SHMALL 的默认设置对于我们来说应该足够使用。注意：在 i386 平台上 Red Hat Linux 的 页面大小 为 <code>4096</code> 字节。但是，您可以使用 <code>bigpages</code> ，它支持配置更大的内存页面尺寸。</p>
+<h2 id="多次进行-shmat-操作会出现什么问题">多次进行 shmat 操作会出现什么问题</h2>
+<p>一个进程是可以对同一个共享内存多次 shmat 进行挂载的，物理内存是指向同一块，如果 shmaddr 为 NULL，则每次返回的线性地址空间都不同。而且指向这块共享内存的引用计数会增加。也就是进程多块线性空间会指向同一块物理地址。这样，如果之前挂载过这块共享内存的进程的线性地址没有被<code>shmdt</code>掉，即申请的线性地址都没有释放，就会一直消耗进程的虚拟内存空间，很有可能会最后导致进程线性空间被使用完而导致下次 shmat 或者其他操作失败。</p>
+<h2 id="shmget-创建共享内存当-key-相同时什么情况下会出错">shmget 创建共享内存，当 key 相同时，什么情况下会出错？</h2>
+<p>当创建一个新的共享内存区时，size 的值必须大于 0；如果是访问一个已经存在的内存共享区，则置 size 为 0。</p>
+<p>已经创建的共享内存的大小是可以调整的，但是已经创建的共享内存的大小只能调小，不能调大</p>
+<p>当多个进程都能创建共享内存的时候，如果 key 出现相同的情况，并且一个进程需要创建的共享内存的大小要比另外一个进程要创建的共享内存小，共享内存大的进程先创建共享内存，共享内存小的进程后创建共享内存，小共享内存的进程就会获取到大的共享内存进程的共享内存，并修改其共享内存的大小和内容，从而可能导致大的共享内存进程崩溃。</p>
+<h2 id="ftok-是否一定会产生唯一的-key-值">ftok 是否一定会产生唯一的 key 值？</h2>
+<p>ftok 原型如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">key_t ftok(char * pathname, int proj_id)
+</span></span></code></pre></div><p><code>pathname</code>就时你指定的文件名，<code>proj_id</code>是子序号。在一般的 UNIX 实现中，是将文件的索引节点号取出，前面加上子序号得到<code>key_t</code>的返回值。如指定文件的索引节点号为 65538，换算成 16 进制为<code>0×010002</code>，而你指定的<code>proj_id</code>值为<code>38</code>，换算成 16 进制为<code>0×26</code>，则最后的<code>key_t</code>返回值为<code>0×26010002</code>。</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

@@ -14,6 +14,135 @@
       <pubDate>Wed, 17 Jan 2024 21:32:04 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/repo%E6%BA%90%E9%85%8D%E7%BD%AE%E8%A7%A3%E6%9E%90/</guid>
       <description>repo 源配置解析 openEuler 的软件源配置文件位于/etc/yum.repos.d/目录下，以.repo 为后缀名，文件名可以任意取，但是必须以.repo 结尾</description>
+      <content:encoded><![CDATA[<h1 id="repo-源配置解析">repo 源配置解析</h1>
+<p>openEuler 的软件源配置文件位于/etc/yum.repos.d/目录下，以.repo 为后缀名，文件名可以任意取，但是必须以.repo 结尾。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#generic-repos is licensed under the Mulan PSL v2.
+</span></span><span class="line"><span class="cl">#You can use this software according to the terms and conditions of the Mulan PSL v2.
+</span></span><span class="line"><span class="cl">#You may obtain a copy of Mulan PSL v2 at:
+</span></span><span class="line"><span class="cl">#    http://license.coscl.org.cn/MulanPSL2
+</span></span><span class="line"><span class="cl">#THIS SOFTWARE IS PROVIDED ON AN &#34;AS IS&#34; BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR
+</span></span><span class="line"><span class="cl">#IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
+</span></span><span class="line"><span class="cl">#PURPOSE.
+</span></span><span class="line"><span class="cl">#See the Mulan PSL v2 for more details.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[OS]
+</span></span><span class="line"><span class="cl">name=OS
+</span></span><span class="line"><span class="cl">baseurl=http://repo.openeuler.org/openEuler-23.09/OS/$basearch/
+</span></span><span class="line"><span class="cl">metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/OS&amp;arch=$basearch
+</span></span><span class="line"><span class="cl">metadata_expire=1h
+</span></span><span class="line"><span class="cl">enabled=1
+</span></span><span class="line"><span class="cl">gpgcheck=1
+</span></span><span class="line"><span class="cl">gpgkey=http://repo.openeuler.org/openEuler-23.09/OS/$basearch/RPM-GPG-KEY-openEuler
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[source]
+</span></span><span class="line"><span class="cl">name=source
+</span></span><span class="line"><span class="cl">baseurl=http://repo.openeuler.org/openEuler-23.09/source/
+</span></span><span class="line"><span class="cl">metalink=https://mirrors.openeuler.org/metalink?repo=$releasever&amp;arch=source
+</span></span><span class="line"><span class="cl">metadata_expire=1h
+</span></span><span class="line"><span class="cl">enabled=1
+</span></span><span class="line"><span class="cl">gpgcheck=1
+</span></span><span class="line"><span class="cl">gpgkey=http://repo.openeuler.org/openEuler-23.09/source/RPM-GPG-KEY-openEuler
+</span></span></code></pre></div><p>其中各个配置项的含义如下：</p>
+<ul>
+<li>[repoid]中的 repoid 为软件仓库（repository）的 ID 号，所有.repo 配置文件中的各 repoid 不能重复，必须唯一。示例中 repoid 为 OS 和 source。</li>
+<li>name 为软件仓库描述的字符串，可以任意取，但是建议取一个有意义的名称，方便用户理解。示例中 name 为 OS 和 source。</li>
+<li>baseurl 为软件仓库的地址，可以是 http、https、ftp 等协议，也可以是本地目录。</li>
+<li>enabled 为是否启用该软件源仓库，可选值为 1 和 0。默认值为 1，表示启用该软件源仓库。示例中 enabled 为 1。</li>
+<li>metalink 为动态的镜像地址，用于镜像加速。</li>
+<li>metadata_expire 为元数据过期时间，单位为秒。默认值为 90 分钟，即 5400 秒。示例中 metadata_expire 为 1h，即 1 小时。</li>
+<li>gpgcheck 可设置为 1 或 0，1 表示进行 gpg（GNU Private Guard）校验，0 表示不进行 gpg 校验，gpgcheck 可以确定 rpm 包的来源是有效和安全的。</li>
+<li>gpgkey 为验证签名用的公钥地址，如果 gpgcheck 为 1，则必须设置 gpgkey。</li>
+</ul>
+<h2 id="gpgcheck-详解">gpgcheck 详解</h2>
+<p><code>RPM-GPG-KEY</code> 是一个公共密钥，用于验证由该密钥签名的RPM包的真实性和完整性。在使用 <code>yum</code> 或 <code>dnf</code> 这样的包管理工具时，这些工具会使用 GPG 密钥来验证软件包的签名，以确保软件包来自于可信的源，且未被篡改。</p>
+<ol>
+<li>
+<p><strong>命名约定：</strong> <code>RPM-GPG-KEY</code> 是一个命名约定，通常与其所属的仓库或发行版相关。例如，如果你在使用某个特定发行版的官方仓库，它可能会提供一个 <code>RPM-GPG-KEY</code> 文件来进行软件包签名验证。如openEuler官方仓库提供的 <code>RPM-GPG-KEY</code> 文件名为 <code>RPM-GPG-KEY-openEuler</code>。</p>
+</li>
+<li>
+<p><strong>密钥生成：</strong> 这个密钥是通过 GPG（GNU Privacy Guard）工具生成的。GPG 是一个用于进行加密和签名的开源工具。<code>RPM-GPG-KEY</code> 文件包含了一个公钥，该公钥由仓库所有者使用私钥签署软件包，而用户使用公钥验证软件包。</p>
+</li>
+<li>
+<p><strong>验证软件包：</strong> 当用户使用 <code>yum</code> 或 <code>dnf</code> 安装软件包时，这些工具会检查软件包的签名，并使用相应的 <code>RPM-GPG-KEY</code> 文件中的公钥来验证签名。如果验证通过，工具会认为软件包是可信的，否则将会发出警告或拒绝安装。</p>
+</li>
+<li>
+<p><strong>导入密钥：</strong> 为了使用 <code>RPM-GPG-KEY</code> 文件，用户通常需要将密钥导入到本地系统中。这通常可以通过运行类似于以下命令的导入密钥的操作来完成：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-openEuler
+</span></span></code></pre></div><p>上述命令中的 <code>/etc/pki/rpm-gpg/RPM-GPG-KEY-openEuler</code> 路径可能会因发行版和配置而有所不同。</p>
+</li>
+</ol>
+<h2 id="rpm包签名">RPM包签名</h2>
+<p>对于发布的 RPM 包进行 GPG 签名是一种重要的安全措施，可以确保接收者能够验证软件包的真实性和完整性。以下是一般的步骤：</p>
+<ol>
+<li>
+<p><strong>生成 GPG 密钥：</strong> 如果你还没有 GPG 密钥对，你需要使用 GPG 工具生成一对密钥，包括私钥和公钥。你可以运行以下命令来生成密钥：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg --gen-key 
+</span></span></code></pre></div><p>当你运行 <code>gpg --gen-key</code> 命令时，它会启动 GPG（GNU Privacy Guard）的密钥生成过程。这个过程将引导你提供一些必要的信息以生成密钥对，包括私钥和公钥。以下是这个命令的详细步骤：</p>
+<ul>
+<li>
+<p><strong>选择密钥类型：</strong> 你将被要求选择密钥的类型。通常，默认的 RSA 和 DSA 都是可接受的选择，你可以通过键入数字来选择。</p>
+</li>
+<li>
+<p><strong>选择密钥大小：</strong> 你将被要求选择密钥的大小。通常，默认值（通常是2048位）是足够的，但你也可以选择更大的值。</p>
+</li>
+<li>
+<p><strong>选择密钥的有效期：</strong> 你将被要求选择密钥的有效期。你可以选择密钥永久有效，或者在一段特定的时间内有效。如果你选择了特定的时间，你需要输入一个表示有效期的值，例如1y表示一年，1m表示一个月。</p>
+</li>
+<li>
+<p><strong>提供用户标识信息：</strong> 你将被要求提供与密钥相关联的用户标识信息。这包括你的真实姓名、电子邮件地址和一个可选的注释。</p>
+</li>
+<li>
+<p><strong>确认提供的信息：</strong> GPG 将显示你提供的信息并询问你是否确认。如果确认无误，你可以输入 <code>O</code> 或直接按回车键。</p>
+</li>
+<li>
+<p><strong>输入保护密语（passphrase）：</strong> 你将被要求输入保护密语，用于保护你的私钥。请确保选择一个强密码。</p>
+</li>
+<li>
+<p><strong>等待密钥生成：</strong> GPG 将使用提供的信息生成密钥对。这可能需要一些时间，具体取决于你选择的密钥大小。</p>
+</li>
+<li>
+<p><strong>生成完成：</strong> 一旦生成完成，你将看到一条消息表明密钥生成成功。</p>
+</li>
+</ul>
+<p>在整个过程中，你将看到类似以下的一些提示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg: key ABCDEFGH marked as ultimately trusted
+</span></span><span class="line"><span class="cl">gpg: revocation certificate stored as <span class="s1">&#39;/home/your_user/.gnupg/openpgp-revocs.d/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.rev&#39;</span>
+</span></span><span class="line"><span class="cl">public and secret key created and signed.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">gpg: checking the trustdb
+</span></span><span class="line"><span class="cl">gpg: <span class="m">3</span> marginal<span class="o">(</span>s<span class="o">)</span> needed, <span class="m">1</span> complete<span class="o">(</span>s<span class="o">)</span> needed, PGP trust model
+</span></span><span class="line"><span class="cl">gpg: depth: <span class="m">0</span>  valid:   <span class="m">2</span>  signed:   <span class="m">0</span>  trust: 0-, 0q, 0n, 0m, 0f, 2u
+</span></span><span class="line"><span class="cl">pub   2048R/XXXXXXXX 2024-01-01 <span class="o">[</span>expires: 2024-01-01<span class="o">]</span>
+</span></span><span class="line"><span class="cl">    Key <span class="nv">fingerprint</span> <span class="o">=</span> XXXX YYYY ZZZZ AAAA BBBB  CCCC DDDD EEEE FFFF <span class="m">1111</span>
+</span></span><span class="line"><span class="cl">uid                  Your Name &lt;your.email@example.com&gt;
+</span></span><span class="line"><span class="cl">sub   2048R/YYYYYYYY 2024-01-01 <span class="o">[</span>expires: 2024-01-01<span class="o">]</span>
+</span></span></code></pre></div><p>在这个例子中，<code>XXXXXXXX</code> 是你的密钥 ID，<code>YYYYYYYY</code> 是子密钥的 ID。你可以使用这些 ID 来引用你的密钥。</p>
+</li>
+<li>
+<p><strong>导出公钥：</strong> 生成密钥后，你需要将公钥导出。运行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gpg --output RPM-GPG-KEY-your-repo --armor --export your@email.com
+</span></span></code></pre></div><p>这将生成一个 ASCII 格式的公钥文件 <code>RPM-GPG-KEY-your-repo</code>，你可以与软件包一起发布。</p>
+</li>
+<li>
+<p><strong>为 RPM 包签名：</strong> 在构建 RPM 包时，使用 <code>rpmbuild</code> 命令时，可以通过添加 <code>--sign</code> 选项来指示 <code>rpmbuild</code> 对 RPM 包进行签名。例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpmbuild -ba your-package.spec --sign
+</span></span></code></pre></div><p>当你执行 <code>rpmbuild -ba your-package.spec --sign</code> 命令时，<code>rpmbuild</code> 会使用默认的 GPG 密钥进行签名。这通常是你在系统上配置为默认 GPG 密钥的密钥。</p>
+<p>你可以通过检查 <code>rpmbuild</code> 使用的 GPG 密钥来确认它是哪个密钥：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm -q gpg-pubkey --qf <span class="s1">&#39;%{name}-%{version}-%{release} --&gt; %{summary}\n&#39;</span>
+</span></span></code></pre></div><p>这个命令将显示系统上安装的 GPG 公钥，其中默认的密钥可能是 &ldquo;gpg-pubkey-xxxxxxxx-yyyyyyyy&rdquo;。你可以根据密钥的 &ldquo;xxxxxxxx-yyyyyyyy&rdquo; 部分来确定默认使用的 GPG 密钥。</p>
+<p>如果你想使用不同的 GPG 密钥进行签名，可以在 <code>rpmbuild</code> 命令中使用 <code>--signwith</code> 选项，例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpmbuild -ba your-package.spec --signwith &lt;key-id&gt;
+</span></span></code></pre></div><p>其中 <code>&lt;key-id&gt;</code> 是你想要使用的 GPG 密钥的 ID。这会覆盖默认的密钥。确保你在构建和签名 RPM 包时使用的是正确的 GPG 密钥。</p>
+</li>
+<li>
+<p><strong>导入密钥：</strong> 为了验证你的软件包，用户需要导入你的公钥。他们可以运行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rpm --import RPM-GPG-KEY-your-repo
+</span></span></code></pre></div></li>
+<li>
+<p><strong>发布：</strong> 将签名的 RPM 包和公钥一起发布。确保用户知道他们可以使用导入的公钥来验证软件包的签名。</p>
+</li>
+</ol>
+]]></content:encoded>
     </item>
     <item>
       <title>x86 平台使用 Gitea Actions 构建多架构应用 (binfmt_misc)</title>
@@ -21,6 +150,139 @@
       <pubDate>Wed, 10 Jan 2024 11:10:04 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8gitea-actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</guid>
       <description>binfmt_misc 简介 binfmt_misc 是 Linux 内核提供的一个机制，它允许用户空间定义新的二进制格式，并将它们与相应的解释器关联起来。这个机制使得在 Linux 上能够动态地注册并运行不同</description>
+      <content:encoded><![CDATA[<h1 id="binfmt_misc-简介">binfmt_misc 简介</h1>
+<p><code>binfmt_misc</code> 是 Linux 内核提供的一个机制，它允许用户空间定义新的二进制格式，并将它们与相应的解释器关联起来。这个机制使得在 Linux 上能够动态地注册并运行不同架构的二进制可执行文件，从而支持交叉编译和多架构环境。</p>
+<p>具体来说，<code>binfmt_misc</code> 的功能可以通过 <code>/proc/sys/fs/binfmt_misc/</code> 目录下的文件系统接口实现。这个目录下的文件用于注册和管理二进制格式和相应解释器之间的关联关系。</p>
+<p>下面是一些与 <code>binfmt_misc</code> 相关的重要概念和文件：</p>
+<ol>
+<li><strong>注册表文件：</strong>   在 <code>/proc/sys/fs/binfmt_misc/</code> 目录下，每个注册的二进制格式都有一个对应的注册表文件。这些文件的命名通常遵循格式 <code>&lt;格式名称&gt;</code>，例如 <code>qemu-riscv64</code>。</li>
+<li><strong>注册和注销：</strong>   用户空间可以通过在注册表目录下创建文件来注册新的二进制格式。这可以通过写入注册表文件的方式完成。相反，通过删除这些文件，可以注销二进制格式的支持。</li>
+<li><strong>解释器：</strong>   对于每种注册的二进制格式，需要指定相应的解释器，即用于执行这种格式的程序。在注册表文件中，通过 <code>interpreter</code> 字段指定解释器的路径。</li>
+<li><strong>参数：</strong>   除了解释器，还可以为每个注册的格式指定一些参数。这些参数可以影响如何运行二进制文件。</li>
+</ol>
+<h1 id="内核如何通过-binfmt_misc-机制添加新架构的支持">内核如何通过 binfmt_misc 机制添加新架构的支持？</h1>
+<p>可以通过向 <code>/proc/sys/fs/binfmt_misc/register</code> 文件写入注册信息来注册新的二进制格式。告诉内核某一格式的文件用什么解释器来执行。写入的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">:name:type:offset:magic:mask:interpreter:flags
+</span></span></code></pre></div><blockquote>
+<p>各个字段以冒号分隔，部分字段可以缺省，但是冒号需要保留。</p>
+</blockquote>
+<p>字段含义如下：</p>
+<ul>
+<li>
+<p><code>name</code>：二进制格式的名称，比如<code>qemu-riscv64</code>。</p>
+</li>
+<li>
+<p><code>type</code>：类型为 E 或 M。</p>
+<ul>
+<li>如果是 E，可执行文件格式由其文件扩展名标识：magic 是要与二进制格式相关联的文件扩展名；offset 和 mask 将被忽略。</li>
+<li>如果是 M，格式由文件中绝对偏移（默认为 0）处的魔数标识，并且 mask 是一个位掩码（默认为全 0xFF），表示数字中哪些位是有效的。</li>
+</ul>
+</li>
+<li>
+<p><code>interpreter</code>：是要作为匹配文件的参数运行的解释器，使用解释器的绝对路径，比如<code>/usr/bin/qemu-riscv64-static</code>。</p>
+</li>
+<li>
+<p><code>flags</code>：可选字段，控制 <code>interpreter</code> 打开文件的行为。共支持 <code>POCF</code> 四种 flag。</p>
+<ul>
+<li><code>P</code> 表示 preserve-argv[0]，保留原始的 <code>argv[0]</code> 参数。</li>
+<li><code>O</code> 表示 open-binary，<code>binfmt-misc</code> 默认会传递文件的路径，而启用这个参数时，<code>binfmt-misc</code> 会打开文件，传递文件描述符。</li>
+<li><code>C</code> 表示 credentials，即会传递文件的 <code>setuid</code> 等权限，这个选项也隐含了 <code>O</code>。</li>
+<li><code>F</code> 表示 fix binary，<code>binfmt-misc</code> 默认的行为在 spwan 进程时会延迟，这种方式可能会受到 <code>mount</code> 命名空间和 <code>chroot</code> 的影响，设置 <code>F</code> 时会立刻打开二进制文件。</li>
+</ul>
+</li>
+</ul>
+<p>举个例子，如果要在 x86_64 架构的系统上运行 RISC-V 架构的二进制文件，可以通过以下方式注册 RISC-V 二进制格式：</p>
+<p>首先需要<strong>添加解释器</strong>，通常使用 QEMU 的静态二进制文件作为解释器，在 Ubuntu 系统中我们可以使用以下命令安装：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install qemu-user-static
+</span></span></code></pre></div><p><strong>注册二进制格式</strong>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;:qemu-riscv64:M:0:7f454c460201010000000000000000000200f300::/usr/libexec/qemu-binfmt/riscv64-binfmt-P:POCF&#39;</span> &gt; /proc/sys/fs/binfmt_misc/register
+</span></span></code></pre></div><p>表示将 RISC-V 二进制格式注册到 <code>/proc/sys/fs/binfmt_misc/qemu-riscv64</code> 文件中，使用 <code>/usr/libexec/qemu-binfmt/riscv64-binfmt-P</code> 作为解释器，同时传递 <code>POCF</code> 参数。执行了以上命令，内核会自动创建一个 <code>/proc/sys/fs/binfmt_misc/qemu-riscv64</code> 文件，内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ sudo cat  /proc/sys/fs/binfmt_misc/qemu-riscv64
+</span></span><span class="line"><span class="cl">enabled
+</span></span><span class="line"><span class="cl">interpreter /usr/libexec/qemu-binfmt/riscv64-binfmt-P
+</span></span><span class="line"><span class="cl">flags: POCF
+</span></span><span class="line"><span class="cl">offset <span class="m">0</span>
+</span></span><span class="line"><span class="cl">magic 7f454c460201010000000000000000000200f300
+</span></span><span class="line"><span class="cl">mask ffffffffffffff00fffffffffffffffffeffffff
+</span></span></code></pre></div><p>这就完成了 RISC-V 二进制格式的注册。此时，你就可以在 x86_64 架构的系统上运行 RISC-V 架构的二进制文件了。</p>
+<p>使用 Docker 运行 RISC-V 的容器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker run --rm -it devops/openeuler-builder:23.09-riscv64  uname -m
+</span></span><span class="line"><span class="cl">riscv64
+</span></span></code></pre></div><h2 id="使用封装好的程序简化注册过程">使用封装好的程序简化注册过程</h2>
+<p>以上的写入 register 文件的方式比较繁琐，可以使用封装好的程序来简化注册过程。</p>
+<p>方式一：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install qemu-user-binfmt
+</span></span></code></pre></div><p>可以安装所有 QEMU 支持的架构。</p>
+<p>方式二：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装解释器</span>
+</span></span><span class="line"><span class="cl">sudo apt install qemu-user-static
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装binfmt操作支持</span>
+</span></span><span class="line"><span class="cl">sudo apt install binfmt-support
+</span></span><span class="line"><span class="cl"><span class="c1"># 开启异构支持</span>
+</span></span><span class="line"><span class="cl">sudo update-binfmts --package<span class="o">=</span>qemu-user-static --enable
+</span></span></code></pre></div><p>同上。</p>
+<h2 id="注销">注销</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> -1 &gt;/proc/sys/fs/binfmt_misc/status <span class="c1"># 注销所有注册的条目</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> -1 &gt;/proc/sys/fs/binfmt_misc/qemu-riscv64 <span class="c1"># 注销单个条目</span>
+</span></span></code></pre></div><p>或者通过命令行工具完成：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装binfmt操作支持</span>
+</span></span><span class="line"><span class="cl">sudo apt install binfmt-support
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用qemu-riscv64，再次查看/proc/sys/fs/binfmt_misc/发现qemu-riscv64已被删除</span>
+</span></span><span class="line"><span class="cl">sudo update-binfmts --disable qemu-riscv64
+</span></span></code></pre></div><h1 id="gitea-如何实现多架构应用构建">Gitea 如何实现多架构应用构建？</h1>
+<p>Gitea 不会自己运行 Job，而是将 Job 委托给 Runner。Gitea Actions 的 Runner 被称为 act runner，它是一个独立的程序。在接收到 Job 后，act runner 会根据 Job 的内容，启用不同的 Container 来运行 Job。</p>
+<p>为了避免消耗过多资源并影响 Gitea 实例，Gitea 和 Runner 一般运行在不同的机器上。但是同一个 Runner 启动的容器一定在同一台机器上。我这里演示的统一都在同一台 x86 架构的机器上。</p>
+<p>因为都运行在 x86 架构的机器上，所有执行任务的 Container 也一定是 x86 架构的。但是我们了解了上面的 binfmt_misc 机制后，就可以在容器内部通过注册不同架构的二进制格式，从而在 x86 架构的机器上运行不同架构的二进制文件。就可以实现多架构应用构建。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>打开 Gitea 的 tea 的项目源码找到它的 release <a href="https://gitea.com/gitea/tea/src/commit/c74177556b8e63252491003f1cbcd3882bfff15d/.gitea/workflows/release-nightly.yml#L53">workflow 文件</a>，可以看到它使用了<code>docker/setup-qemu-action@v3</code>这个 action 来实现多架构构建。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Set up QEMU</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">docker/setup-qemu-action@v3</span><span class="w">
+</span></span></span></code></pre></div><p>查阅<a href="https://github.com/tonistiigi/binfmt/blob/a92dbabe8fddb096b8cb307aa1c6bbe65dc0884f/cmd/binfmt/main.go#L63C1-L103C2">action 的源码</a>，可以发现底层实现是通过<code>binfmt_misc</code>来实现的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 定义了一些全局变量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">mount</span><span class="p">,</span> <span class="s">&#34;mount&#34;</span><span class="p">,</span> <span class="s">&#34;/proc/sys/fs/binfmt_misc&#34;</span><span class="p">,</span> <span class="s">&#34;binfmt_misc mount point&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">toInstall</span><span class="p">,</span> <span class="s">&#34;install&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;architectures to install&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">toUninstall</span><span class="p">,</span> <span class="s">&#34;uninstall&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;architectures to uninstall&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">flVersion</span><span class="p">,</span> <span class="s">&#34;version&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;display version&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">install</span><span class="p">(</span><span class="nx">arch</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">cfg</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">configs</span><span class="p">[</span><span class="nx">arch</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 拼接路径为/proc/sys/fs/binfmt_misc/register，打开这个文件检查是否能够打开成功
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">register</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">mount</span><span class="p">,</span> <span class="s">&#34;register&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">file</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">OpenFile</span><span class="p">(</span><span class="nx">register</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">O_WRONLY</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">binaryBasename</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">getBinaryNames</span><span class="p">(</span><span class="nx">cfg</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 向/proc/sys/fs/binfmt_misc/register 写入 line，注册二进制格式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">line</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;:%s:M:0:%s:%s:%s:%s&#34;</span><span class="p">,</span> <span class="nx">binaryBasename</span><span class="p">,</span> <span class="nx">cfg</span><span class="p">.</span><span class="nx">magic</span><span class="p">,</span> <span class="nx">cfg</span><span class="p">.</span><span class="nx">mask</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">flags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">file</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">line</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="o">*</span><span class="nx">os</span><span class="p">.</span><span class="nx">PathError</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">Err</span> <span class="o">==</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EEXIST</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%s already registered&#34;</span><span class="p">,</span> <span class="nx">binaryBasename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;cannot register %q to %s: %s&#34;</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">register</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h1 id="q--a">Q &amp; A</h1>
+<h2 id="为何procsysfsbinfmt_miscregister-文件是只读的">为何/proc/sys/fs/binfmt_misc/register 文件是只读的？</h2>
+<p><code>/proc/sys/fs/binfmt_misc/register</code> 文件是只写的，这是因为在 Linux 中，<code>/proc</code> 文件系统下的很多文件都是通过对文件进行写入来进行配置和控制的。这些文件通常<strong>代表内核参数或控制接口</strong>，提供了一种方便的方式来与内核进行交互。</p>
+<p>对于 <code>/proc/sys/fs/binfmt_misc/register</code> 文件来说，通过写入注册信息，用户可以向内核注册新的二进制格式，告知内核如何执行特定的二进制文件。这种只写的设计是为了保持简单性和安全性。允许用户在运行时动态地注册新的格式，而不是从文件中读取注册信息，可以提供更大的灵活性。</p>
+<p>虽然 <code>/proc/sys/fs/binfmt_misc/register</code> 文件是只写的，但是通过向文件中写入正确格式的注册信息，用户仍然能够有效地配置新的二进制格式。这种设计符合 Linux 中的文件系统和权限模型。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://github.com/torvalds/linux/pulse">Kernel Support for miscellaneous Binary Formats (binfmt_misc)</a></p>
+]]></content:encoded>
     </item>
     <item>
       <title>Nexus搭建内部镜像</title>
@@ -28,6 +290,349 @@
       <pubDate>Sat, 16 Dec 2023 12:16:34 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/nexus-%E9%95%9C%E5%83%8F%E4%BB%A3%E7%90%86/</guid>
       <description>Docker-Compose version: &amp;#34;3.8&amp;#34; services: nexus: image: sonatype/nexus3 container_name: nexus restart: always ports: - 8081:8081 volumes: - /srv/nexus/data:/nexus-data 修改/srv/nexus目录的所有者为当前用户： sudo chown -R username:username /srv/nexus 修改data目录有最高权限，否则无法启动成功： sudo</description>
+      <content:encoded><![CDATA[<h1 id="docker-compose">Docker-Compose</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.8&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">nexus</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">sonatype/nexus3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">nexus</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">8081</span><span class="p">:</span><span class="m">8081</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/srv/nexus/data:/nexus-data</span><span class="w">
+</span></span></span></code></pre></div><p>修改/srv/nexus目录的所有者为当前用户：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chown -R username:username /srv/nexus
+</span></span></code></pre></div><p>修改data目录有最高权限，否则无法启动成功：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chmod -R <span class="m">777</span> /srv/nexus/data
+</span></span></code></pre></div><h1 id="代理docker-hub">代理Docker Hub</h1>
+<h2 id="登录web页面">登录WEB页面</h2>
+<p>登录WEB页面，地址为：<a href="http://192.168.1.9:8081%E3%80%82">http://192.168.1.9:8081。</a>
+用户名为：admin，密码通过命令获取：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> nexus3 cat /nexus-data/admin.password
+</span></span></code></pre></div><h2 id="创建blob">创建Blob</h2>
+<p>在 Nexus Repository Manager 中，Blob Store（二进制大对象存储）是一个用于存储仓库数据的核心组件。Blob Store 主要用于存储各种二进制文件，例如软件包、依赖库、构建产物等，这些文件通常被称为“blob”。</p>
+<p>Blob Store 的作用包括：</p>
+<ol>
+<li>
+<p><strong>存储二进制文件：</strong> Blob Store 被设计用来安全、可靠地存储二进制文件。这些文件可以是各种形式的构建产物、软件包、依赖库等。Blob Store 是 Nexus 仓库管理系统的核心，它为这些文件提供了一个中央存储位置。</p>
+</li>
+<li>
+<p><strong>支持不同类型的存储后端：</strong> Nexus 支持不同类型的 Blob Store，例如本地文件系统、云存储（如Amazon S3、Google Cloud Storage）等。这使得用户可以根据需求选择不同的存储后端，并根据实际情况进行扩展或迁移。</p>
+</li>
+<li>
+<p><strong>提供存储策略：</strong> Blob Store 允许你定义存储策略，以确定何时以及如何清理或删除不再需要的文件。这对于管理仓库的存储空间非常重要，可以根据策略自动清理不再需要的快照或旧版本。</p>
+</li>
+<li>
+<p><strong>支持代理和缓存：</strong> 在 Maven Repository 的场景下，Blob Store 还可以用于代理远程 Maven 仓库，并缓存远程仓库中的文件。这有助于提高构建性能，减少对远程仓库的依赖。</p>
+</li>
+</ol>
+<p>我们缓存的镜像需要存储为blob，所以需要创建一个Blob store。点击左侧菜单栏的Blob Stores，然后点击Create blob store，选择Type为File，Name填写为dockerhub。</p>
+<h2 id="创建repository">创建Repository</h2>
+<p>在 Nexus Repository Manager 中，有三种主要的仓库类型：Hosted Repository、Proxy Repository、和 Group Repository。每种类型都有不同的作用和用途：</p>
+<ul>
+<li>
+<p>Hosted Repository（托管仓库）:</p>
+<ul>
+<li>作用： 用于存储和管理本地创建的部署（deploy）的二进制文件。这包括你自己或你的团队创建的库，例如 Maven 构件、npm 包、Docker 镜像等。</li>
+<li>使用场景： 当你需要在内部存储和分享自己创建的构建产物时，你可以使用 Hosted Repository。</li>
+</ul>
+</li>
+<li>
+<p>Proxy Repository（代理仓库）:</p>
+<ul>
+<li>作用： 用于代理和缓存远程仓库的二进制文件。当你从远程仓库获取构建依赖时，Proxy Repository 会将这些文件缓存在本地，从而提高构建性能并减少对远程仓库的依赖。</li>
+<li>使用场景： 在构建过程中，你通常会依赖于一些公共的远程仓库，例如 Maven Central、npm registry、Docker Hub等。使用 Proxy Repository 可以有效地管理这些依赖并减少对远程仓库的直接访问。</li>
+</ul>
+</li>
+<li>
+<p>Group Repository（组合仓库）:</p>
+<ul>
+<li>作用： 允许你将多个仓库组合成一个逻辑单元。当你需要在构建中同时使用多个仓库的内容时，Group Repository 可以将这些仓库组合在一起，使它们在应用程序中看起来像一个单一的仓库。</li>
+<li>使用场景： 当你有多个 Proxy Repository 或 Hosted Repository 时，你可以使用 Group Repository 将它们组合在一起。这对于简化构建配置、统一依赖管理等非常有用。</li>
+</ul>
+</li>
+</ul>
+<p>我们一般创建三个仓库，proxy代理公共镜像，hosted保存自己的镜像，group将proxy和hosted组合在一起。我们分别创建三个仓库。</p>
+<h3 id="proxy">proxy</h3>
+<p>点击左侧菜单栏的Repositories，然后点击Create repository，选择Docker (proxy)，按照下图填写：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/65fc511b83db1d0af9a6559da6a80162.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Remote storage 图中填写为<code>https://registry-1.docker.io</code>，这是dockerhub的地址。但是实测会很慢，所以我们使用加速地址<code>https://dockerproxy.com</code>。需要注意修改一下。</p>
+<blockquote>
+<p>还有一些国内镜像源可选，可以参考这个项目。<a href="https://github.com/docker-practice/docker-registry-cn-mirror-test/actions/runs/7228669255">Test Registry · docker-practice/docker-registry-cn-mirror-test@83a4dd4</a></p>
+</blockquote>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/c41a82504deb2a41eab15e4674199445.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Blob store选择为刚刚创建的<code>dockerhub</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/2a4e0d1685e2d3e8a984bc46c0f039d2.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h3 id="hosted">hosted</h3>
+<p>hosted比较简单，只需要填个名称就行了，这里填写为<code>docker-hosted</code>。</p>
+<h3 id="group">group</h3>
+<p>group 需要注意以下：</p>
+<ol>
+<li>HTTP需要单独设置端口号。我们设置与WEB页面不同的端口号，8082即可。</li>
+<li>需要将proxy和hosted都添加到group中，这样才能将两个仓库组合在一起。</li>
+</ol>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/8c4d65a43860e9b921eafc6898276123.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="启用realms">启用Realms</h2>
+<p>这里要在 Security-Realms 里面启用 Docker Bearer Token Realm。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/6dadf22bfabdf994b394e93a5beb6001.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="拉取镜像">拉取镜像</h2>
+<p>如果直接使用docker pull拉取镜像，会报错：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$ docker pull 192.168.1.9:8082/redis
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">Error response from daemon: Get &#34;https://192.168.1.9:8082/v2/&#34;: http: server gave HTTP response to HTTPS client
+</span></span></code></pre></div><p>编辑<code>/etc/docker/daemon.json</code>文件，添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;insecure-registries&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>注意：registry-mirrors中只保留一个Nexus的地址，这样默认就会从Nexus拉取镜像。如果有多个地址，就可能会从其他地址拉取镜像。因为我们在Nexus中配置的URL就是docker-proxy的地址，他就是一个国内代理地址，所以这里我们只保留一个Nexus的地址就行。
+注意： insecure-registries 拼写，不要写成 insecure-registry。最好直接复制，json格式很严格。</p>
+</blockquote>
+<p>重启Docker服务：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart docker
+</span></span></code></pre></div><p>登录Docker Registry：</p>
+<p>需要注意的shi，这里的用户名和密码是Nexus的用户名和密码，不是Docker Hub的用户名和密码。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker login 192.168.1.9:8082 -u admin -p admin123
+</span></span></code></pre></div><p>拉取镜像：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker pull redis                      
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">latest: Pulling from redis
+</span></span><span class="line"><span class="cl">1f7ce2fa46ab: Already exists 
+</span></span><span class="line"><span class="cl">4827e9d1e197: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">5845062cfda9: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">44d659adcf8b: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">b6962d83313d: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">5d29cf86ecab: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">4f4fb700ef54: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">3a2d9f90268c: Pull <span class="nb">complete</span> 
+</span></span><span class="line"><span class="cl">Digest: sha256:249e1bfb9448ae9e76807748f8cb3c5cc73e55441b7b36364c61a7428c9e814c
+</span></span><span class="line"><span class="cl">Status: Downloaded newer image <span class="k">for</span> 192.168.1.9:8082/redis:latest
+</span></span><span class="line"><span class="cl">192.168.1.9:8082/redis:latest
+</span></span></code></pre></div><p>可以在首页的Browse Docker中看到镜像已经被缓存了。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/151588f16856a1e6e2d5215d230ed0de.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="推送镜像">推送镜像</h2>
+<p>如果你需要上传自己修改的镜像，那么就需要修改之前的docker-hosted，其中HTTP中该为8083，和docker-proxy的端口号区分。这样我们就可以从8082下载镜像，从8083推送镜像。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/01/17/be0df03ad283819763b6a9f97ce88a59.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>首先我们需要重命名镜像，格式如下</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker tag &lt;imageId or imageName&gt; &lt;nexus-hostname&gt;:&lt;repository-port&gt;/&lt;image&gt;:&lt;tag&gt;
+</span></span><span class="line"><span class="cl">docker tag af340544ed62 192.168.1.9:8083/hello-world:mytag
+</span></span><span class="line"><span class="cl">docker push 192.168.1.9:8083/hello-world:mytag
+</span></span></code></pre></div><p>拉取这个镜像：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull 192.168.1.9:8083/hello-world:mytag
+</span></span></code></pre></div><h1 id="代理-yum-源">代理 YUM 源</h1>
+<h1 id="代理-apt-源">代理 APT 源</h1>
+<p>和 YUM 源代理稍有不同的是，APT 源代理时没有 Group 仓库，但是使用APT源的系统如Ubuntu也是有多个版本的，我们只需要在 Distribution 参数里填写需要代理的版本即可，每隔版本用逗号分隔。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/03/01/11753bea79901711a31f9e435d31fc91.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>常用的版本以及代号如下：</p>
+<ul>
+<li>Ubuntu 16.04 Xenial Xerus</li>
+<li>Ubuntu 18.04 Bionic Beaver</li>
+<li>Ubuntu 20.04 Focal Fossa</li>
+<li>Ubuntu 21.04 Hirsute Hippo</li>
+<li>Ubuntu 21.10 Impish Indri</li>
+<li>Ubuntu 22.04 Jammy Jellyfish</li>
+<li>Ubuntu 22.10 Kinetic Kudu</li>
+<li>Ubuntu 23.04 Lunar Lobster</li>
+<li>Ubuntu 23.10 Mantic Minotau</li>
+</ul>
+<p>代理地址为：http://192.168.1.9:8081/repository/apt-proxy/，我们可以在Ubuntu中使用这个地址来代理APT源。修改<code>/etc/apt/sources.list</code>文件，将原来的源地址替换为Nexus的地址即可。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-updates main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-updates main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-backports main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-backports main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-security main restricted universe multiverse
+</span></span><span class="line"><span class="cl"><span class="c1"># deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-security main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 预发布软件源，不建议启用</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># deb http://192.168.1.9:8081/repository/apt-proxy/ jammy-proposed main restricted universe multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># # deb-src http://192.168.1.9:8081/repository/apt-proxy/ jammy-proposed main restricted universe multiverse</span>
+</span></span></code></pre></div><h1 id="代理-pip-源">代理 pip 源</h1>
+<p>使用阿里云作为代理，我们需要在Nexus中创建一个PyPI代理仓库。点击左侧菜单栏的Repositories，然后点击Create repository，选择PyPI (proxy)，按照下图填写：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fc88f9c65dceb08b3b1b701a6625a4764.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>再创建一个PyPI Group仓库，将刚刚创建的PyPI代理仓库和PyPI Hosted仓库添加到Group仓库中。</p>
+<p>编辑<code>/etc/pip.conf</code>文件，添加以下内容：</p>
+<blockquote>
+<p>或者在用户目录下的<code>~/.pip/pip.conf</code>文件中添加</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[global]
+</span></span><span class="line"><span class="cl">index = http://192.168.1.9:8081/repository/pypi/
+</span></span><span class="line"><span class="cl">index-url = http://192.168.1.9:8081/repository/pypi/simple
+</span></span><span class="line"><span class="cl">trusted-host =  192.168.1.9
+</span></span></code></pre></div><h1 id="在-wsl2-中使用-nexus-代理">在 WSL2 中使用 Nexus 代理</h1>
+<p>因为 WSL2 使用的是宿主机Windows的Docker desktop作为Docker引擎，所以我们需要在Windows中配置Docker的代理。打开Docker Desktop，点击Settings，然后选择Docker Engine，添加以下内容：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Ffa63bec3941423faa870438fc14b06e5.png" alt=""  />
+</a>
+</div>
+
+</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;builder&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;gc&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;defaultKeepStorage&#34;</span><span class="p">:</span> <span class="s2">&#34;20GB&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;enabled&#34;</span><span class="p">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;experimental&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;insecure-registries&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;http://192.168.1.9:8082&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>重启Docker Desktop。然后在WSL2中使用 <code>docker info</code> 查看是否配置成功。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F15%2Fa4bf4946f10cce7d25cd5f25ce104fc5.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="常见错误">常见错误</h1>
+<h2 id="docker-login-nexus-unauthorized-authentication-required">docker login nexus unauthorized authentication required</h2>
+<ol>
+<li>确认登录密码是否正确，密码为Nexus登录密码</li>
+<li>却是否启用Realms</li>
+</ol>
+<h2 id="docker-login-nexus-connection-refused">docker login nexus connection refused</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker login 192.168.1.9:8082 -u admin -p admin123
+</span></span></code></pre></div><ol>
+<li>
+<p>确认Docker compose配置文件中已经将端口8082暴露，如果新增需要重启Nexus</p>
+</li>
+<li>
+<p>确认防火墙关闭或者已经打开端口</p>
+<ol>
+<li>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"> sudo ufw allow <span class="m">8082</span>
+</span></span><span class="line"><span class="cl"> sudo ufw allow 8082/tcp
+</span></span></code></pre></div></li>
+</ol>
+</li>
+<li>
+<p>确认已经将私有仓库添加到了<code>/etc/docker/daemon.json</code>，并且及时重启了docker服务</p>
+<ol>
+<li>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"> sudo systemctl restart docker.service
+</span></span></code></pre></div></li>
+</ol>
+</li>
+<li>
+<p>确认已经开启了Http connector</p>
+<ol>
+<li>如图：
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/12/16/922dcd44e678c2e22df359100fe32d53.png" alt=""  />
+</a>
+</div>
+
+</li>
+</ol>
+</li>
+</ol>
+]]></content:encoded>
     </item>
     <item>
       <title>Tunasync 搭建私有镜像站</title>
@@ -35,6 +640,169 @@
       <pubDate>Thu, 14 Dec 2023 14:15:54 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/tunasync%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E7%AB%99/</guid>
       <description>Tunasync 项目简介 Tunasync 是一个开源的镜像站点镜像工具，可以帮助你快速搭建一个镜像站点，也可以帮助你快速的同步镜像站点的镜像。我们所熟知的清华大学镜像站就</description>
+      <content:encoded><![CDATA[<h1 id="tunasync-项目简介">Tunasync 项目简介</h1>
+<p>Tunasync 是一个开源的镜像站点镜像工具，可以帮助你快速搭建一个镜像站点，也可以帮助你快速的同步镜像站点的镜像。我们所熟知的清华大学镜像站就是使用 Tunasync 来同步镜像的。</p>
+<h1 id="准备-workspace">准备 workspace</h1>
+<p>创建目录用于存放 Tunasync 的程序、配置文件和数据库文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir /home/username/tunasync
+</span></span><span class="line"><span class="cl">mkdir /home/username/tunasync/conf
+</span></span><span class="line"><span class="cl">mkdir /home/username/tunasync/db
+</span></span></code></pre></div><p>创建目录用于存放镜像文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo mkdir /srv/mirrors
+</span></span></code></pre></div><p>srv 目录需要 root 权限，将 mirrors 目录的所有者改为当前用户：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chown -R username:username /srv/mirrors
+</span></span></code></pre></div><h1 id="下载-tunasync">下载 Tunasync</h1>
+<p>可以从 <a href="https://github.com/tuna/tunasync">Tunasync 项目</a>的 Github releases 编译好的程序直接使用。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">wget https://github.com/tuna/tunasync/releases/download/v0.8.0/tunasync-linux-amd64-bin.tar.gz
+</span></span><span class="line"><span class="cl">tar -zxvf tunasync-linux-amd64-bin.tar.gz
+</span></span></code></pre></div><h1 id="配置-tunasync">配置 Tunasync</h1>
+<h2 id="manager-配置">Manager 配置</h2>
+<p>创建配置文件<code>/home/username/tunasync/conf/manager.conf</code>，并添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">debug</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>server<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">addr</span> <span class="o">=</span> <span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">port</span> <span class="o">=</span> <span class="m">12345</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_key</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>files<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">db_type</span> <span class="o">=</span> <span class="s2">&#34;bolt&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">db_file</span> <span class="o">=</span> <span class="s2">&#34;/home/username/tunasync/db/manager.db&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ca_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span></code></pre></div><h2 id="worker-配置">Worker 配置</h2>
+<p>创建配置文件<code>/home/username/tunasync/conf/worker-openeuler.conf</code>，并添加以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>global<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;openeuler_worker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">log_dir</span> <span class="o">=</span> <span class="s2">&#34;/srv/mirrors/log/tunasync/{{.Name}}&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">mirror_dir</span> <span class="o">=</span> <span class="s2">&#34;/srv/mirrors&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">concurrent</span> <span class="o">=</span> <span class="m">10</span>
+</span></span><span class="line"><span class="cl"><span class="nv">interval</span> <span class="o">=</span> <span class="m">1440</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>manager<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">api_base</span> <span class="o">=</span> <span class="s2">&#34;http://localhost:12345&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">token</span> <span class="o">=</span> <span class="s2">&#34;some_token&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ca_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>cgroup<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nb">enable</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span><span class="line"><span class="cl"><span class="nv">base_path</span> <span class="o">=</span> <span class="s2">&#34;/sys/fs/cgroup&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">group</span> <span class="o">=</span> <span class="s2">&#34;tunasync&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>server<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">hostname</span> <span class="o">=</span> <span class="s2">&#34;localhost&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">listen_addr</span> <span class="o">=</span> <span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">listen_port</span> <span class="o">=</span> <span class="m">16010</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_cert</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssl_key</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[[</span>mirrors<span class="o">]]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">name</span> <span class="o">=</span> <span class="s2">&#34;centos&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">provider</span> <span class="o">=</span> <span class="s2">&#34;rsync&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">upstream</span> <span class="o">=</span> <span class="s2">&#34;rsync://mirrors.tuna.tsinghua.edu.cn/openeuler/&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">use_ipv6</span> <span class="o">=</span> <span class="nb">false</span>
+</span></span></code></pre></div><h1 id="启动-tunasync">启动 Tunasync</h1>
+<h2 id="启动-manager">启动 Manager</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">./tunasync manager -c conf/manager.conf &gt;&gt; /srv/mirrors/log/plog/manager.log <span class="p">&amp;</span>
+</span></span></code></pre></div><h2 id="启动-worker">启动 Worker</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /home/username/tunasync
+</span></span><span class="line"><span class="cl">./tunasync worker -c conf/worker-openeuler.conf &gt;&gt; /srv/mirrors/log/plog/worker-openeuler.log <span class="p">&amp;</span>
+</span></span></code></pre></div><p>通常可能同步不止一个镜像站点，可以创建多个 Worker 配置文件，然后启动多个 Worker。</p>
+<h1 id="创建-web-服务">创建 web 服务</h1>
+<ol>
+<li>
+<p><strong>安装 Apache2：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl">sudo apt install apache2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>修改配置文件：</strong></p>
+<p>Ubuntu 中的 Apache2 主要配置文件是 <code>/etc/apache2/apache2.conf</code>。可以在此文件中进行全局配置，也可以使用专门的配置文件，例如 <code>/etc/apache2/sites-available/your-site.conf</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo nano /etc/apache2/apache2.conf
+</span></span></code></pre></div><p>在 <code>apache2.conf</code> 文件中，添加以下行，设置 <code>DocumentRoot</code> 和目录访问权限：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-apache" data-lang="apache"><span class="line"><span class="cl"><span class="nb">DocumentRoot</span> <span class="sx">/mirrors</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;Directory</span> <span class="s">&#34;/mirrors&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Options</span> Indexes FollowSymLinks
+</span></span><span class="line"><span class="cl">    <span class="nb">AllowOverride</span> <span class="k">None</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Require</span> <span class="k">all</span> granted
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/Directory&gt;</span>
+</span></span></code></pre></div><p>请确保将 <code>&lt;Directory&gt;</code> 部分添加到正确的位置。可以在文件中找到 <code>&lt;Directory /var/www/&gt;</code> 部分，然后在该部分下添加配置。</p>
+</li>
+<li>
+<p><strong>重新启动 Apache2 服务：</strong></p>
+<p>在进行配置更改后，需要重新启动 Apache2 服务以使更改生效：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart apache2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>补充文件：</strong></p>
+<p>将 <code>index.html</code> 文件和其他需要的文件添加到 <code>/srv/mirrors</code> 目录中。</p>
+</li>
+<li>
+<p><strong>测试：</strong></p>
+<p>打开 Web 浏览器，访问 <code>http://your-server-ip</code> 或 <code>http://localhost</code>，应该能够看到 <code>/srv/mirrors</code> 目录中的文件。</p>
+</li>
+<li>
+<p>如打不开，需要开启防火墙</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo ufw allow http
+</span></span><span class="line"><span class="cl">sudo ufw allow https
+</span></span></code></pre></div></li>
+<li>
+<p>修改 Web 服务端口</p>
+<ol>
+<li>
+<p><strong>编辑 Apache2 配置文件：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo nano /etc/apache2/ports.conf
+</span></span></code></pre></div></li>
+<li>
+<p>**在文件中找到 <strong>​</strong><code>Listen</code><strong>​ ** 行，修改端口：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-apache" data-lang="apache"><span class="line"><span class="cl"><span class="nb">Listen</span> <span class="m">2081</span>
+</span></span></code></pre></div></li>
+<li>
+<p><strong>编辑虚拟主机配置（如果有）：</strong></p>
+<p>如果你有虚拟主机配置文件（通常在 <code>/etc/apache2/sites-available/</code> 中），确保其中的 <code>&lt;VirtualHost&gt;</code> 部分中的端口也被修改为 2081。</p>
+</li>
+<li>
+<p><strong>保存并退出配置文件。</strong></p>
+</li>
+<li>
+<p><strong>重启 Apache 服务：</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart apache2
+</span></span></code></pre></div></li>
+</ol>
+</li>
+</ol>
+<h3 id="打开防火墙端口">打开防火墙端口</h3>
+<pre><code>1. **打开 2081 端口：**
+
+    ```bash
+    sudo ufw allow 2081
+    ```
+
+2. **检查配置：**
+
+    ```bash
+    sudo ufw status
+    ```
+
+    确保 2081 端口已经正确添加。
+3. **重启防火墙（可选）：**
+
+    ```bash
+    sudo ufw reload
+    ```
+
+    或者
+
+    ```bash
+    sudo systemctl restart ufw
+    ```
+
+这样，你就将 Apache2 Web 服务的端口修改为 2081，并且只开放了 2081 端口。确保修改了防火墙规则后，仍能够通过新的端口访问你的网站。
+</code></pre>
+]]></content:encoded>
     </item>
     <item>
       <title>使用Gitea部署个人代码仓库</title>
@@ -42,6 +810,100 @@
       <pubDate>Sat, 18 Nov 2023 18:17:42 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BD%BF%E7%94%A8gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</guid>
       <description>docker-compose 部署 version: &amp;#34;3.7&amp;#34; services: postgres: image: postgres:latest container_name: postgres ports: - 5432:5432 networks: - br-net-gitea environment: POSTGRES_USER: user POSTGRES_PASSWORD: 123456 POSTGRES_DB: gitea volumes: - ./postgresql:/var/lib/postgresql - ./data:/var/lib/postgresql/data gitea: image: gitea/gitea:1.20.5 container_name: gitea environment: - USER_UID=1000 - USER_GID=1000 - GITEA__database__DB_TYPE=postgres - GITEA__database__HOST=192.168.1.9:5432 - GITEA__database__NAME=gitea - GITEA__database__USER=user - GITEA__database__PASSWD=123456 restart: always networks: - br-net-gitea volumes: - ./data:/data - /etc/timezone:/etc/timezone:ro - /etc/localtime:/etc/localtime:ro - /home/git/.ssh/:/data/git/.ssh ports: - 3000:3000 - &amp;#34;127.0.0.1:2222:22&amp;#34; depends_on: -</description>
+      <content:encoded><![CDATA[<h1 id="docker-compose-部署">docker-compose 部署</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">postgres</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">postgres:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">5432</span><span class="p">:</span><span class="m">5432</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">br-net-gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l">user</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l">gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./postgresql:/var/lib/postgresql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./data:/var/lib/postgresql/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">gitea</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">gitea/gitea:1.20.5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">USER_UID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">USER_GID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__DB_TYPE=postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__HOST=192.168.1.9:5432</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__NAME=gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__USER=user</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__PASSWD=123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">br-net-gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./data:/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/etc/timezone:/etc/timezone:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/etc/localtime:/etc/localtime:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/home/git/.ssh/:/data/git/.ssh</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">3000</span><span class="p">:</span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;127.0.0.1:2222:22&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">act_runner</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">gitea/act_runner:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_INSTANCE_URL=http://192.168.1.9:3000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_RUNNER_REGISTRATION_TOKEN=Qw5Qf4A1bTENfIOQlc1NSNyFYMLp7TAtSujb5ihF</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_RUNNER_NAME=docker_runner</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/run/docker.sock:/var/run/docker.sock</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./act_runner/act_data:/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./act_runner/act_cache:/root/.cache</span><span class="w">
+</span></span></span></code></pre></div><h1 id="常见问题">常见问题</h1>
+<h2 id="首次登录web时没有创建管理员账号如何登录">首次登录web时没有创建管理员账号，如何登录</h2>
+<p>打开Gitea网页注册的第一个账号就是管理员账号。无需特殊设置。也无需找回密码。</p>
+<h2 id="从github导入仓库时报错从不允许的主机导入">从Github导入仓库时报错：从不允许的主机导入</h2>
+<p>打开配置文件<code>gitea/conf/app.ini</code>，修改以下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[migrations]
+</span></span><span class="line"><span class="cl">ALLOW_LOCALNETWORKS    = true
+</span></span><span class="line"><span class="cl">ALLOWED_DOMAINS = 127.0.0.1,192.168.31.100,github.com,*.github.com
+</span></span><span class="line"><span class="cl">IMPORT_LOCAL_PATHS = true  ;; 导入本地仓库开关，false：设置为false，防止所有用户（包括admin）导入服务器上的本地路径。
+</span></span></code></pre></div><p><code>docker-compose restart gitea</code>重启容器。</p>
+<blockquote>
+<p>以下修改配置文件后，需要重启容器才能生效，不再赘述。</p>
+</blockquote>
+<h2 id="如何开启软件包">如何开启软件包</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[packages]
+</span></span><span class="line"><span class="cl">ENABLED = true
+</span></span></code></pre></div><h2 id="开启action">开启action</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[actions]
+</span></span><span class="line"><span class="cl">ENABLED=true
+</span></span></code></pre></div><h2 id="error-response-from-daemon-server-gave-http-response-to-https-client">error response from daemon server gave http response to https client</h2>
+<p>docker login 报错</p>
+<p>配置/etc/docker/daemon.json</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;insecure-registries&#34;: [
+</span></span><span class="line"><span class="cl">    &#34;192.168.1.9:2010&#34;
+</span></span><span class="line"><span class="cl">]
+</span></span></code></pre></div><h2 id="如何上传docker镜像到gitea制品库">如何上传docker镜像到gitea制品库</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 登录你的镜像仓库，也就是你的 Gitea 服务器地址
+</span></span><span class="line"><span class="cl">docker login 192.168.1.9:2010
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 从官方仓库拉取一个 nginx:latest 镜像，并改名
+</span></span><span class="line"><span class="cl">docker pull nginx:latest
+</span></span><span class="line"><span class="cl">docker tag nginx:latest 192.168.1.9:2010/zhangsan/nginx:latest
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 推送镜像到 Gitea 服务器
+</span></span><span class="line"><span class="cl">docker push 192.168.1.9:2010/zhangsan/nginx:latest
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

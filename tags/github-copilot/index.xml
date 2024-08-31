@@ -14,6 +14,98 @@
       <pubDate>Sun, 24 Mar 2024 09:44:16 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/github-copilot-cli%E5%91%BD%E4%BB%A4%E8%A1%8Cai%E5%B7%A5%E5%85%B7/</guid>
       <description>GitHub Copilot CLI 是一个命令行工具，它允许你在终端中使用 GitHub Copilot。你可以使用它来获取代码建议，这些建议是由 OpenAI 的 GPT-4 模型生成的。这个工具可以在任何支</description>
+      <content:encoded><![CDATA[<p>GitHub Copilot CLI 是一个命令行工具，它允许你在终端中使用 GitHub Copilot。你可以使用它来获取代码建议，这些建议是由 OpenAI 的 GPT-4 模型生成的。这个工具可以在任何支持命令行的环境中使用，包括 Visual Studio Code 的集成终端。</p>
+<p>参考官方文档：<a href="https://docs.github.com/en/copilot/github-copilot-in-the-cli/using-github-copilot-in-the-cli">Using GitHub Copilot in the CLI - GitHub Docs</a></p>
+<h1 id="安装">安装</h1>
+<p>前提：</p>
+<ol>
+<li>
+<p>需要订阅Github Copilot，每月$10。</p>
+</li>
+<li>
+<p>需要安装GH CLI</p>
+</li>
+</ol>
+<p>订阅自行解决，接下来安装GH CLI：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo mkdir -p -m <span class="m">755</span> /etc/apt/keyrings <span class="o">&amp;&amp;</span> wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg <span class="p">|</span> sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg &gt; /dev/null <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="o">&amp;&amp;</span> sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/github-cli.list &gt; /dev/null <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="o">&amp;&amp;</span> sudo apt update <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="o">&amp;&amp;</span> sudo apt install gh -y
+</span></span></code></pre></div><p>如果没法安装，可以下载deb文件手动安装。<a href="https://github.com/cli/cli/releases/tag/v2.46.0">Release GitHub CLI 2.46.0 · cli/cli</a></p>
+<p>安装完GH CLI后，安装Copilot CLI：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ gh auth login
+</span></span><span class="line"><span class="cl"><span class="c1"># 选择登录账号类型为Github.com</span>
+</span></span><span class="line"><span class="cl">? What account <span class="k">do</span> you want to log into?  <span class="o">[</span>Use arrows to move, <span class="nb">type</span> to filter<span class="o">]</span>
+</span></span><span class="line"><span class="cl">&gt; GitHub.com
+</span></span><span class="line"><span class="cl">  GitHub Enterprise Server
+</span></span><span class="line"><span class="cl"><span class="c1"># 选择传输协议为SSH</span>
+</span></span><span class="line"><span class="cl">? What is your preferred protocol <span class="k">for</span> Git operations on this host?  <span class="o">[</span>Use arrows to move, <span class="nb">type</span> to filter<span class="o">]</span>
+</span></span><span class="line"><span class="cl">  HTTPS
+</span></span><span class="line"><span class="cl">&gt; SSH
+</span></span><span class="line"><span class="cl"><span class="c1"># 选择一个本地的公钥，并命名SSH key的名称</span>
+</span></span><span class="line"><span class="cl">? Title <span class="k">for</span> your SSH key: <span class="o">(</span>GitHub CLI<span class="o">)</span> wsl2
+</span></span><span class="line"><span class="cl"><span class="c1"># 选择验证方式为使用浏览器验证</span>
+</span></span><span class="line"><span class="cl">? How would you like to authenticate GitHub CLI?  <span class="o">[</span>Use arrows to move, <span class="nb">type</span> to filter<span class="o">]</span>
+</span></span><span class="line"><span class="cl">&gt; Login with a web browser
+</span></span><span class="line"><span class="cl">  Paste an authentication token
+</span></span><span class="line"><span class="cl">! First copy your one-time code: 7AAA-SA47
+</span></span><span class="line"><span class="cl"><span class="c1"># 回车后会弹出浏览器，输入验证码即可</span>
+</span></span><span class="line"><span class="cl">Press Enter to open github.com in your browser...
+</span></span><span class="line"><span class="cl">! Failed opening a web browser at https://github.com/login/device
+</span></span><span class="line"><span class="cl">  fork/exec /usr/bin/winchrome: <span class="nb">exec</span> format error
+</span></span><span class="line"><span class="cl">  Please try entering the URL in your browser manually
+</span></span></code></pre></div><blockquote>
+<p>WSL2 环境下可能会出现无法打开浏览器的情况，可以手动打开浏览器输入地址验证https://github.com/login/device。</p>
+</blockquote>
+<h1 id="使用">使用</h1>
+<p>支持两个命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 解释代码</span>
+</span></span><span class="line"><span class="cl">gh copilot explain
+</span></span><span class="line"><span class="cl"><span class="c1"># 获取命令行建议</span>
+</span></span><span class="line"><span class="cl">gh copilot suggest
+</span></span></code></pre></div><p>示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ gh copilot explain <span class="s2">&#34;sudo apt-get&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Welcome to GitHub Copilot in the CLI!
+</span></span><span class="line"><span class="cl">version 1.0.1 <span class="o">(</span>2024-03-22<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">I<span class="err">&#39;</span>m powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For more information, see https://gh.io/gh-copilot-transparency
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Explanation:                                                                                                                                                                       
+</span></span><span class="line"><span class="cl">                                                                                                                                                                                   
+</span></span><span class="line"><span class="cl">  • sudo is used to run a <span class="nb">command</span> with elevated rights, typically as a superuser.                                                                                                  
+</span></span><span class="line"><span class="cl">    • apt-get is the Ubuntu package manager.                                                                                                                                       
+</span></span><span class="line"><span class="cl">      • It is used to manage packages on the system, including installing, updating, and removing software packages.                                                               
+</span></span><span class="line"><span class="cl">      • It requires administrative privileges to perform these operations.                                                                                                         
+</span></span><span class="line"><span class="cl">      • Additional sub-commands can be used with apt-get to perform specific tasks, such as install, remove, update, etc.                                                          
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ gh copilot suggest <span class="s2">&#34;Install git&#34;</span>
+</span></span><span class="line"><span class="cl">Welcome to GitHub Copilot in the CLI!
+</span></span><span class="line"><span class="cl">version 1.0.1 <span class="o">(</span>2024-03-22<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">I<span class="err">&#39;</span>m powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions, and share feedback so that we can learn and improve. For more information, see https://gh.io/gh-copilot-transparency
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">? What kind of <span class="nb">command</span> can I <span class="nb">help</span> you with?  <span class="o">[</span>Use arrows to move, <span class="nb">type</span> to filter<span class="o">]</span>
+</span></span><span class="line"><span class="cl">&gt; generic shell <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">  gh <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">  git <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">Suggestion:                                                                                                                                                                        
+</span></span><span class="line"><span class="cl">  sudo apt-get install git                                                                                                                                                     
+</span></span><span class="line"><span class="cl">? Select an option  <span class="o">[</span>Use arrows to move, <span class="nb">type</span> to filter<span class="o">]</span>
+</span></span><span class="line"><span class="cl">&gt; Copy <span class="nb">command</span> to clipboard
+</span></span><span class="line"><span class="cl">  Explain <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">  Execute <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">  Revise <span class="nb">command</span>
+</span></span><span class="line"><span class="cl">  Rate response
+</span></span><span class="line"><span class="cl">  Exit
+</span></span></code></pre></div><p>gh copilot 默认提供了这两个命令的别名，无需输入完整命令，可以直接使用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># ghce 为 gh copilot explain 的别名</span>
+</span></span><span class="line"><span class="cl">ghce <span class="s2">&#34;sudo apt-get&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ghcs 为 gh copilot suggest 的别名</span>
+</span></span><span class="line"><span class="cl">ghcs <span class="s2">&#34;install git&#34;</span>
+</span></span></code></pre></div><p>为了便于在每个终端中使用 gh copilot cli，将以下配置放到配置文件中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;eval &#34;$(gh copilot alias -- zsh)&#34;&#39;</span> &gt;&gt; ~/.zshrc
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

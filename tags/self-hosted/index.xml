@@ -14,6 +14,100 @@
       <pubDate>Sat, 18 Nov 2023 18:17:42 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BD%BF%E7%94%A8gitea%E9%83%A8%E7%BD%B2%E4%B8%AA%E4%BA%BA%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93/</guid>
       <description>docker-compose 部署 version: &amp;#34;3.7&amp;#34; services: postgres: image: postgres:latest container_name: postgres ports: - 5432:5432 networks: - br-net-gitea environment: POSTGRES_USER: user POSTGRES_PASSWORD: 123456 POSTGRES_DB: gitea volumes: - ./postgresql:/var/lib/postgresql - ./data:/var/lib/postgresql/data gitea: image: gitea/gitea:1.20.5 container_name: gitea environment: - USER_UID=1000 - USER_GID=1000 - GITEA__database__DB_TYPE=postgres - GITEA__database__HOST=192.168.1.9:5432 - GITEA__database__NAME=gitea - GITEA__database__USER=user - GITEA__database__PASSWD=123456 restart: always networks: - br-net-gitea volumes: - ./data:/data - /etc/timezone:/etc/timezone:ro - /etc/localtime:/etc/localtime:ro - /home/git/.ssh/:/data/git/.ssh ports: - 3000:3000 - &amp;#34;127.0.0.1:2222:22&amp;#34; depends_on: -</description>
+      <content:encoded><![CDATA[<h1 id="docker-compose-部署">docker-compose 部署</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">postgres</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">postgres:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">5432</span><span class="p">:</span><span class="m">5432</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">br-net-gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l">user</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="m">123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l">gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./postgresql:/var/lib/postgresql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./data:/var/lib/postgresql/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">gitea</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">gitea/gitea:1.20.5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">USER_UID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">USER_GID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__DB_TYPE=postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__HOST=192.168.1.9:5432</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__NAME=gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__USER=user</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA__database__PASSWD=123456</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">br-net-gitea</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./data:/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/etc/timezone:/etc/timezone:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/etc/localtime:/etc/localtime:ro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/home/git/.ssh/:/data/git/.ssh</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">3000</span><span class="p">:</span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;127.0.0.1:2222:22&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">postgres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">act_runner</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">gitea/act_runner:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_INSTANCE_URL=http://192.168.1.9:3000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_RUNNER_REGISTRATION_TOKEN=Qw5Qf4A1bTENfIOQlc1NSNyFYMLp7TAtSujb5ihF</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">GITEA_RUNNER_NAME=docker_runner</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/var/run/docker.sock:/var/run/docker.sock</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./act_runner/act_data:/data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./act_runner/act_cache:/root/.cache</span><span class="w">
+</span></span></span></code></pre></div><h1 id="常见问题">常见问题</h1>
+<h2 id="首次登录web时没有创建管理员账号如何登录">首次登录web时没有创建管理员账号，如何登录</h2>
+<p>打开Gitea网页注册的第一个账号就是管理员账号。无需特殊设置。也无需找回密码。</p>
+<h2 id="从github导入仓库时报错从不允许的主机导入">从Github导入仓库时报错：从不允许的主机导入</h2>
+<p>打开配置文件<code>gitea/conf/app.ini</code>，修改以下配置：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[migrations]
+</span></span><span class="line"><span class="cl">ALLOW_LOCALNETWORKS    = true
+</span></span><span class="line"><span class="cl">ALLOWED_DOMAINS = 127.0.0.1,192.168.31.100,github.com,*.github.com
+</span></span><span class="line"><span class="cl">IMPORT_LOCAL_PATHS = true  ;; 导入本地仓库开关，false：设置为false，防止所有用户（包括admin）导入服务器上的本地路径。
+</span></span></code></pre></div><p><code>docker-compose restart gitea</code>重启容器。</p>
+<blockquote>
+<p>以下修改配置文件后，需要重启容器才能生效，不再赘述。</p>
+</blockquote>
+<h2 id="如何开启软件包">如何开启软件包</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[packages]
+</span></span><span class="line"><span class="cl">ENABLED = true
+</span></span></code></pre></div><h2 id="开启action">开启action</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[actions]
+</span></span><span class="line"><span class="cl">ENABLED=true
+</span></span></code></pre></div><h2 id="error-response-from-daemon-server-gave-http-response-to-https-client">error response from daemon server gave http response to https client</h2>
+<p>docker login 报错</p>
+<p>配置/etc/docker/daemon.json</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;insecure-registries&#34;: [
+</span></span><span class="line"><span class="cl">    &#34;192.168.1.9:2010&#34;
+</span></span><span class="line"><span class="cl">]
+</span></span></code></pre></div><h2 id="如何上传docker镜像到gitea制品库">如何上传docker镜像到gitea制品库</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 登录你的镜像仓库，也就是你的 Gitea 服务器地址
+</span></span><span class="line"><span class="cl">docker login 192.168.1.9:2010
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 从官方仓库拉取一个 nginx:latest 镜像，并改名
+</span></span><span class="line"><span class="cl">docker pull nginx:latest
+</span></span><span class="line"><span class="cl">docker tag nginx:latest 192.168.1.9:2010/zhangsan/nginx:latest
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 推送镜像到 Gitea 服务器
+</span></span><span class="line"><span class="cl">docker push 192.168.1.9:2010/zhangsan/nginx:latest
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

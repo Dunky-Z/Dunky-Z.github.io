@@ -14,6 +14,52 @@
       <pubDate>Fri, 29 Jul 2022 13:58:27 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/gerrit%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E6%8A%84%E9%80%81%E6%8F%90%E9%86%92/</guid>
       <description>背景 公司使用 Gerrit 作为 Review 平台，但是每次提交代码都需要手动添加 Reviewer，还要抄送组内成员，这种重复性劳动，程序员是绝不能容忍的。gerri</description>
+      <content:encoded><![CDATA[<h2 id="背景">背景</h2>
+<p>公司使用 Gerrit 作为 Review 平台，但是每次提交代码都需要手动添加 Reviewer，还要抄送组内成员，这种重复性劳动，程序员是绝不能容忍的。gerrit 提供了发送邮件的功能。</p>
+<h2 id="解决方法">解决方法</h2>
+<p>官方示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git push ssh://john.doe@git.example.com:29418/kernel/common HEAD:refs/for/experimental%r=a@a.com,cc=b@o.com
+</span></span></code></pre></div><p>最后的<code>%</code>是个分隔符，<code>r='a@a.com</code>表示 Reviewer 是<code>a@a.com</code>，<code>cc=b@o.com</code>表示抄送组内成员是<code>b@o.com</code>。</p>
+<blockquote>
+<p>注意！邮箱之间不能有空格！</p>
+</blockquote>
+<p>以一个仓库为例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git push origin HEAD:refs/for/branch_dev_name%cc=zhangsan@qq.com,cc=lisi@qq.com,cc=wangerma@qq.com,cc=chenwu@qq.com
+</span></span></code></pre></div><p>但是要这么写，岂不是把操作搞更复杂了。</p>
+<p>终极办法，打开项目路径下的<code>.git</code>目录。编辑<code>config</code>文件：</p>
+<p>原文件里有如下字段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[core]
+</span></span><span class="line"><span class="cl"> repositoryformatversion = 0
+</span></span><span class="line"><span class="cl"> filemode = false
+</span></span><span class="line"><span class="cl"> bare = false
+</span></span><span class="line"><span class="cl"> logallrefupdates = true
+</span></span><span class="line"><span class="cl"> ignorecase = true
+</span></span><span class="line"><span class="cl">[remote &#34;origin&#34;]
+</span></span><span class="line"><span class="cl"> url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+</span></span><span class="line"><span class="cl"> fetch = +refs/heads/*:refs/remotes/origin/*
+</span></span></code></pre></div><p>我们可以将远程仓库名换成容易区分的名字，自己随意：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[core]
+</span></span><span class="line"><span class="cl"> repositoryformatversion = 0
+</span></span><span class="line"><span class="cl"> filemode = false
+</span></span><span class="line"><span class="cl"> bare = false
+</span></span><span class="line"><span class="cl"> logallrefupdates = true
+</span></span><span class="line"><span class="cl"> ignorecase = true
+</span></span><span class="line"><span class="cl">[remote &#34;origin&#34;]
+</span></span><span class="line"><span class="cl"> url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+</span></span><span class="line"><span class="cl"> fetch = +refs/heads/*:refs/remotes/origin/*
+</span></span><span class="line"><span class="cl"># 以下为新增内容
+</span></span><span class="line"><span class="cl">[remote &#34;review&#34;]
+</span></span><span class="line"><span class="cl"> url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+</span></span><span class="line"><span class="cl"> fetch = +refs/heads/*:refs/remotes/origin/*
+</span></span><span class="line"><span class="cl"> push =  HEAD:refs/for/%cc=zhangsan@qq.com,
+</span></span><span class="line"><span class="cl"> cc=lisi@qq.com,
+</span></span><span class="line"><span class="cl"> cc=wangerma@qq.com,
+</span></span><span class="line"><span class="cl"> cc=chenwu@qq.com
+</span></span></code></pre></div><p>下次想要推送需要 review 的代码，就直接执行<code>git push review</code>，其中<code>push</code>就相当于：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">push HEAD:refs/for/%cc=zhangsan@qq.com,cc=lisi@qq.com,cc=wangerma@qq.com,cc=chenwu@qq.com
+</span></span></code></pre></div><h2 id="参考资料">参考资料</h2>
+<p><a href="https://gerrit-review.googlesource.com/Documentation/user-upload.html#push_create,">Gerrit Code Review - Uploading Changes</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

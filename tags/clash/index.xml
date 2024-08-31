@@ -14,6 +14,121 @@
       <pubDate>Sat, 10 Sep 2022 10:03:25 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/linux%E4%B8%8B%E4%BD%BF%E7%94%A8clash%E4%BD%9C%E4%BB%A3%E7%90%86%E5%B9%B6%E9%85%8D%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/</guid>
       <description>下载安装 点击下载 Linux 版本的 Clash，下载完成后解压缩。 unzip clash-linux.zip sudo mv clash-linux /usr/local/bin/clash sudo chmod +x /usr/local/bin/clash 初步使用 下载配置文件，配置文件一般由订阅商（机场）提供，是一个 yaml 文</description>
+      <content:encoded><![CDATA[<h2 id="下载安装">下载安装</h2>
+<p>点击下载 <a href="https://glados.rocks/tools/clash-linux.zip">Linux 版本的 Clash</a>，下载完成后解压缩。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">unzip clash-linux.zip
+</span></span><span class="line"><span class="cl">sudo mv clash-linux /usr/local/bin/clash
+</span></span><span class="line"><span class="cl">sudo chmod +x /usr/local/bin/clash
+</span></span></code></pre></div><h2 id="初步使用">初步使用</h2>
+<p>下载配置文件，配置文件一般由订阅商（机场）提供，是一个 yaml 文件，编写了代理服务器的信息，以及访问规则等。这是最关键的一步。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">clash-linux-amd64-v1.10.0 -f 从订阅商那获取的配置文件.ymal -d .
+</span></span></code></pre></div><p>可以尝试在 Git clone 时使用代理，如果可以正常下载，说明代理配置成功。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/twbs/bootstrap.git --config <span class="s2">&#34;http.proxy=127.0.0.1:7890&#34;</span>  
+</span></span><span class="line"><span class="cl"><span class="c1"># 即可正常下载</span>
+</span></span></code></pre></div><h2 id="开机启动">开机启动</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> ~
+</span></span><span class="line"><span class="cl">sudo cp /usr/local/bin/clash /etc/
+</span></span><span class="line"><span class="cl">sudo vim /etc/systemd/system/clash.service
+</span></span></code></pre></div><p>添加如下内容，并保存：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-YAML" data-lang="YAML"><span class="line"><span class="cl"><span class="p">[</span><span class="l">Unit]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">Description=Clash Daemon</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="l">Service]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">ExecStart=/usr/local/bin/clash -f /etc/clash/订阅的配置文件.yaml -d /etc/clash/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">Restart=on-failure</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">[</span><span class="l">Install]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="l">WantedBy=multi-user.target</span><span class="w">
+</span></span></span></code></pre></div><p>启用 clash 服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo systemctl <span class="nb">enable</span> clash.service
+</span></span></code></pre></div><p>启动 clash 服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo systemctl start clash.service
+</span></span></code></pre></div><p>此外也可以停止或者禁用 clash 服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo systemctl stop clash.service
+</span></span><span class="line"><span class="cl">sudo systemctl disable clash.service
+</span></span></code></pre></div><p>查看运行状态：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo systemctl status clash
+</span></span></code></pre></div><p>查看 clash 服务日志</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">journalctl -e -u clash.service
+</span></span></code></pre></div><h2 id="配置定期更新">配置定期更新</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">crontab -e
+</span></span></code></pre></div><p>添加如下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="m">29</span> <span class="m">6</span>    * * *   root    pgrep clash <span class="p">|</span> xargs <span class="nb">kill</span> -s <span class="m">9</span> 
+</span></span><span class="line"><span class="cl"><span class="m">30</span> <span class="m">6</span>    * * *   root    cp /etc/clash/订阅的配置文件.yaml /etc/clash/backup.yaml 
+</span></span><span class="line"><span class="cl"><span class="m">31</span> <span class="m">6</span>    * * *   root    curl https://订阅链接.yaml &gt; /etc/clash/订阅的配置文件.yaml
+</span></span><span class="line"><span class="cl"><span class="m">32</span> <span class="m">6</span>    * * *   root    sudo systemctl start clash.service
+</span></span></code></pre></div><p>重启 cron 服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo systemctl restart cron.service
+</span></span></code></pre></div><h2 id="使用-dashboard">使用 Dashboard</h2>
+<p>编辑<code>/etc/clash/glados.yaml</code>，修改以下配置，默认配置为<code>127.0.0.1:9090</code>。如果你的<code>9090</code>端口没有被占用，将其修改为<code>0.0.0.0:9090</code>即可，因为我的 NAS<code>9090</code>端口被占用，所以修改成了<code>0.0.0.0:19090</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">external-controller: 0.0.0.0:19090
+</span></span></code></pre></div><p>这样就可以在浏览器通过<code>Nas IP:19090/ui</code>访问 Dashboard，比如<code>192.168.1.9:19090/ui</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F23%2Fb2d931cbaa82c449f590a3d6cb7da6cc.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F23%2Fb2d931cbaa82c449f590a3d6cb7da6cc.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F23%2Fb2d931cbaa82c449f590a3d6cb7da6cc.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="更方便的方式使用-docker-部署">更方便的方式：使用 Docker 部署</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">clash</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">dreamacro/clash-premium</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">clash</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l">clash</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">unless-stopped</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">7890</span><span class="p">:</span><span class="m">7890</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">7891</span><span class="p">:</span><span class="m">7891</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">9090</span><span class="p">:</span><span class="m">9090</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">/root/sharefolder/appdata/clash:/root/.config/clash</span><span class="w"> </span><span class="c"># 修改为你的配置文件目录</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">TZ=Asia/Shanghai</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">clash-dashboard</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">haishanh/yacd:master</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">clash-dashboard</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;7880:80&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">TZ=Asia/Shanghai</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">clash</span><span class="w">
+</span></span></span></code></pre></div><p>这样就可以在浏览器通过<code>Nas IP:7880</code>访问 clash-dashboard，比如<code>192.168.1.9:7880</code>。点击配置，大概率显示无法连接到后端。修改后端地址位<code>http://192.168.1.9:9090</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F12%2F853241226eed8c8509e80bc9946a8691.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F12%2F853241226eed8c8509e80bc9946a8691.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F12%2F853241226eed8c8509e80bc9946a8691.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>定时更新：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">crontab -e 
+</span></span><span class="line"><span class="cl"><span class="c1"># 添加以下的内容</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时备份配置文件</span>
+</span></span><span class="line"><span class="cl"><span class="m">0</span> */8 * * * cp /root/sharefolder/appdata/clash/config.yaml /root/sharedfolder/appdata/clash/config.yaml.bak
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时延迟 5 分钟支更新配置文件</span>
+</span></span><span class="line"><span class="cl"><span class="m">5</span> */8 * * * curl https://xxxxxxx &gt; /root/sharedfolder/appdata/clash/config.yaml
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时延迟 6 分钟修改配置文件 allow-lan: false 修改为true</span>
+</span></span><span class="line"><span class="cl"><span class="m">6</span> */8 * * * sed -i <span class="s1">&#39;s/allow-lan: false/allow-lan: true/&#39;</span> /root/sharedfolder/appdata/clash/config.yaml
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时延迟 7 分钟修改配置文件 external-controller:</span>
+</span></span><span class="line"><span class="cl"><span class="m">7</span> */8 * * * sed -i <span class="s1">&#39;s/external-controller: 127.0.0.1:9090/external-controller: 0.0.0.0:9090/&#39;</span> /root/sharedfolder/appdata/clash/config.yaml 
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时延迟 8 分钟修改配置文件 external-ui: dashboard 注释掉，即不使用内置的dashboard，有的机场提供的配置文件没有这个配置，就不需要添加这行</span>
+</span></span><span class="line"><span class="cl"><span class="m">8</span> */8 * * * sed -i <span class="s1">&#39;s/external-ui: dashboard/#external-ui: dashboard/&#39;</span> /root/sharefolder/appdata/clash/config.yaml
+</span></span><span class="line"><span class="cl"><span class="c1"># 每隔 8 小时延迟 9 分钟重启 clash</span>
+</span></span><span class="line"><span class="cl"><span class="m">9</span> */8 * * * docker restart clash
+</span></span><span class="line"><span class="cl"><span class="m">10</span> */8 * * * docker restart clash-dashboard
+</span></span></code></pre></div><h2 id="参考">参考</h2>
+<p><a href="https://github.com/ghostxu97/clash-for-linux">ghostxu97/clash-for-linux: Linux 环境安装配置 Clash 工具，以实现代理上网效果。包含下载、安装、配置、运行、测试以及开机自启动、定期自动更新订阅功能的操作文档，希望对你有所帮助</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

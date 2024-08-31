@@ -14,6 +14,61 @@
       <pubDate>Sat, 12 Aug 2023 09:22:56 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95/</guid>
       <description>生成密钥对 宿主机任意下目录执行： $ ssh-keygen -t rsa Generating public/private rsa key pair. Enter file in which to save the key (/home/user/.ssh/id_rsa): host2servera_id_rsa Enter passphrase (empty for no passphrase): Enter same passphrase again: Your identification has been saved in host2servera_id_rsa. Your public key has been saved in host2servera_id_rsa.pub. The key fingerprint is: SHA256:OkWcw+R3x6Z2mzeYQuG033H3N9qIeym3TZKzz6YD8tQ user@ubuntu18 The key&amp;#39;s randomart image</description>
+      <content:encoded><![CDATA[<h1 id="生成密钥对">生成密钥对</h1>
+<p>宿主机任意下目录执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">$ ssh-keygen -t rsa
+</span></span><span class="line"><span class="cl">Generating public/private rsa key pair.
+</span></span><span class="line"><span class="cl">Enter file in which to save the key <span class="o">(</span>/home/user/.ssh/id_rsa<span class="o">)</span>: host2servera_id_rsa
+</span></span><span class="line"><span class="cl">Enter passphrase <span class="o">(</span>empty <span class="k">for</span> no passphrase<span class="o">)</span>: 
+</span></span><span class="line"><span class="cl">Enter same passphrase again: 
+</span></span><span class="line"><span class="cl">Your identification has been saved in host2servera_id_rsa.
+</span></span><span class="line"><span class="cl">Your public key has been saved in host2servera_id_rsa.pub.
+</span></span><span class="line"><span class="cl">The key fingerprint is:
+</span></span><span class="line"><span class="cl">SHA256:OkWcw+R3x6Z2mzeYQuG033H3N9qIeym3TZKzz6YD8tQ user@ubuntu18
+</span></span><span class="line"><span class="cl">The key<span class="err">&#39;</span>s randomart image is:
+</span></span><span class="line"><span class="cl">+---<span class="o">[</span>RSA 2048<span class="o">]</span>----+
+</span></span><span class="line"><span class="cl"><span class="p">|</span>        .        <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="o">=</span> .   .   <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>        B .o. +  <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       . oo.o+   <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>        S  ++ ..o<span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       o ..+.A<span class="o">=</span><span class="nv">o</span><span class="o">=</span><span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>      o   +..B+<span class="o">=</span>+<span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       .   <span class="nv">oo</span><span class="o">=</span>@o+<span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>           <span class="nv">o</span><span class="o">=</span><span class="nv">ss</span><span class="o">=</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl">+----<span class="o">[</span>SHA256<span class="o">]</span>-----+
+</span></span></code></pre></div><p>一直回车确定，生成公私钥，保存在<code>~/.ssh</code>目录下。</p>
+<blockquote>
+<p>我在宿主机上生成的公私钥名称为，分别是<code>host2servera_id_rsa</code>,<code>host2servera_id_rsa.pub</code>方便我记忆。如果一直回车，那么生成的公私钥名称为<code>id_rsa</code>，<code>id_rsa.pub</code>。</p>
+</blockquote>
+<h1 id="发送公钥">发送公钥</h1>
+<p>将公钥复制到服务器 ServerA 上，以 IP：<code>10.12.193.53</code> 为例。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">$ ssh-copy-id 10.12.193.53
+</span></span><span class="line"><span class="cl"><span class="c1"># 输入密码</span>
+</span></span><span class="line"><span class="cl">/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key<span class="o">(</span>s<span class="o">)</span>, to filter out any that are already installed
+</span></span><span class="line"><span class="cl">/usr/bin/ssh-copy-id: INFO: <span class="m">1</span> key<span class="o">(</span>s<span class="o">)</span> remain to be installed -- <span class="k">if</span> you are prompted now it is to install the new keys
+</span></span><span class="line"><span class="cl">user@10.12.193.53<span class="s1">&#39;s password: 
+</span></span></span><span class="line"><span class="cl"><span class="s1">
+</span></span></span><span class="line"><span class="cl"><span class="s1">Number of key(s) added: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">
+</span></span></span><span class="line"><span class="cl"><span class="s1">Now try logging into the machine, with:   &#34;ssh &#39;</span>10.12.193.53<span class="err">&#39;</span><span class="s2">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">and check to make sure that only the key(s) you wanted were added.
+</span></span></span></code></pre></div><p>默认是把 ServerA 的用户当做 user 进行登录。如果有确定的用户如<code>userA</code>，就使用<code>ssh-copy-id userA@10.12.193.53</code></p>
+<p>然后就可以直接免密码登录了：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">ssh user@10.12.193.53
+</span></span><span class="line"><span class="cl"><span class="c1"># 或者</span>
+</span></span><span class="line"><span class="cl">ssh userA@10.12.193.53
+</span></span></code></pre></div><p>如果还是需要输入密码，可能<code>ssh-agent</code>没有启动，执行<code>eval $(ssh-agent)</code>启动<code>ssh-agent</code>，然后再次登录即可。然后将私钥添加到<code>ssh-agent</code>中，执行<code>ssh-add ~/.ssh/host2servera_id_rsa</code>，然后再次登录即可。</p>
+<h1 id="配置快捷登录">配置快捷登录</h1>
+<p>即使免密登录，输入一长串 IP 也太麻烦了，能不能配置更简单的登录方式，比如给服务器起个名字如<code>ServerA</code>直接使用<code>ssh ServerA</code>就登录服务器，能。</p>
+<p>打开<code>~/.ssh/config</code>配置如下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Ini" data-lang="Ini"><span class="line"><span class="cl"><span class="na">Host ServerA</span>
+</span></span><span class="line"><span class="cl">    <span class="na">HostName 10.12.193.53</span>
+</span></span><span class="line"><span class="cl">    <span class="na">Port 22</span>
+</span></span><span class="line"><span class="cl">    <span class="na">User userA</span>
+</span></span><span class="line"><span class="cl">    <span class="na">IdentityFile ~/.ssh/host2servera_id_rsa</span>
+</span></span></code></pre></div><p>然后就可以直接使用<code>ssh ServerA</code>登录了。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>保持 SSH 连接</title>
@@ -21,6 +76,41 @@
       <pubDate>Sat, 13 Aug 2022 20:28:57 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BF%9D%E6%8C%81ssh%E8%BF%9E%E6%8E%A5/</guid>
       <description>SSH 总是被强行中断，尤其是用 VSCode 代码写的好好的，突然刷新窗口，不仅效率低，更惹人恼火。 可以通过配置服务端或客户端的 SSH 来保持 SSH 链接： 方法一：配置服</description>
+      <content:encoded><![CDATA[<p>SSH 总是被强行中断，尤其是用 VSCode 代码写的好好的，突然刷新窗口，不仅效率低，更惹人恼火。</p>
+<p>可以通过配置服务端或客户端的 SSH 来保持 SSH 链接：</p>
+<h2 id="方法一配置服务端">方法一：配置服务端</h2>
+<p>可以在服务端配置，让 server 每隔 30 秒向 client 发送一个 keep-alive 包来保持连接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim /etc/ssh/sshd_config
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ClientAliveInterval <span class="m">30</span>
+</span></span><span class="line"><span class="cl">ClientAliveCountMax <span class="m">60</span>
+</span></span></code></pre></div><p>第二行配置表示如果发送 keep-alive 包数量达到 60 次，客户端依然没有反应，则服务端 sshd 断开连接。如果什么都不操作，该配置可以让连接保持 30s*60，30 min</p>
+<p>重启本地 ssh</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo service ssh restart
+</span></span></code></pre></div><p>如果找不到 ssh,”Failed to restart ssh.service: Unit ssh.service not found.” ，需要安装</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install openssh-server
+</span></span></code></pre></div><h2 id="方法二配置客户端">方法二：配置客户端</h2>
+<p>如果服务端没有权限配置，或者无法配置，可以配置客户端 ssh，使客户端发起的所有会话都保持连接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim /etc/ssh/ssh_config
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ServerAliveInterval <span class="m">30</span>
+</span></span><span class="line"><span class="cl">ServerAliveCountMax <span class="m">60</span>
+</span></span></code></pre></div><p>本地 ssh 每隔 30s 向 server 端 sshd 发送 keep-alive 包，如果发送 60 次，server 无回应断开连接。</p>
+<p>在 VSCode 里可以直接添加配置，效果一样：
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208132040474.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208132040474.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208132040474.png" alt=""  />
+</a>
+</div>
+
+</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Host 11.22.33.44
+</span></span><span class="line"><span class="cl">  HostName 11.22.33.44
+</span></span><span class="line"><span class="cl">  User user
+</span></span><span class="line"><span class="cl">  Port <span class="m">112343</span>
+</span></span><span class="line"><span class="cl">  ServerAliveInterval <span class="m">30</span>
+</span></span><span class="line"><span class="cl">  ServerAliveCountMax <span class="m">60</span>
+</span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

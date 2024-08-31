@@ -14,6 +14,97 @@
       <pubDate>Fri, 19 Aug 2022 14:16:29 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/iic%E5%8D%8F%E8%AE%AE/</guid>
       <description>IIC 概述 IIC（Inter-Integrated Circuit），也叫 I2C（Inter-IC Communication）总线，是一种串行通信</description>
+      <content:encoded><![CDATA[<h1 id="iic-概述">IIC 概述</h1>
+<p><strong>IIC（Inter-Integrated Circuit）</strong>，也叫 I2C（Inter-IC Communication）总线，是一种串行通信协议，由 Philips 公司在 1980 年代初开发。IIC 总线用于连接微控制器、传感器和其他集成电路，它具有以下特点：</p>
+<ol>
+<li>双线制结构简单：由一条数据线（SDA）和一条时钟线（SCL）组成。</li>
+<li>多主机并行通信：多个 Master 设备可同时接入同一条 IIC 总线上进行数据交换。</li>
+<li>硬件资源占用少：只要两根线就可以连接多个器件。</li>
+<li>数据传输速率快：现代 IIC 总线的最高传输速率可达到 400Kbps。</li>
+<li>低功耗设计：使用者可以通过软件控制设备进入睡眠模式以减少功耗。</li>
+</ol>
+<h1 id="传输协议">传输协议</h1>
+<h2 id="写操作">写操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片写数据，以及写标记（0）</li>
+<li>从设备回应（用来确定这个设备是香存在，然后就可以传输数据）</li>
+<li>主设备发送一个字节数据给从设备，并等待回应</li>
+<li>每传输一字节故据，接收方要有一个回应信号（确定故据是否接受完成），然后再传输下一个故据。</li>
+<li>数据发送完之后，主机就会发送一个停止信号。</li>
+</ul>
+<h2 id="读操作">读操作</h2>
+<ul>
+<li>主机要发出一个<strong>起始信号</strong></li>
+<li>主机发出一个<strong>设备地址</strong>用来确定是往那一个芯片读数据，以及读标记（1）</li>
+<li>从设备回应（用来确定这个设备是否存在），然后就可以传输数据</li>
+<li>从设备发送一个字节放据给主设备，并等待回应</li>
+<li>每传输一字节数据，接收方要有一个回应信号（确定数据是否接受完成），然后再传输下一个放据。</li>
+<li>数据发送完之后，主芯片就会发送一个停止信号。</li>
+</ul>
+<h1 id="状态">状态</h1>
+<h2 id="空闲状态">空闲状态</h2>
+<ul>
+<li>SCL 和 SDA 都为高电平</li>
+</ul>
+<p>此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。</p>
+<h2 id="起始状态">起始状态</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
+</a>
+</div>
+
+</p>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平</li>
+</ul>
+<p>标志着一次数据传输的开始。起始信号是由主控器主动建立的，在建立该信号之前 I2C 总线必须处于空闲状态。</p>
+<h2 id="结束状态">结束状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由低电平变为高电平</li>
+</ul>
+<h2 id="数据传输状态">数据传输状态</h2>
+<ul>
+<li>SCL 高电平期间，SDL 保持稳定
+<ul>
+<li>SDL 为高电平表示 1，低电平表示 0</li>
+</ul>
+</li>
+</ul>
+<p>在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 <code>0xaa</code> 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
+</a>
+</div>
+
+</p>
+<blockquote>
+<p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p>
+</blockquote>
+<h2 id="应答状态">应答状态</h2>
+<ul>
+<li>SCL 为高电平，SDA 由高电平变为低电平（上图最后的 ACK 标记）</li>
+</ul>
+<p>I2C 总线上的所有数据都是以 8 位字节传送的，发送器 (主机) 每发送一个字节，就在<strong>第 9 个时钟</strong>脉冲期间释放数据线，由从设备反馈一个应答信号。应答信号为<strong>低电平</strong>时，规定为<strong>有效应答位</strong> (ACK 简称应答位)，表示接收器已经成功地接收了该字节；应答信号为<strong>高电平时</strong>，规定为<strong>非应答位</strong> (NACK)，一般表示接收器接收该字节没有成功。对于反馈有效应答位 ACK 的要求是，接收器在第 9 个时钟脉冲之前的低电平期间将 <strong>SDA</strong> 线拉低，并且确保在该<strong>时钟的高电平期间为稳定的低电平</strong>。</p>
+<p>以下四种情况 IIC 通信过程中会产生非应答位（NACK）：</p>
+<ul>
+<li>从机正在处理某些实时的操作无法与主机实现 IIC 通信的时候，从机会给主机反馈一个非应答 (NACK)</li>
+<li>主机发送数据的过程中，从机无法解析发送的数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机发送数据的过程中，从机无法再继续接收数据，从机也会给主机反馈一个非应答位 (NACK)</li>
+<li>主机从从机中读取数据的过程中，主机不想再接收数据，主机会给从机反馈一个非应答位 (NACK)，注意，这种情况是主机给从机反馈一个非应答位 (NACK)</li>
+</ul>
+<h1 id="参考资料">参考资料</h1>
+<ol>
+<li><a href="https://www.cnblogs.com/liujinggang/p/9656358.html">IIC总线的原理与Verilog实现 - jgliu - 博客园</a></li>
+<li><a href="https://www.cnblogs.com/xuyan123/p/14134246.html">IIC时序分析 - 夏天师妹 - 博客园</a></li>
+</ol>
+]]></content:encoded>
     </item>
     <item>
       <title>SPI 协议</title>
@@ -21,6 +112,169 @@
       <pubDate>Tue, 19 Jul 2022 14:23:40 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/spi%E5%8D%8F%E8%AE%AE/</guid>
       <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。 4 线制 SPI 四个信号： SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：片选信号</description>
+      <content:encoded><![CDATA[<h1 id="spi-概述">SPI 概述</h1>
+<p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>4 线制 SPI 四个信号：</p>
+<ul>
+<li>SCLK：串行时钟信号，由主设备产生，用于同步数据传输。</li>
+<li>CS：片选信号，由主设备产生，用于选择从设备。</li>
+<li>MOSI：主设备输出，从设备输入，用于主设备向从设备传输数据。</li>
+<li>MISO：主设备输入，从设备输出，用于从设备向主设备传输数据。</li>
+</ul>
+<p>除了四线式 SPI 总线之外，还有三线式 SPI 总线和双线式 SPI 总线。</p>
+<ul>
+<li>
+<p>四线式 SPI 总线，也称为标准 SPI 总线，由 SCLK、MOSI、MISO 和 SS（Slave Select）四个信号线组成。其中，SCLK 是时钟信号线；MOSI 是主设备向从设备发送数据的信号线；MISO 是从设备向主设备发送数据的信号线；SS 是从设备的片选信号线，用于选择要通信的从设备。</p>
+</li>
+<li>
+<p>三线式 SPI 总线将 MOSI 和 MISO 合并为单一的信号线。这种 SPI 总线有一个专门的叫做 MOMI 的信号线，既可以作为主设备向从设备发送数据的信号线，又可以作为从设备向主设备发送数据的信号线。</p>
+</li>
+<li>
+<p>双线式 SPI 总线（也称为 MICROWIRE 或 uWire），由一个串行数据线和一个时钟线组成。在这种 SPI 总线上，没有单独的片选信号线，而是使用一个帧选择控制位来选择相应的从设备。</p>
+</li>
+</ul>
+<blockquote>
+<p>他们传输速率有差别吗？
+是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。
+SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p>
+</blockquote>
+<h3 id="时钟极性和时钟相位">时钟极性和时钟相位</h3>
+<p>在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">SPI 模式</th>
+<th style="text-align:center">CPOL(Serial Clock Polarity)</th>
+<th style="text-align:center">CPHA(Serial Clock Phase)</th>
+<th style="text-align:center">空闲状态下的时钟极性</th>
+<th style="text-align:center">采样时的时钟相位</th>
+<th style="text-align:center">移位数据的时钟相位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">逻辑低电平</td>
+<td style="text-align:center">上升沿</td>
+<td style="text-align:center">下降沿</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">逻辑低电平</td>
+<td style="text-align:center">下降沿</td>
+<td style="text-align:center">上升沿</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">高电平</td>
+<td style="text-align:center">下降沿</td>
+<td style="text-align:center">上升沿</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">高电平</td>
+<td style="text-align:center">上升沿</td>
+<td style="text-align:center">下降沿</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p>
+</blockquote>
+<p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。" />
+</a>
+</div>
+
+</p>
+<p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。" />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出" />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。"  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。" />
+</a>
+</div>
+
+</p>
+<h1 id="多从机配置">多从机配置</h1>
+<h2 id="标准-spi-模式">标准 SPI 模式</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p>
+<p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p>
+<h2 id="菊花链模式">菊花链模式</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p>
+<p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h1 id="spi-实现">SPI 实现</h1>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://www.analog.com/cn/analog-dialogue/articles/introduction-to-spi-interface.html">SPI 接口简介 | 亚德诺半导体</a></p>
+<p><a href="https://jia.je/hardware/2023/04/26/spi/#sd-%E5%8D%A1">SPI 协议 - 杰哥的{运维，编程，调板子}小笔记</a></p>
+]]></content:encoded>
     </item>
     <item>
       <title>NOC(net-on-chip) 总线互联构架</title>
@@ -28,6 +282,34 @@
       <pubDate>Tue, 12 Jul 2022 23:13:51 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/noc-net-on-chip-%E6%80%BB%E7%BA%BF%E4%BA%92%E8%81%94%E6%9E%84%E6%9E%B6/</guid>
       <description>技术背景 转载自^[片上网络（NoC）技术的背景、意义以及发展_碎碎思的博客-CSDN 博客] 在过去的几十年里，集成电路制造工艺技术、封装与测试</description>
+      <content:encoded><![CDATA[<h2 id="技术背景">技术背景</h2>
+<blockquote>
+<p>转载自^[<a href="https://blog.csdn.net/pieces_thinking/article/details/77938041">片上网络（NoC）技术的背景、意义以及发展_碎碎思的博客-CSDN 博客</a>]</p>
+</blockquote>
+<p>在过去的几十年里，集成电路制造工艺技术、封装与测试技术、设计方法学和 EDA 工具等微电子相关技术始终保持着快速的发展。根据<a href="https://zh.wikipedia.org/zh-sg/%E5%9B%BD%E9%99%85%E5%8D%8A%E5%AF%BC%E4%BD%93%E6%8A%80%E6%9C%AF%E5%8F%91%E5%B1%95%E8%93%9D%E5%9B%BE">国际半导体技术发展路线图</a>（International Technology Roadmap for Semiconductors, ITRS）预测，到 2024 年 IC 制造技术将达到 2 nm。但是，全局互连线的性能提升程度明显低于晶体管性能提升程度。受到亚阈值漏电流功耗、动态功耗、器件可靠性以及全局互连线等影响，<strong>通过提升单个处理器核的性能来提升系统整体性能已变得非常难以实现</strong>，同时芯片设计的难度和复杂度也在进一步增加。片上系统（System on Chip, SoC）具有集成度高、功耗低、成本低、体积小等优点，已经成为超大规模集成电路系统设计的主流方向。随着片上系统 SoC 的应用需求越来越丰富、越来越复杂，片上多核 MPSoC (MultiprocessorSystem on Chip, MPSoC) 已经成为发展的必然趋势，同时 MPSoC 上集成的 IP 核数量也将会按照摩尔定律继续发展。目前，MPSoC 已经逐渐应用于网络通信、多媒体等嵌入式电子设备中。半导体工艺技术的快速发展为集成电路设计提供了很大的发展空间，同时也带来了一系列新的问题和挑战，如芯片的性能、功耗、可靠性、可扩展性等等。</p>
+<p>随着系统性能需求越来越高，处理器核之间的互连架构必须能够提供具有较低延迟和高吞吐率的服务，并且具有良好的可扩展性。传统的基于总线的集中式互连架构已经难以满足现今系统的性能需求，而基于报文交换的**片上网络（Network on Chip, NoC）**逐渐成为片上多核间通讯的首选互连架构。在 NoC 中，路由节点之间通过局部互连线相连接，每一个路由节点通过网络接口 NI 与一个本地 IP 核相连接，源路由节点和目的路由节点之间的数据通讯需要经过多个跳步来实现。因此，NoC 技术的出现使得片上系统 SoC 的设计也将从以计算为中心逐渐过渡到以通讯为中心。</p>
+<p>传统的 SoC 系统采用总线互连结构，如 所示。虽然人们已经提出了很多改进的总线结构，例如将共享总线改进为桥接多总线结构、层次化总线结构等更复杂的结构。但是当进入 MPSoC 时代，单芯片上集成的处理器核数越来越多时，总线结构在通讯性能、功耗、全局时钟同步、信号完整性以及信号可靠性等方面面临着巨大的挑战，这些复杂的改进型总线结构仍无法解决片上多核间通信所面临的问题。因此，<strong>MPSoC 上多核间的通讯问题</strong>已经成为制约系统性能提升的<strong>主要瓶颈</strong>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713101328.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713101328.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713101328.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>NoC 的概念是由 Agarwal（1999 年）、Guerrier 和 Greiner（2000 年）、Dally 和 Towles（2001 年）、Benini 和 Micheli（2002 年）、Jantsch 和 Tenhunen（2003 年）等人逐步提出的。目前，对于 NoC 还没有一个统一的定义，大多数 NoC 研究者认为 NoC 是 SoC 系统的通讯子集，并且应该引入互联网络技术来解决片上多核的通讯问题。</p>
+<h2 id="noc-的意义">NoC 的意义</h2>
+<blockquote>
+<p>转载自^[<a href="https://blog.csdn.net/pieces_thinking/article/details/77938041">片上网络（NoC）技术的背景、意义以及发展_碎碎思的博客-CSDN 博客</a>]</p>
+</blockquote>
+<p>随着单芯片上集成的处理器核数越来越多，片上互连架构经历了从专用互连线，Bus，Crossbar 到 NoC。NoC 借鉴了分布式计算系统的通讯方式，采用数据路由和分组交换技术替代传统的总线结构，从体系结构上解决了 SoC 总线结构由于地址空间有限导致的可扩展性差，分时通讯引起的通讯效率低下，以及全局时钟同步引起的功耗和面积等问题。与传统的总线互连技术相比，片上网络具有如下优点：</p>
+<p>第一，<strong>网络带宽</strong>。总线结构互连多个 IP 核，共享一条数据总线，其缺点是同一时间只能有一对 IP 进行通信。随着系统规模的逐渐增大，总线结构的通信效率必然成为限制系统性能提升的瓶颈。片上网络具有非常丰富的信道资源，为系统提供了一个网络化的通信平台。网络中的多个节点可以同时利用网络中的不同物理链路进行信息交换，支持多个 IP 核并发地进行数据通信。随着网络规模的增大，网络上的信道资源也相应增多。因此，<strong>NoC 技术相对于 Bus 互连技术具有较高的带宽</strong>，以及更高的通信效率。当并发进行数据通信时网络会产生竞争，即会存在请求同一条物理链路的节点对。NoC 的路由节点通过分时复用物理链路来解决竞争，<strong>与 Bus 结构相比，NoC 能够降低竞争发生的概率</strong>。</p>
+<p>第二，<strong>可扩展性和设计成本</strong>。总线结构需要针对不同的系统需求单独进行设计，当系统功能扩展时，需要对现有的设计方案重新设计，从而严重影响设计的周期和资本投入。**NoC 中每个路由节点和本地 IP 核通过网络接口（NetworkInterface, NI）相连，当系统需要升级扩展新功能时，只需要将新增加的处理器核通过网络接口 NI 接入到网络中的路由节点即可，无需重新设计网络。**因此，片上网络具有良好的可扩展性。片上网络作为一个独立的片上互连结构，能够满足不同系统的应用需求，当网络中节点数量增加时，仅需要按照相应的拓扑结构规则继续增大网络的规模即可，缩短了产品的设计周期，节约了设计成本。</p>
+<p>第三，<strong>功耗</strong>。随着 SoC 规模的不断增大，总线上每次信息交互都需要驱动全局互连线，因此总线结构所消耗的功耗将显著增加，并且随着集成电路工艺的不断发展，想要保证全局时钟同步也将变得难以实现。而在 NoC 中，信息交互消耗的功耗与进行通讯的路由节点之间的距离密切相关，距离较近的两个节点进行通讯时消耗的功耗就比较低。</p>
+<p>第四，<strong>信号完整性和信号延迟</strong>。随着集成电路特征尺寸的不断减小，电路规模的不断增大，互连线的宽度和间距也在不断地减小，线间耦合电容相应增大，长的全局并行总线会引起较大的串扰噪声，从而影响信号的完整性以及信号传输的正确性。同时，互连线上的延迟将成为影响信号延迟的主要因素，总线结构全局互连线上的延迟将大于一个时钟周期，从而使得时钟的偏移很难管理。</p>
+<p>第五，<strong>全局同步</strong>。总线结构采用全局同步时钟，随着芯片集成度的提高，芯片的工作频率也在不断提高，在芯片内会形成很庞大的时钟树，因此很难实现片上各个模块的全局同步时钟。采用时钟树（Clock Tree）优化的方法可以改善由时钟翻转引起的时钟偏差和时钟抖动，但同步时钟网络所产生的动态功耗甚至可达总功耗的 40% 以上。为了提高系统的时钟频率，只能对全局互连线采用分布式流水线结构，或者采用全局异步局部同步（Global Asynchronous Local Synchronous,GALS）的时钟策略。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>SoC 存储器比较</title>
@@ -35,6 +317,76 @@
       <pubDate>Sat, 21 May 2022 17:13:33 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/soc%E5%AD%98%E5%82%A8%E5%99%A8%E6%AF%94%E8%BE%83/</guid>
       <description>内存 也就是内部存储器，主要用来运行程序的，典型的就是 RAM 随机存储器（Random Access Memory），那么随机是什么意思？所谓随机，指的是当存储器</description>
+      <content:encoded><![CDATA[<h2 id="内存">内存</h2>
+<p>也就是内部存储器，主要用来运行程序的，典型的就是 RAM 随机存储器（Random Access Memory），那么随机是什么意思？所谓随机，指的是当存储器中的数据被读取或写入时，所需要的时间与这段信息所在的位置无关（任何位置读写速度一样）。</p>
+<p><strong>DRAM</strong>（Dynamic Random Access Memory，动态随机存储器）是最为常见的系统内存。我们使用的电脑和手机的运行内存都是 DRAM。DRAM 使用电容存储，DRAM 只能将数据保持很短的时间。为了保持数据，所以必须隔一段时间刷新（refresh）一次，如果存储单元没有被刷新，存储的信息就会丢失。数据的存储，请参考数据存储模型。我们知道，电容中的电荷很容易变化，所以随着时间推移，电容中的电荷数会增加或减少，为了确保数据不会丢失，DRAM 每隔一段时间会给电容刷新（充电或放电）。动态：定时刷新数据</p>
+<p><strong>SRAM</strong>（Static Random Access Memory，静态随机存储器），它是一种具有静止存取功能的内存，其内部机构比 DRAM 复杂，可以做到不刷新电路即能保存它内部存储的数据。<strong>静态：不需要刷新</strong></p>
+<p><strong>DDR SDRAM</strong>（Double Data Rate SDRAM）：为双信道同步动态随机存取内存，是新一代的 SDRAM 技术。DDR 内存芯片的数据预取宽度（Prefetch）为 2 bit（SDRAM 的两倍）。</p>
+<p><strong>DDR2 SDRAM</strong>（Double Data Rate Two SDRAM）：为双信道两次同步动态随机存取内存。DDR2 内存 Prefetch 又再度提升至 4 bit（DDR 的两倍）</p>
+<p><strong>DDR3 SDRAM</strong>（Double Data Rate Three SDRAM）：为双信道三次同步动态随机存取内存。DDR3 内存 Prefetch 提升至 8 bit，即每次会存取 8 bits 为一组的数据。运算频率介于 800MHz -1600MHz 之间。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="外存">外存</h2>
+<p>外部存储器，通常用来存储文件的，一般也叫 ROM（<strong>Read-only memory</strong>）只读存储器。</p>
+<p>CPU 连接内存和外存的连接方式不同。内存需要直接地址访问，所以是通过地址总线&amp;数据总线的总线式访问方式连接的（好处是直接访问，随机访问；坏处是占用 CPU 的地址空间，大小受限）；外存是通过 CPU 的外存接口来连接的（好处是不占用 CPU 的地址空间，坏处是访问速度没有总线式快，访问时序较复杂）</p>
+<blockquote>
+<p>我们平时用的硬盘，SD 卡都属于 ROM，但是他们却可以写入？ROM 严格意义来讲确实是只读的，但是随着储存器的发展，出现了可擦可编程只读存储器（EPROM）、电可擦可编程只读存储器（EEPROM）形式的半导体存储器，以及 flash。他们都是可写的。ROM 就不再单单只表示只读存储器了，一般来说与 RAM 相对，掉电不易失的存储器都被当做 ROM。</p>
+</blockquote>
+<h3 id="rom">ROM</h3>
+<p>ROM（Read Only Memory）只读存储器，这种存储器（Memory）的内容任何情况下都不会改变，电脑与用户只能读取保存在这里的指令，和使用存储在 ROM 的资料，但不能变更或存入资料。ROM 被存储在一个非易失性芯片上，也就是说，即使在关机之后记忆的内容仍可以被保存，所以这种存储器多用来存储特定功能的程序，如<a href="https://zh.wikipedia.org/wiki/%E5%9B%BA%E4%BB%B6">固件</a>。ROM 存储用来启动电脑的程序（如<a href="https://zh.wikipedia.org/wiki/BIOS">BIOS</a>），电脑引导的时候 BIOS 提供一连串的指令对中央处理器（<a href="https://zh.wikipedia.org/wiki/CPU">CPU</a>）等组件进行初始化，在初始化过程中，BIOS 程序初始化并检查<a href="https://zh.wikipedia.org/wiki/%E9%9A%8F%E6%9C%BA%E5%AD%98%E5%8F%96%E5%AD%98%E5%82%A8%E5%99%A8">RAM</a>。</p>
+<h3 id="norflash">NorFlash</h3>
+<p>总线式访问，接到 SROM bank，优点是可以直接总线访问，一般用来启动。</p>
+<h3 id="nandflash">NandFlash</h3>
+<p>SLC：容量小，价格高，稳定性高</p>
+<p>MLC：容量大，价格低，稳定性差，易出坏块</p>
+<p><strong>iNand</strong>
+SanDisk 公司出产的 eMMC</p>
+<p><strong>moviNand</strong>
+三星公司出产的 eMMC</p>
+<p><strong>oneNAND</strong>
+三星公司出的一种 Nand，价格贵，用的少</p>
+<p><strong>SD 卡（Secure Digital Memory Card）</strong></p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><strong>TF 卡（TransFLash Card, MicroSD）</strong></p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><strong>MMC 卡</strong></p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><strong>eMMC 卡（embeded MMC）</strong>
+嵌入式的 MMC，可以当成一种芯片，内部做了坏块处理</p>
+<p><strong>SATA 硬盘</strong></p>
+<p>特点：机械式访问、磁存储原理、SATA 是接口。</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

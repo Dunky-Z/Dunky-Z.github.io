@@ -14,6 +14,160 @@
       <pubDate>Fri, 09 Jun 2023 21:38:34 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/devstack%E9%83%A8%E7%BD%B2openstack/</guid>
       <description>Devstack 部署 OpenStack 试验发现在 Host 为 Ubuntu20.04 和 22.04 上无法顺利安装 VirtualBox，请在 Ubuntu18.04 上安装 VirtualBox。虚拟机镜像版本为 Ubuntu20.04，以</description>
+      <content:encoded><![CDATA[<h1 id="devstack-部署-openstack">Devstack 部署 OpenStack</h1>
+<p>试验发现在 Host 为 Ubuntu20.04 和 22.04 上无法顺利安装 VirtualBox，请在 Ubuntu18.04 上安装 VirtualBox。虚拟机镜像版本为 Ubuntu20.04，以下步骤可以稳定复现，OpenStack master（c424a7a299e37004d318107648bb18e157344985）版本。</p>
+<p>总而言之，在 18.04 版本上安装 VirtualBox，在 20.04 版本上安装 OpenStack。</p>
+<p>因为安装 OpenStack 容易破话系统包依赖，如果为了学习建议在虚拟机中安装。</p>
+<p>安装过程中需要下载镜像，请确认机器可以访问外网。</p>
+<h2 id="安装-virtualbox">安装 VirtualBox</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl">sudo apt install virtualbox virtualbox-ext-pack
+</span></span></code></pre></div><h2 id="确认-virtualbox-配置">确认 VirtualBox 配置</h2>
+<p>请确认 VirtualBox 配置如下，VirtualBox 默认配置硬盘为 10G，远远不够用，为了避免后续的麻烦，请确认如下配置：</p>
+<p>磁盘大于 100G</p>
+<p>内存大于 16G</p>
+<p>CPU 大于 4 个</p>
+<h2 id="下载镜像并安装">下载镜像并安装</h2>
+<p>镜像可以去<a href="https://mirrors.tuna.tsinghua.edu.cn/">清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a>下载。</p>
+<h2 id="更新源">更新源</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk <span class="o">&amp;&amp;</span> sudo bash -c <span class="s2">&#34;cat &lt;&lt; EOF &gt; /etc/apt/sources.list
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restrcdicted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restrcd &amp;&amp; mkdir .pip &amp;&amp; cd .pipicted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">EOF&#34;</span>
+</span></span></code></pre></div><h3 id="备用源-以备不时之需">备用源 (以备不时之需)</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk <span class="o">&amp;&amp;</span> sudo bash -c <span class="s2">&#34;cat &lt;&lt; EOF &gt; /etc/apt/sources.list
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restrcdicted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restrcd &amp;&amp; mkdir .pip &amp;&amp; cd .pipicted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">EOF&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk <span class="o">&amp;&amp;</span> sudo bash -c <span class="s2">&#34;cat &lt;&lt; EOF &gt; /etc/apt/sources.list
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb https://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src https://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb https://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb https://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb https://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src https://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">EOF&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo mv /etc/apt/sources.list /etc/apt/sources.list.bk <span class="o">&amp;&amp;</span> sudo bash -c <span class="s2">&#34;cat &lt;&lt; EOF &gt; /etc/apt/sources.list
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
+</span></span></span><span class="line"><span class="cl"><span class="s2">EOF&#34;</span>
+</span></span></code></pre></div><h2 id="安装基础包">安装基础包</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt update
+</span></span><span class="line"><span class="cl">sudo apt install git
+</span></span><span class="line"><span class="cl">sudo apt install aptitude
+</span></span></code></pre></div><p>aptitude 用于解决包依赖冲突。</p>
+<h2 id="添加用户">添加用户</h2>
+<p>添加 stack 用户</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo useradd -s /bin/bash -d /opt/stack -m stack
+</span></span></code></pre></div><p>授予 sudo 权限</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;stack ALL=(ALL) NOPASSWD: ALL&#34;</span> <span class="p">|</span> sudo tee /etc/sudoers.d/stack
+</span></span></code></pre></div><p>切换到 stack 用户</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo su -  stack
+</span></span></code></pre></div><h2 id="pip-配置">PIP 配置</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">cd &amp;&amp; mkdir -p  .pip &amp;&amp; cd .pip &amp;&amp; bash -c &#34;cat &lt;&lt; EOF &gt; ~/.pip/pip.conf
+</span></span><span class="line"><span class="cl">[global]
+</span></span><span class="line"><span class="cl">timeout = 6000
+</span></span><span class="line"><span class="cl">index-url = http://mirrors.aliyun.com/pypi/simple/
+</span></span><span class="line"><span class="cl">trusted-host = mirrors.aliyun.com
+</span></span><span class="line"><span class="cl">EOF&#34;
+</span></span></code></pre></div><h2 id="仓库下载">仓库下载</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git clone https://github.com/openstack/devstack --depth <span class="m">1</span>
+</span></span></code></pre></div><h3 id="配置-localconf">配置 local.conf</h3>
+<p>只需要修改 HOST_IP，其他的可以不用修改，HOST_IP 为本机 IP 地址，可以使用 ifconfig 查看。如果是虚拟机就是虚拟机的 IP，virtualbox 创建的虚拟机默认为 10.0.2.15。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> devstack <span class="o">&amp;&amp;</span> touch local.conf <span class="o">&amp;&amp;</span> bash -c <span class="s2">&#34;cat &lt;&lt; EOF &gt; /opt/stack/devstack/local.conf
+</span></span></span><span class="line"><span class="cl"><span class="s2">[[local|localrc]]
+</span></span></span><span class="line"><span class="cl"><span class="s2">HOST_IP=10.0.2.15
+</span></span></span><span class="line"><span class="cl"><span class="s2">GIT_BASE=http://git.trystack.cn
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">ADMIN_PASSWORD=user
+</span></span></span><span class="line"><span class="cl"><span class="s2">DATABASE_PASSWORD=</span><span class="nv">$ADMIN_PASSWORD</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">RABBIT_PASSWORD=</span><span class="nv">$ADMIN_PASSWORD</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">SERVICE_PASSWORD=</span><span class="nv">$ADMIN_PASSWORD</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">EOF&#34;</span>
+</span></span></code></pre></div><h2 id="安装">安装</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nv">FORCE</span><span class="o">=</span>yes ./stack.sh
+</span></span></code></pre></div><h1 id="bug-解决">BUG 解决</h1>
+<h2 id="systemd-包依赖冲突">systemd 包依赖冲突</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo aptitude install systemd
+</span></span><span class="line"><span class="cl">选择N
+</span></span><span class="line"><span class="cl">再选择Y
+</span></span></code></pre></div><h2 id="modulenotfounderror-no-module-named-distutilscmd">ModuleNotFoundError: No module named &lsquo;distutils.cmd&rsquo;</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl"> sudo apt-get install python3.10-distutils
+</span></span><span class="line"><span class="cl"> # 根据自己的 Python 版本决定，可以 python3.7-distutils python3.8-distutils   ....都试一遍
+</span></span></code></pre></div><h2 id="apparmor-invalid-capability-bpf">apparmor invalid capability bpf</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt install apparmor
+</span></span></code></pre></div><h2 id="no-tenant-network-is-available-for-allocation">No tenant network is available for allocation</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">vim /etc/neutron/plugins/ml2/ml2_conf.ini
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>ml2<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">type_drivers</span> <span class="o">=</span> flat,vlan,vxlan
+</span></span><span class="line"><span class="cl"><span class="nv">tenant_network_types</span> <span class="o">=</span> vxlan
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>ml2_type_vxlan<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">vni_ranges</span> <span class="o">=</span> 1:1000
+</span></span></code></pre></div><h2 id="unixvarrunopenvswitchdbsock-database-connection-failed-connection-refused">unix:/var/run/openvswitch/db.sock: database connection failed (Connection refused)</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span>  /opt/stack/devstack/lib/neutron_plugin 
+</span></span><span class="line"><span class="cl">vi ovn_agent 
+</span></span><span class="line"><span class="cl">116G  跳转到116行
+</span></span><span class="line"><span class="cl"><span class="nv">OVS_RUNDIR</span><span class="o">=</span><span class="nv">$OVS_PREFIX</span>/var/run/openvswitch <span class="nv">修改为OVS_RUNDIR</span><span class="o">=</span><span class="nv">$OVS_PREFIX</span>/var/run/ovn 
+</span></span><span class="line"><span class="cl">sudo rm -rf /var/run/ovn
+</span></span></code></pre></div><h2 id="virtualbox-启动报错--failed-to-send-host-log-message">VirtualBox 启动报错 : Failed to send host log message</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">Ctrl+F2进入另一个终端
+</span></span><span class="line"><span class="cl">输入：startx进入桌面
+</span></span></code></pre></div><h2 id="attributeerror-module-collections-has-no-attribute-mutablemapping">AttributeError: module ‘collections‘ has no attribute ‘MutableMapping‘</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">collections.MutableMapping
+</span></span><span class="line"><span class="cl">collections.abc.MutableMapping
+</span></span></code></pre></div><h2 id="modulenotfounderror-no-module-named-distutilscore">ModuleNotFoundError: No module named &lsquo;distutils.core&rsquo;</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">sudo apt install python3-pip
+</span></span></code></pre></div><h2 id="error-cannot-uninstall-simplejson-it-is-a-distutils-installed-project-and-thus-we-cannot">ERROR: Cannot uninstall &lsquo;simplejson&rsquo;. It is a distutils installed project and thus we cannot</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">sudo pip install --ignore-installed wrapt enum34 simplejson netaddr
+</span></span></code></pre></div><h2 id="server-certificate-verification-failed-cafile-none-crlfile-none">server certificate verification failed. CAfile: none CRLfile: none</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git config --global http.sslverify <span class="nb">false</span>
+</span></span><span class="line"><span class="cl">git config --global https.sslverify <span class="nb">false</span>
+</span></span></code></pre></div><h2 id="ubuntu登录页面验证出错">Ubuntu:登录页面验证出错</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo loginctl unlock-sessions
+</span></span></code></pre></div><h2 id="ubuntu重装桌面">Ubuntu:重装桌面</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install ubuntu-desktop
+</span></span></code></pre></div><h2 id="ubuntu-登录界面-authentication-error">Ubuntu 登录界面 Authentication Error</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo loginctl unlock-sessions
+</span></span><span class="line"><span class="cl">sudo <span class="nb">echo</span> <span class="s2">&#34;fs.inotify.max_user_watches=524288&#34;</span> &gt;&gt; /etc/sysctl.conf
+</span></span></code></pre></div><h2 id="ubuntu-无法进入桌面系统但是可以-ssh-链接">Ubuntu 无法进入桌面系统，但是可以 SSH 链接</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo rm -rf /var/lib/apt/lists/*
+</span></span><span class="line"><span class="cl">sudo apt-get clean
+</span></span><span class="line"><span class="cl">sudo apt-get update
+</span></span><span class="line"><span class="cl">sudo apt-get install --reinstall appstream
+</span></span></code></pre></div><h2 id="gsettings-desktop-schemas--破坏mutter--3314-但是-3284-0ubuntu18042-正要被安装解决方案">gsettings-desktop-schemas : 破坏：mutter (＜ 3.31.4) 但是 3.28.4-0ubuntu18.04.2 正要被安装解决方案</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Java" data-lang="Java"><span class="line"><span class="cl"><span class="n">sudo</span><span class="w"> </span><span class="n">apt</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">gsettings</span><span class="o">-</span><span class="n">desktop</span><span class="o">-</span><span class="n">schemas</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">sudo</span><span class="w"> </span><span class="n">apt</span><span class="o">-</span><span class="n">get</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">build</span><span class="o">-</span><span class="n">essential</span><span class="w">
+</span></span></span></code></pre></div>]]></content:encoded>
     </item>
   </channel>
 </rss>

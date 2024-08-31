@@ -14,6 +14,139 @@
       <pubDate>Wed, 10 Jan 2024 11:10:04 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/x86%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8gitea-actions%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E5%BA%94%E7%94%A8/</guid>
       <description>binfmt_misc 简介 binfmt_misc 是 Linux 内核提供的一个机制，它允许用户空间定义新的二进制格式，并将它们与相应的解释器关联起来。这个机制使得在 Linux 上能够动态地注册并运行不同</description>
+      <content:encoded><![CDATA[<h1 id="binfmt_misc-简介">binfmt_misc 简介</h1>
+<p><code>binfmt_misc</code> 是 Linux 内核提供的一个机制，它允许用户空间定义新的二进制格式，并将它们与相应的解释器关联起来。这个机制使得在 Linux 上能够动态地注册并运行不同架构的二进制可执行文件，从而支持交叉编译和多架构环境。</p>
+<p>具体来说，<code>binfmt_misc</code> 的功能可以通过 <code>/proc/sys/fs/binfmt_misc/</code> 目录下的文件系统接口实现。这个目录下的文件用于注册和管理二进制格式和相应解释器之间的关联关系。</p>
+<p>下面是一些与 <code>binfmt_misc</code> 相关的重要概念和文件：</p>
+<ol>
+<li><strong>注册表文件：</strong>   在 <code>/proc/sys/fs/binfmt_misc/</code> 目录下，每个注册的二进制格式都有一个对应的注册表文件。这些文件的命名通常遵循格式 <code>&lt;格式名称&gt;</code>，例如 <code>qemu-riscv64</code>。</li>
+<li><strong>注册和注销：</strong>   用户空间可以通过在注册表目录下创建文件来注册新的二进制格式。这可以通过写入注册表文件的方式完成。相反，通过删除这些文件，可以注销二进制格式的支持。</li>
+<li><strong>解释器：</strong>   对于每种注册的二进制格式，需要指定相应的解释器，即用于执行这种格式的程序。在注册表文件中，通过 <code>interpreter</code> 字段指定解释器的路径。</li>
+<li><strong>参数：</strong>   除了解释器，还可以为每个注册的格式指定一些参数。这些参数可以影响如何运行二进制文件。</li>
+</ol>
+<h1 id="内核如何通过-binfmt_misc-机制添加新架构的支持">内核如何通过 binfmt_misc 机制添加新架构的支持？</h1>
+<p>可以通过向 <code>/proc/sys/fs/binfmt_misc/register</code> 文件写入注册信息来注册新的二进制格式。告诉内核某一格式的文件用什么解释器来执行。写入的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">:name:type:offset:magic:mask:interpreter:flags
+</span></span></code></pre></div><blockquote>
+<p>各个字段以冒号分隔，部分字段可以缺省，但是冒号需要保留。</p>
+</blockquote>
+<p>字段含义如下：</p>
+<ul>
+<li>
+<p><code>name</code>：二进制格式的名称，比如<code>qemu-riscv64</code>。</p>
+</li>
+<li>
+<p><code>type</code>：类型为 E 或 M。</p>
+<ul>
+<li>如果是 E，可执行文件格式由其文件扩展名标识：magic 是要与二进制格式相关联的文件扩展名；offset 和 mask 将被忽略。</li>
+<li>如果是 M，格式由文件中绝对偏移（默认为 0）处的魔数标识，并且 mask 是一个位掩码（默认为全 0xFF），表示数字中哪些位是有效的。</li>
+</ul>
+</li>
+<li>
+<p><code>interpreter</code>：是要作为匹配文件的参数运行的解释器，使用解释器的绝对路径，比如<code>/usr/bin/qemu-riscv64-static</code>。</p>
+</li>
+<li>
+<p><code>flags</code>：可选字段，控制 <code>interpreter</code> 打开文件的行为。共支持 <code>POCF</code> 四种 flag。</p>
+<ul>
+<li><code>P</code> 表示 preserve-argv[0]，保留原始的 <code>argv[0]</code> 参数。</li>
+<li><code>O</code> 表示 open-binary，<code>binfmt-misc</code> 默认会传递文件的路径，而启用这个参数时，<code>binfmt-misc</code> 会打开文件，传递文件描述符。</li>
+<li><code>C</code> 表示 credentials，即会传递文件的 <code>setuid</code> 等权限，这个选项也隐含了 <code>O</code>。</li>
+<li><code>F</code> 表示 fix binary，<code>binfmt-misc</code> 默认的行为在 spwan 进程时会延迟，这种方式可能会受到 <code>mount</code> 命名空间和 <code>chroot</code> 的影响，设置 <code>F</code> 时会立刻打开二进制文件。</li>
+</ul>
+</li>
+</ul>
+<p>举个例子，如果要在 x86_64 架构的系统上运行 RISC-V 架构的二进制文件，可以通过以下方式注册 RISC-V 二进制格式：</p>
+<p>首先需要<strong>添加解释器</strong>，通常使用 QEMU 的静态二进制文件作为解释器，在 Ubuntu 系统中我们可以使用以下命令安装：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install qemu-user-static
+</span></span></code></pre></div><p><strong>注册二进制格式</strong>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;:qemu-riscv64:M:0:7f454c460201010000000000000000000200f300::/usr/libexec/qemu-binfmt/riscv64-binfmt-P:POCF&#39;</span> &gt; /proc/sys/fs/binfmt_misc/register
+</span></span></code></pre></div><p>表示将 RISC-V 二进制格式注册到 <code>/proc/sys/fs/binfmt_misc/qemu-riscv64</code> 文件中，使用 <code>/usr/libexec/qemu-binfmt/riscv64-binfmt-P</code> 作为解释器，同时传递 <code>POCF</code> 参数。执行了以上命令，内核会自动创建一个 <code>/proc/sys/fs/binfmt_misc/qemu-riscv64</code> 文件，内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ sudo cat  /proc/sys/fs/binfmt_misc/qemu-riscv64
+</span></span><span class="line"><span class="cl">enabled
+</span></span><span class="line"><span class="cl">interpreter /usr/libexec/qemu-binfmt/riscv64-binfmt-P
+</span></span><span class="line"><span class="cl">flags: POCF
+</span></span><span class="line"><span class="cl">offset <span class="m">0</span>
+</span></span><span class="line"><span class="cl">magic 7f454c460201010000000000000000000200f300
+</span></span><span class="line"><span class="cl">mask ffffffffffffff00fffffffffffffffffeffffff
+</span></span></code></pre></div><p>这就完成了 RISC-V 二进制格式的注册。此时，你就可以在 x86_64 架构的系统上运行 RISC-V 架构的二进制文件了。</p>
+<p>使用 Docker 运行 RISC-V 的容器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker run --rm -it devops/openeuler-builder:23.09-riscv64  uname -m
+</span></span><span class="line"><span class="cl">riscv64
+</span></span></code></pre></div><h2 id="使用封装好的程序简化注册过程">使用封装好的程序简化注册过程</h2>
+<p>以上的写入 register 文件的方式比较繁琐，可以使用封装好的程序来简化注册过程。</p>
+<p>方式一：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install qemu-user-binfmt
+</span></span></code></pre></div><p>可以安装所有 QEMU 支持的架构。</p>
+<p>方式二：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装解释器</span>
+</span></span><span class="line"><span class="cl">sudo apt install qemu-user-static
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装binfmt操作支持</span>
+</span></span><span class="line"><span class="cl">sudo apt install binfmt-support
+</span></span><span class="line"><span class="cl"><span class="c1"># 开启异构支持</span>
+</span></span><span class="line"><span class="cl">sudo update-binfmts --package<span class="o">=</span>qemu-user-static --enable
+</span></span></code></pre></div><p>同上。</p>
+<h2 id="注销">注销</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> -1 &gt;/proc/sys/fs/binfmt_misc/status <span class="c1"># 注销所有注册的条目</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> -1 &gt;/proc/sys/fs/binfmt_misc/qemu-riscv64 <span class="c1"># 注销单个条目</span>
+</span></span></code></pre></div><p>或者通过命令行工具完成：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装binfmt操作支持</span>
+</span></span><span class="line"><span class="cl">sudo apt install binfmt-support
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用qemu-riscv64，再次查看/proc/sys/fs/binfmt_misc/发现qemu-riscv64已被删除</span>
+</span></span><span class="line"><span class="cl">sudo update-binfmts --disable qemu-riscv64
+</span></span></code></pre></div><h1 id="gitea-如何实现多架构应用构建">Gitea 如何实现多架构应用构建？</h1>
+<p>Gitea 不会自己运行 Job，而是将 Job 委托给 Runner。Gitea Actions 的 Runner 被称为 act runner，它是一个独立的程序。在接收到 Job 后，act runner 会根据 Job 的内容，启用不同的 Container 来运行 Job。</p>
+<p>为了避免消耗过多资源并影响 Gitea 实例，Gitea 和 Runner 一般运行在不同的机器上。但是同一个 Runner 启动的容器一定在同一台机器上。我这里演示的统一都在同一台 x86 架构的机器上。</p>
+<p>因为都运行在 x86 架构的机器上，所有执行任务的 Container 也一定是 x86 架构的。但是我们了解了上面的 binfmt_misc 机制后，就可以在容器内部通过注册不同架构的二进制格式，从而在 x86 架构的机器上运行不同架构的二进制文件。就可以实现多架构应用构建。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>打开 Gitea 的 tea 的项目源码找到它的 release <a href="https://gitea.com/gitea/tea/src/commit/c74177556b8e63252491003f1cbcd3882bfff15d/.gitea/workflows/release-nightly.yml#L53">workflow 文件</a>，可以看到它使用了<code>docker/setup-qemu-action@v3</code>这个 action 来实现多架构构建。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Set up QEMU</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">docker/setup-qemu-action@v3</span><span class="w">
+</span></span></span></code></pre></div><p>查阅<a href="https://github.com/tonistiigi/binfmt/blob/a92dbabe8fddb096b8cb307aa1c6bbe65dc0884f/cmd/binfmt/main.go#L63C1-L103C2">action 的源码</a>，可以发现底层实现是通过<code>binfmt_misc</code>来实现的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">init</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 定义了一些全局变量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">mount</span><span class="p">,</span> <span class="s">&#34;mount&#34;</span><span class="p">,</span> <span class="s">&#34;/proc/sys/fs/binfmt_misc&#34;</span><span class="p">,</span> <span class="s">&#34;binfmt_misc mount point&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">toInstall</span><span class="p">,</span> <span class="s">&#34;install&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;architectures to install&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">toUninstall</span><span class="p">,</span> <span class="s">&#34;uninstall&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;architectures to uninstall&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">flag</span><span class="p">.</span><span class="nf">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">flVersion</span><span class="p">,</span> <span class="s">&#34;version&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;display version&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">install</span><span class="p">(</span><span class="nx">arch</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">cfg</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">configs</span><span class="p">[</span><span class="nx">arch</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 拼接路径为/proc/sys/fs/binfmt_misc/register，打开这个文件检查是否能够打开成功
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">register</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">mount</span><span class="p">,</span> <span class="s">&#34;register&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">file</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">OpenFile</span><span class="p">(</span><span class="nx">register</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">O_WRONLY</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">binaryBasename</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">getBinaryNames</span><span class="p">(</span><span class="nx">cfg</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 向/proc/sys/fs/binfmt_misc/register 写入 line，注册二进制格式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">line</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;:%s:M:0:%s:%s:%s:%s&#34;</span><span class="p">,</span> <span class="nx">binaryBasename</span><span class="p">,</span> <span class="nx">cfg</span><span class="p">.</span><span class="nx">magic</span><span class="p">,</span> <span class="nx">cfg</span><span class="p">.</span><span class="nx">mask</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">flags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">file</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">line</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="o">*</span><span class="nx">os</span><span class="p">.</span><span class="nx">PathError</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">e</span><span class="p">.</span><span class="nx">Err</span> <span class="o">==</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EEXIST</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%s already registered&#34;</span><span class="p">,</span> <span class="nx">binaryBasename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;cannot register %q to %s: %s&#34;</span><span class="p">,</span> <span class="nx">binaryFullpath</span><span class="p">,</span> <span class="nx">register</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h1 id="q--a">Q &amp; A</h1>
+<h2 id="为何procsysfsbinfmt_miscregister-文件是只读的">为何/proc/sys/fs/binfmt_misc/register 文件是只读的？</h2>
+<p><code>/proc/sys/fs/binfmt_misc/register</code> 文件是只写的，这是因为在 Linux 中，<code>/proc</code> 文件系统下的很多文件都是通过对文件进行写入来进行配置和控制的。这些文件通常<strong>代表内核参数或控制接口</strong>，提供了一种方便的方式来与内核进行交互。</p>
+<p>对于 <code>/proc/sys/fs/binfmt_misc/register</code> 文件来说，通过写入注册信息，用户可以向内核注册新的二进制格式，告知内核如何执行特定的二进制文件。这种只写的设计是为了保持简单性和安全性。允许用户在运行时动态地注册新的格式，而不是从文件中读取注册信息，可以提供更大的灵活性。</p>
+<p>虽然 <code>/proc/sys/fs/binfmt_misc/register</code> 文件是只写的，但是通过向文件中写入正确格式的注册信息，用户仍然能够有效地配置新的二进制格式。这种设计符合 Linux 中的文件系统和权限模型。</p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://github.com/torvalds/linux/pulse">Kernel Support for miscellaneous Binary Formats (binfmt_misc)</a></p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

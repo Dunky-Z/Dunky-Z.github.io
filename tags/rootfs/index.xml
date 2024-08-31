@@ -14,6 +14,346 @@
       <pubDate>Thu, 20 Jun 2024 21:10:49 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/busybox-%E6%9E%84%E5%BB%BA%E5%B9%B6%E5%90%AF%E5%8A%A8-risc-v-linux-%E5%86%85%E6%A0%B8/</guid>
       <description>根文件系统 文件系统与根文件系统 文件系统（File System）是操作系统用于管理和存储数据的一种方式。它定义了如何在存储设备（如硬盘、SSD</description>
+      <content:encoded><![CDATA[<h1 id="根文件系统">根文件系统</h1>
+<h2 id="文件系统与根文件系统">文件系统与根文件系统</h2>
+<p><strong>文件系统</strong>（File System）是操作系统用于管理和存储数据的一种方式。它定义了如何在存储设备（如硬盘、SSD、USB 驱动器等）上组织文件和目录，以及如何进行数据的读写操作。</p>
+<p>常见的文件系统类型有：</p>
+<ul>
+<li>ext4：Linux 最常用的文件系统，支持大文件和大分区。</li>
+<li>NTFS：Windows 操作系统常用的文件系统，支持文件加密和权限控制。</li>
+<li>FAT32：一种兼容性广泛的文件系统，常用于 USB 驱动器和内存卡。</li>
+<li>XFS：适用于高性能和高容量存储需求的文件系统。</li>
+<li>btrfs：一种现代 Linux 文件系统，支持快照、压缩和多设备管理。</li>
+</ul>
+<p><strong>根文件系统</strong>（Root File System，通常简称为 rootfs）是文件系统层次结构中的顶级文件系统。它包含了操作系统启动和运行所需的所有基本文件和目录。根文件系统是整个文件系统层次的起点，在 Linux 中由单个斜杠（<code>/</code>）表示。<strong>根文件系统首先是内核启动时所 mount 的第一个文件系统</strong>，内核代码映像文件保存在根文件系统中，而系统引导启动程序会在根文件系统挂载之后从中把一些基本的初始化脚本和服务等加载到内存中去运行。</p>
+<p><strong>根文件系统是建立在文件系统之上的。根文件系统使用某种具体的文件系统类型（如 ext4）来管理和存储其内容。</strong></p>
+<h2 id="基于内存的文件系统">基于内存的文件系统</h2>
+<p>ramdisk 是一种基于内存的文件系统，它将内存的一部分用作硬盘驱动器，这样就可以在内存中创建一个文件系统。ramdisk 是一个虚拟磁盘，它的大小和硬盘驱动器的大小一样。ramdisk 的优点是速度快，缺点是断电后数据丢失。</p>
+<h2 id="根文件系统中各种配置文件的作用以及配置文件的格式介绍">根文件系统中各种配置文件的作用以及配置文件的格式介绍</h2>
+<h3 id="etcinittab">/etc/inittab</h3>
+<p><code>/etc/inittab</code> 是 Linux 系统中的一个配置文件，它是 init 程序的配置文件，用于配置系统的运行级别和 init 程序的行为。在 Linux 系统中，init 程序是系统的第一个进程，它负责启动系统中的所有其他进程。<code>/etc/inittab</code> 文件中的每一行都是一个配置项，每个配置项由四个字段组成，字段之间用空格或制表符分隔。<code>/etc/inittab</code> 文件的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">id:runlevels:action:process
+</span></span></code></pre></div><p>每个字段用冒号分隔，可以缺省。各字段的含义如下：</p>
+<ul>
+<li>id：配置项的标识符，用于标识配置项。</li>
+<li>runlevels：配置项所对应的运行级别，可以是一个或多个运行级别的组合。</li>
+<li>action：配置项的动作，可以是以下几种动作之一：
+<ul>
+<li>sysinit：系统初始化时运行。</li>
+<li>respawn：如果进程终止，立即重新启动。</li>
+<li>askfirst：在运行 process 之前询问用户。并在控制台上显示 Please press Enter to active this console。</li>
+<li>wait：等待进程终止，然后继续执行下一个配置项。</li>
+<li>once：只运行一次，进程终止后不会重新启动。</li>
+<li>boot：在系统引导时运行。</li>
+<li>bootwait：在系统引导时运行，等待进程终止后继续引导。</li>
+<li>initdefault：设置默认运行级别。</li>
+<li>shutdown：在系统关机时运行。</li>
+</ul>
+</li>
+<li>process：要执行的进程或脚本的路径。</li>
+</ul>
+<p>示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># /etc/inittab</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#系统开机或重新启动，执行rcS文件</span>
+</span></span><span class="line"><span class="cl">::sysinit:/etc/init.d/rcS
+</span></span><span class="line"><span class="cl"><span class="c1">#系统启动后，运行登录程序  </span>
+</span></span><span class="line"><span class="cl">::askfirst:-/bin/login
+</span></span><span class="line"><span class="cl"><span class="c1">#按下组合键“ctrl+alt+del”，重启Linux系统</span>
+</span></span><span class="line"><span class="cl">::ctrlaltdel:-/sbin/reboot   
+</span></span><span class="line"><span class="cl"><span class="c1">#系统关机时，卸载所有文件系统</span>
+</span></span><span class="line"><span class="cl">::shutdown:/bin/umount -a -r
+</span></span><span class="line"><span class="cl"><span class="c1">#重启init进程</span>
+</span></span><span class="line"><span class="cl">::restart:/sbin/init
+</span></span></code></pre></div><h3 id="etcfstab">/etc/fstab</h3>
+<p><code>/etc/fstab</code> 是 Linux 系统中的一个配置文件，用于配置文件系统的挂载信息。在 Linux 系统中，文件系统是通过挂载的方式来访问的，<code>/etc/fstab</code> 文件中记录了系统中所有文件系统的挂载信息。<code>/etc/fstab</code> 文件的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">device mount_point fs_type options dump pass
+</span></span></code></pre></div><p>各字段的含义如下：</p>
+<ul>
+<li>device：设备文件或 UUID。</li>
+<li>mount_point：挂载点。</li>
+<li>fs_type：文件系统类型。</li>
+<li>options：挂载选项。</li>
+<li>dump：备份标志，用于备份工具。</li>
+<li>pass：文件系统检查顺序。</li>
+</ul>
+<p>示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># /etc/fstab</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># &lt;文件系统&gt;  &lt;挂载点&gt;  &lt;类型&gt;  &lt;选项&gt;        &lt;dump&gt;  &lt;fsck&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 根文件系统</span>
+</span></span><span class="line"><span class="cl">/dev/sda1       /           ext4    defaults        <span class="m">1</span>       <span class="m">1</span>  <span class="c1"># 根分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># /boot 分区，用于存放引导加载程序和内核镜像</span>
+</span></span><span class="line"><span class="cl">/dev/sda2       /boot       ext4    defaults        <span class="m">1</span>       <span class="m">2</span>  <span class="c1"># /boot 分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 交换分区，用作虚拟内存</span>
+</span></span><span class="line"><span class="cl">/dev/sda3       none        swap    sw              <span class="m">0</span>       <span class="m">0</span>  <span class="c1"># 交换分区，不需要挂载点，使用 swap 类型</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># /home 分区，用于存放用户的个人数据</span>
+</span></span><span class="line"><span class="cl">/dev/sda4       /home       ext4    defaults        <span class="m">1</span>       <span class="m">2</span>  <span class="c1"># /home 分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># /tmp 分区，用于存放临时文件</span>
+</span></span><span class="line"><span class="cl">/dev/sda5       /tmp        ext4    defaults        <span class="m">1</span>       <span class="m">2</span>  <span class="c1"># /tmp 分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># /var 分区，用于存放可变数据文件，如日志、邮件、缓存等</span>
+</span></span><span class="line"><span class="cl">/dev/sda6       /var        ext4    defaults        <span class="m">1</span>       <span class="m">2</span>  <span class="c1"># /var 分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># /mnt/data 分区，用于存放额外的数据文件</span>
+</span></span><span class="line"><span class="cl">/dev/sda7       /mnt/data   ext4    defaults        <span class="m">1</span>       <span class="m">2</span>  <span class="c1"># /mnt/data 分区，使用 ext4 文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 proc 文件系统，用于访问进程和系统信息</span>
+</span></span><span class="line"><span class="cl">proc            /proc       proc    defaults        <span class="m">0</span>       <span class="m">0</span>  <span class="c1"># proc 虚拟文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 sysfs 文件系统，用于访问设备和内核信息</span>
+</span></span><span class="line"><span class="cl">sysfs           /sys        sysfs   defaults        <span class="m">0</span>       <span class="m">0</span>  <span class="c1"># sysfs 虚拟文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 tmpfs 文件系统，用于临时文件存储</span>
+</span></span><span class="line"><span class="cl">tmpfs           /dev/shm    tmpfs   defaults        <span class="m">0</span>       <span class="m">0</span>  <span class="c1"># tmpfs 虚拟文件系统，默认挂载选项</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 devpts 文件系统，用于伪终端设备</span>
+</span></span><span class="line"><span class="cl">devpts          /dev/pts    devpts  <span class="nv">gid</span><span class="o">=</span>5,mode<span class="o">=</span><span class="m">620</span>  <span class="m">0</span>       <span class="m">0</span>  <span class="c1"># devpts 虚拟文件系统，默认挂载选项</span>
+</span></span></code></pre></div><h3 id="etcinitdrcs">/etc/init.d/rcS</h3>
+<p><code>/etc/init.d/rcS</code> 是 Linux 系统中的一个初始化脚本，用于系统初始化时运行。在 Linux 系统中，<code>/etc/init.d/rcS</code> 脚本是系统初始化时运行的第一个脚本，它负责初始化系统中的各种服务和配置。<code>/etc/init.d/rcS</code> 脚本通常包含了一些初始化命令，如加载模块、挂载文件系统、启动服务等。<code>/etc/init.d/rcS</code> 脚本的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/bin/sh
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="c1"># 这行是 shebang，用于指定这个脚本将由 /bin/sh 解释执行</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 proc 文件系统到 /proc 目录</span>
+</span></span><span class="line"><span class="cl">mount -t proc none /proc
+</span></span><span class="line"><span class="cl"><span class="c1"># proc 文件系统是一个虚拟文件系统，用于提供内核和进程的信息</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 sysfs 文件系统到 /sys 目录</span>
+</span></span><span class="line"><span class="cl">mount -t sysfs none /sys
+</span></span><span class="line"><span class="cl"><span class="c1"># sysfs 文件系统是一个虚拟文件系统，用于提供设备和内核信息</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 devtmpfs 文件系统到 /dev 目录</span>
+</span></span><span class="line"><span class="cl">mount -t devtmpfs none /dev
+</span></span><span class="line"><span class="cl"><span class="c1"># devtmpfs 是一个用于设备节点的临时文件系统</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 运行 mdev 以创建设备节点</span>
+</span></span><span class="line"><span class="cl">/sbin/mdev -s
+</span></span><span class="line"><span class="cl"><span class="c1"># mdev 是一个轻量级的设备管理工具，用于创建和管理 /dev 目录中的设备节点</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置主机名</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;myhostname&#34;</span> &gt; /proc/sys/kernel/hostname
+</span></span><span class="line"><span class="cl"><span class="c1"># 将主机名设置为 &#34;myhostname&#34;，这个名字可以根据需要更改</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 启动网络接口配置脚本</span>
+</span></span><span class="line"><span class="cl">ifconfig lo up
+</span></span><span class="line"><span class="cl"><span class="c1"># 启动回环接口 lo，这是一个特殊的网络接口，用于网络软件本地通信</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 运行所有位于 /etc/init.d/ 目录中的初始化脚本</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> script in /etc/init.d/S*<span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">[</span> -x <span class="s2">&#34;</span><span class="nv">$script</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;</span><span class="nv">$script</span><span class="s2">&#34;</span> start
+</span></span><span class="line"><span class="cl">  <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="k">done</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 遍历 /etc/init.d/ 目录中的所有以 S 开头的脚本，并执行它们以启动相应的服务</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># -x 选项用于检查文件是否可执行</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载用户文件系统（可选，根据实际需要）</span>
+</span></span><span class="line"><span class="cl">mount -a
+</span></span><span class="line"><span class="cl"><span class="c1"># 挂载 /etc/fstab 文件中列出的所有文件系统</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 打印启动完成信息</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;System initialization complete.&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出系统初始化完成信息</span>
+</span></span></code></pre></div><h3 id="etcprofile">/etc/profile</h3>
+<p><code>/etc/profile</code> 是 Linux 系统中的一个全局配置文件，用于配置系统的环境变量和用户的 shell 环境。在 Linux 系统中，<code>/etc/profile</code> 文件是系统启动时加载的第一个配置文件，它包含了系统的全局环境变量和用户的 shell 环境配置。<code>/etc/profile</code> 文件的格式如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># /etc/profile</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#!/bin/sh</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 这行是 shebang，用于指定这个脚本将由 /bin/sh 解释执行</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置 PATH 环境变量，定义系统命令的搜索路径</span>
+</span></span><span class="line"><span class="cl"><span class="nv">PATH</span><span class="o">=</span><span class="s2">&#34;/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> PATH
+</span></span><span class="line"><span class="cl"><span class="c1"># /usr/local/sbin:/usr/local/bin 是系统管理员和用户安装的程序路径</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># /sbin:/bin:/usr/sbin:/usr/bin 是系统默认的命令路径</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置用户 umask，定义新文件和目录的默认权限掩码</span>
+</span></span><span class="line"><span class="cl"><span class="nb">umask</span> <span class="m">022</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># umask 022 表示新文件的默认权限是 755，新目录的默认权限是 644</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置系统语言和区域</span>
+</span></span><span class="line"><span class="cl"><span class="nv">LANG</span><span class="o">=</span><span class="s2">&#34;en_US.UTF-8&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> LANG
+</span></span><span class="line"><span class="cl"><span class="c1"># LANG 变量定义了系统的语言环境，这里设置为美国英语 UTF-8 编码</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置历史记录文件和大小</span>
+</span></span><span class="line"><span class="cl"><span class="nv">HISTSIZE</span><span class="o">=</span><span class="m">1000</span>
+</span></span><span class="line"><span class="cl"><span class="nv">HISTFILESIZE</span><span class="o">=</span><span class="m">2000</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> HISTSIZE HISTFILESIZE
+</span></span><span class="line"><span class="cl"><span class="c1"># HISTSIZE 定义了 shell 会话历史记录的条目数，HISTFILESIZE 定义了历史记录文件的最大条目数</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 系统启动信息</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;Welcome to your Linux system!&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 在用户登录时显示欢迎信息</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 读取并执行 /etc/bashrc（如果存在）</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[</span> -f /etc/bashrc <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    . /etc/bashrc
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># /etc/bashrc 是另一个全局配置文件，通常包含 bash shell 的配置</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用 . /etc/bashrc 命令将其内容导入当前 shell 环境</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 配置别名（示例）</span>
+</span></span><span class="line"><span class="cl"><span class="nb">alias</span> <span class="nv">ll</span><span class="o">=</span><span class="s1">&#39;ls -l&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">alias</span> <span class="nv">la</span><span class="o">=</span><span class="s1">&#39;ls -A&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">alias</span> <span class="nv">l</span><span class="o">=</span><span class="s1">&#39;ls -CF&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 定义一些常用命令的别名</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ll 代表 ls -l，显示详细列表</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># la 代表 ls -A，显示所有文件包括隐藏文件（但不包括 . 和 ..）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># l 代表 ls -CF，以分类格式显示文件</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 读取用户特定的配置文件（如果存在）</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[</span> -f <span class="s2">&#34;</span><span class="nv">$HOME</span><span class="s2">/.profile&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    . <span class="s2">&#34;</span><span class="nv">$HOME</span><span class="s2">/.profile&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># .profile 是用户的个人配置文件</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用 . $HOME/.profile 命令将其内容导入当前 shell 环境</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置编辑器</span>
+</span></span><span class="line"><span class="cl"><span class="nv">EDITOR</span><span class="o">=</span>vim
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> EDITOR
+</span></span><span class="line"><span class="cl"><span class="c1"># 定义默认的文本编辑器为 vim</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置主机名显示，也就是终端最前面提示符的样式</span>
+</span></span><span class="line"><span class="cl"><span class="nv">PS1</span><span class="o">=</span><span class="s1">&#39;\u@\h:\w\$ &#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> PS1
+</span></span><span class="line"><span class="cl"><span class="c1"># PS1 定义了 shell 提示符的样式</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># \u 代表用户名</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># \h 代表主机名</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># \w 代表当前工作目录</span>
+</span></span></code></pre></div><h2 id="busybox-简介以及如何制作-busybox-文件系统">Busybox 简介以及如何制作 Busybox 文件系统</h2>
+<h3 id="准备-qemu">准备 QEMU</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="o">&amp;&amp;</span> mkdir -p /home/user/program/riscv64-qemu
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> workspace
+</span></span><span class="line"><span class="cl">git clone https://github.com/qemu/qemu.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> qemu
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> qemu <span class="o">&amp;&amp;</span> ./configure --target-list<span class="o">=</span>riscv32-softmmu,riscv32-linux-user,riscv64-linux-user,riscv64-softmmu <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>               --enable-kvm --enable-sdl <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>               --prefix<span class="o">=</span>/home/user/program/riscv64-qemu
+</span></span><span class="line"><span class="cl">make install -j <span class="k">$(</span>nproc<span class="k">)</span>
+</span></span></code></pre></div><h3 id="准备-opensbi">准备 OpenSBI</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> workspace
+</span></span><span class="line"><span class="cl">git clone https://github.com/riscv-software-src/opensbi.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> opensbi
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- <span class="nv">PLATFORM</span><span class="o">=</span>generic
+</span></span></code></pre></div><h3 id="准备-linux-内核">准备 Linux 内核</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> workspace
+</span></span><span class="line"><span class="cl">git clone https://github.com/torvalds/linux.git
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- defconfig
+</span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- -j <span class="k">$(</span>nproc<span class="k">)</span>
+</span></span></code></pre></div><h3 id="准备-busybox">准备 Busybox</h3>
+<p>进入下载软件包，<a href="https://busybox.net/downloads/">https://busybox.net/downloads/</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+</span></span><span class="line"><span class="cl">tar -xvf busybox-1.36.1.tar.bz2
+</span></span><span class="line"><span class="cl">mv busybox-1.36.1 busybox
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> busybox
+</span></span></code></pre></div><p>配置编译选项</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- menuconfig
+</span></span></code></pre></div><p>选择静态库模式，设置路径：Settings -&gt; Build static binary (no shared libs)</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>编译 Busybox</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- -j <span class="k">$(</span>nproc<span class="k">)</span>
+</span></span></code></pre></div><blockquote>
+<p>如果需要频繁编译，也可以在 Menuconfig 中设置交叉编译器路径，这样就不需要每次都指定了。设置路径为：Settings -&gt; Build Options -&gt; Cross Compiler prefix。将其设置为 riscv64-unknown-linux-gnu-。</p>
+</blockquote>
+<p>安装 Busybox：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- install
+</span></span></code></pre></div><blockquote>
+<p>Busybox 默认安装在当前目录的_install 目录下，也可以在 Menuconfig 中设置安装目录，路径为：Settings -&gt; Build Options -&gt; Destination path for &lsquo;make install&rsquo;。</p>
+</blockquote>
+<p>查看安装目录</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ls _install 
+</span></span><span class="line"><span class="cl">bin  linuxrc  sbin  usr
+</span></span></code></pre></div><p>制作根文件系统</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">qemu-img create -f raw rootfs.img 256M
+</span></span><span class="line"><span class="cl">mkfs.ext4 rootfs.img
+</span></span><span class="line"><span class="cl">mkdir rootfs
+</span></span><span class="line"><span class="cl">sudo mount -o loop rootfs.img rootfs
+</span></span><span class="line"><span class="cl">sudo cp -r _install/* rootfs
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nb">cd</span> rootfs
+</span></span><span class="line"><span class="cl">sudo mkdir proc sys dev etc etc/init.d
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> etc
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> init.d
+</span></span><span class="line"><span class="cl">sudo touch rcS
+</span></span><span class="line"><span class="cl">sudo chmod +x rcS
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo vim rcS
+</span></span></code></pre></div><p>写入以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/bin/sh  
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>mount -t proc none /proc  
+</span></span><span class="line"><span class="cl">mount -t sysfs none /sys  
+</span></span><span class="line"><span class="cl">/sbin/mdev -s
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">sudo umount rootfs
+</span></span></code></pre></div><p>qemu 启动内核：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/usr/bin/env bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="nv">RESTORE</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> -en <span class="s1">&#39;\001\033[0m\002&#39;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nv">YELLOW</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> -en <span class="s1">&#39;\001\033[00;33m\002&#39;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">## Configuration</span>
+</span></span><span class="line"><span class="cl"><span class="nv">vcpu</span><span class="o">=</span><span class="m">8</span>
+</span></span><span class="line"><span class="cl"><span class="nv">memory</span><span class="o">=</span><span class="m">16</span>
+</span></span><span class="line"><span class="cl"><span class="nv">drive</span><span class="o">=</span><span class="s2">&#34;/home/user/workspace/rootfs.img&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">kernel</span><span class="o">=</span><span class="s2">&#34; /home/user/workspace/linux-stable/arch/riscv/boot/Image&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">fw</span><span class="o">=</span><span class="s2">&#34;/home/user/workspace/opensbi/build/platform/generic/firmware/fw_jump.bin&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ssh_port</span><span class="o">=</span><span class="m">12070</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">cmd</span><span class="o">=</span><span class="s2">&#34;/home/user/program/riscv64-qemu/bin/qemu-system-riscv64 \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -nographic -machine virt \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -smp &#34;</span><span class="nv">$vcpu</span><span class="s2">&#34; -m &#34;</span><span class="nv">$memory</span><span class="s2">&#34;G \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -cpu rv64\
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -bios &#34;</span><span class="nv">$fw</span><span class="s2">&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -kernel &#34;</span><span class="nv">$kernel</span><span class="s2">&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -drive file=</span><span class="nv">$drive</span><span class="s2">,format=raw,id=hd0 \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -device virtio-blk-device,drive=hd0 \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  -append &#34;</span><span class="nv">root</span><span class="o">=</span>/dev/vda <span class="nv">console</span><span class="o">=</span>ttyS0<span class="s2">&#34; &#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>:: Starting VM...<span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>:: Using following configuration<span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>vCPU Cores: <span class="s2">&#34;</span><span class="nv">$vcpu</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>Memory: <span class="s2">&#34;</span><span class="nv">$memory</span><span class="s2">&#34;</span>G<span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>Disk: <span class="s2">&#34;</span><span class="nv">$drive</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>SSH Port: <span class="s2">&#34;</span><span class="nv">$ssh_port</span><span class="s2">&#34;</span><span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>:: NOTE: Make sure ONLY ONE .qcow2 file is<span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>in the current directory<span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>:: Tip: Try setting DNS manually <span class="k">if</span> QEMU user network doesn<span class="se">\&#39;</span>t work well. <span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span>:: HOWTO -<span class="se">\&gt;</span> https://serverfault.com/a/810639 <span class="si">${</span><span class="nv">RESTORE</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sleep <span class="m">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">eval</span> <span class="nv">$cmd</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

@@ -14,6 +14,11 @@
       <pubDate>Sat, 03 Dec 2022 18:52:10 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git-clone%E4%B8%8B%E6%9D%A5%E7%9A%84%E5%88%86%E6%94%AF%E4%B8%8D%E5%AE%8C%E6%95%B4/</guid>
       <description>将仓库git clone到本地后发现本地缺失了一些远程仓库的分支。一般发生在git clone —depth 1设置克隆深度时发生。因为有些大型项目一次性克</description>
+      <content:encoded><![CDATA[<p>将仓库<code>git clone</code>到本地后发现本地缺失了一些远程仓库的分支。一般发生在<code>git clone —depth 1</code>设置克隆深度时发生。因为有些大型项目一次性克隆容易出错，所以只克隆一层深度。</p>
+<p>如远程有分支<code>branch_a</code>，克隆下来后使用<code>git branch -av</code>命令查看所有分支没有显示该分支，该如何解决？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">git remote set-branches origin <span class="s1">&#39;branch_a&#39;</span>
+</span></span><span class="line"><span class="cl">git fetch -v
+</span></span></code></pre></div>]]></content:encoded>
     </item>
     <item>
       <title>手把手教你向开源社区提 Patch</title>
@@ -21,6 +26,470 @@
       <pubDate>Sun, 20 Nov 2022 15:11:57 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%95%99%E4%BD%A0%E5%90%91%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90patch/</guid>
       <description>提交补丁的最佳实践 本文翻译自官方教程Git - MyFirstContribution，原文包含开发到提交的整个周期。但是想要提交的人应该都已经</description>
+      <content:encoded><![CDATA[<h1 id="提交补丁的最佳实践">提交补丁的最佳实践</h1>
+<blockquote>
+<p>本文翻译自官方教程<a href="https://git-scm.com/docs/MyFirstContribution">Git - MyFirstContribution</a>，原文包含开发到提交的整个周期。但是想要提交的人应该都已经开发完代码了，所以本文用自己的实际例子重新写了一遍，省去了开发代码等流程，重点介绍如何使用 git send-email。</p>
+</blockquote>
+<h2 id="环境准备">环境准备</h2>
+<h3 id="下载-opensbi-仓库">下载 OpenSBI 仓库</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/riscv-software-src/opensbi.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> opensbi
+</span></span></code></pre></div><h3 id="安装依赖">安装依赖</h3>
+<p>要从源代码构建 OpenSBI：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">make
+</span></span></code></pre></div><blockquote>
+<p>注：OpenSBI 的构建是可并行的。上面的命令可以添加<code>-j#</code>参数，如<code>-j12</code>。</p>
+</blockquote>
+<h3 id="确认要解决的问题">确认要解决的问题</h3>
+<p>在本文档中，我们将模拟提交一个简单的 Patch，<code>.gitignore</code>文件可以过滤不必要的文件，现在使用 VSCode 的用户越来越多，使用 VSCode 开发时常常会生成<code>.vscode</code>目录，但是这些文件不该被推送至远程，原仓库中的<code>.gitignore</code>文件中没有过滤该文件，我们给他加上。</p>
+<p>为了能够模拟一次发送多个<code>commit</code>的场景，我们将再添加一个<code>.so</code>用来过滤编译过程中生成的<code>.so</code>文件。</p>
+<h3 id="建立工作空间">建立工作空间</h3>
+<p>让我们先建立一个开发分支来进行我们的修改。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git checkout -b update_gitignore origin/master
+</span></span></code></pre></div><p>我们将在这里做一些提交，以演示如何将一个带有多个补丁的主题同时送审。</p>
+<h2 id="实现代码">实现代码</h2>
+<h3 id="过滤-vscode">过滤 .vscode</h3>
+<p>打开文件<code>.gitignore</code>，为该文件添加<code>/.vscode/</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Object files</span>
+</span></span><span class="line"><span class="cl">*.o
+</span></span><span class="line"><span class="cl">*.a
+</span></span><span class="line"><span class="cl">*.dep
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#Build &amp; install directories</span>
+</span></span><span class="line"><span class="cl">build/
+</span></span><span class="line"><span class="cl">install/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Development friendly files</span>
+</span></span><span class="line"><span class="cl">tags
+</span></span><span class="line"><span class="cl">cscope*
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">/.vscode/
+</span></span></code></pre></div><p>为以上修改做一次提交：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git status
+</span></span><span class="line"><span class="cl">On branch update_gitignore
+</span></span><span class="line"><span class="cl">Your branch is up to date with <span class="s1">&#39;origin/master&#39;</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Changes not staged <span class="k">for</span> commit:
+</span></span><span class="line"><span class="cl">  <span class="o">(</span>use <span class="s2">&#34;git add &lt;file&gt;...&#34;</span> to update what will be committed<span class="o">)</span>
+</span></span><span class="line"><span class="cl">  <span class="o">(</span>use <span class="s2">&#34;git checkout -- &lt;file&gt;...&#34;</span> to discard changes in working directory<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        modified:   .gitignore
+</span></span><span class="line"><span class="cl">$ git add .gitignore
+</span></span><span class="line"><span class="cl">$ git commit -s
+</span></span></code></pre></div><p>执行以上命令后将会弹出编辑框用来编写提交信息。主题行要少于 50 个字符，然后是一个空行（必须），然后是您的提交消息的正文。请记住要明确并提供更改的原因（理由），特别是如果无法从您的差异中轻松理解你的提交内容时。编辑提交消息时，不要删除上面 <code>Signed-off-by</code> 添加的 trailer。（由上面命令<code>-s</code>参数生成）。</p>
+<p>其他规范请详细查阅目标社区的提交规范，如OpenSBI要求主题行需要以 <code>lib:</code>， <code>platform:</code>, <code>firmware:</code>, <code>docs:</code>, <code>utils:</code> 或者 <code>top:</code>为前缀，修改<code>.gitignore</code>属于<code>top</code>范畴，所以我们需要将其加在主题行上。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">top:</span> <span class="err">filter</span> <span class="err">.vscode</span> <span class="err">folder</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">Filter</span> <span class="err">the</span> <span class="err">workspace&#39;s</span> <span class="err">&#39;.vscode&#39;</span> <span class="err">directory</span> <span class="err">by</span> <span class="err">adding</span> <span class="err">&#39;/.vscode/&#39;</span> <span class="err">to</span> <span class="err">the.gitignore</span> <span class="err">file.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">Signed-off-by:</span> <span class="err">Dominic</span> <span class="err">Zhang</span> <span class="err">&lt;Dominic</span> <span class="err">Zhang@gmail.com&gt;</span>
+</span></span></code></pre></div><p>继续用 <code>git show</code> 检查您的新提交。尤其不要出现不需要在本次提交的内容。通常使用不同的 IDE 都可能会无意间生成一些配置文件等，请注意将其剔除。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">commit 5dc340c29979d4c5d8c4d5a6e881348239714434 (HEAD -&gt; update_gitignore)
+</span></span><span class="line"><span class="cl">Author: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date:   Fri Nov 18 16:06:21 2022 +0800
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    top: filter .vscode folder
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    Filter the workspace&#39;s &#39;.vscode&#39; directory by adding &#39;/.vscode/&#39; to the.gitignore file.
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">diff --git a/.gitignore b/.gitignore
+</span></span><span class="line"><span class="cl">index 95692bb..90cf552 100644
+</span></span><span class="line"><span class="cl">--- a/.gitignore
+</span></span><span class="line"><span class="cl">+++ b/.gitignore
+</span></span><span class="line"><span class="cl">@@ -10,3 +10,5 @@ install/
+</span></span><span class="line"><span class="cl"> # Development friendly files
+</span></span><span class="line"><span class="cl"> tags
+</span></span><span class="line"><span class="cl"> cscope*
+</span></span><span class="line"><span class="cl">+
+</span></span><span class="line"><span class="cl">+/.vscode/
+</span></span></code></pre></div><h3 id="过滤-cache">过滤 .cache</h3>
+<p>与上一节步骤类似，我们在<code>.gitignore</code>文件中再添加一个<code>/.cache/</code>字段用来过滤<code>.cache</code>文件夹。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Object files</span>
+</span></span><span class="line"><span class="cl">*.o
+</span></span><span class="line"><span class="cl">*.a
+</span></span><span class="line"><span class="cl">*.dep
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#Build &amp; install directories</span>
+</span></span><span class="line"><span class="cl">build/
+</span></span><span class="line"><span class="cl">install/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Development friendly files</span>
+</span></span><span class="line"><span class="cl">tags
+</span></span><span class="line"><span class="cl">cscope*
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">/.vscode/
+</span></span><span class="line"><span class="cl">/.cache/
+</span></span></code></pre></div><p>添加完我们就即使保存工作进度，新生成一个<code>commit</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git add .gitignore
+</span></span><span class="line"><span class="cl">git commit -s
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Filter the workspace&#39;s &#39;.cache&#39; directory by adding &#39;/.cache/&#39; to the.gitignore file.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span></code></pre></div><p>以上我们就已经准备好所有的代码了，在大部分场景下可能修改的是<code>.c</code>或者<code>.h</code>等源文件，这就需要我们能够使代码编译、运行并且测试通过后再提交。</p>
+<p>这里为了演示提交流程，就没有涉及这些步骤。接下来我们就要准备提交的补丁文件了。</p>
+<h2 id="准备提交补丁">准备提交补丁</h2>
+<p>OpenSBI 项目是通过电子邮件发送补丁来进行代码审查的，当补丁准备好并得到社区认可后，维护者就会应用（Apply）这些补丁。OpenSBI 项目不接受来自 Pull Request 的贡献，而且通过电子邮件发送的补丁需要以指定的方式进行审核。</p>
+<p>在研究如何将你的提交转化为电子邮件的补丁之前，让我们先分析一下最终的结果，即<strong>补丁系列</strong>（Patch Series）是什么样子。下面是 OpenSBI 邮件列表存档的网页界面上的补丁系列的摘要视图的一个例子。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-32-16-e3a06471e8dc4a8dc2d7c7ca641043e2-20221118163214-5afd66.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们可以注意几点：</p>
+<ul>
+<li>每次提交都是以单独的邮件形式发送，提交信息的标题为主题，前缀为<code>[PATCH i/n]</code>，代表<code>n</code>个提交系列中的第 <code>i</code> 个提交。</li>
+<li>每个补丁都是作为对<code>cover letter</code>的回复，<code>cover letter</code>的前缀为<code>[PATCH 0/n]</code>，序号为 0 的标题。</li>
+<li>补丁系列的后续迭代被标记为 <code>PATCH v2</code>、<code>PATCH v3</code>，等等，以代替 <code>PATCH</code>。例如，<code>[PATCH v2 1/3]</code>将是第二次迭代中三个补丁的第一个补丁。每次迭代都有一个新的<code>cover letter</code>（如上面的<code>[PATCH v2 0/3]</code>），本身就是对前一次迭代的<code>cover letter</code>的回复（下面会有更多介绍）。</li>
+</ul>
+<blockquote>
+<p>注：单一补丁的主题是以<code>[PATCH]</code>、<code>[PATCH v2]</code>等发送的，没有 <code>i/n</code> 编号。如上图中的第四个 Patch，就是一个单一补丁。</p>
+</blockquote>
+<h3 id="什么是-cover-letter">什么是 cover letter</h3>
+<p>除了给每个补丁发一封邮件外，OpenSBI 社区还希望你的补丁能附带一封 cover letter。这是修改提交的一个重要组成部分，因为它概括了你想要做什么，以及为什么要这样做，比仅仅看你的补丁更明显。</p>
+<p>你的 cover letter 的标题应该是能简洁地涵盖你整个主题分支的目的。就像我们的提交信息标题一样。下面是我们的系列标题。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Update gitignore ---
+</span></span></code></pre></div><p>cover letter 的正文是用来给评审员提供额外的背景。一定要解释任何你的补丁自己没有说清楚的东西，但要记住，由于 cover letter 没有记录在提交历史中，任何可能对未来版本库历史的读者有用的东西也应该在你的提交信息中出现。</p>
+<p>下文我们将介绍如何生成 cover letter 以及如何填写 cover letter。</p>
+<h3 id="用-git-send-email-发送补丁">用 git send-email 发送补丁</h3>
+<h4 id="前提条件---设置-git-send-email">前提条件 - 设置 git send-email</h4>
+<p>对 <code>send-email</code> 的配置会根据你的操作系统和电子邮件供应商而有所不同，配置可以参考文档<a href="http://lifeislife.cn/2022/09/28/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8git-send-mail%E7%BB%99%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90%E4%BA%A4Patch/">如何使用 git-send-mail 给开源社区提交 Patch - 如云泊</a>。</p>
+<h4 id="准备初始补丁集">准备初始补丁集</h4>
+<p>在准备邮件本身之前，你需要准备补丁。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git format-patch --cover-letter -o update_gitignore/ --base<span class="o">=</span>auto  update_gitignore@<span class="o">{</span>u<span class="o">}</span>..update_gitignore
+</span></span></code></pre></div><ul>
+<li><code>--cover-letter</code> 选项告诉 <code>format-patch</code> 为你创建一个 <code>cover letter</code> 模板。在你准备发送之前，你将需要填写该模板。</li>
+<li><code>-o update_gitignore/</code> 选项告诉 <code>format-patch</code> 把补丁文件放到目录<code>update_gitignore</code>中。这样发送多个<code>commit</code>时就可以使用命令一次性发送，因为 <code>git send-email</code> 可以接收一个目录并从那里发送所有补丁。</li>
+<li><code>--base=auto</code> 选项告诉命令记录”基本提交”，接收者将在此基础上应用补丁系列。自动值将使 <code>format-patch</code> 自动计算基本提交，即远程跟踪分支的最新提交和指定修订范围的合并基数。</li>
+<li><code>update_gitignore@{u}..update_gitignore</code> 选项告诉 <code>format-patch</code> 为你在 <code>update_gitignore</code> 分支上创建的提交生成补丁，因为它是从上游分叉出来的。<code>@{u}</code>的意思就是从分叉开始到最新的提交。</li>
+</ul>
+<p>执行完该命令我们看看生成了哪些内容。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git status
+</span></span><span class="line"><span class="cl">On branch update_gitignore
+</span></span><span class="line"><span class="cl">Your branch is ahead of <span class="s1">&#39;origin/master&#39;</span> by <span class="m">2</span> commits.
+</span></span><span class="line"><span class="cl">  <span class="o">(</span>use <span class="s2">&#34;git push&#34;</span> to publish your <span class="nb">local</span> commits<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Untracked files:
+</span></span><span class="line"><span class="cl">  <span class="o">(</span>use <span class="s2">&#34;git add &lt;file&gt;...&#34;</span> to include in what will be committed<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        update_gitignore/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ ls update_gitignore 
+</span></span><span class="line"><span class="cl">0000-cover-letter.patch  0001-top-filter-.vscode-folder.patch  0002-top-filter-.cache-folder.patch
+</span></span></code></pre></div><p>该命令将为每次提交制作一个补丁文件。运行后，您可以用您喜欢的文本编辑器看一下每个补丁，确保一切正常。可以看到创建了一个<code>-o</code>参数中的<code>update_gitignore</code>文件夹，该文件夹下有三个文件，分别是 cover letter 和上文我们做的两次提交对应的补丁文件。</p>
+<p>分别打开他们，结果如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 16:41:32 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH 0/2] *** SUBJECT HERE ***
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">*** BLURB HERE ***
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Dominic Zhang (2):
+</span></span><span class="line"><span class="cl">  top: filter .vscode folder
+</span></span><span class="line"><span class="cl">  top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> .gitignore | 3 +++
+</span></span><span class="line"><span class="cl"> 1 file changed, 3 insertions(+)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">base-commit: 880685586dcee950d209088a461443449a1693ce
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 5dc340c29979d4c5d8c4d5a6e881348239714434 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 16:06:21 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH 1/2] top: filter .vscode folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Filter the workspace&#39;s &#39;.vscode&#39; directory by adding &#39;/.vscode/&#39; to the.gitignore file.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl"> .gitignore | 2 ++
+</span></span><span class="line"><span class="cl"> 1 file changed, 2 insertions(+)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">diff --git a/.gitignore b/.gitignore
+</span></span><span class="line"><span class="cl">index 95692bb..90cf552 100644
+</span></span><span class="line"><span class="cl">--- a/.gitignore
+</span></span><span class="line"><span class="cl">+++ b/.gitignore
+</span></span><span class="line"><span class="cl">@@ -10,3 +10,5 @@ install/
+</span></span><span class="line"><span class="cl"> # Development friendly files
+</span></span><span class="line"><span class="cl"> tags
+</span></span><span class="line"><span class="cl"> cscope*
+</span></span><span class="line"><span class="cl">+
+</span></span><span class="line"><span class="cl">+/.vscode/
+</span></span><span class="line"><span class="cl">\ No newline at end of file
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 16:20:37 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH 2/2] top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Filter the workspace&#39;s &#39;.cache&#39; directory by adding &#39;/.cache/&#39; to the.gitignore file.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Signed-off-by: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl"> .gitignore | 3 ++-
+</span></span><span class="line"><span class="cl"> 1 file changed, 2 insertions(+), 1 deletion(-)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">diff --git a/.gitignore b/.gitignore
+</span></span><span class="line"><span class="cl">index 90cf552..bf9d716 100644
+</span></span><span class="line"><span class="cl">--- a/.gitignore
+</span></span><span class="line"><span class="cl">+++ b/.gitignore
+</span></span><span class="line"><span class="cl">@@ -11,4 +11,5 @@ install/
+</span></span><span class="line"><span class="cl"> tags
+</span></span><span class="line"><span class="cl"> cscope*
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl">-/.vscode/
+</span></span><span class="line"><span class="cl">\ No newline at end of file
+</span></span><span class="line"><span class="cl">+/.vscode/
+</span></span><span class="line"><span class="cl">+/.cache/
+</span></span><span class="line"><span class="cl">\ No newline at end of file
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><blockquote>
+<p>注：另外，你也可以使用 <code>--rfc</code> 参数，在你的补丁主题前加上<code>[RFC PATCH]</code>，而不是<code>[PATCH]</code>。RFC 是”请求评论”的意思，表示虽然你的代码还没有准备好提交，但你想开始代码审查过程。你也可能在列表中看到标有”WIP”的补丁，这意味着他们还没有完成，但希望审查者能看看他们目前的成果。你可以用<code>--subject-prefix=WIP</code>来添加这个标志。</p>
+</blockquote>
+<p>检查并确保你的补丁和 cover letter 模板存在于你指定的目录中，这就完成所有准备了。</p>
+<h4 id="准备邮件">准备邮件</h4>
+<p>由于你在调用 <code>format-patch</code> 时使用了<code>--cover-letter</code>，你已经准备好了一个 cover letter 模板。在你喜欢的编辑器中打开它。</p>
+<p>你应该看到已经有一些标题存在。检查你的<code>From:</code>标题是否正确。然后修改你的<code>Subject:</code>。</p>
+<p>确保保留<code>[PATCH 0/X]</code>的部分；这是向 Git 社区表明这封邮件是一个补丁系列的开始，许多审查者会根据这种类型的标记过滤他们的邮件。</p>
+<p>接下来，你必须填写你的 cover letter 的正文。同样，关于应包括哪些内容，见上文。</p>
+<p>最后，信中会包括用于生成补丁的 Git 的版本。你可以不用管这个字符串。</p>
+<p>完善后的 cover letter 如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 16:41:32 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH 0/2] Update gitignore
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">vscode is a very popular IDE, and it often needs to generate a.vscode. cache directory to hold workspace configuration files that should not be committed to a remote repository, so we made some modifications to the gitignore file to filter such directories.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Dominic Zhang (2):
+</span></span><span class="line"><span class="cl">  top: filter .vscode folder
+</span></span><span class="line"><span class="cl">  top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> .gitignore | 3 +++
+</span></span><span class="line"><span class="cl"> 1 file changed, 3 insertions(+)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">base-commit: 880685586dcee950d209088a461443449a1693ce
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><h4 id="发送邮件">发送邮件</h4>
+<p>到这里，你应该有一个目录 <code>update_gitignore/</code>，里面包含你的补丁和一封 cover letter。是时候把它发出去了！你可以像这样发送。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git send-email --to<span class="o">=</span>target@example.com update_gitignore/*.patch
+</span></span></code></pre></div><blockquote>
+<p>注：请查看 <code>git help send-email</code> 中的一些其他选项，你可能会发现这些选项很有价值，比如改变回复地址或添加更多的抄送地址或密送地址。</p>
+</blockquote>
+<blockquote>
+<p>注：当你发送一个真正的补丁时，它将被发送到 <code>opensbi@lists.infradead.org</code> - 但请不要把你的补丁集从教程中发送到真正的邮件列表中！现在你可以把它发送给你自己，以确保你了解它的形式。</p>
+</blockquote>
+<p>在你运行上面的命令后，你会为每个即将发出的补丁看到一个交互提示。这给了你最后一次机会来编辑或放弃发送一些东西（但还是那句话，不要用这种方式编辑代码）。一旦你在这些提示下按下 <code>y</code> 或 <code>a</code>，你的邮件就会被发送出去！Congratulation!</p>
+<h4 id="发送补丁的更新版本">发送补丁的更新版本</h4>
+<p>本节将重点介绍如何发送你的补丁集的 v2 版。我们将在 v2 版中重新使用我们的 <code>update_gitignore</code> 分支。在我们做任何改动之前，我们先新建一个名为<code>update_gitignore-v1</code>的分支，这个分支是我们没有做新的改动的分支。这样在后面我们就可以方便的进行对比差异。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git checkout update_gitignore
+</span></span><span class="line"><span class="cl">git branch update_gitignore-v1
+</span></span></code></pre></div><p>在更新补丁时，我们可能会遇到两种情况，一种是社区的意见只让修改最新的一个提交，一种是修改历史记录中的 commit。我们分别来处理这两种情况。</p>
+<h5 id="如何修改最新的提交">如何修改最新的提交</h5>
+<p>比如只需要修改<code>top: filter .cache folder</code>这个 commit。因为它在我们的修改中是最新的 commit，所以我们可以直接对代码修改。比如我们做一个简单的修改，给修改的内容<code>/.cache</code>加个注释。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl"># Object files
+</span></span><span class="line"><span class="cl">*.o
+</span></span><span class="line"><span class="cl">*.a
+</span></span><span class="line"><span class="cl">*.dep
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">#Build &amp; install directories
+</span></span><span class="line"><span class="cl">build/
+</span></span><span class="line"><span class="cl">install/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Development friendly files
+</span></span><span class="line"><span class="cl">tags
+</span></span><span class="line"><span class="cl">cscope*
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">/.vscode/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Cache file
+</span></span><span class="line"><span class="cl">/.cache/
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git add .gitignore
+</span></span><span class="line"><span class="cl">git commit --amend
+</span></span></code></pre></div><p><strong>注意</strong>！我们不需要生成新的<code>commit</code>，所以使用 <code>--amend</code>参数修改最新的<code>commit message</code>即可。执行这条命令会弹出编辑窗口，因为修改内容已经很明确，我们不需要在<code>commit message</code>里再做额外说明，直接保存退出即可。如果修改内容比较大，需要重新编写<code>commit message</code>。</p>
+<p>以上我们就完成了一次更新。</p>
+<h5 id="如何修改历史记录中的提交">如何修改历史记录中的提交</h5>
+<p>如果很不巧，社区要求修改的是<code>top: filter .vscode folder</code>这个提交的内容，那怎么办，因为它不是最新的提交，而是上一个提交，我们无法使用<code>git commit --amend</code>来直接对他修改，好在 Git 十分强大，不需要我们<code>reset</code>就可以完成这样的工作。</p>
+<p>同样我们也做一个简单的修改，为<code>/.vscode/</code>也添加一个注释。首先我们需要使用到<code>git rebase</code>这个强大的命令。本文只介绍使用到的功能，其他功能需要大家自行摸索。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git rebase -i
+</span></span></code></pre></div><p>这条命令会弹出编辑窗口，<code>-i</code>参数表示以交互式方式进行变基（rebase）操作。弹出窗口内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pick <span class="m">7175772</span> top: filter .vscode folder
+</span></span><span class="line"><span class="cl">pick 52b63f3 top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Rebase 8806855..52b63f3 onto 8806855 (2 commands)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Commands:</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># p, pick = use commit</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># r, reword = use commit, but edit the commit message</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># e, edit = use commit, but stop for amending</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># s, squash = use commit, but meld into previous commit</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># f, fixup = like &#34;squash&#34;, but discard this commit&#39;s log message</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># x, exec = run command (the rest of the line) using shell</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># d, drop = remove commit</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># These lines can be re-ordered; they are executed from top to bottom.</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># If you remove a line here THAT COMMIT WILL BE LOST.</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># However, if you remove everything, the rebase will be aborted.</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Note that empty commits are commented out</span>
+</span></span></code></pre></div><p>窗口会显示所有未提交到远程的 commit，下面的注释也告诉了我们该如何使用。我们找到<code>edit</code>的行，可以看到解释为使用当前的 commit，但是在变基过程中会停下来让我们修改。这正是我们想要的。我们编辑当前的内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">edit <span class="m">7175772</span> top: filter .vscode folder
+</span></span><span class="line"><span class="cl">pick 52b63f3 top: filter .cache folder
+</span></span></code></pre></div><p>表示我们需要编辑历史记录中的<code>top: filter .vscode folder</code>提交，但是另一个 commit 我们不做改变。保存并退出当前窗口后，会有如下提示。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Stopped at 7175772...  top: filter .vscode folder
+</span></span><span class="line"><span class="cl">You can amend the commit now, with
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  git commit --amend 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Once you are satisfied with your changes, run
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  git rebase --continue
+</span></span></code></pre></div><p>根据提示，我们可以进行一系列修改了，修改完使用<code>git commit --amend</code>保存，如果一切符合自己要求了，再使用<code>git rebase --continue</code>完成变基操作。</p>
+<p>我们先修改代码，可以看到代码已经回到了没有<code>/.cache/</code>的状态，我们添加一行注释：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl"># Object files
+</span></span><span class="line"><span class="cl">*.o
+</span></span><span class="line"><span class="cl">*.a
+</span></span><span class="line"><span class="cl">*.dep
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">#Build &amp; install directories
+</span></span><span class="line"><span class="cl">build/
+</span></span><span class="line"><span class="cl">install/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Development friendly files
+</span></span><span class="line"><span class="cl">tags
+</span></span><span class="line"><span class="cl">cscope*
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># VSCode config file
+</span></span><span class="line"><span class="cl">/.vscode/
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git add .gitignore
+</span></span><span class="line"><span class="cl">git commit --amend
+</span></span></code></pre></div><p>同样弹出窗口后我们直接保存退出，如果修改幅度较大，可以进一步补充说明。然后使用以下命令继续完成变基。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git rebase --continue
+</span></span></code></pre></div><p>此时我们可以看到我们不仅修改了历史记录中的 commit，还保证了最新的 commit 没有丢失或者更改。</p>
+<h5 id="准备更新版本的补丁集">准备更新版本的补丁集</h5>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"> $ git format-patch -v2 --cover-letter -o update_gitignore/   master..update_gitignore-v1
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0000-cover-letter.patch
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0001-top-filter-.vscode-folder.patch
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0002-top-filter-.cache-folder.patch
+</span></span></code></pre></div><p><code>--range-diff  master..update_gitignore-v1</code> 参数告诉 <code>format-patch</code> 在 cover letter 中包括 <code>update_gitignore-v1</code> 和 <code>update_gitignore</code> 两个分支之间的差异。这有助于告诉评审人你的 v1 和 v2 补丁之间的差异。</p>
+<p><code>-v2</code> 参数告诉 <code>format-patch</code> 将你的补丁输出为 <code>v2</code> 版本。例如，你可能注意到你的 v2 版补丁都被命名为 <code>v2-000n-my-commit-subject.patch</code>。<code>-v2</code> 也会将你的补丁格式化，在前面加上<code>[PATCH v2]</code>，而不是<code>[PATCH]</code>。</p>
+<p>运行此命令后，<code>format-patch</code> 会将补丁输出到 <code>update_gitignore/</code> 目录，与 v1 版的补丁一起。使用一个目录可以方便在校对 v2 补丁时参考旧的 v1 补丁，但你需要注意只发送 v2 补丁。我们将使用 <code>update_gitignore/v2-.patch</code>这样的模式（而不是 <code>update_gitignore/.patch</code>，这将匹配 v1 和 v2 补丁）。</p>
+<p>再次编辑你的 cover letter。现在是一个很好的时间来提及你的上一个版本和现在有什么不同，如果它是重要的东西。你不需要在你的第二封 cover letter 中使用完全相同的内容；重点是向审查人员解释你所做的可能不那么明显的变化。</p>
+<p>我们就简单的写一下添加了注释。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 19:35:06 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH v2 0/2] Update gitignore
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Add a comment for the folder name.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Dominic Zhang (2):
+</span></span><span class="line"><span class="cl">  top: filter .vscode folder
+</span></span><span class="line"><span class="cl">  top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> .gitignore | 3 +++
+</span></span><span class="line"><span class="cl"> 1 file changed, 3 insertions(+)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><p>发送更新版本时你需要将新版本抄送给提出建议的人，你可以在你的 cover letter 中直接添加这些抄送行，在 Subject 行上面写上这样一行。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">CC: Name &lt;name@example.com&gt;
+</span></span></code></pre></div><p>例如，把更新的邮件抄送给我自己：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">From 30614e5469be4a2f930cca570836627a4e91f1d1 Mon Sep 17 00:00:00 2001
+</span></span><span class="line"><span class="cl">From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">CC: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">Date: Fri, 18 Nov 2022 19:35:06 +0800
+</span></span><span class="line"><span class="cl">Subject: [PATCH v2 0/2] Update gitignore
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Add a comment for the folder name.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Dominic Zhang (2):
+</span></span><span class="line"><span class="cl">  top: filter .vscode folder
+</span></span><span class="line"><span class="cl">  top: filter .cache folder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> .gitignore | 3 +++
+</span></span><span class="line"><span class="cl"> 1 file changed, 3 insertions(+)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-- 
+</span></span><span class="line"><span class="cl">2.17.1
+</span></span></code></pre></div><p>现在再次发送电子邮件，注意你传入的参数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">git send-email --to target@example.com update_gitignore/v2-*.patch
+</span></span></code></pre></div><p>恭喜你完成了一次补丁版本更新。</p>
+<hr>
+<p>对于一些社区，要求更新的版本需要在同一个 thread 上进行。如下示例这样：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">[PATCH 0/2] Here is what I did...
+</span></span><span class="line"><span class="cl">  [PATCH 1/2] Clean up and tests
+</span></span><span class="line"><span class="cl">  [PATCH 2/2] Implementation
+</span></span><span class="line"><span class="cl">  [PATCH v2 0/3] Here is a reroll
+</span></span><span class="line"><span class="cl">    [PATCH v2 1/3] Clean up
+</span></span><span class="line"><span class="cl">    [PATCH v2 2/3] New tests
+</span></span><span class="line"><span class="cl">    [PATCH v2 3/3] Implementation
+</span></span></code></pre></div><p>就是更新的版本需要关联到之前的版本，而不能作为单独的一个列表。</p>
+<p>你还需要去找到你之前的 cover letter 的 Message-Id。你可以在发送第一个补丁系列时，从 <code>git send-email</code> 的输出中记下它。
+例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git send-email --to Dominic Zhang@gmail.com update_gitignore/v2-*.patch 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0000-cover-letter.patch
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0001-top-filter-.vscode-folder.patch
+</span></span><span class="line"><span class="cl">update_gitignore/v2-0002-top-filter-.cache-folder.patch
+</span></span><span class="line"><span class="cl"><span class="o">(</span>mbox<span class="o">)</span> Adding cc: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt; from line <span class="s1">&#39;From: Dominic Zhang &lt;Dominic Zhang@gmail.com&gt;&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="o">(</span>mbox<span class="o">)</span> Adding cc: Dominic Zhang &lt;254758318@qq.com&gt; from line <span class="s1">&#39;CC: Dominic Zhang &lt;254758318@qq.com&gt;&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">From: Dominic Zhang@gmail.com
+</span></span><span class="line"><span class="cl">To: Dominic Zhang@gmail.com
+</span></span><span class="line"><span class="cl">Cc: Dominic Zhang &lt;254758318@qq.com&gt;
+</span></span><span class="line"><span class="cl">Subject: <span class="o">[</span>PATCH v2 0/2<span class="o">]</span> Update gitignore
+</span></span><span class="line"><span class="cl">Date: Fri, <span class="m">18</span> Nov <span class="m">2022</span> 19:54:54 +0800
+</span></span><span class="line"><span class="cl">Message-Id: &lt;20221118115456.2242-1-Dominic Zhang@gmail.com&gt;
+</span></span><span class="line"><span class="cl">X-Mailer: git-send-email 2.17.1
+</span></span></code></pre></div><p>你也可以从社区的邮箱列表中找到 Message ID，因为 OpenSBI 不要求在同一个 thread 回复，所以没有相关信息，这里以<a href="https://lore.kernel.org/git/cover-00.12-00000000000-20221118T112205Z-avarab@gmail.com/T/#t">Git 社区</a>的邮箱列表为例。随便点击一个补丁主题，在页面中找到<code>permalink</code>或者<code>raw</code>，点击打开即可找到 Message ID 信息。</p>
+<p>它的格式一般如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Message-Id: &lt;foo.12345.author@example.com&gt;
+</span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-11-53-e32c2da586e2b273cd1647e391c5c814-20221118201152-50efbe.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20-12-36-60538da64fc2af130b05eceb7c38cc52-20221118201235-5e5ace.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>如果要发送更新版本，那么我们就需要找到上一版本的 Message ID。如发送的是 V3 版本，那么我们需要找到 V2 版本的 Message ID。并且在发送邮件时添加如下参数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git send-email --to Dominic Zhang@gmail.com 
+</span></span><span class="line"><span class="cl">                 --in-reply-to<span class="o">=</span><span class="s2">&#34;&lt;foo.12345.author@example.com&gt;&#34;</span> 
+</span></span><span class="line"><span class="cl">                 update_gitignore/v2-*.patch 
+</span></span></code></pre></div><h4 id="只有一个-patch-的更改">只有一个 Patch 的更改</h4>
+<p>在某些情况下，你的非常小的变化可能只包括一个补丁。这时，你只需要发送一封邮件。你的提交信息应该已经很有意义了，你只需要生成补丁文件就可以发送了。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git format-patch -o update_gitignore/  HEAD^
+</span></span></code></pre></div><ul>
+<li><code>HEAD^</code>参数表示生成与上一个提交之间的差异。</li>
+</ul>
+]]></content:encoded>
     </item>
     <item>
       <title>如何使用 git-send-mail 给开源社区提交 Patch</title>
@@ -28,6 +497,225 @@
       <pubDate>Wed, 28 Sep 2022 21:08:29 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8git-send-mail%E7%BB%99%E5%BC%80%E6%BA%90%E7%A4%BE%E5%8C%BA%E6%8F%90%E4%BA%A4patch/</guid>
       <description>需求背景 如果参与 Linux、QEMU 或者 OpenSBI 等开源项目，不能通过在 GitHub 或者 Gitlab 平台提交pull request。而是需要将修改的代码，通过 Patch 形式提交</description>
+      <content:encoded><![CDATA[<h1 id="需求背景">需求背景</h1>
+<p>如果参与 Linux、QEMU 或者 OpenSBI 等开源项目，不能通过在 GitHub 或者 Gitlab 平台提交<code>pull request</code>。而是需要将修改的代码，通过 Patch 形式提交到对应的<code>listserv</code>供 Maintainer 审核。那么如何创建 Patch 并发送呢？</p>
+<p>这里以向 <a href="https://github.com/riscv-software-src/opensbi">OpenSBI</a> 提交一个 Patch 为例。</p>
+<h1 id="创建-patch">创建 Patch</h1>
+<p>首先将官方 Repository，Fork 到自己的 GitHub：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/5570d8a6420346a4a30463dfb9724f09.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/5570d8a6420346a4a30463dfb9724f09.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/5570d8a6420346a4a30463dfb9724f09.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>回到自己的主页，找到刚刚 Fork 的 Repository，将其 Clone 到本地：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/e45a6f8a447f62c7613909672550029c.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/e45a6f8a447f62c7613909672550029c.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/e45a6f8a447f62c7613909672550029c.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>修改代码与正常开发流程一直，修改完在<code>git commit</code>时需要加上<code>Signed-off-by</code>字段，因为 Merge 代码的人通常不是提交代码的人，有该字段才能证明是你修改了对应的代码。</p>
+<p><code>-s</code>参数会自动加上<code>Signed-off-by</code>字段：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git commit -s
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">doc:fix some typos
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Signed-off-by: dominic &lt;dominic@gmail.com&gt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Please enter the commit message for your changes. Lines starting</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># with &#39;#&#39; will be ignored, and an empty message aborts the commit.</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Date:      Tue Sep 27 21:11:41 2022 +0800</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># On branch master</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Your branch is up to date with &#39;origin/master&#39;.</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Changes to be committed:</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#       modified:   docs/domain_support.md</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#       modified:   docs/library_usage.md</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#       modified:   docs/platform_requirements.md</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#       modified:   docs/pmu_support.md</span>
+</span></span></code></pre></div><p>生成<code>.patch</code>文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git format-patch HEAD^
+</span></span><span class="line"><span class="cl">0001-doc-fix-some-typos.patch
+</span></span></code></pre></div><p>在当前目录下会生成一个<code>0001-doc-fix-some-typos.patch</code>文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git status 
+</span></span><span class="line"><span class="cl">On branch master
+</span></span><span class="line"><span class="cl">Your branch is up to date with <span class="s1">&#39;origin/master&#39;</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Untracked files:
+</span></span><span class="line"><span class="cl">  <span class="o">(</span>use <span class="s2">&#34;git add &lt;file&gt;...&#34;</span> to include in what will be committed<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        0001-doc-fix-some-typos.patch
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">nothing added to commit but untracked files present <span class="o">(</span>use <span class="s2">&#34;git add&#34;</span> to track<span class="o">)</span>
+</span></span></code></pre></div><p>这个文件就是我们要发送的文件，文件内容就是我们的代码修改，以及作者等信息：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ cat 0001-doc-fix-some-typos.patch 
+</span></span><span class="line"><span class="cl">From d404cb82f4c4aca15dcd35855d0bc96c5b4431d5 Mon Sep <span class="m">17</span> 00:00:00 <span class="m">2001</span>
+</span></span><span class="line"><span class="cl">From: Dunky-Z &lt;xxxxxxxxx@qq.com&gt;
+</span></span><span class="line"><span class="cl">Date: Tue, <span class="m">27</span> Sep <span class="m">2022</span> 21:11:41 +0800
+</span></span><span class="line"><span class="cl">Subject: <span class="o">[</span>PATCH<span class="o">]</span> doc:fix some typos
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Signed-off-by: dominic &lt;dominic@gmail.com&gt;
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl"> docs/domain_support.md        <span class="p">|</span>  <span class="m">6</span> +++---
+</span></span><span class="line"><span class="cl"> docs/library_usage.md         <span class="p">|</span>  <span class="m">2</span> +-
+</span></span><span class="line"><span class="cl"> docs/platform_requirements.md <span class="p">|</span>  <span class="m">2</span> +-
+</span></span><span class="line"><span class="cl"> docs/pmu_support.md           <span class="p">|</span> <span class="m">10</span> +++++-----
+</span></span><span class="line"><span class="cl"> <span class="m">4</span> files changed, <span class="m">10</span> insertions<span class="o">(</span>+<span class="o">)</span>, <span class="m">10</span> deletions<span class="o">(</span>-<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">diff --git a/docs/domain_support.md b/docs/domain_support.md
+</span></span><span class="line"><span class="cl">index 73931f1..8963b57 <span class="m">100644</span>
+</span></span><span class="line"><span class="cl">--- a/docs/domain_support.md
+</span></span><span class="line"><span class="cl">+++ b/docs/domain_support.md
+</span></span><span class="line"><span class="cl">@@ -2,7 +2,7 @@ OpenSBI Domain <span class="nv">Support</span>
+</span></span><span class="line"><span class="cl"> <span class="o">======================</span>
+</span></span><span class="line"><span class="cl">...
+</span></span></code></pre></div><h1 id="配置-send-email">配置 send-email</h1>
+<h2 id="安装-git-email">安装 git-email</h2>
+<p>通过<code>git</code>直接发送 Patch 需要使用<code>git-email</code>工具，得手动安装：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install git-email
+</span></span></code></pre></div><blockquote>
+<p>Windows 平台在安装 Git 时默认已安装</p>
+</blockquote>
+<h2 id="生成-smtp-授权码">生成 smtp 授权码</h2>
+<p>登录<a href="https://mail.qq.com/">QQ 邮箱 - 帐户</a>：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-33-23-5d80803932cf57943288c95cbe54695f-20220928123322-170195.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-33-23-5d80803932cf57943288c95cbe54695f-20220928123322-170195.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-33-23-5d80803932cf57943288c95cbe54695f-20220928123322-170195.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>开启 IMAP/SMTP 服务，并生成授权码：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-35-33-82f717633b6d7e09e447beef355a8d33-20220928123532-a208fc.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-35-33-82f717633b6d7e09e447beef355a8d33-20220928123532-a208fc.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-35-33-82f717633b6d7e09e447beef355a8d33-20220928123532-a208fc.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>根据提示发送短信：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-36-22-173ddcbec9548211275c43b5dc546042-20220928123621-a01c07.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-36-22-173ddcbec9548211275c43b5dc546042-20220928123621-a01c07.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-36-22-173ddcbec9548211275c43b5dc546042-20220928123621-a01c07.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>记录下生成的授权码：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-37-37-97677e266332c45fc640a09659d0ae3f-20220928123736-4d0f30.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-37-37-97677e266332c45fc640a09659d0ae3f-20220928123736-4d0f30.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/12-37-37-97677e266332c45fc640a09659d0ae3f-20220928123736-4d0f30.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="配置gitconfig">配置.gitconfig</h2>
+<p>Ubuntu 平台：<code>~/.gitconfig</code>
+Windows 平台：<code>C:\Users\用户名\.gitconfig</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="p">[</span><span class="l">sendemail]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtpencryption = tls</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">smtpserver = smtp.qq.com</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">smtpuser = dominic_riscx@qq.com</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtpserverport = 587</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">from = dominic_riscx@qq.com</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtppass = xxxxxx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">cc = dominic@gmail.com</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="c">#to = opensbi@lists.infradead.org</span><span class="w">
+</span></span></span></code></pre></div><p>为了方便复制，单独注释：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="p">[</span><span class="l">sendemail]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtpencryption =</span><span class="w"> </span><span class="c"># 加密方式，保持默认</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">smtpserver =    </span><span class="w"> </span><span class="c"># smtp 服务器地址，保持默认</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">smtpuser =      </span><span class="w"> </span><span class="c"># 邮箱地址，改为 QQ 邮箱地址，也就是用哪个邮箱发送，就填哪个</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtpserverport =</span><span class="w"> </span><span class="c"># 端口号，保持默认</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="l">from =          </span><span class="w"> </span><span class="c"># 同 smtpuser</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">smtppass =      </span><span class="w"> </span><span class="c"># 上文生成的 smtp 授权码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="l">cc =            </span><span class="w"> </span><span class="c"># 抄送的邮箱地址</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="c">#to = opensbi@lists.infradead.org </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c"># 要发送的地址，这个字段我注释了，因为怕以后发邮件默认发到这个地址，这个字段可以在发送时单独填写</span><span class="w">
+</span></span></span></code></pre></div><h1 id="发送-patch">发送 Patch</h1>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#$ git send-email patch文件名</span>
+</span></span><span class="line"><span class="cl">$ git send-email  0001-doc-fix-some-typos.patch
+</span></span><span class="line"><span class="cl">0001-doc-fix-some-typos.patch
+</span></span><span class="line"><span class="cl"><span class="c1"># 提示往哪里发送，填写要接收的邮箱即可，我这里填写的是OpenSBI接收Patch的地址</span>
+</span></span><span class="line"><span class="cl">To whom should the emails be sent <span class="o">(</span><span class="k">if</span> anyone<span class="o">)</span>? opensbi@lists.infradead.org
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Message-ID to be used as In-Reply-To <span class="k">for</span> the first email <span class="o">(</span><span class="k">if</span> any<span class="o">)</span>? 
+</span></span><span class="line"><span class="cl"><span class="c1"># 回车，保存默认（我还不清楚这里的作用）</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span>mbox<span class="o">)</span> Adding cc: Dunky-Z &lt;xxxxxxxxx@qq.com&gt; from line <span class="s1">&#39;From: Dunky-Z &lt;xxxxxxxxx@qq.com&gt;&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="o">(</span>body<span class="o">)</span> Adding cc: dominic &lt;dominic@gmail.com&gt; from line <span class="s1">&#39;Signed-off-by: dominic &lt;dominic@gmail.com&gt;&#39;</span>   
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">From: dominic_riscx@qq.com
+</span></span><span class="line"><span class="cl">To: opensbi@lists.infradead.org
+</span></span><span class="line"><span class="cl">Cc: dominic@gmail.com,
+</span></span><span class="line"><span class="cl">        Dunky-Z &lt;xxxxxxxxx@qq.com&gt;
+</span></span><span class="line"><span class="cl">Subject: <span class="o">[</span>PATCH<span class="o">]</span> doc:fix some typos
+</span></span><span class="line"><span class="cl">Date: Wed, <span class="m">28</span> Sep <span class="m">2022</span> 10:35:30 +0800
+</span></span><span class="line"><span class="cl">Message-Id: &lt;20220928023530.2344-1-dominic_riscx@qq.com&gt;
+</span></span><span class="line"><span class="cl">X-Mailer: git-send-email 2.34.1.windows.1
+</span></span><span class="line"><span class="cl">MIME-Version: 1.0
+</span></span><span class="line"><span class="cl">Content-Transfer-Encoding: 8bit
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    The Cc list above has been expanded by additional
+</span></span><span class="line"><span class="cl">    addresses found in the patch commit message. By default
+</span></span><span class="line"><span class="cl">    send-email prompts before sending whenever this occurs.
+</span></span><span class="line"><span class="cl">    This behavior is controlled by the sendemail.confirm
+</span></span><span class="line"><span class="cl">    configuration setting.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    For additional information, run <span class="s1">&#39;git send-email --help&#39;</span>.
+</span></span><span class="line"><span class="cl">    To retain the current behavior, but squelch this message,
+</span></span><span class="line"><span class="cl">    run <span class="s1">&#39;git config --global sendemail.confirm auto&#39;</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Send this email? <span class="o">([</span>y<span class="o">]</span>es<span class="p">|</span><span class="o">[</span>n<span class="o">]</span>o<span class="p">|</span><span class="o">[</span>e<span class="o">]</span>dit<span class="p">|</span><span class="o">[</span>q<span class="o">]</span>uit<span class="p">|</span><span class="o">[</span>a<span class="o">]</span>ll<span class="o">)</span>: y
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># y 确认发送</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">OK. Log says:
+</span></span><span class="line"><span class="cl">Server: smtp.qq.com
+</span></span><span class="line"><span class="cl">MAIL FROM:&lt;dominic_riscx@qq.com&gt;
+</span></span><span class="line"><span class="cl">RCPT TO:&lt;opensbi@lists.infradead.org&gt;
+</span></span><span class="line"><span class="cl">RCPT TO:&lt;dominic@gmail.com&gt;
+</span></span><span class="line"><span class="cl">RCPT TO:&lt;xxxxxxxxx@qq.com&gt;
+</span></span><span class="line"><span class="cl">From: dominic_riscx@qq.com
+</span></span><span class="line"><span class="cl">To: opensbi@lists.infradead.org
+</span></span><span class="line"><span class="cl">Cc: dominic@gmail.com,
+</span></span><span class="line"><span class="cl">        Dunky-Z &lt;xxxxxxxxx@qq.com&gt;
+</span></span><span class="line"><span class="cl">Subject: <span class="o">[</span>PATCH<span class="o">]</span> doc:fix some typos
+</span></span><span class="line"><span class="cl">Date: Wed, <span class="m">28</span> Sep <span class="m">2022</span> 10:35:30 +0800
+</span></span><span class="line"><span class="cl">Message-Id: &lt;20220928023530.2344-1-dominic_riscx@qq.com&gt;
+</span></span><span class="line"><span class="cl">X-Mailer: git-send-email 2.34.1.windows.1
+</span></span><span class="line"><span class="cl">MIME-Version: 1.0
+</span></span><span class="line"><span class="cl">Content-Transfer-Encoding: 8bit
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Result: <span class="m">250</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 发送成功</span>
+</span></span></code></pre></div><p>前往<a href="http://lists.infradead.org/pipermail/opensbi/">The opensbi Archives</a>，找到对应的月份，点击<code>Theread</code>，即可找到自己发送的 Patch，每个开源社区一般都会在如何提交 PR 的文档里公开 Patch Archive 网址，这里是以 OpenSBI 的网址。</p>
+<p>前往邮箱发送记录中也可以找到对应的 Patch 信息：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/52837340ba2d7223cd0eb990f8a5288b.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/52837340ba2d7223cd0eb990f8a5288b.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/28/52837340ba2d7223cd0eb990f8a5288b.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>以上就是完整的提交 Patch 过程。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git hooks 钩子的使用</title>
@@ -35,6 +723,135 @@
       <pubDate>Mon, 30 May 2022 12:16:11 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git-hooks%E9%92%A9%E5%AD%90%E7%9A%84%E4%BD%BF%E7%94%A8/</guid>
       <description>Git hooks 简介 Git 能在特定的重要动作发生时触发自定义脚本。比如，commit之前检查commit message是否符合约定的格式，push之前检查代</description>
+      <content:encoded><![CDATA[<h2 id="git-hooks-简介">Git hooks 简介</h2>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208271329199.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>Git 能在特定的重要动作发生时触发自定义脚本。比如，<code>commit</code>之前检查<code>commit message</code>是否符合约定的格式，<code>push</code>之前检查代码格式是否正确，是否编译通过等等。Git 就提供了<code>hooks</code>这样的机制。</p>
+<p>我们在哪能找到<code>hooks</code>呢？在初始化代码仓库<code>git init</code>时，Git 会自动为我们创建一个<code>.git/hooks</code>目录，里面存放了所有的钩子。因为<code>.git</code>是隐藏目录，显示隐藏目录后就可以找到<code>hooks</code>这个目录。</p>
+<p>在 VSCode 里一般默认把<code>.git</code>目录排除显示，所以打开项目目录时不会显示该目录，我们可以收到在 VSCode 显示<code>.git</code>目录：打开设置界面，搜索<code>exclude</code>找到图中的设置，将<code>.git</code>目录从排除列表中移除，即可在 VSCode 中显示<code>.git</code>目录。</p>
+<div align=center>  <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220530134106.png" height = "90%" /> </div>
+<p>现在我们找到了<code>hooks</code>，该如何使用呢？
+所有默认的<code>hooks</code>都是以<code>.sample</code>为后缀，只需要移除<code>.sample</code>即可激活<code>hooks</code>。</p>
+<div align=center> <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220530154954.png"    alt=""></div>
+<p>随便打开一个<code>hooks</code>文件，我们可以发现，实际是<code>hooks</code>就是一个个<code>shell</code>脚本。这些脚本会在特定的动作发生时被执行。示范的这些<code>hooks</code>都是<code>shell</code>脚本，<strong>实际上只要是文件名正确的可执行脚本都可以使用</strong>，如将<code>pre-push</code>内容改为<code>python, Ruby</code>等等脚本都可以。</p>
+<h2 id="如何使用一个-hooks">如何使用一个 hooks</h2>
+<p>以<code>pre-commit</code>这个<code>hooks</code>为例，来示范一下如何使用 Git hooks。</p>
+<ul>
+<li>
+<p>打开<code>.git/hooks/pre-commit.sample</code>，这个<code>hooks</code>的大体功能是检查文件名是否包含非<code>ASCII</code>字符，如果包含，则无法执行<code>commit</code>操作，并提示用户修改文件名。</p>
+</li>
+<li>
+<p>删除<code>pre-commit.sample</code>的后缀</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜ mv .git/hooks/pre-commit.sample .git/hooks/pre-commit
+</span></span></code></pre></div></li>
+<li>
+<p>添加一个有汉字的文件名，如<code>测试.md</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜  touch 测试.md
+</span></span></code></pre></div></li>
+<li>
+<p>将新文件提交</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">➜ git add 测试.md
+</span></span><span class="line"><span class="cl">➜ git commit -m &#34;测试&#34;
+</span></span><span class="line"><span class="cl">Error: Attempt to add a non-ASCII file name.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">This can cause problems if you want to work with people on other platforms.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">To be portable it is advisable to rename the file.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">If you know what you are doing you can disable this check using:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">git config hooks.allownonascii true
+</span></span></code></pre></div><blockquote>
+<p>如果无法执行<code>pre-commit</code>可能未被赋予执行权限，修改一下权限即可：<code>chmod +x .git/hooks/pre-commit</code></p>
+</blockquote>
+</li>
+</ul>
+<p>我们可以发现，在进行<code>commit</code>操作时被中断了，会提示用户修改文件名。其他的<code>hooks</code>用法类似，我们可以自定义在什么时候可以<code>push</code>，什么时候可以<code>rebase</code>等等。</p>
+<p><code>hooks</code>通常会被用来做提交代码前的一个检查，比如风格是否统一，编译是否通过等等。如果团队合作时，这样的检查最好能够与成员保持一致，但是<code>hooks</code>所在的<code>.git</code>目录是不会被Git自己版本管理的，换句话说，它不能推送到远端与成员共享。那么如何解决这个问题呢？</p>
+<h2 id="如何同步hooks文件">如何同步hooks文件</h2>
+<h3 id="方案一与源码放在一起">方案一：与源码放在一起</h3>
+<p>代码仓库中新建一个<code>hooks</code>目录，将该目录同步到远程。其他成员下载代码时也会下载<code>hooks</code>目录，通过脚本的方式将<code>hooks</code>目录覆盖本地的<code>.git/hooks</code>目录。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>cp -r ./hooks/ .git/hooks/
+</span></span><span class="line"><span class="cl">chmod +x -R .git/hooks
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;Hooks sync to remote success!&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span> <span class="m">0</span>
+</span></span></code></pre></div><h3 id="方案二使用pre-commit框架">方案二：使用pre-commit框架</h3>
+<p><code>pre_commit</code> 是 <code>pre-commit</code> 同名的开源应用，使用<code>pre-commit</code>，代码仓库里只需要有一个配置文件，所有成员都可以根据配置文件，使用<code>pre_commit</code>生成统一的<code>hooks</code>。</p>
+<p><code>pre-commit</code>随着发展，已经不单单只能用于<code>git hooks的pre-commit</code>阶段，而是能作用于所有<code>git hooks</code>的所有阶段，如上面说的<code>prepare-commit-msg</code>, <code>commit-msg</code>, <code>post-commi</code>等。</p>
+<p>安装pre-commit</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">pip install pre-commit
+</span></span></code></pre></div><p>在项目目录下，添加配置文件 <code>.pre-commit-config.yaml</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">touch .pre-commit-config.yaml
+</span></span></code></pre></div><ul>
+<li>
+<p>首先了解配置的格式</p>
+<ul>
+<li>顶层有一个参数名为 <code>repos</code></li>
+<li><code>repos</code> 中每个元素为 <code>repo</code> ，代表一个代码库，一般是<code>github</code>或<code>gitlab</code>链接。在使用时会从对应地址下载，如果出现下载慢的情况，可以在<code>gitee</code>搜索是否有相关镜像。</li>
+<li>每个 <code>repo</code> 中有一个或多个 <code>hook</code> ，每个 <code>hook</code> 代表一个任务。</li>
+<li>每个任务里可理解为一个命令行指令，例如<code>flake8/yapf/black</code>。</li>
+</ul>
+</li>
+<li>
+<p><code>pre_commit</code>官方提供了<a href="https://pre-commit.com/hooks.html">各种配置</a>，我们可以根据需要选择一个合适的。比如我需要一个格式化C语言代码的配置，选择了<a href="https://github.com/pre-commit/mirrors-clang-format">mirrors-clang-format</a>，还选了一个用来删除行尾空格的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">repos</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="w">  </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l">https://github.com/pre-commit/pre-commit-hooks</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l">v4.3.0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">hooks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">trailing-whitespace</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span>- <span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l">https://github.com/pre-commit/mirrors-clang-format</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l">v14.0.6</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">hooks</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">clang-format</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">types_or</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">c]</span><span class="w">
+</span></span></span></code></pre></div><p>参数的含义可以参考<a href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a>的文档。每个id对应的其实都是一个程序，为了保证都能正常运行，还需要安装这些程序。一般在仓库的<code>README</code>中都会有提示如何安装。</p>
+</li>
+<li>
+<p>根据配置文件安装<code>hooks</code>
+在项目根目录下运行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">pre-commit install
+</span></span></code></pre></div></li>
+<li>
+<p>在执行<code>git commit</code>命令时将会自动检查。这个过程中，<code>pre-commit</code>会从仓库里下载代码，然后根据里面的配置执行相应的脚本。完成各种检查。</p>
+</li>
+</ul>
+<h4 id="常用命令">常用命令</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 手动对所有的文件执行 hooks，新增 hook 的时候可以执行，使得代码均符合规范。直接执行该指令则无需等到 pre-commit 阶段再触发 hooks</span>
+</span></span><span class="line"><span class="cl">pre-commit run --all-files
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行特定 hooks</span>
+</span></span><span class="line"><span class="cl">pre-commit run &lt;hook_id&gt;
+</span></span><span class="line"><span class="cl"><span class="c1"># 将所有的hook更新到最新的版本/tag</span>
+</span></span><span class="line"><span class="cl">pre-commit autoupdate
+</span></span><span class="line"><span class="cl"><span class="c1"># 指定更新 repo</span>
+</span></span><span class="line"><span class="cl">pre-commit autoupdate --repo https://github.com/pre-commit/mirrors-clang-format
+</span></span></code></pre></div><h2 id="参考资料">参考资料</h2>
+<ol>
+<li>
+<p><a href="https://blog.csdn.net/irving512/article/details/124377109">C++ 项目中使用 Pre-commit 协助实现代码规范检查_清欢守护者的博客-CSDN 博客</a></p>
+</li>
+<li>
+<p><a href="https://www.jianshu.com/p/7951ff907ccb">git push 之前自动编译验证 - 简书</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/irving512/article/details/108701017">使用 pre-commit 实现代码检查_清欢守护者的博客-CSDN 博客</a></p>
+</li>
+<li>
+<p><a href="https://pre-commit.com/#pre-commit-configyaml---top-level">pre-commit</a></p>
+</li>
+<li>
+<p><a href="https://www.bilibili.com/video/BV1eZ4y1G7hh/?spm_id_from=333.788">Git 基本原理介绍 (32)——git hook 和 python_哔哩哔哩_bilibili</a></p>
+</li>
+</ol>
+]]></content:encoded>
     </item>
     <item>
       <title>Git-git pull 与 git pull --rebase 的区别</title>
@@ -42,6 +859,51 @@
       <pubDate>Mon, 29 Nov 2021 16:09:12 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git-git-pull%E4%B8%8Egit-pull-rebase%E7%9A%84%E5%8C%BA%E5%88%AB/</guid>
       <description>git pull == git fetch + git merge git pull --rebase == git fetch + git rebase 拆解来看这两个命令就是在拉取远端代码后，是合并还是进行变基操作。 假设当前有三个提交A,B,C，并且分支fe</description>
+      <content:encoded><![CDATA[<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git <span class="nv">pull</span> <span class="o">==</span> git fetch + git merge
+</span></span><span class="line"><span class="cl">git pull --rebase <span class="o">==</span> git fetch + git rebase
+</span></span></code></pre></div><p>拆解来看这两个命令就是在拉取远端代码后，是合并还是进行变基操作。</p>
+<p>假设当前有三个提交<code>A,B,C</code>，并且分支<code>feature</code>都与远程代码同步。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129154905.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129154905.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129154905.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>我们在<code>feature</code>上做了一些修改，并产生了<code>E</code>提交，远程也有用户进行了更新到了<code>D</code>提交。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155138.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155138.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155138.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>此时我们需要<code>git fetch</code>获取最新的代码，然后<code>git merge</code>解决冲突后重新<code>git add</code> <code>git commit</code>，得到<code>F</code>提交。最后<code>git push</code>即可成功推送，得到如下的关系</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155544.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155544.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129155544.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>而使用<code>git rebase</code>将会创建一个新的提交<code>F</code>，<code>F</code>的文件内容和上面<code>F</code>的一样，但我们将 E 提交废除，当它不存在（图中用虚线表示）。由于这种删除，避免了菱形的产生，保持提交曲线为直线。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129162532.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129162532.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129162532.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在<code>rebase</code>的过程中，有时也会有冲突，这时 Git 会停止<code>rebase</code>并让用户去解决冲突，解决完冲突后，用<code>git add</code>添加修改的文件，然后不用执行<code>git commit</code>，直接执行<code>git rebase --continue</code>，这样 git 会继续 apply 余下的补丁。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 同一文件被多人修改了文件名该如何处理</title>
@@ -49,6 +911,56 @@
       <pubDate>Sun, 28 Nov 2021 21:55:24 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E8%A2%AB%E5%A4%9A%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E6%96%87%E4%BB%B6%E5%90%8D%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/</guid>
       <description>用户一修改了文件名，并推送到了远端。用户二也修改了文件名，在进行推送时，就会被拒绝。 拉取最新代码后发现有相同的文件，只是文件名不同。inde</description>
+      <content:encoded><![CDATA[<p>用户一修改了文件名，并推送到了远端。用户二也修改了文件名，在进行推送时，就会被拒绝。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282158733.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282158733.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282158733.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>拉取最新代码后发现有相同的文件，只是文件名不同。<code>index1.htm</code>和<code>index2.htm</code>两个文件内容是完全相同的。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282159666.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282159666.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282159666.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>查看当前状态，可知有其他想把文件名修改为<code>index2.htm</code>。此时只需要根据提示，删除<code>index.htm</code>。协商后决定保留哪一个文件，比如我们决定保留<code>index1.htm</code>。那么删除<code>index2.htm</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282203900.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282203900.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282203900.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282204020.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282204020.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282204020.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>最后在<code>commit</code>一次，即可顺利推送。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282205646.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282205646.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111282205646.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 他人同时修改了文件名和文件内容该如何处理</title>
@@ -56,6 +968,38 @@
       <pubDate>Sat, 27 Nov 2021 23:07:37 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%BB%96%E4%BA%BA%E5%90%8C%E6%97%B6%E4%BF%AE%E6%94%B9%E4%BA%86%E6%96%87%E4%BB%B6%E5%90%8D%E5%92%8C%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/</guid>
       <description>用户一修改了文件名，并提交远端。 用户二修改了文件内容，也进行了推送， 当然会被无情拒绝， 解决这个问题也十分简单，Git 可以智能的感知到只是文件</description>
+      <content:encoded><![CDATA[<p>用户一修改了文件名，并提交远端。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272319842.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272319842.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272319842.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>用户二修改了文件内容，也进行了推送，
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272320474.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272320474.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272320474.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>当然会被无情拒绝，
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272321244.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272321244.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272321244.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>解决这个问题也十分简单，Git 可以智能的感知到只是文件名被修改，只需要一个<code>git pull</code>命令就可以解决。弹出弹窗可以直接保存退出，默认不变就行。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 不同人修改了相同文件的相同区域</title>
@@ -63,6 +1007,57 @@
       <pubDate>Sat, 27 Nov 2021 22:13:28 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E7%9B%B8%E5%90%8C%E6%96%87%E4%BB%B6%E7%9A%84%E7%9B%B8%E5%90%8C%E5%8C%BA%E5%9F%9F/</guid>
       <description>不同人修改了文件的相同区域，如果向远端推送，肯定会被拒绝。这时候就需要解决冲突， 首先拉取远端最新的代码，会提示有冲突的文件， 打开冲突的文件，</description>
+      <content:encoded><![CDATA[<p>不同人修改了文件的相同区域，如果向远端推送，肯定会被拒绝。这时候就需要解决冲突，</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272217729.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272217729.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272217729.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>首先拉取远端最新的代码，会提示有冲突的文件，
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272220539.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272220539.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272220539.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>打开冲突的文件，git 会对冲突区域进行标记，<code>&lt;&lt;&lt;&lt;&lt;&lt;</code>到<code>======</code>区域表示远端的代码。<code>======</code>到<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>表示本地的代码。这时候就需要自己来判断需要哪些代码，也可以增删一些内容，修改完成后将这些标识符号删除，然后保存退出。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272221887.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272221887.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272221887.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><code>git status</code>查看当前状态，提示还有未合并的路径，需要进行<code>commit</code>操作。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256325.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256325.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256325.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256627.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256627.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111272256627.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>及时<code>git push</code>当前代码。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 如何合并连续的多个 commit</title>
@@ -70,6 +1065,75 @@
       <pubDate>Wed, 24 Nov 2021 23:18:49 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E5%A6%82%E4%BD%95%E5%90%88%E5%B9%B6%E8%BF%9E%E7%BB%AD%E7%9A%84%E5%A4%9A%E4%B8%AAcommit/</guid>
       <description>确定需要合并的commit 变基操作，以需要合并的commit下方的结点为基准。 交互式变基，squash表示合并到上方commit 编写合并co</description>
+      <content:encoded><![CDATA[<ul>
+<li>
+<p>确定需要合并的<code>commit</code>
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242323497.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242323497.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242323497.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+<li>
+<p>变基操作，以需要合并的<code>commit</code>下方的结点为基准。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242324125.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242324125.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242324125.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+<li>
+<p>交互式变基，<code>squash</code>表示合并到上方<code>commit</code>
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242325615.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242325615.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242325615.png" alt=""  />
+</a>
+</div>
+
+
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242326279.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242326279.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242326279.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+<li>
+<p>编写合并<code>commit</code>的<code>message</code>，保留原先的不变
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328440.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328440.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328440.png" alt=""  />
+</a>
+</div>
+
+
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328175.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328175.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111242328175.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+</ul>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 不同人修改了同一文件的不同区域该如何处理</title>
@@ -77,6 +1141,12 @@
       <pubDate>Tue, 23 Nov 2021 22:49:46 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E5%90%8C%E4%B8%80%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8D%E5%90%8C%E5%8C%BA%E5%9F%9F%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/</guid>
       <description>git fetch git merge 或者 git pull</description>
+      <content:encoded><![CDATA[<ul>
+<li><code>git fetch</code> <code>git merge</code>
+或者</li>
+<li><code>git pull</code></li>
+</ul>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 修改老旧 commit 的 message</title>
@@ -84,6 +1154,62 @@
       <pubDate>Mon, 22 Nov 2021 22:50:25 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%BF%AE%E6%94%B9%E8%80%81%E6%97%A7commit%E7%9A%84message/</guid>
       <description>以下操作仅限于维护自己的分支，不建议对团队共享的代码进行修改。 以最近三次提交为例，假设想要修改第二个提交的message。可以使用git re</description>
+      <content:encoded><![CDATA[<p><strong>以下操作仅限于维护自己的分支，不建议对团队共享的代码进行修改。</strong></p>
+<p>以最近三次提交为例，假设想要修改第二个提交的<code>message</code>。可以使用<code>git rebase</code>命令
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222255230.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222255230.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222255230.png" alt=""  />
+</a>
+</div>
+
+</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git rebase -i 27d2f
+</span></span></code></pre></div><ul>
+<li><code>-i</code>交互式变基</li>
+<li><code>27d2f</code>需要改变<code>message</code>的提交的父节点</li>
+</ul>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222258390.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222258390.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222258390.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>弹出页面可以使用提供的命令进行操作，比如<code>pick</code>意思就是挑选需要的<code>commit</code>。本次任务需要修改<code>message</code>，从下方帮助文档里可以找到<code>reword</code>命令，可以保留<code>commit</code>，只修改<code>message</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222301367.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222301367.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222301367.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>保存退出后，会弹出另外一个界面。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222302032.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222302032.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222302032.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>在这里就可以真正修改需要更新的<code>message</code>。保存退出即可。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222303965.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222303965.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222303965.png" alt=""  />
+</a>
+</div>
+
+</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 修改最新 commit 的 message</title>
@@ -91,6 +1217,10 @@
       <pubDate>Mon, 22 Nov 2021 22:44:45 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%BF%AE%E6%94%B9%E6%9C%80%E6%96%B0commit%E7%9A%84message/</guid>
       <description>commit提交后觉得描述信息不准确，想重新修改message内容，该如何操作？ git commit --amend 弹出页面就和git commit操作时的一样，将其改为新</description>
+      <content:encoded><![CDATA[<p><code>commit</code>提交后觉得描述信息不准确，想重新修改<code>message</code>内容，该如何操作？</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git commit --amend
+</span></span></code></pre></div><p>弹出页面就和<code>git commit</code>操作时的一样，将其改为新内容即可。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git-把本地仓库同步到 GitHub</title>
@@ -98,6 +1228,21 @@
       <pubDate>Thu, 23 Sep 2021 23:06:28 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E6%8A%8A%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%90%8C%E6%AD%A5%E5%88%B0github/</guid>
       <description>需求 因为现在大部分情况下是先从远程 Clone 下来代码，所以这一功能用的不多。但是如果自己想把本地已有的代码同步到远程，本文就可以解决这一的需求。 方法</description>
+      <content:encoded><![CDATA[<h2 id="需求">需求</h2>
+<p>因为现在大部分情况下是先从远程 Clone 下来代码，所以这一功能用的不多。但是如果自己想把本地已有的代码同步到远程，本文就可以解决这一的需求。</p>
+<h2 id="方法">方法</h2>
+<ul>
+<li>
+<p>GitHub 新建一个仓库，并复制 SSH 地址</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git@github.com:git201901/git_learning.git
+</span></span></code></pre></div></li>
+<li>
+<p><code>git remote add 名称</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">pc:git-learning suling$ git remote add github git@github.com:git201901/git_learning.git
+</span></span></code></pre></div><p>这里的<code>github</code>就是自定义的一个名称，用于替换后面的远程地址。方便后续<code>git push github</code>以及<code>git fetch github</code>。</p>
+</li>
+</ul>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 不同人修改了不同的文件该如何处理</title>
@@ -105,6 +1250,102 @@
       <pubDate>Sun, 12 Sep 2021 23:19:28 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%B8%8D%E5%90%8C%E4%BA%BA%E4%BF%AE%E6%94%B9%E4%BA%86%E4%B8%8D%E5%90%8C%E7%9A%84%E6%96%87%E4%BB%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86/</guid>
       <description>需求 同一个项目，不同的开发者修改了不同的文件，如何解决同步冲突。 模拟 用户一修改 第一个用户新建一个分支， 以上命令就是新建一个分支feature</description>
+      <content:encoded><![CDATA[<h2 id="需求">需求</h2>
+<p>同一个项目，<strong>不同的开发者修改了不同的文件</strong>，如何解决同步冲突。</p>
+<h2 id="模拟">模拟</h2>
+<h3 id="用户一修改">用户一修改</h3>
+<p>第一个用户新建一个分支，
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222312698.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222312698.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222312698.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>以上命令就是新建一个分支<code>feature/add_git_commands</code> 将其与远端分支<code>origin/feature/add_git_commands</code>相关联，并切换到该分支。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222317370.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222317370.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111222317370.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>修改 readme 文件，并推送到远端。因为新建分支时已经做了与远端关联，所以可以直接<code>git push</code>。</p>
+<h3 id="用户二修改">用户二修改</h3>
+<p>第二个用户，首先拉取远端分支。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232232495.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232232495.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232232495.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p><code>git branch -v</code>查看本地分支，保持不变，但是<code>git branch -av</code>查看所有分支，可以发现多了两个远端分支。
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232233342.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232233342.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232233342.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>新建本地分支，保持与远端分支名相同。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232235005.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232235005.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232235005.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>此时再对与 readme 不同的文件进行修改，提交，推送都会比较顺利。因为当前分支保持<code>fast forward</code>。</p>
+<p>用户二继续做开发，但是没再往远端推送代码。在此期间，用户一对远端代码进行了更新。用户二想再次推送代码，将会报错，提示当前提交不再<code>fast forward</code>。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232242069.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232242069.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232242069.png" alt=""  />
+</a>
+</div>
+
+</p>
+<h2 id="解决方法">解决方法</h2>
+<ul>
+<li>
+<p><code>git fetch</code>远端分支
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232243841.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232243841.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232243841.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+<li>
+<p><code>git merge</code>合并远端分支
+<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232245751.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232245751.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202111232245751.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+</ul>
+<p>因为两个用户修改的不同文件，所以合并不会产生冲突。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 中添加 gitignore 并更新远程仓库</title>
@@ -112,6 +1353,28 @@
       <pubDate>Wed, 04 Aug 2021 14:09:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E4%B8%AD%E6%B7%BB%E5%8A%A0gitignore%E5%B9%B6%E6%9B%B4%E6%96%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/</guid>
       <description>gitignore 的作用 在使用Git版本控制时，必须要用.gitignore这个文件来告诉Git那些文件或目录不需要添加到版本控制中。通俗点说，就是不需要g</description>
+      <content:encoded><![CDATA[<h2 id="gitignore-的作用">gitignore 的作用</h2>
+<p>在使用<code>Git</code>版本控制时，必须要用<code>.gitignore</code>这个文件来告诉<code>Git</code>那些文件或目录不需要添加到版本控制中。通俗点说，就是不需要<code>git push</code>到远程仓库。</p>
+<p>在平时开发过程中，开发目录下会有各种格式的文件，比如 C 语言除了<code>.c</code>源码，还会有<code>.o</code>目标文件，没有后缀的可执行程序等等，假如你要进行深度学习类的开发，如图像识别，需要训练大量数据，如果这些训练数据也到跟踪管理，那<code>push</code>一次就可以下班回家了。</p>
+<p>但是我们怎么让<code>Git</code>知道哪些文件需要跟踪，哪些文件不需要呢，这时候<code>.gitignore</code>文件就起作用了。</p>
+<h2 id="常用规则">常用规则</h2>
+<p>简单介绍一下常用的规则，虽然后面有现成的模板，但是我们还是了解一下常用规则，能看得懂<code>.gitignore</code>里写了啥。也方便自己编写一些规则适应自己的工作。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/test/              # 过滤整个test文件夹
+</span></span><span class="line"><span class="cl">*.o                 # 过滤所有.o文件
+</span></span><span class="line"><span class="cl">/test/hello.o       # 过滤test文件夹下hello.o这个文件
+</span></span><span class="line"><span class="cl">!src/               # 不过滤src这个文件夹
+</span></span><span class="line"><span class="cl">!*.c                # 不过滤.c文件
+</span></span></code></pre></div><h2 id="通过-gitignore-文件更新远程仓库">通过 gitignore 文件更新远程仓库</h2>
+<p>上面说到我们在不同环境下需要制定不同的规则，但是每次都要重新写一遍，又或者不知道制定什么样的规则，还是挺麻烦的。</p>
+<p>首先推荐一个<code>.gitignore</code><a href="https://github.com/github/gitignore">模板仓库</a>，在平时工作学习中遇到的各种语言环境下的模板都能找到。这是广大开发人员总结的一些规则。</p>
+<p>最近在学习<code>Qt</code>，在所有模板中搜索关键字，找到了<code>Qt.gitignore</code>这个模板打开并复制，在自己本地仓库里新建一个<code>.gitignore</code>文件，将复制的内容粘贴进去。</p>
+<p>现在就要解决如何更新远程仓库的内容，因为我在使用<code>.gitignore</code>文件之前已经向远程<code>push</code>过了，现在需要删除不需要的文件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git rm -r --cached .
+</span></span></code></pre></div><p><code>rm</code>就是<code>Linux</code>下常用的删除命令，<code>-r</code>表示递归删除，<code>--cached</code>表示需要在本地端（工作区）保留文件，<code>.</code>表示所有文件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git add .   # 重新添加所有文件到暂存区，然后提交，推送
+</span></span><span class="line"><span class="cl">git commit -m &#34;update&#34;
+</span></span><span class="line"><span class="cl">git push
+</span></span></code></pre></div>]]></content:encoded>
     </item>
     <item>
       <title>git clone 快速下载子模块</title>
@@ -119,6 +1382,46 @@
       <pubDate>Wed, 28 Jul 2021 15:28:58 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git-clone%E5%BF%AB%E9%80%9F%E4%B8%8B%E8%BD%BD%E5%AD%90%E6%A8%A1%E5%9D%97/</guid>
       <description>在git clone时候，如果遇到项目里有子模块通常会在下载时加上--recursive参数，一起下载。但是子模块较多，体积较大时大概率都会下</description>
+      <content:encoded><![CDATA[<p>在<code>git clone</code>时候，如果遇到项目里有子模块通常会在下载时加上<code>--recursive</code>参数，一起下载。但是子模块较多，体积较大时大概率都会下载失败。</p>
+<p>好在可以通过一些小技巧，下载国内镜像，进行加速。但是下载项目时，只是主体是国内的镜像，子模块仍然下载很慢。首先解决获取国内镜像的问题。有三个方法：</p>
+<ul>
+<li>
+<p><strong>在码云 Gitee 上搜索下载</strong></p>
+<p>在码云上搜索同样的项目，然后用码云git 的地址下载。</p>
+</li>
+<li>
+<p><strong>加上<code>.cnpmjs.org</code>后缀</strong></p>
+<p>在地址后面加上后缀，如<code>git clone https://github.com.cnpmjs.org/riscv/riscv-binutils-gdb.git</code>。</p>
+</li>
+<li>
+<p><strong>使用油猴脚本获取镜像地址</strong></p>
+<p>如果你有油猴插件可以去<a href="https://greasyfork.org/zh-CN">greasyfork</a>搜索安装<strong>GitHub镜像访问，加速下载</strong>这个脚本，刷新GitHub仓库界面就会多出几个镜像地址，一般下载都会快好几倍。</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png" alt=""  />
+</a>
+</div>
+
+</p>
+</li>
+</ul>
+<p>再来解决子模块下载速度慢的问题，下载项目时，先不加<code>--recursive</code>参数，只下载项目的本题。</p>
+<p>下载完后找到<code>.gitmodules</code>文件，这是一个隐藏文件，需要显示隐藏文件，Linux 下使用快捷键<code>Ctrl+H</code>。用<code>vim</code>打开后可以得到：</p>
+<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728164406.png" alt=""  />
+
+<div class="post-img-view">
+<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728164406.png">
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728164406.png" alt=""  />
+</a>
+</div>
+
+</p>
+<p>这个文件里写入了子模块的下载信息，<code>url</code>就是下载地址。我们把所有子模块中的 URL 地址同样加上<code>.cnpmjs.org</code>后缀。或者使用上述三种方式得到的镜像地址。</p>
+<p>然后利用<code>git submodule sync</code>更新子项目对应的<code>url</code></p>
+<p>最后再<code>git submodule update --init --recursive</code>，即可快速下载所有子项目。</p>
+]]></content:encoded>
     </item>
     <item>
       <title>Git 踩坑记录</title>
@@ -126,6 +1429,25 @@
       <pubDate>Fri, 23 Jul 2021 11:55:57 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/git%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/</guid>
       <description>创建仓库时没有加入 gitignore 文件，上传了不需要的文件，后添加了 gitignore 文件如何同步远程与本地的文件（自动删除不需要的文件） # 注意有个点“.” 取消版本控制 git</description>
+      <content:encoded><![CDATA[<h2 id="创建仓库时没有加入-gitignore-文件上传了不需要的文件后添加了-gitignore-文件如何同步远程与本地的文件自动删除不需要的文件">创建仓库时没有加入 gitignore 文件，上传了不需要的文件，后添加了 gitignore 文件如何同步远程与本地的文件（自动删除不需要的文件）</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 注意有个点“.”</span>
+</span></span><span class="line"><span class="cl">取消版本控制
+</span></span><span class="line"><span class="cl">git rm -r --cached .
+</span></span><span class="line"><span class="cl">重新添加
+</span></span><span class="line"><span class="cl">git add -A
+</span></span><span class="line"><span class="cl">重新提交
+</span></span><span class="line"><span class="cl">git commit -m <span class="s2">&#34;update .gitignore&#34;</span>
+</span></span></code></pre></div><h2 id="git-rm-和-rm---cached-区别">Git rm 和 rm &ndash;cached 区别</h2>
+<p><code>rm</code> ：当需要删除暂存区或分支上的文件，同时工作区不需要这个文件</p>
+<p><code>rm --cached</code>：当需要删除暂存区或分支上的文件，同时工作区需要这个文件，但是不需要被版本控制。就是本地需要保留，但是远程不保留</p>
+<h2 id="推送空文件夹到远程仓库">推送空文件夹到远程仓库</h2>
+<p>在需要推送的空文件下创建&quot;.gitkeep&quot;文件
+在&quot;.gitignore&quot;文件中编写规则
+<code>!.gitkeep</code></p>
+<h2 id="克隆指定分支代码">克隆指定分支代码</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"> git clone  -b master https://github.com/Dunky-Z/Dunky-Z.github.io.git
+</span></span></code></pre></div><p><code>master</code>就是分支名</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>
