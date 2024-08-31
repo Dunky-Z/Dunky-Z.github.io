@@ -25,8 +25,7 @@
 <p>除了本节中描述的机器级 CSRs 外，M-mode 代码还可以访问较低特权级别的所有 CSRs。</p>
 <h3 id="machine-isa-register-misa">Machine ISA Register <code>misa</code></h3>
 <p>misa CSR 是 WARL 读写寄存器，报告硬件 (hart) 支持的 ISA。该寄存器在任何实现中都必须是可读的，但是可以返回零值以指示未实现 misa 寄存器，这就需要通过一个单独的非标准机制确定 CPU 功能。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)" />
@@ -35,8 +34,7 @@
 
 </p>
 <p>MXL（机器 XLEN）字段编码本机基本整数 ISA 宽度，如表 3.1 所示。MXL 字段在支持多个基本 ISA 宽度的实现中可能是可写的。M-mode 下的有效 XLEN, MXLEN，由 MXL 的设置给出，如果 misa 为零，则有一个固定的值。重置时，MXL 字段始终设置为最广泛支持的 ISA 变种。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
@@ -55,8 +53,7 @@
 <p>RV128 base ISA 的设计尚未完工，尽管预计本 specification 中大部分的剩余部分都将适用于 RV128，但本版本的文档仅关注 RV32 和 RV64。</p>
 <p>如果支持用户模式（user mode），则将“U”bit 置位；如果支持主管模式（supervisor mode），则将“S”bit 置位。</p>
 <p>如果存在任何非标准扩展（non-standard extensions），则将“X”bit 置位。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
@@ -71,8 +68,7 @@
 <p>在软件启用一个之前被禁用的扩展时，除该扩展另有规定（specified），否则所有单独与该扩展有关的状态都将是未指定的（unspecified）。</p>
 <h3 id="machine-vendor-id-register-mvendorid">Machine Vendor ID Register <code>mvendorid</code></h3>
 <p><code>mvendorid</code> CSR 是一个 32 位只读寄存器，提供内核供应商的 JEDEC 制造商 ID。此寄存器在任何实现中都必须是可读的，但可以返回 0，表示该字段未实现或这是非商业实现。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid" />
@@ -95,8 +91,7 @@
 <h3 id="trap-return-instructions">Trap-Return Instructions</h3>
 <h3 id="wait-for-interrupt">Wait for Interrupt</h3>
 <p>等待中断指令 (WFI) 为实现提供了一个提示，即当前的 hart 可以停止，直到需要服务中断。WFI 指令的执行也可以用来通知硬件平台合适的中断应该优先路由到这个 hart。WFI 在所有特权模式下都可用，并且可用于 U 模式 (可选地)。当 mstatus 中的 TW = 1 时，该指令可能会引发非法指令异常，如第 3.1.6.5 节所述。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
@@ -126,8 +121,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>
 </span></span><span class="line"><span class="cl"> <span class="nf">j</span> <span class="no">start_kernel</span>  <span class="c1"># hart 0 jump to c
 </span></span></span></code></pre></div><p><code>mret</code>返回后，是根据寄存器<code>mstatus</code>的<code>MPP</code>来决定接来来是处于什么模式，我们在上面将<code>MPP</code>配置为<code>3</code>， <code>MPP</code>的功能是 <strong>记录 Machine 模式下，前一个，特权级</strong>。这里解实现了在<code>mret</code>之后将模式设置为 Machine 模式（3）。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-00-30-55f75636e01aeb7bd76220a1a3ff47b9-20220830150029-154a85.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-00-30-55f75636e01aeb7bd76220a1a3ff47b9-20220830150029-154a85.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-00-30-55f75636e01aeb7bd76220a1a3ff47b9-20220830150029-154a85.png" alt=""  />
@@ -149,8 +143,7 @@
 </span></span></span></code></pre></div><p>为什么需要系统调用？因为在用户态一些资源（寄存器）的访问是受限的，所以需要封装一些函数，这些函数里会进行模式切换，然后访问需要的资源。</p>
 <p>那么如何进行模式的切换呢？这就需要<code>ecall</code>指令。它本质上是触发了异常，就会进入到 Machine 模式处理异常，在 Machine 模式下就相当于在内核态了，就没有访问资源的限制了。</p>
 <h2 id="系统模式的切换">系统模式的切换</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-27-34-3c336196c43c6f6ccbefca72d74ae3c7-20220830152733-8bbc12.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-27-34-3c336196c43c6f6ccbefca72d74ae3c7-20220830152733-8bbc12.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-27-34-3c336196c43c6f6ccbefca72d74ae3c7-20220830152733-8bbc12.png" alt=""  />
@@ -159,8 +152,7 @@
 
 </p>
 <p><code>ECALL</code>指令实际就是主动触发异常，根据<code>ECALL</code>的权限级别产生不同的异常码，如下图：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-29-47-4836183d7fc588d43a989f57e39e3dbd-20220830152946-759ff3.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-29-47-4836183d7fc588d43a989f57e39e3dbd-20220830152946-759ff3.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-29-47-4836183d7fc588d43a989f57e39e3dbd-20220830152946-759ff3.png" alt=""  />
@@ -174,8 +166,7 @@
 <p>如果想触发完异常接着往下执行，需要在异常处理逻辑里把 epc 寄存器值改为下一条指令地址，否则会进入死循环。</p>
 </blockquote>
 <h2 id="系统调用的执行流程">系统调用的执行流程</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-33-19-a180df2c96fd165b60b1455fa75521bd-20220830153318-348272.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-33-19-a180df2c96fd165b60b1455fa75521bd-20220830153318-348272.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-33-19-a180df2c96fd165b60b1455fa75521bd-20220830153318-348272.png" alt=""  />
@@ -183,8 +174,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-45-13-4425120671c06b5cf849f87c25ef7ded-20220830154512-70af22.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-45-13-4425120671c06b5cf849f87c25ef7ded-20220830154512-70af22.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-45-13-4425120671c06b5cf849f87c25ef7ded-20220830154512-70af22.png" alt=""  />
@@ -199,8 +189,7 @@
 <li>系统调用参数使用<code>a0-a5</code></li>
 <li>返回值使用<code>a0</code></li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-49-21-6db764f87f585532caa83f56319e642a-20220830154920-a8bcc3.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-49-21-6db764f87f585532caa83f56319e642a-20220830154920-a8bcc3.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-49-21-6db764f87f585532caa83f56319e642a-20220830154920-a8bcc3.png" alt=""  />
@@ -209,8 +198,7 @@
 
 </p>
 <h2 id="系统调用的封装">系统调用的封装</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-54-13-7949945c24c3873b0d2360a1b4ee6edd-20220830155412-895328.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-54-13-7949945c24c3873b0d2360a1b4ee6edd-20220830155412-895328.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-54-13-7949945c24c3873b0d2360a1b4ee6edd-20220830155412-895328.png" alt=""  />
@@ -230,8 +218,7 @@
 <h2 id="任务简介">任务简介</h2>
 <h3 id="多任务与上下文">多任务与上下文</h3>
 <p>任务就是一个指令执行流。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220826151826.png" alt=""  />
@@ -246,8 +233,7 @@
 <p>抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其它任务。</p>
 <h2 id="协作式多任务">协作式多任务</h2>
 <h3 id="上下文切换">上下文切换</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-09-51-b76ed5f4ea873bd1530963a096aaa8e3-20220828140950-e37c6b.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-09-51-b76ed5f4ea873bd1530963a096aaa8e3-20220828140950-e37c6b.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-09-51-b76ed5f4ea873bd1530963a096aaa8e3-20220828140950-e37c6b.png" alt=""  />
@@ -263,8 +249,7 @@
 <p>CPU 中有 32 个寄存器，保存各种状态，在切换过程中我们主要关注两个寄存器：<code>ra(x1) 存放返回地址</code>，<code>mscratch 一个特权寄存器，指向当前处理的任务</code>。</p>
 <h3 id="切换过程">切换过程</h3>
 <p>初始化寄存器，根据调用约定，<code>ra</code>都初始化为任务的第一条指令地址。<code>mscratch</code>开始指向 Task A。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-18-23-20b781289e8722e343e09f63910e5991-20220828141822-f0be20.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-18-23-20b781289e8722e343e09f63910e5991-20220828141822-f0be20.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-18-23-20b781289e8722e343e09f63910e5991-20220828141822-f0be20.png" alt=""  />
@@ -273,8 +258,7 @@
 
 </p>
 <p>Task A 稳定执行，当他想要放弃 CPU 时，就会执行 <code>call swithc_to</code>指令。执行<code>call</code>的过程中，就会把当前指令的下一条指令的地址放到 CPU 的<code>ra</code>寄存器。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-21-23-1c9725267e1afd49dcc75e21da78c2e4-20220828142122-246130.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-21-23-1c9725267e1afd49dcc75e21da78c2e4-20220828142122-246130.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-21-23-1c9725267e1afd49dcc75e21da78c2e4-20220828142122-246130.png" alt=""  />
@@ -283,8 +267,7 @@
 
 </p>
 <p>接下里跳转到<code>swithc_to</code>函数执行，该函数是切换上下文的核心函数。首先<strong>保存上文</strong>，将 CPU 中的寄存器信息全部保存：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-23-39-71d991190cae709f0135d994f9ccd7e2-20220828142338-67c814.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-23-39-71d991190cae709f0135d994f9ccd7e2-20220828142338-67c814.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-23-39-71d991190cae709f0135d994f9ccd7e2-20220828142338-67c814.png" alt=""  />
@@ -293,8 +276,7 @@
 
 </p>
 <p><strong>切换</strong><code>mscratch</code>指针到下一个任务 Task B：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-24-41-47c1a159644584da7b435cbc5d7a2e56-20220828142440-398b0f.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-24-41-47c1a159644584da7b435cbc5d7a2e56-20220828142440-398b0f.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-24-41-47c1a159644584da7b435cbc5d7a2e56-20220828142440-398b0f.png" alt=""  />
@@ -303,8 +285,7 @@
 
 </p>
 <p><strong>恢复下文</strong>：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-25-21-b5c57f4cd4d127e11679113987238f06-20220828142520-570733.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-25-21-b5c57f4cd4d127e11679113987238f06-20220828142520-570733.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-25-21-b5c57f4cd4d127e11679113987238f06-20220828142520-570733.png" alt=""  />
@@ -313,8 +294,7 @@
 
 </p>
 <p>当<code>swithc_to</code>函数执行到<code>return</code>时，接下来执行的指令就是 CPU 中<code>ra</code>保存的那条指令，也就是地址为<code>j</code>指令，这就是 Task B 的第一条指令，这样就完成了任务的切换。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-28-34-62e744963f90c6a45930b7ec91c4960a-20220828142833-60e64d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-28-34-62e744963f90c6a45930b7ec91c4960a-20220828142833-60e64d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/14-28-34-62e744963f90c6a45930b7ec91c4960a-20220828142833-60e64d.png" alt=""  />
@@ -449,8 +429,7 @@
 </span></span><span class="line"><span class="cl"> <span class="nf">schedule</span><span class="p">();</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><h4 id="调用关系">调用关系</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/16-43-26-148e18481402d4cbebda0b8cf437ea9a-20220828164325-f03e61.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/16-43-26-148e18481402d4cbebda0b8cf437ea9a-20220828164325-f03e61.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/16-43-26-148e18481402d4cbebda0b8cf437ea9a-20220828164325-f03e61.png" alt=""  />
@@ -461,8 +440,7 @@
 <h2 id="抢占式多任务">抢占式多任务</h2>
 <p>抢占式多任务：抢占式环境下，操作系统完全决定任务调度方案，操作系统可以剥夺当前任务对处理器的使用，将处理器提供给其他任务。</p>
 <h2 id="寄存器">寄存器</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/18-26-19-d09627e0016250e4dd00e93a6d816ccc-20220828182618-7b140d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/18-26-19-d09627e0016250e4dd00e93a6d816ccc-20220828182618-7b140d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/18-26-19-d09627e0016250e4dd00e93a6d816ccc-20220828182618-7b140d.png" alt=""  />
@@ -488,8 +466,7 @@
 <li>不可睡眠锁</li>
 <li>可睡眠锁</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-20-57-50e42984517b60ca08ec0dff17bc634f-20220828202056-fdd4f5.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-20-57-50e42984517b60ca08ec0dff17bc634f-20220828202056-fdd4f5.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-20-57-50e42984517b60ca08ec0dff17bc634f-20220828202056-fdd4f5.png" alt=""  />
@@ -500,8 +477,7 @@
 <p>当发生中断时，右边的任务获取 CPU 资源，开始执行，但是获取锁时发现当前已经处于锁定状态，所以就处于等待状态。</p>
 <p>当下一个中断发生，左侧任务回去 CPU 后会继续执行，实际上左侧任务也不必等待，他可以一直执行，因为右侧任务一直无法获取锁。</p>
 <p>当然，右侧任务也可以一直触发中断，让左侧任务让出 CPU。也就是左侧任务逻辑上可以一直运行，但是实际还是会被打断。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-22-25-783fb565f517c52bef12807070e8c0df-20220828202224-b7ec1e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-22-25-783fb565f517c52bef12807070e8c0df-20220828202224-b7ec1e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-22-25-783fb565f517c52bef12807070e8c0df-20220828202224-b7ec1e.png" alt=""  />
@@ -510,8 +486,7 @@
 
 </p>
 <p>当左侧任务执行完释放锁，右侧任务就可以获取锁，并正常执行下去。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-28-29-39d640fb2c0f9ea420f9d8ceca38c8e2-20220828202828-bb9696.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-28-29-39d640fb2c0f9ea420f9d8ceca38c8e2-20220828202828-bb9696.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/20-28-29-39d640fb2c0f9ea420f9d8ceca38c8e2-20220828202828-bb9696.png" alt=""  />
@@ -526,8 +501,7 @@
 <li>尽可能防止任务在持有一把锁同时申请其他锁</li>
 </ul>
 <h2 id="自旋锁">自旋锁</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-27-17-2a3d0048acc7b4a3d63b46b7fd67aa59-20220828212715-480a91.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-27-17-2a3d0048acc7b4a3d63b46b7fd67aa59-20220828212715-480a91.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-27-17-2a3d0048acc7b4a3d63b46b7fd67aa59-20220828212715-480a91.png" alt=""  />
@@ -537,8 +511,7 @@
 </p>
 <p>不能从 C 语言的层面去理解锁，应该要从指令级别去理解。上面的这种上锁方式是有问题的。</p>
 <p>如果两个控制流同时加锁，就可能同时获取了锁，因为在汇编指令级别，每条指令执行也是需要时间的：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-33-11-e1ad7600b03b294097a9fe9b52ac2cd6-20220828213310-65b79a.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-33-11-e1ad7600b03b294097a9fe9b52ac2cd6-20220828213310-65b79a.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/21-33-11-e1ad7600b03b294097a9fe9b52ac2cd6-20220828213310-65b79a.png" alt=""  />
@@ -684,8 +657,7 @@ riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定</p>
 </span></span><span class="line"><span class="cl"> <span class="kt">uint8_t</span> <span class="n">flags</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">};</span>
 </span></span></code></pre></div><p>也就是每一个 Page 都由一个 8 bit 的结构体<code>struct Page</code>管理，我们总共分配了 8 个 Page 用来管理，一个 Page 占 4K，那么我们可以一个管理$8 \times 4096 = 32768$个 Page。那就刚好可以管理$32768 \times 4096 = 134217728 \text{bit}$内存=128M。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/2022/08/25/19-31-49-8eed060ecd2399b0c7b8bc8dba19ca01-20220825193148-7df975.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/2022/08/25/19-31-49-8eed060ecd2399b0c7b8bc8dba19ca01-20220825193148-7df975.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/2022/08/25/19-31-49-8eed060ecd2399b0c7b8bc8dba19ca01-20220825193148-7df975.png" alt=""  />
@@ -829,8 +801,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </tbody>
 </table>
 <h3 id="mtvecmachine-trap-vector-base-address">mtvec（Machine Trap-Vector Base-Address）</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104173734.png" alt=""  />
@@ -850,8 +821,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <ul>
 <li>
 <p>Direct，所有异常和中断发生后，PC都跳转到BASE指定的地址处；</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041945310.png" alt=""  />
@@ -922,8 +892,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span><span class="line"><span class="cl">    <span class="c1"># return to whatever we were doing before trap.
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">mret</span>
 </span></span></code></pre></div><p>MODE可取值如下：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220104174219.png" alt=""  />
@@ -937,8 +906,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </ul>
 <p>采用<code>Vectored</code>方式效率更高。</p>
 <h3 id="mepcmachine-exception-program-counter">mepc（Machine Exception Program Counter）</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201041958237.png" alt=""  />
@@ -950,8 +918,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>当我们需要退出<code>trap</code> 时可以调用特殊的 <code>mret</code> 指令，该指令会将<code>mepc</code>中的值恢复到<code>pc</code>中（实现返回的效果）；</p>
 <p>在处理 <code>trap</code> 的程序中我们可以修改 <code>mepc</code> 的值达到改变<code>mret</code> 返回地址的目的。</p>
 <h3 id="mcausemachine-cause">mcause（Machine Cause）</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042012549.png" alt=""  />
@@ -962,8 +929,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>当 <code>trap</code> 发生时，<code>hart</code> 会设置该寄存器通知我们 <code>trap</code> 发生的原因。</p>
 <p>最高位 <code>Interrupt</code> 为 1 时标识了当前 <code>trap</code> 为<code>interrupt</code>，否则是<code>exception</code>。</p>
 <p>剩余的 <code>Exception Code</code> 用于标识具体的<code>interrupt</code>或者<code>exception</code> 的种类。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042014689.png" alt=""  />
@@ -972,8 +938,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="mtvalmachine-trap-value">mtval（Machine Trap Value）</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042016744.png" alt=""  />
@@ -984,8 +949,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>当 <code>trap</code> 发生时，除了通过<code>mcause</code> 可以获取<code>exception</code>的种类 <code>code</code> 值外，<code>hart</code> 还提供了 <code>mtval</code> 来提供<code>exception</code> 的其他信息来辅助我们执行更进一步的操作。</p>
 <p>具体的辅助信息由特定的硬件实现定义，RISC-V 规范没有定义具体的值。但规范定义了一些行为，譬如访问地址出错时的地址信息、或者执行非法指令时的指令本身等。</p>
 <h3 id="mstatusmachine-status">mstatus（Machine Status）</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042020644.png" alt=""  />
@@ -1014,8 +978,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </blockquote>
 <h3 id="初始化">初始化</h3>
 <p>将<code>trap</code>的基地址写入寄存器，</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042053570.png" alt=""  />
@@ -1113,8 +1076,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </tbody>
 </table>
 <h3 id="miemachine-interrupt-enable">mie(Machine Interrupt Enable)</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042159268.png" alt=""  />
@@ -1124,8 +1086,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>打开（1）或者关闭（0）M/S/U 模式下对应的 External/Timer/Software 中断。</p>
 <h3 id="mipmachine-interrupt-pending">mip(Machine Interrupt Pending)</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042200772.png" alt=""  />
@@ -1152,8 +1113,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <h1 id="plicplatform-level-interrupt-controller">PLIC（Platform-Level Interrupt Controller）</h1>
 <h2 id="plic-简介">PLIC 简介</h2>
 <p>HART 只能处理一个中断，PLIC 相当于一个控制中心，它通过中断类型，优先级等等来选出一个需要处理的中断。协调多个中断，服务一个 HART。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202201042206664.png" alt=""  />
@@ -1245,8 +1205,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span><span class="line"><span class="cl">  <span class="nf">plic_complete</span><span class="p">(</span><span class="n">irq</span><span class="p">);</span> <span class="c1">//
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span> <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png" alt=""  />
-
+</span></span></code></pre></div><p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/28/17-56-05-db617fc7aad1c476c3c38e4ee44a770b-20220828175604-f9d5e6.png" alt=""  />
@@ -1304,8 +1263,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>操作系统（英语：Operating System，缩写：OS）是一组系统软件程序，狭义上就是内核如 Linux，广义上就是内核加一组软件组成的发行包，如 Ubuntu，Debian：</p>
 <p>• 主管并控制计算机操作、运用和运行硬件、软件资源</p>
 <p>• 提供公共服务来组织用户交互。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201351.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201351.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201351.png" alt=""  />
@@ -1313,8 +1271,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201945.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201945.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816201945.png" alt=""  />
@@ -1323,8 +1280,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h2 id="硬件的基本概念">硬件的基本概念</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202320868.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202320868.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202320868.png" alt=""  />
@@ -1339,8 +1295,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <li>SoC(System on Chip)
 片上系统</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202328649.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202328649.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202328649.png" alt=""  />
@@ -1350,8 +1305,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>QEMU 模拟 virt 这个平台，这个平台有八个 Hart。</p>
 <h2 id="地址映射">地址映射</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202331403.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202331403.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202331403.png" alt=""  />
@@ -1362,8 +1316,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>为了方便访问外设，现在主流的 platform 会对外设的内存地址做一个映射。映射到 platform 的真实物理地址。对真实物理地址进行操作时，就是对外设的地址进行操作。</p>
 <p>物理地址从最低位到最高位都被分配给了各种外设。</p>
 <h2 id="引导过程介绍">引导过程介绍</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202342918.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202342918.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110202342918.png" alt=""  />
@@ -1373,8 +1326,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>通电后，会先到箭头所指的地址，这个地址就是对应的 ROM 外设首地址。ROM 相当于一个小硬盘，断电后不会丢失数据。这里面固化了一些指令。</p>
 <p>主要就是跳转指令，运行到 kernel 段继续执行。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212317389.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212317389.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212317389.png" alt=""  />
@@ -1384,8 +1336,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>八核同时会执行这个过程。</p>
 <p>以上是硬件的部分过程，软件该如何写？</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212320524.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212320524.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212320524.png" alt=""  />
@@ -1395,8 +1346,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>为了简化学习流程和降低调试难度，目前只支持单核，其余七个核处于空转状态。</p>
 <h3 id="如何判断当前-hart-是不是第一个">如何判断当前 Hart 是不是第一个？</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212323556.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212323556.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212323556.png" alt=""  />
@@ -1404,8 +1354,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325328.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325328.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325328.png" alt=""  />
@@ -1414,8 +1363,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <p>这些寄存器必须使用以下的指令读写：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325081.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325081.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212325081.png" alt=""  />
@@ -1423,8 +1371,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212327552.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212327552.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212327552.png" alt=""  />
@@ -1434,8 +1381,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>以上指令就是将寄存器值进行一次<strong>交换</strong>，只不过这个过程是原子性的，不能被打断。</p>
 <p><code>CSRRW</code>经常会用在伪指令<code>CSRW</code>中，完整指令中，第一步向<code>x0</code>写入数据，就是空操作，第二步将<code>rs</code>写入<code>csr</code>。这个伪指令就是完成了一个写入<code>csr</code>的操作。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212333753.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212333753.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212333753.png" alt=""  />
@@ -1443,8 +1389,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212335906.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212335906.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212335906.png" alt=""  />
@@ -1454,8 +1399,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p><code>mhartid</code>就是<code>machine hart id</code>。</p>
 <p>学习以上几个指令，就可以完成判断 hart 是否为第一个的工作了，</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212337619.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212337619.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110212337619.png" alt=""  />
@@ -1515,8 +1459,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
 </span></span></code></pre></div><h2 id="通过-uart-打印信息">通过 UART 打印信息</h2>
 <h3 id="连接方式">连接方式</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022171638.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022171638.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022171638.png" alt=""  />
@@ -1527,8 +1470,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>真实的硬件开发是有一个快开发板，但是这个课程里使用的是 QEMU 来模拟开发板的硬件环境。如果要在程序里打印一段信息，正常的情况是在开发板上连接显示器，但是这里是通过将信息用串口传到主机上，然后用主机的屏幕显示信息。</p>
 <p>串口线里是有两根线，负责收信息和发信息。</p>
 <h3 id="uart-特点">UART 特点</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022172156.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022172156.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211022172156.png" alt=""  />
@@ -1541,8 +1483,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <li>数据通信就会涉及同步的问题，同步的话需要一根时钟线来协商好发送时间和接收时间。而 UART 使用异步，发送的数据不仅仅是真实的数据，还会带有一些标识信息。这些标识可以判断出是收还是发。</li>
 </ul>
 <h3 id="物理接口">物理接口</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252233134.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252233134.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252233134.png" alt=""  />
@@ -1551,8 +1492,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="uart-通讯协议">UART 通讯协议</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252235270.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252235270.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252235270.png" alt=""  />
@@ -1563,8 +1503,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>图示中横轴可以表示时间，纵轴表示高低电平。</p>
 <p>在需要发送数据时，会进行“下拉”1bit，1bit 持续的时间就是波特率分之一秒。</p>
 <p>数据在发送过程中可能会受到干扰，会产生畸变，所以需要检验位来判断是否发生畸变。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252246423.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252246423.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252246423.png" alt=""  />
@@ -1573,8 +1512,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="初始化">初始化</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252305528.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252305528.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252305528.png" alt=""  />
@@ -1584,8 +1522,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>在软件中，配置 UART 就是配置寄存器的信息。</p>
 <p>在板子上有个元器件叫晶振（crystal），他会产生固定频率的时钟。一种是 1.8432MHZ，一种是 7.3728MHZ。想要获得指定的输出频率就需要对寄存器进行配置。查表可以得到配置信息。比如获得 38.4K 频率的输出，就要配置寄存器值为 3。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252310435.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252310435.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110252310435.png" alt=""  />
@@ -1654,8 +1591,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </li>
 </ul>
 <h3 id="编码格式">编码格式</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png" alt=""  />
@@ -1673,8 +1609,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <li>[6:5] 为下图纵轴，三部分决定指令的类型。</li>
 </ul>
 <p>以<code>BEQ</code>指令为例<code>opcode=1100011</code>。<code>[4:2]=000</code>，<code>[6:5]=11</code>查表可得<code>BEQ</code>指令类型为<code>BRANCH</code>。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194125.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194125.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194125.png" alt=""  />
@@ -1682,8 +1617,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194216.png" alt="The RISC-V Instruction Set Manual"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194216.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811194216.png" alt="The RISC-V Instruction Set Manual"  />
@@ -1697,8 +1631,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <li>一个多字节整数在计算机内存中存储的字节顺序称主机字节序 (HBO- Host Byte Order，或者叫本地字节序)</li>
 <li>不同类型 CPU 的 HBO 不同，这与 CPU 的设计有关。分为大端序 (Big-Endian) 和小端序 (Little-Endian)</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826144713.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826144713.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826144713.png" alt=""  />
@@ -1707,8 +1640,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h4 id="指令分类">指令分类</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195352.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195352.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195352.png" alt=""  />
@@ -1717,8 +1649,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <p><code>rd</code>（register destination）目标寄存器，<code>rs</code>（register source）源寄存器，大小都是 5bit，因为可以表示<code>2^5=32</code>寄存器。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195422.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195422.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220811195422.png" alt=""  />
@@ -1730,8 +1661,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <h3 id="算术运算指令">算术运算指令</h3>
 <h4 id="add">ADD</h4>
 <p>算数指令只包含加减，不包含乘除，乘除运算有专门的扩展。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262335167.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262335167.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262335167.png" alt=""  />
@@ -1739,8 +1669,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262343942.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262343942.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108262343942.png" alt=""  />
@@ -1763,8 +1692,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <code>0000000 9 10 000 11 010011</code>-&gt;<code>ADD x11 x10 x9</code></li>
 </ul>
 <h4 id="addi-add-immediate">ADDI ADD Immediate</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918102935.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918102935.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918102935.png" alt=""  />
@@ -1772,8 +1700,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104115.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104115.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104115.png" alt=""  />
@@ -1782,8 +1709,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h4 id="lui-load-upper-immediate">LUI Load Upper Immediate</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104625.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104625.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104625.png" alt=""  />
@@ -1791,8 +1717,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104556.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104556.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104556.png" alt=""  />
@@ -1800,8 +1725,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104911.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104911.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104911.png" alt=""  />
@@ -1809,8 +1733,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104929.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104929.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918104929.png" alt=""  />
@@ -1819,8 +1742,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h4 id="li">LI</h4>
-<p><img loading="lazy" src="https://secure2.wostatic.cn/static/j4jbakqQTGuyjHGDqXsnAf/image.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://secure2.wostatic.cn/static/j4jbakqQTGuyjHGDqXsnAf/image.png">
 <img src="https://secure2.wostatic.cn/static/j4jbakqQTGuyjHGDqXsnAf/image.png" alt=""  />
@@ -1829,8 +1751,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h4 id="auipc">AUIPC</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133111.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133111.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133111.png" alt=""  />
@@ -1840,8 +1761,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>经常用于构造一个相对地址。</p>
 <h4 id="la">LA</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133406.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133406.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133406.png" alt=""  />
@@ -1852,8 +1772,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <h4 id="基于算术运算指令实现的其他伪指令">基于算术运算指令实现的其他伪指令</h4>
 <p><code>x0</code>寄存器具有特殊含义，往里写数据没有意义
 <code>NOP</code>指令主要为了占位，空转</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918103237.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918103237.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210918103237.png" alt=""  />
@@ -1862,8 +1781,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="逻辑运算指令">逻辑运算指令</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133744.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133744.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816133744.png" alt=""  />
@@ -1877,8 +1795,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span><span class="line"><span class="cl">--------  XOR
 </span></span><span class="line"><span class="cl">01010101
 </span></span></code></pre></div><h3 id="移位运算指令">移位运算指令</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134208.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134208.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134208.png" alt=""  />
@@ -1888,8 +1805,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <h4 id="算数移位">算数移位</h4>
 <p>只有右移，没有左移。左移会把最高位覆盖。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134425.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134425.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134425.png" alt=""  />
@@ -1902,8 +1818,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span></code></pre></div><h3 id="内存读写指令">内存读写指令</h3>
 <p>加载，内存读，将数据从内存读入寄存器</p>
 <p>Store，内存写，将数据从寄存器写出到内存</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134941.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134941.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816134941.png" alt=""  />
@@ -1914,8 +1829,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <blockquote>
 <p>为何对 word 的 加载 不区分无符号和有符号方式 (RV32)？RV32 下寄存器是 4 字节，加载 word 也是 4 字节，自然不需要扩展。</p>
 </blockquote>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816135526.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816135526.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816135526.png" alt=""  />
@@ -1930,8 +1844,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>立即数分两个地方存，为了解码效率</p>
 </blockquote>
 <h3 id="条件分支指令">条件分支指令</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211008115038.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211008115038.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211008115038.png" alt=""  />
@@ -1940,8 +1853,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <p>指令格式中的立即数 (imm) 存放有些奇怪，第 [1-4] 位和第 [11] 位放在一起，第 [5-10] 位和第 [12] 位放在一起。这是为了迎合硬件处理效率，编程时不需要考虑立即数存储方式。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816145400.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816145400.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816145400.png" alt=""  />
@@ -1950,8 +1862,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="无条件跳转指令">无条件跳转指令</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152941.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152941.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152941.png" alt=""  />
@@ -1959,8 +1870,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152959.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152959.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816152959.png" alt=""  />
@@ -1968,8 +1878,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816153100.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816153100.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816153100.png" alt=""  />
@@ -1994,8 +1903,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span></code></pre></div><blockquote>
 <p>如何解决长距离跳转？使用 AUIPC 来构建一个大数，配合 JALR 使用。如  auipc x6,imm-20  jalr x1,x6,imm-12</p>
 </blockquote>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162732.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162732.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162732.png" alt=""  />
@@ -2004,8 +1912,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h2 id="risc-v-指令寻址模式总结">RISC-V 指令寻址模式总结</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162913.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162913.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220816162913.png" alt=""  />
@@ -2016,8 +1923,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <h2 id="汇编函数调用约定">汇编函数调用约定</h2>
 <h3 id="函数调用过程概述">函数调用过程概述</h3>
 <p>栈（stack）数据结构，在函数调用过程中会用来保存变量，函数地址等等。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162130267.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162130267.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162130267.png" alt=""  />
@@ -2027,8 +1933,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </p>
 <p>栈帧里保存的变量是自动变量，会被内存自动释放。</p>
 <p>为何要有调用者与被调用者保存的概念</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162137133.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162137133.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162137133.png" alt=""  />
@@ -2037,8 +1942,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <p>函数调用过程中就会有参数和返回值的传递，自己写的函数可能由别人来调用，如果没有约定好某个参数存放位置，就不能够顺利执行函数。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162144447.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162144447.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162144447.png" alt=""  />
@@ -2051,8 +1955,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>这些寄存器其实都可以设置成被调用者保存，也就是在被调用函数中保存一遍为啥还要分这么多
 答：因为保存一遍效率低</p>
 </blockquote>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162209273.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162209273.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162209273.png" alt=""  />
@@ -2060,8 +1963,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162217164.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162217164.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162217164.gif" alt=""  />
@@ -2069,8 +1971,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162234551.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162234551.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162234551.png" alt=""  />
@@ -2283,8 +2184,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <code>.global foo</code>告诉编译器<code>foo</code>函数定义在外面。</p>
 <h3 id="c-语言嵌入汇编">C 语言嵌入汇编</h3>
 <p>下图中为简化写法</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162347033.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162347033.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162347033.png" alt=""  />
@@ -2292,8 +2192,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162342119.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162342119.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202110162342119.png" alt=""  />
@@ -2325,8 +2224,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </ul>
 </li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529332.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529332.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529332.png" alt=""  />
@@ -2342,8 +2240,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </ul>
 </li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529619.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529619.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529619.png" alt=""  />
@@ -2354,7 +2251,6 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <h3 id="程序的存储与执行">程序的存储与执行</h3>
 <p><code>.c</code>文件经过编译链接，生成<code>.out</code>文件。加载到内存中，到控制单元运行。进行取值，译码，执行。</p>
 <p>晶振发出脉冲。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211621792.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211621792.png">
@@ -2364,8 +2260,7 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 </p>
 <h3 id="语言的设计与进化">语言的设计与进化</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211735861.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211735861.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211735861.png" alt=""  />
@@ -2373,7 +2268,6 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211736944.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211736944.png">
@@ -2384,7 +2278,6 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 
 上图是冯诺依曼架构，特点就是指令与数据放在一起。黄色部分表示指令，绿色部分表示数据。我们来看看指令是如何执行的。
 <code>ProgramCounter</code>指到右图内存的第一条指令，程序开始执行。将第一条 指令读入指令寄存器。然后将指令解码，根据之前的规定，我们可以知道这条指令是将<code>0100(二进制即 5)</code>位置的数据，<code>00(load)</code>到<code>00(Register 0)</code>中。下面的指令一次类推，每次取指，<code>Program Counter</code>移动一次。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211743999.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211743999.png">
@@ -2393,7 +2286,6 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </div>
 
 
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211719114.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211719114.png">

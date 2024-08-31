@@ -32,8 +32,7 @@
 <li>内存映射输入/输出（简称 MMIO）- 与主机 CPU 读取和写入内存到 ECAM 以执行配置空间访问类似，MMIO 可以用来映射设备的地址空间，以执行内存传输。主机机器在其物理地址空间中配置“内存窗口”，使 CPU 拥有一个内存地址窗口，这些内存地址神奇地转换为直接读取和写入设备。内存窗口在 RC 中解码，将 CPU 的读取和写入转换为传输到设备的数据 TLPs。硬件优化使得这种方法可以实现比配置空间访问快得多的吞吐量。然而，其速度仍然远远落后于 DMA 的批量传输速度。</li>
 <li>直接内存访问（简称 DMA）- DMA 是迄今为止最常见的数据传输形式，因为它具有原始传输速度和低延迟。每当驱动程序需要在主机和设备之间沿任一方向进行任何重要大小的传输时，它肯定会是 DMA。但与 MMIO 不同的是，DMA 是由设备本身启动的，而不是由主机 CPU 启动的。主机 CPU 将通过 MMIO 告诉设备 DMA 应该去哪里，设备本身负责开始和完成 DMA 传输。这允许设备在没有 CPU 参与的情况下执行 DMA 事务，与设备必须等待主机 CPU 告诉它每次传输做什么相比，这节省了大量的 CPU 周期。由于 DMA 的普遍性和重要性，从硬件实现和软件层面了解 DMA 非常有价值。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
@@ -41,8 +40,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
@@ -53,8 +51,7 @@
 <h2 id="mmio-简介">MMIO 简介</h2>
 <h3 id="什么是-bar">什么是 BAR？</h3>
 <p>由于配置空间限制为 4096 字节，因此之后没有太多可用空间用于特定于设备的功能。如果设备想要映射 1GB 的 MMIO 空间来访问其内部 RAM，该怎么办？没有办法将其放入 4096 字节的配置空间。因此，它将需要请求一个被称为 BAR（基地址寄存器）的东西。这是通过配置空间公开的一个寄存器，允许主机机器配置其内存的一个区域，直接映射到设备上。然后主机机器上的软件通过对 BAR 的物理地址的内存读/写指令来访问 BAR，就像我们在 ECAM 的第一部分中看到的 MMIO 一样。对设备内存映射进行读取或写入的操作将直接转换为发送到层次结构上的设备的数据包。当设备需要响应时，它将通过层次结构向主机机器发送一个新的数据包。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
@@ -64,8 +61,7 @@
 </p>
 <p>当 CPU 指令读取器件 MMIO 区域的内存时，会生成一个内存读取请求事务层数据包（MemRd TLP），该数据包从主机的 RC 向下传输到器件。这个 TLP 包的目的是通知设备希望读取设备，然后设备需要尽快响应请求地址上的内容。</p>
 <p>在 PCIe 中发送和接收的所有数据传输数据包都将采用 TLP 形式。回想一下第 1 部分，这些数据包是设备之间的所有通信都在 PCIe 中发生的中心抽象。这些数据包在出现数据传输错误（类似于网络中的 TCP）的情况下是可靠的，并且可以根据需要重试/重新发送。这确保了数据传输免受 PCIe 可以达到的极高速度下发生的恶劣电气干扰。我们很快就会仔细研究 TLP 的结构，但现在只需将这些视为您在 TCP 中看到的常规网络数据包。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
@@ -79,8 +75,7 @@
 <h3 id="如何枚举-bar">如何枚举 BAR？</h3>
 <p>设备使用其配置空间从软件请求内存区域。在枚举时，由主机确定该区域将放置在物理内存中的位置。每个器件在其配置空间（称为“寄存器”，因此称为基址寄存器）中都有 6 个 32 位值，当枚举器件时，软件将读取和写入这些值。这些寄存器描述了器件希望分配的每个 MMIO 区域的长度和对齐要求，每个可能的 BAR 一个，总共 6 个不同的区域。如果设备希望能够将其 BAR 映射到 4GB 空间（64 位 BAR）以上，它可以将两个 32 位寄存器组合在一起，形成一个 64 位 BAR，最多只留下三个 64 位 BAR。</p>
 <p>PCIe</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
@@ -100,8 +95,7 @@
 <p>由于 DMA 的复杂性和涉及的部件数量，我将尝试以最直接的方式解释 DMA，并用大量图表来显示该过程。更令人困惑的是，每个设备都有不同的 DMA 接口。没有用于执行 DMA 的通用软件接口，只有器件的设计人员知道如何告诉该器件执行 DMA。值得庆幸的是，某些设备类别使用普遍认可的接口，例如大多数 SSD 使用的 NVMe 接口或 USB 3.0 的 XHCI 接口。如果没有标准接口，则只有硬件设计人员知道设备如何执行 DMA，因此生产设备的公司或个人需要是编写设备驱动程序的人，而不是依赖与操作系统捆绑的通用驱动程序与设备通信。</p>
 <h2 id="一个简单的-dma-传输---step-by-step">一个简单的 DMA 传输 - Step by Step</h2>
 <p>我们 DMA 旅程的第一步是查看传输的初始设置。这涉及几个步骤，为即将到来的 DMA 传输准备系统内存、内核和设备。在这种情况下，我们将设置 DMA，以便读取系统 RAM 中存在的 DMA 缓冲区中的内存内容，并将其放入 Target Memory 的器件板载 RAM 中。此时我们已经选择将此内存从 DMA Buffer 读取到器件上地址为 <code>0x8000</code> 中。目标是尽快将此内存从系统内存传输到设备，以便它可以开始处理它。假设在这种情况下，内存量几 M 字节，MMIO 会太慢，但为简单起见，我们将仅显示 32 字节的内存。这种传输将是最简单的 DMA 传输类型：将内存块的已知大小和地址从系统 RAM 复制到设备 RAM。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
@@ -124,8 +118,7 @@
 <li>Transfer Size（传输大小） - 我们要传输的大小（以字节为单位）。</li>
 <li>Initiate Transfer（启动传输标志位）- 一旦次寄存器写入 1，器件将开始在上面给出的地址之间进行传输。通过这种方式，驱动程序可以判断设备已完成填充缓冲区并准备好开始传输。这通常被称为门铃（Door Bell）寄存器。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
@@ -139,8 +132,7 @@
 <li>DMA 缓冲区 - 操作系统在 <code>0x001FF000</code> 分配内存块，因此这将是我们的源地址。</li>
 </ul>
 <p>有了这些信息，驱动程序现在可以将值编程到设备中，如下所示：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
@@ -156,8 +148,7 @@
 <h3 id="插曲快速了解-tlp">插曲：快速了解 TLP</h3>
 <p>在查看链路上的 TLP 之前，让我们仔细了解一下数据包结构本身的概览。</p>
 <p>以下是内存读取请求和响应的两个 TLP。如前所述，用于内存操作的 TLP 利用请求和响应系统。执行读取的设备将生成特定地址和长度（以 4 字节 DWORD 为单位）的读取请求 TLP，然后坐下来等待完成数据包到达包含响应数据的链路。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
@@ -171,8 +162,7 @@
 <p>设备收到并处理请求后，响应数据将以 Completion TLP 的形式发送回去。完成或“响应”数据包可以而且通常会被分段为许多较小的 TLP，这些 TLP 发送整体响应的一部分。这是因为在枚举期间，已确定设备和总线可以处理最大有效载荷大小（MPS）。MPS 可根据平台和设备功能进行配置，从 128 开始，最高可达 4096 的 2 次方大小。通常，此值约为 256 字节，这意味着需要将大型读取请求拆分为许多较小的 TLP。这些数据包中的每一个都有一个字段，该字段指示完成响应的原始请求的偏移量，有效负载中是返回的数据块。</p>
 <p>有一个常见的误解，即内存 TLP 使用 BDF 来寻址数据包需要去往的位置。其实请求仅使用内存地址来指示数据包的目的地，并且设备和目标之间的桥接设备负责将该数据包发送到其正确的位置。。然而，完成数据包确实利用请求者的 BDF 将数据返回给发起请求的设备。</p>
 <p>以下是一个展示内存读取和响应过程的图表，图中展示出请求会使用一个地址来发起请求，而完成的操作会使用请求中 Request 字段的 BDF 来发送相应应答：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
@@ -180,8 +170,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
@@ -195,8 +184,7 @@
 <p>在实验中，我使用真实设备配置了如上文所示的同类通用参数，并启动了 DMA。这个设备会发送真实的 TLPs，将系统 RAM 中的内存读取到设备里。因此，你将有机会罕见地查看在执行这种 DMA 时发送的实际 TLPs 的例子，除非有分析器，否则这些在传输过程中几乎无法看到。</p>
 <p>要查看此实验，请点击此链接至配套文章：<a href="https://ctf.re/pcie/experiment/linux/keysight/protocol-analyzer/2024/03/26/pcie-experiment-1/">Experiment - Packet Dumping PCIe DMA TLPs with a Protocol Analyzer and Pcileech – Reversing Engineering for the Soul</a></p>
 <p>以下是器件生成的内存读取请求以及请求如何遍历层次结构的框图。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
@@ -220,8 +208,7 @@
 </blockquote>
 <p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
 <p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
@@ -544,8 +531,7 @@
 <li><strong>运行时服务</strong>。提供了一组最小的运行时服务，以确保对基础平台的硬件资源进行适当的抽象，这些资源可能是操作系统在正常运行时需要的。</li>
 </ul>
 <hr>
-<p><img loading="lazy" src="../pic/1-1.jpg" alt="UEFI 概念概述"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="../pic/1-1.jpg">
 <img src="../pic/1-1.jpg" alt="UEFI 概念概述"  />
@@ -654,8 +640,7 @@
 </ul>
 <h3 id="二进制前缀">二进制前缀</h3>
 <p>本标准使用国际单位制（SI）中定义的前缀来表示 10 的幂值。见 &ldquo;SI 二进制前缀 &ldquo;标题下的 &ldquo;UEFI 相关文件链接&rdquo;（<a href="http://uefi.org/uefi">http://uefi.org/uefi</a>）。</p>
-<p><img loading="lazy" src="../pic/table1-1.jpg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="../pic/table1-1.jpg">
 <img src="../pic/table1-1.jpg" alt=""  />
@@ -664,8 +649,7 @@
 
 </p>
 <p>本标准使用ISO/IEC 80000-13《数量和单位&ndash;第 13 部分：信息科学和技术》和 IEEE 1514《二进制倍数前缀标准》中定义的二进制前缀，用于表示 2 的幂值。</p>
-<p><img loading="lazy" src="../pic/table1-2.jpg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="../pic/table1-2.jpg">
 <img src="../pic/table1-2.jpg" alt=""  />
@@ -699,8 +683,7 @@
 <p>除了本节中描述的机器级 CSRs 外，M-mode 代码还可以访问较低特权级别的所有 CSRs。</p>
 <h3 id="machine-isa-register-misa">Machine ISA Register <code>misa</code></h3>
 <p>misa CSR 是 WARL 读写寄存器，报告硬件 (hart) 支持的 ISA。该寄存器在任何实现中都必须是可读的，但是可以返回零值以指示未实现 misa 寄存器，这就需要通过一个单独的非标准机制确定 CPU 功能。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-46-18-3adcf70efcc54d501feadc1f1c65d4a7-20220922094617-4dbb38.png" alt="Machine ISA register (misa)"  title="Machine ISA register (misa)" />
@@ -709,8 +692,7 @@
 
 </p>
 <p>MXL（机器 XLEN）字段编码本机基本整数 ISA 宽度，如表 3.1 所示。MXL 字段在支持多个基本 ISA 宽度的实现中可能是可写的。M-mode 下的有效 XLEN, MXLEN，由 MXL 的设置给出，如果 misa 为零，则有一个固定的值。重置时，MXL 字段始终设置为最广泛支持的 ISA 变种。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-48-01-ae585489a7ae71c6ce5af6303f695dee-20220922094800-db8fc2.png" alt=""  />
@@ -729,8 +711,7 @@
 <p>RV128 base ISA 的设计尚未完工，尽管预计本 specification 中大部分的剩余部分都将适用于 RV128，但本版本的文档仅关注 RV32 和 RV64。</p>
 <p>如果支持用户模式（user mode），则将“U”bit 置位；如果支持主管模式（supervisor mode），则将“S”bit 置位。</p>
 <p>如果存在任何非标准扩展（non-standard extensions），则将“X”bit 置位。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-53-13-08dc73aa464b15f2ff11a17cbb97bf1b-20220922095312-f997d1.png" alt=""  />
@@ -745,8 +726,7 @@
 <p>在软件启用一个之前被禁用的扩展时，除该扩展另有规定（specified），否则所有单独与该扩展有关的状态都将是未指定的（unspecified）。</p>
 <h3 id="machine-vendor-id-register-mvendorid">Machine Vendor ID Register <code>mvendorid</code></h3>
 <p><code>mvendorid</code> CSR 是一个 32 位只读寄存器，提供内核供应商的 JEDEC 制造商 ID。此寄存器在任何实现中都必须是可读的，但可以返回 0，表示该字段未实现或这是非商业实现。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-57-22-3e72021562b198d643d3f62e08cb528c-20220923155721-b7ba3c.png" alt="厂商 ID 寄存器 mvendorid"  title="厂商ID寄存器 mvendorid" />
@@ -769,8 +749,7 @@
 <h3 id="trap-return-instructions">Trap-Return Instructions</h3>
 <h3 id="wait-for-interrupt">Wait for Interrupt</h3>
 <p>等待中断指令 (WFI) 为实现提供了一个提示，即当前的 hart 可以停止，直到需要服务中断。WFI 指令的执行也可以用来通知硬件平台合适的中断应该优先路由到这个 hart。WFI 在所有特权模式下都可用，并且可用于 U 模式 (可选地)。当 mstatus 中的 TW = 1 时，该指令可能会引发非法指令异常，如第 3.1.6.5 节所述。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-14-09-54056c2dced29063e3b293c127d49fe0-20220922141408-cb2444.png" alt=""  />
@@ -800,8 +779,7 @@
 <p>现在这可能没有多大意义，所以让我们看看差异！</p>
 <h3 id="fast-forward---ff">Fast-forward (<code>--ff</code>)</h3>
 <p>如果当前分支与即将合并过来的分支相比，没有额外的提交，这种就是<code>fast-forward</code>合并。Git 很会偷懒，它会首先尝试最简单的方案，即<code>fast-forward</code>。这种合并方式不会创建新的提交，只是把另一个分支的提交记录直接合并到当前分支。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707163529.gif" alt=""  />
@@ -813,8 +791,7 @@
 <h3 id="no-fast-foward---no-ff">No-fast-foward (<code>--no-ff</code>)</h3>
 <p>如果与您要合并的分支相比，您当前的分支没有任何额外的提交，那就太好了，但不幸的是，这种情况很少见！如果我们在当前分支上提交了我们想要合并的分支没有的更改，Git 将执行 <code>no-fast-forward</code> 合并。</p>
 <p>使用 <code>no-fast-forward</code> 合并，Git 在活动分支上创建一个新的<strong>合并提交</strong>。提交的父提交指向活动分支和我们要合并的分支！</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164009.gif" alt=""  />
@@ -826,8 +803,7 @@
 <h3 id="merge-conflicts">Merge Conflicts</h3>
 <p>尽管 Git 擅长决定如何合并分支和向文件添加更改，但它不能总是自己做出这个决定。当我们尝试合并的两个分支在同一个文件的同一行上发生更改时，可能会发生这种情况，或者如果一个分支删除了另一个分支修改的文件，等等。</p>
 <p>在这种情况下，Git 会要求您帮助决定我们要保留两个选项中的哪一个！假设在两个分支上，我们编辑了 <code>README.md</code> 中的第一行。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164137.png" alt=""  />
@@ -837,8 +813,7 @@
 </p>
 <p>如果我们想将 <code>dev</code> 合并到 <code>master</code> 中，这将导致合并冲突：您希望标题是 <code>Hello!</code> 还是 <code>Hey!</code>？</p>
 <p>当试图合并分支时，Git 会告诉你冲突发生在哪里。我们可以手动删除不想保留的更改，保存更改，再次添加更改的文件，然后提交更改</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164314.gif" alt=""  />
@@ -850,8 +825,7 @@
 <h2 id="rebasing">Rebasing</h2>
 <p>我们刚刚看到了如何通过执行 <code>git merge</code> 将更改从一个分支应用到另一个分支。另一种将更改从一个分支添加到另一个的方法是执行<code>git rebase</code>。</p>
 <p><code>git rebase</code> <em>复制</em>当前分支的提交，并将这些复制的提交放在指定分支的顶部。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164518.gif" alt=""  />
@@ -875,8 +849,7 @@
 <li><code>drop</code>: Remove the commit</li>
 </ul>
 <p>惊人的！这样，我们可以完全控制我们的提交。如果我们想删除一个提交，我们可以直接 <code>drop</code> 它。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164621.gif" alt=""  />
@@ -885,8 +858,7 @@
 
 </p>
 <p>或者，如果我们想将多个提交压缩在一起以获得更清晰的历史记录，没问题！</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707164900.gif" alt=""  />
@@ -901,8 +873,7 @@
 <h3 id="soft-reset">Soft reset</h3>
 <p><em>软重置</em>将 <code>HEAD</code> 移动到指定的提交（或提交的索引与 <code>HEAD</code> 相比），而不会消除随后在提交中引入的更改！</p>
 <p>假设我们不想保留添加了<code>style.css</code>文件的提交<code>9e78i</code>，也不想保留添加了<code>index.js</code>文件的提交<code>035cc</code>。但是，我们确实希望保留新添加的 <code>style.css</code> 和 <code>index.js</code> 文件！软重置的完美用例。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165037.gif" alt=""  />
@@ -913,8 +884,7 @@
 <p>输入 <code>git status</code> 时，您会看到我们仍然可以访问对先前提交所做的所有更改。这很棒，因为这意味着我们可以修复这些文件的内容并在以后再次提交它们！</p>
 <h3 id="hard-reset">Hard reset</h3>
 <p>有时，我们不想保留某些提交引入的更改。与软重置不同，我们不再需要访问它们。Git 应该简单地将其状态重置回指定提交时的状态：这甚至包括工作目录和暂存文件中的更改！</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165117.gif" alt=""  />
@@ -926,8 +896,7 @@
 <h3 id="reverting">Reverting</h3>
 <p>撤消更改的另一种方法是执行<code>git revert</code>。通过恢复某个提交，我们创建了一个包含恢复的更改的新提交！</p>
 <p>假设 <code>ec5be</code> 添加了一个 <code>index.js</code> 文件。后来，我们实际上意识到我们不再希望这次提交引入的这种变化！让我们恢复 <code>ec5be</code> 提交。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707165159.gif" alt=""  />
@@ -939,8 +908,7 @@
 <h2 id="cherry-picking">Cherry-picking</h2>
 <p>当某个分支包含在活动分支上引入了我们需要的更改的提交时，我们可以 <code>cherry-pick</code> 该命令！通过 <code>cherry-pick</code> 提交，我们在活动分支上创建了一个新提交，其中包含由 <code>cherry-pick</code> 提交所引入的更改。</p>
 <p>假设 <code>dev</code> 分支上的提交 <code>76d12</code> 添加了我们想要在 <code>master</code> 分支中的 <code>index.js</code> 文件的更改。我们不想要<em>整个</em>，我们只关心这一次提交！</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170039.gif" alt=""  />
@@ -952,8 +920,7 @@
 <h2 id="fetching">Fetching</h2>
 <p>如果我们有一个远程 Git 分支，例如 GitHub 上的一个分支，则可能会发生远程分支具有当前分支没有的提交！也许另一个分支被合并了，你的同事推送了一个快速修复，等等。</p>
 <p>我们可以通过在远程分支上执行 <code>git fetch</code> 在本地获取这些更改！它不会以任何方式影响您的本地分支：<code>fetch</code> 只是下载新数据。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170120.gif" alt=""  />
@@ -964,8 +931,7 @@
 <p>我们现在可以看到自上次推送以来所做的所有更改！既然我们在本地拥有新数据，我们就可以决定要如何处理这些数据。</p>
 <h2 id="pulling">Pulling</h2>
 <p>虽然 <code>git fetch</code> 对于获取分支的远程信息非常有用，但我们也可以执行 <code>git pull</code>。 <code>git pull</code> 实际上是两个命令合二为一：<code>git fetch</code> 和 <code>git merge</code>。当我们从源中提取更改时，我们首先像使用 <code>git fetch</code> 一样获取所有数据，之后最新的更改会自动合并到本地分支中。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170157.gif" alt=""  />
@@ -977,8 +943,7 @@
 <h2 id="reflog">Reflog</h2>
 <p>每个人都会犯错，这完全没关系！有时你可能会觉得你把你的 <code>git repo</code> 搞砸了，以至于你只想完全删除它。</p>
 <p><code>git reflog</code> 是一个非常有用的命令，用于显示所有已采取的操作的日志！这包括合并、重置、恢复：基本上是对分支的任何更改。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170250.gif" alt=""  />
@@ -988,8 +953,7 @@
 </p>
 <p>如果您犯了错误，您可以根据 <code>reflog</code> 提供给我们的信息通过重置 <code>HEAD</code> 轻松地重做此操作！</p>
 <p>假设我们实际上并不想合并 <code>origin</code> 分支。当我们执行 <code>git reflog</code> 命令时，我们看到合并前 repo 的状态是在 <code>HEAD@{1}</code>。让我们执行 <code>git reset</code> 将 HEAD 指向它在 <code>HEAD@{1}</code> 上的位置！</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220707170316.gif" alt=""  />

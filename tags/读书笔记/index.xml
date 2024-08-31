@@ -307,8 +307,7 @@ A:因为链接器在链接静态库时是以目标文件为单位的，比如我
 <p><strong>装载时重定位</strong>：程序在编译时被装载的目标地址为<code>0x1000</code>，但是在装载时操作系统发现<code>0x1000</code>这个地址已经被别的程序使用了，从<code>0x4000</code>开始有一块足够大的空间可以容纳，那么该程序就可以被装载至<code>0x4000</code>，程序指令和数据所有引用都只需要加上<code>0x3000</code>偏移量即可。因为他们在程序中的相对位置是不会改变的。</p>
 <p>地址无关代码为了解决共享对象指令中对绝对地址的重定位问题，基本想法是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分就可以保持不变，而数据部分可以在每个进程中拥有一个副本。</p>
 <p>模块中四类地址引用：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png" alt=""  />
@@ -316,8 +315,7 @@ A:因为链接器在链接静态库时是以目标文件为单位的，比如我
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png" alt=""  />
@@ -325,7 +323,6 @@ A:因为链接器在链接静态库时是以目标文件为单位的，比如我
 </div>
 
 
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png">
@@ -418,8 +415,7 @@ A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都
 <p>目标文件里包含专门用于重定位信息的重定位表，比如<code>.rel.text</code>表示是代码段重定位表，<code>.rel.data</code>表示数据段重定位表。</p>
 <p>共享对象里类似的重定位表叫做<code>.rel.dyn</code>和<code>.rel.plt</code>。<code>.rel.dyn</code>实际上是对数据引用的修正，它所修正的位置位于<code>.got</code>以及数据段；<code>.rel.plt</code>实际上是对代码引用的修正，它所修正的位置位于<code>.got.plt</code>。</p>
 <p>用以下命令可以查看重定位表；</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png" alt=""  />
@@ -429,8 +425,7 @@ A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都
 </p>
 <p><code>printf</code>这个重定位入口，它的类型为<code>R_386_JUMP_SLOT</code>，它的偏移为<code>0x000015d8</code>。它实际位于<code>.got.plt</code>中，前三项是被系统占用的，第四项开始才是真正存放导入函数地址的地方，刚好是<code>0x000015c8 + 4 * 3 = 0x000015d4</code>，即<code>__gmon_start__</code>。</p>
 <p>当动态链接器要进行重定位时，先查找<code>printf</code>的地址，假设链接器在全局符号表中找到<code>printf</code>的地址为<code>0x08801234</code>，那么链接器就会将这个地址填入<code>.got.plt</code>中偏移为<code>0x000015d8</code>的位置。<strong>从而实现了地址重定位，即动态链接最关键的一步</strong>。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png" alt=""  />
@@ -464,8 +459,7 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
 <li>可执行文件映像：存储可执行文件再内存里的映像，由装载器在装载时将可执行文件的内存读取活映射到这里。</li>
 <li>保留区：保留区并不是一个单一的内存区域，而是对内存中受到保护而禁止访问的内存区域的总称。比如<code>NULL</code>。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png" alt=""  />
@@ -481,8 +475,7 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
 <li>保存的上下文</li>
 </ul>
 <p>一个函数的调用流程：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png" alt=""  />
@@ -490,8 +483,7 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png" alt=""  />

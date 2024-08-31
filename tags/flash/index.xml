@@ -31,7 +31,6 @@
 <ul>
 <li>BootROM 中配置 SPI 控制器的 <code>SPIC_CSR_01</code> 寄存器的<code>spi_bus_mode</code> 位可以配置 SPI 的模式；</li>
 <li>查阅 Flash 手册，找到配置总线模式的寄存器以及操作它的命令，如 WINBOND-W25Q128JW 这款 Flash 的配置寄存器为 <code>Status Register-2</code>，Flash 的寄存器是无法直接读写的，所以需要在 Flash 手册中找到操作这个寄存器的命令，在手册的 Instructions 章节可以找到这款 Flash 的配置命令为 <code>Write Status Register-2</code>，命令码为 <code>0x31</code>，只要我们向 Flash 发送 <code>0x31</code>，就可以配置 Flash 的总线模式了。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
@@ -40,7 +39,6 @@
 </div>
 
 
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
@@ -66,7 +64,6 @@
 <p>SFDP 是 JEDEC 发布的 JESD216 的一个新标准，目前的版本号是 V1.0。简而言之，SFDP（Serial Flash Discoverable Parameters）就相当于一张存储了 FLASH 部分属性的表，此表是不占用 FLASH 本身的存储空间的。SFDP 中的信息自出厂就被固定，只供读取，开发人员可通过发送操作指令 0x5A 来读取当前 FLASH 的 SFDP 相关内容，这有利于开发人员了解 FLASH 之间的差异，提高开发效率，缩短整个开发周期。</p>
 <p>也就是只要 Flash 研发时遵循了 JESD216 这个标准，我们都可以通过发送 0x5A 这个命令码，去获取Flash相关参数。最为关键的就是其中会保存 Flash 厂商的 ID，当我们获取到 Flash 厂商的 ID 时，我们就可以根据 ID 执行不同的配置操作。</p>
 <p>对于 WINBOND-W25Q128JW 这款 Flash，在数据手册的Feature里就可以看到它是支持 SFDP 的：
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">

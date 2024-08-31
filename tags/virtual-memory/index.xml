@@ -24,7 +24,6 @@
 </ul>
 <h2 id="什么是虚拟寻址">什么是虚拟寻址？</h2>
 <p>如果主存被分为长度为$M$的单字节大小的数组，每个字节都对应一个物理地址，CPU 通过这个唯一的地址访问主存，这样的方式就是<strong>物理寻址</strong>。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png">
@@ -34,7 +33,6 @@
 
 
 现代处理器使用<strong>虚拟寻址</strong>的方式。CPU 通过生成的<strong>虚拟地址</strong>来访问内存，这个地址在送到内存之前会被转换成<strong>物理地址</strong>。这个过程称为<strong>地址翻译</strong>。CPU 芯片上叫做<strong>内存管理单元</strong>（Memory Management Unit, MMU）的专用硬件，利用存放在主存中的<strong>查询表</strong>来动态翻译虚拟地址，该表的内容由操作系统管理。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png">
@@ -67,8 +65,7 @@
 <li>有效位：表明了该虚拟页当前是否被缓存在 DRAM 中；</li>
 <li>地址：表示 DRAM 中相应的物理页的起始位置，这个物理页中缓存了该虚拟页。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png" alt=""  />
@@ -77,8 +74,7 @@
 
 </p>
 <h3 id="页命中与缺页">页命中与缺页</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png" alt=""  />
@@ -90,8 +86,7 @@ l</p>
 <p>当 CPU 访问未被缓存的地址时，会导致<strong>缺页</strong>。如访问上图的 VP3，虚拟地址索引到 PTE3，此时有效位为 0，地址翻译硬件就知道该地址未被缓存，需要从磁盘中读取。</p>
 <p>这时会触发一个<strong>缺页异常</strong>。<strong>缺页异常调用内核中的缺页异常处理程序</strong>，该程序会选择一个牺牲页，在此例中就是存放在 PP 3 中的 VP 4。如果 VP 4 已经被修改了，那么内核就会将它复制回磁盘。无论哪种情况，内核都会修改 VP 4 的页表条目，反映出 VP 4 不再缓存在主存中这一事实。</p>
 <p>接下来，内核从磁盘复制 VP 3 到内存中的 PP 3，更新 PTE 3，随后返回。当异常处理程序返回时，它会<strong>重新启动导致缺页的指令</strong>，该指令会把导致缺页的虚拟地址重发送到地址翻译硬件。但是现在，VP 3 已经缓存在主存中了，那么页命中也能由地址翻译硬件正常处理了。图 9-7 展示了在缺页之后我们的示例页表的状态。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png" alt=""  />
@@ -102,8 +97,7 @@ l</p>
 <p>在虚拟内存的习惯说法中，块被称为页。在磁盘和内存之间传送页的活动叫做<strong>交换</strong>（swapping）或者<strong>页面调度</strong>（paging）。页从磁盘换入（或者页面调入）DRAM 和从 DRAM 换出（或者页面调出）磁盘。一直等待，直到最后时刻，也就是当有不命中发生时，才换入页面的这种策略称为按需页面调度（demand paging）。</p>
 <h2 id="虚拟内存作为内存管理的工具">虚拟内存作为内存管理的工具</h2>
 <p>之前我们只讨论了一个页表的情况，但是实际上操作系统为<strong>每个进程都分配了一个独立的页表</strong>。多个虚拟页面可以映射到同一个共享物理页面上。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png" alt=""  />
@@ -120,8 +114,7 @@ l</p>
 </ul>
 <h2 id="虚拟内存作为内存保护的工具">虚拟内存作为内存保护的工具</h2>
 <p>操作系统中的用户程序不应该修改只读的代码段，也不应该读取或者修改内核中的代码和数据结构或者访问私有的以及其他的进程的内存，如果无法对用户进程的内存访问进行限制，攻击者就可以访问和修改其他进程的内存影响系统的安全。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png" alt=""  />
@@ -214,8 +207,7 @@ l</p>
 </tr>
 </tbody>
 </table>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png" alt=""  />
@@ -224,8 +216,7 @@ l</p>
 
 </p>
 <p>图 9-12 展示了 MMU 如何利用页表来实现地址翻译。CPU 中的一个控制寄存器，<strong>页表基址寄存器</strong>（Page Table Base Register，PTBR）指向当前页表。$n$ 位的虚拟地址包含两个部分：一个 $p$ 位的<strong>虚拟页面偏移</strong>（Virtual Page Offset，VPO）和一个$\small (n-p)$位的<strong>虚拟页号</strong>（Virtual Page Number，VPN）。MMU 利用 VPN 来选择适当的 PTE。例如，VPN 0 选择 PTE 0，VPN 1 选择 PTE 1，以此类推。将页表条目中<strong>物理页号</strong>（Physical Page Number，PPN）和虚拟地址中的 VP。串联起来，就得到相应的物理地址。注意，因为物理和虚拟页面都是 P 字节的，所以<strong>物理页面偏移（Physical Page Offset，PPO）和 VPO 是相同的</strong>。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png" alt=""  />
@@ -253,8 +244,7 @@ l</p>
 <h3 id="利用-tlb-加速地址翻译">利用 TLB 加速地址翻译</h3>
 <p>每次 CPU 访问一个虚拟地址，MMU 就必须查找 PTE，以便将虚拟地址翻译为物理地址。在最糟糕的情况下，这会要求从内存多取一次数据，代价是几十到几百个周期。如果 PTE 碰巧缓存在 L1 中，那么开销就下降到 1 个或 2 个周期。为了消除这样的开销，在 MMU 中包括了一个关于 PTE 的小的缓存，称为<strong>翻译后备缓冲器</strong>（Translation Lookaside Buffer，TLB）。</p>
 <p>TLB 是一个小的、虚拟寻址的缓存，其中<strong>每一行都保存着一个由单个 PTE 组成的块</strong>。TLB 通常有高度的相联度。如图 9-15 所示，用于组选择和行匹配的索引和标记字段是从虚拟地址中的虚拟页号中提取出来的。如果 TLB 有$\small T = 2^t$个组，那么 <strong>TLB 索引</strong>（TLBI）是由 VPN 的 $t$ 个最低位组成的，而 <strong>TLB 标记</strong>（TLBT）是由 VPN 中剩余的位组成的。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png" alt=""  />
@@ -269,8 +259,7 @@ l</p>
 <li>第 4 步：MMU 将这个虚拟地址翻译成一个物理地址，并且将它发送到高速缓存/主存。</li>
 <li>第 5 步：高速缓存/主存将所请求的数据字返回给 CPU。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png" alt=""  />
@@ -285,8 +274,7 @@ l</p>
 <p>那怎么办呢？我们可以试着将页表再分页，4G 的空间需要 4M 的页表来存储映射。我们把这 4M 分成 1K（1024）个 4K，每个 4K 又能放在一页里面，这样 1K 个 4K 就是 1K 个页，这 1K 个页也需要一个表进行管理，我们称为页目录表，这个页目录表里面有 1K 项，每项 4 个字节，页目录表大小也是 4K。</p>
 <p>页目录有 1K 项，用 10 位就可以表示访问页目录的哪一项。这一项其实对应的是一整页的页表项，也即 4K 的页表项。每个页表项也是 4 个字节，因而一整页的页表项是 1K 个。再用 10 位就可以表示访问页表项的哪一项，页表项中的一项对应的就是一个页，是存放数据的页，这个页的大小是 4K，用 12 位可以定位这个页内的任何一个位置。</p>
 <p>这样加起来正好 32 位，也就是用前 10 位定位到页目录表中的一项。将这一项对应的页表取出来共 1k 项，再用中间 10 位定位到页表中的一项，将这一项对应的存放数据的页取出来，再用最后 12 位定位到页中的具体位置访问数据。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png" alt=""  />
@@ -298,8 +286,7 @@ l</p>
 比如说，上面图中，我们假设只给这个进程分配了一个数据页。如果只使用页表，也需要完 整的 1M 个页表项共 4M 的内存，但是如果使用了页目录，页目录需要 1K 个全部分配，占用内存 4K，但是里面只有一项使用了。到了页表项，只需要分配能够管理那个数据页的页表项页就可以了，也就是说，最多 4K，这样内存就节省多了</p>
 <p>当然对于 64 位的系统，两级肯定不够了，就变成了四级目录，分别是全局页目录项 PGD（Page Global Directory）、上层页目录项 PUD（Page Upper Directory）、中间
 页目录项 PMD（Page Middle Directory）和页表项 PTE（Page Table Entry）。也就是一级页表，二级页表，三级页表，四级页表。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png" alt=""  />

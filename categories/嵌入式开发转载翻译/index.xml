@@ -43,11 +43,10 @@
 <p>大多数使用计算机的人都认为它是主板上插入显卡或适配器卡的 PCIe 插槽，但 PCIe 不仅仅是这几个扩展 Port。PCIe 是现代 CPU 与连接到系统的几乎所有设备通信的基础。</p>
 <p>自推出以来，PCIe 的受欢迎程度飙升，成为短距离高速数据传输的近乎通用的标准。几乎所有的 M.2 SSD 都使用 NVMe over PCIe 作为其传输协议。Thunderbolt 3 能够使用外部线将 PCIe 设备直接动态热插拔到系统（支持扩展坞和 eGPU 等技术）。在此基础上，USB4 正在扩展 Thunderbolt 3，以使这种 PCIe 路由技术能够达到开放的 USB 规范。CXL 等新型传输协议，用于数据中心服务器，以 PCIe 为基础规范并在其上扩展他们的特别功能。</p>
 <p>即使与之通信的设备本身不使用 PCIe 作为其物理层协议，系统仍必须使用 PCI 的软件接口进行通信。这是因为系统使用适配器（通常称为主机控制器），这些适配器是 PCI 设备，有助于将来自 CPU 的 PCI 请求转换为主机控制器支持的任何协议或总线。例如，此测试计算机上的所有 USB 3.1 都使用 USB XHCI 协议，该协议是一种通信协议，通过与 USB 主机控制器通信的 PCI 驱动程序将 PCIe 桥接到 USB。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png" alt="USB 3.1 主机控制器。此系统上的所有 USB 都将通过此控制器进行，该控制器位于 PCI 总线上。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png" alt="USB 3.1 主机控制器。此系统上的所有 USB 都将通过此控制器进行，该控制器位于 PCI 总线上。"  />
+<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/4ab558e7fb773c276583ff528ede9df0.png" alt=""  />
 </a>
 </div>
 
@@ -56,8 +55,7 @@
 <h2 id="研究-pcie-层次结构---一种分组交换网络">研究 PCIe 层次结构 - 一种分组交换网络</h2>
 <p>从传统的 PCI 转变到 PCIe 最重要的变化是从真正的总线拓扑结构转变为点对点链接。你可以将这看作是以太网集线器向今天的以太网交换机的演变。每个链接都是一个单独的点对点链接，其路由方式就像在一个分组交换的以太网网络上的以太网线一样。这意味着 PCIe 实际上并不是一个“总线协议”，尽管在各种文献和技术规范中让人困惑的频繁使用“总线”这个词。人们必须仔细理解，这个词“总线”并不意味着多个 PCIe 设备在同一个物理链接上进行通信。数据包（也被称为 TLPs）经过每个单独的链接，层次结构中的交换设备使用数据包内的路由信息将数据包传送到正确的 Port。</p>
 <p>在我们进入 PCIe 的技术细节之前，首先我们需要谈谈整个系统的布局。我们研究 PCIe 层次结构的第一种方法是通过 Windows 设备管理器。大多数熟悉 Windows 的人以前都用过它，但没有多少人知道 View &gt; Devices by Connection 中发现的非常方便的功能。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/5e0afe87ec5a2f1049d03ceca8038673.png" alt=""  />
@@ -68,8 +66,7 @@
 <p>通过选择此视图，我们可以从根 PNP（Plug-N-Play）节点看到系统的完整拓扑。PNP 根节点是 Windows 上所有设备树的根，无论它们使用什么总线或协议。每个设备（无论是虚拟设备还是物理设备）都被枚举并放置在此 PNP 树上。我们可以利用 Device Manager 的这个视图来查看这个树的布局。</p>
 <p>特别是，我们希望在系统上找到 PCI 设备的布局。这样，我们就可以开始构建 PCI 树在这台机器上的外观的可视化模型。为此，我们需要找到 PCI 树的根：Root Complex。Root Complex（缩写为 RC）是系统上所有 PCIe 的所有者。它物理上位于 CPU 芯片上，负责充当所有 PCIe 设备接收和发送数据包的主机。它可以被认为是软件（在你的机器上执行的指令）和硬件（PCIe 和 RAM 的外部世界）之间的桥梁。</p>
 <p>在这个系统中，它位于这里的 PNP 层次结构中：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/485cfac384549d6d081e49b7c94e55f8.png" alt=""  />
@@ -81,8 +78,7 @@
 <p>注意：您现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然您永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们根复合体在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。</p>
 </blockquote>
 <p>所以现在我们知道 Root Complex 是 PCIe 树的顶部，现在让我们看一下它下面的所有内容：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8168e2ee37f0a29a65ce5e35bcae0361.png" alt=""  />
@@ -93,8 +89,7 @@
 <p>不出所料，此 PCI 总线上有许多设备。在这里，我们可以看到负责音频、集成显卡、USB、串行和 SATA 的各种控制器。此外，我们还看到其中一些设备称为 PCI Express Root Port。Root Port 是根复合体上的一个 Port，另一个 PCIe 端点（又名物理“设备”）或交换机（又名“路由器”）可以连接到该 Port。出于 PCI 规范的考虑，您将听到 Endpoint 称为 Type 0 设备，而 Switch（或网桥）称为 Type 1 设备，因为一个被配置为用于通信的设备，另一个被配置为用于路由数据包的设备。RC 将具有与其物理支持的一样多的 Root Port。也就是说，可以连接到 CPU 芯片的次数越多。CPU 上的一些 Root Port 可能直接路由到物理 PCIe 插槽，而其他 Root Port 可能路由到其他类型的插槽，如 NVMe 插槽。它也可能被路由到另一个 PCIe 交换设备，该设备可以将数据包路由到多个 Port，从而一次路由到多个端点。</p>
 <p>我会继续提出这个比较，但我觉得这很重要——如果你已经了解以太网交换机，你就已经了解 PCIe 交换机。您可以想象这些 Root Port 就像台式计算机上的以太网 Port。您可以将这些直接连接到其他设备（例如摄像头），也可以将它们连接到像家用路由器/调制解调器这样的交换机，这将交换数据包以公开更多连接，以便与更多设备和机器通信。在这种情况下，以太网线是将一个 PCIe Port 连接到另一个 PCIe Port 的铜线，从而使其成为“点对点”。</p>
 <p>考虑到这一点，让我们开始绘制这个层次结构（部分）图表，以便我们直观地看到它的全部布局：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/f9830973b55ef87fb9bf88615fb6c3cd.png" alt=""  />
@@ -104,8 +99,7 @@
 </p>
 <p>在 PCI 中，系统上的所有“总线”都用 0 到 255（含）之间的数字标识。此外，所有设备都使用“设备 ID”和“功能 ID”进行标识。这通常被描述为 Bus/Device/Function，或简称为 BDF。在更正确的规范术语中，这称为 RID（请求者 ID）。为了减少混淆，我将它称为 BDF。BDF 很重要，因为它专门告诉我们设备在 PCIe 层次结构中的位置，以便我们可以与之通信。</p>
 <p>因为这些都位于层级结构的顶层，所以我们将为这个“bus”提供一个数字标识符，即“Bus 0”或 Root Bus。我们可以通过右键单击顶级设备并选择 Properties 并查看 Location 来验证所有这些设备是否都是 Bus 0 设备：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/369d7cf106107b3aa9ee08b6617e6af1.png" alt=""  />
@@ -121,8 +115,7 @@
 </blockquote>
 <p>此图是层次结构第一级的最小化版本，但现在让我们通过在设备管理器中展开其余的 Root Ports 来构建层次结构的其余部分。</p>
 <p>这是填充的图表的样子：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8d9ee9bf28e10363f2b2f42b55e2e404.png" alt=""  />
@@ -134,8 +127,7 @@
 <p>注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。</p>
 </blockquote>
 <p>这些 Root Port 物理上位于 CPU 上，但连接到它的设备并不在其中。这台机器的外部 PCIe 插槽上连接了 3 个设备：一块 NVIDIA Quadro P400 图形卡和两个 NVMe 驱动器。通过进入设备管理器中每个设备的属性，我们可以获取并更新它们在视觉上的 BDF(总线、设备、功能) 信息。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/3ad55c7a1e1a1482a63679a009d6c414.png" alt=""  />
@@ -214,8 +206,7 @@
 </span></span><span class="line"><span class="cl">    No devices have been enumerated on this bus.
 </span></span></code></pre></div><p>在此输出中，我们可以看到每个设备显示的 BDF。我们还可以看到总线 0 上存在的一组 Root Port，这些 Port 下面没有列举任何设备，这意味着插槽尚未连接到任何设备。</p>
 <p>在这里看到树结构应该更容易，但无论如何，让我们把它画出来：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7a507a4048a8a03806ced4cd6714bbf7.png" alt=""  />
@@ -275,8 +266,7 @@
 <li>Interrupt Requirement/Resource：与上述相同，但是对于中断则不同。</li>
 </ul>
 <p>要实际获取有关此设备的完整信息，我们可以使用 <a href="https://pcilookup.com/">PCI Lookup</a> 中的出色工具来查询有关在 PCI-SIG 中注册的 PCI 设备的公共信息。让我们将有关设备和 Vendor ID 的信息放入框中：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a70cefe8ad2cbb145ce145c1b16e562d.png" alt=""  />
@@ -285,8 +275,7 @@
 
 </p>
 <p>当我们搜索时，我们得到这个：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/098ff685f1e2ca1d27f87df7378a836a.png" alt=""  />
@@ -408,8 +397,7 @@
 <p>初学者认为所有物理内存都是 RAM，这是错误的。当软件与 PCI 区域中的 PCI 设备通信时，它不会从 RAM 读取和写入数据。相反，该设备从 Root Complex 接收一个数据包（TLP，传输层数据包），当 PCI 区域内的地址被读/写时，您的 CPU 会立即自动生成该数据包。您无需在软件中创建这些数据包，所有这些数据包都是在访问此内存后立即完全在后台生成的。在软件中，您甚至无法查看或捕获这些数据包，而需要一个特殊的硬件测试设备来拦截和查看正在发送的数据包。稍后会详细介绍。</p>
 <p>如果有帮助，请将物理内存视为设备的映射。RAM 是为您映射到物理内存中的设备。PCI 还会自动为您映射区域。尽管它们截然不同且行为也非常不同，但它们在软件中看起来是相同的。</p>
 <p>在下图中，我们可以看到典型系统如何将虚拟内存映射到物理内存。请注意，有两个 RAM 区域和两个 PCI 内存区域。这是因为某些较旧的 PCI 设备只能寻址 32 位内存。因此，如果您的 RAM 不适合 4GB 以下的地址窗口，则一些 RAM 会上移到 4GB 以上。由于您的处理器支持 64 位地址，因此这不是问题。此外，在 4GB 行上方为支持 64 位地址的 PCI 设备创建第二个窗口。由于 4GB 区域可能非常有限，因此设备最好在 4GB 以上移动尽可能多的内存，以免弄乱下面的空间。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png" alt=""  title="如何将虚拟地址范围映射到物理地址的非常简化的视图。这忽略了物理内存中的大量 “特殊” 区域，但展示了 RAM 和设备内存是如何不同的。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2f1b3cf2195ea201e631c0d29929398b.png" alt=""  title="如何将虚拟地址范围映射到物理地址的非常简化的视图。这忽略了物理内存中的大量 “特殊” 区域，但展示了 RAM 和设备内存是如何不同的。" />
@@ -426,8 +414,7 @@
 <p>注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。</p>
 </blockquote>
 <p>因此，为了进行配置空间访问，内核必须将配置空间 （ECAM） 映射到虚拟内存。这是这样的事情会是什么样子：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png" alt=""  title="ECAM 到虚拟内存的映射。可怕的是没有规模。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7bb04dca3ffe48821f8bf9f6f48bc71b.png" alt=""  title="ECAM 到虚拟内存的映射。可怕的是没有规模。" />
@@ -436,8 +423,7 @@
 
 </p>
 <p>在此之后，内核现在可以使用虚拟映射与设备的配置空间进行通信。但是这个配置空间是什么样的呢？嗯，它只是我们上面讨论的一堆配置空间结构块。设备可能具有的每个可能的 BDF 都在 ECAM 中提供了空间来对其进行配置。它的布局方式是，设备的 BDF 会告诉您其配置空间在 ECAM 中的确切位置。也就是说，给定一个 BDF，我们可以计算要添加到 ECAM 区域基数的偏移量，以便与设备通信，因为每个函数的所有 ECAM 区域的大小都相同。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png" alt=""  title="如果设备不存在，系统将读回所有 FF（二进制中的所有 1）。这将表明设备当前在系统上未处于活动状态"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/54b366fd88125e12c7b1cffd70f8f0bd.png" alt=""  title="如果设备不存在，系统将读回所有 FF（二进制中的所有 1）。这将表明设备当前在系统上未处于活动状态" />
@@ -448,8 +434,7 @@
 <p>从这张图中，我们可以开始看到 PCIe 的枚举实际上是如何发生的。当我们读回有效的配置空间数据时，我们知道该 BDF 上存在设备。如果我们改为读回 FF，我们知道设备不在该插槽或功能中。当然，我们不会为了枚举所有设备而暴力破解每个地址，因为由于 MMIO 的开销，这将是昂贵的。但是，这种蛮力的智能版本是我们如何快速枚举所有已通电并在配置空间上响应我们的设备。</p>
 <h2 id="把它们放在一起---软件配置空间访问">把它们放在一起 - 软件配置空间访问</h2>
 <p>现在我们了解了如何访问配置空间，我们可以将两端（层次结构和 MMIO）放在一起，以查看从内核模式读取配置空间的指令的完整路径。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ed43867c9ad22be7633a41a8cb397d12.png" alt=""  />
@@ -466,8 +451,7 @@
 <li>TLP 由总线 2 上的此显示控制器接收，并看到它是一个配置空间 TLP。现在，它知道使用包含偏移量 0x0 处的值内容的配置空间响应 TLP 进行响应。</li>
 </ul>
 <p>现在让我们看看响应：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7636af73b1e906b7cbf1cc44fe620dfc.png" alt=""  />
@@ -524,8 +508,7 @@
 </span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000503c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> 00-00 <span class="m">00</span> <span class="m">00</span> d0 <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>  ................
 </span></span><span class="line"><span class="cl">fffff7b6<span class="sb">`</span>c000504c  <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> ff <span class="m">00</span> <span class="m">00</span> <span class="m">00</span> <span class="m">00</span>                          ........
 </span></span></code></pre></div><p>要了解如何阅读此表，遗憾的是，我们需要查看 ACPI 规范。与其让你这样做，不如省去你的痛苦，把相关部分拉到这里：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/2e26ba8d45b7e876b78500fa7392440d.png" alt=""  />
@@ -534,8 +517,7 @@
 
 </p>
 <p>由于 <code>！acpitable</code> 命令已经解析并显示此表中 <code>Creator Revision</code> 之前的所有内容，因此 <code>BODY</code> 的前 8 个字节将是偏移量 36 处的 8 个字节的 <code>Reserved</code> 内存。因此，我们跳过这 8 个字节并找到以下结构：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/936801aafdfbd7bc6e13e82310ce925f.png" alt=""  />

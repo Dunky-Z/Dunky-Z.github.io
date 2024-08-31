@@ -1264,8 +1264,7 @@ gpgkey为验证签名用的公钥。</p>
 <li>实例化 Object</li>
 <li>添加 Property</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" alt=""  />
@@ -1325,8 +1324,7 @@ gpgkey为验证签名用的公钥。</p>
 </span></span><span class="line"><span class="cl">  <span class="nf">register_module_init</span><span class="p">(</span><span class="n">x86_cpu_register_types</span><span class="p">,</span> <span class="n">MODULE_INIT_QOM</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>通过 <code>gcc</code> 扩展属性<code>__attribute__((constructor))</code>可以让 <code>do_qemu_init_x86_cpu_register_types</code> 在运行 <code>main</code> 函数之前运行。 <code>register_module_init</code> 会让 <code>x86_cpu_register_types</code> 这个函数挂载到 <code>init_type_list[MODULE_INIT_QOM]</code> 这个链表上。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
@@ -1593,8 +1591,7 @@ gpgkey为验证签名用的公钥。</p>
 为了实现客户机虚拟地址空间到宿主机物理地址空间的直接映射。客户机中每个进程都有自己的虚拟地址空间，所以 KVM 需要为客户机中的每个进程页表都要维护一套相应的影子页表。
 在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。</p>
 </blockquote>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124192700.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124192700.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124192700.png" alt=""  />
@@ -1614,8 +1611,7 @@ gpgkey为验证签名用的公钥。</p>
 <p>KVM 只需为每个客户机维护一套 EPT 页表，也大大减少了内存的开销。</p>
 <p>这里，我们重点看第二种方式。因为使用了 EPT 之后，客户机里面的页表映射，也即从 GVA 到 GPA 的转换，还是用传统的方式，和在内存管理那一章讲的没有什么区别。而 EPT 重点帮我们解决的就是从 GPA 到 HPA 的转换问题。因为要经过两次页表，所以 EPT 又 tdp(two dimentional paging)。</p>
 <p>EPT 的页表结构也是分为四层，EPT Pointer（EPTP）指向 PML4 的首地址。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124194059.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124194059.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220124194059.png" alt=""  />
@@ -1897,8 +1893,7 @@ gpgkey为验证签名用的公钥。</p>
 </span></span><span class="line"><span class="cl"><span class="k">extern</span> <span class="n">RAMList</span> <span class="n">ram_list</span><span class="p">;</span>
 </span></span></code></pre></div><p>每一个新分配的 <code>RAMBlock</code> 都会被插入到<code>ram_list</code>的头部。如需查找地址所对应的 <code>RAMBlock</code>，则需要遍历<code>ram_list</code>，当目标地址落在当前<code>RAMBlock</code>的地址区间时，该 <code>RAMBlock</code> 即为查找目标。</p>
 <h4 id="asmrramblock-之间的关系">AS、MR、RAMBlock 之间的关系</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225155936.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225155936.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220225155936.png" alt=""  />
@@ -1974,8 +1969,7 @@ gpgkey为验证签名用的公钥。</p>
 <li><code>offset_within_address_space</code>：在所属 <code>AddressSpace</code> 中的 <code>offset</code>，它是全局的</li>
 </ul>
 <h4 id="和其他数据结构之间的关系">和其他数据结构之间的关系</h4>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125110422.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125110422.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125110422.png" alt=""  />
@@ -2104,8 +2098,7 @@ gpgkey为验证签名用的公钥。</p>
 <h2 id="具体实现机制">具体实现机制</h2>
 <p>QEMU 的内存申请流程大致可分为三个部分：回调函数的注册、AddressSpace 的初始化、实际内存的分配。下面将根据在 vl.c 的 main() 函数中的调用顺序分别介绍。</p>
 <h3 id="回调函数的注册">回调函数的注册</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125133808.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125133808.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125133808.png" alt=""  />
@@ -2215,8 +2208,7 @@ gpgkey为验证签名用的公钥。</p>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>由于此时 <code>AddressSapce</code> 尚未初始化，所以此处的循环为空，仅是在全局注册了<code>kvm_memory_listener</code>。最后调用了<code>kvm_memory_listener-&gt;region_add()</code>，对应的实现是<code>kvm_region_add()</code>，该函数最终会通过<code>ioctl(KVM_SET_USER_MEMORY_REGION)</code>，将 <code>QEMU</code> 侧申请的内存信息传入 <code>KVM</code> 进行注册，这里的流程会在下一部分进行分析。</p>
 <h3 id="addressspace-的初始化">AddressSpace 的初始化</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125154841.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125154841.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220125154841.png" alt=""  />
@@ -2390,8 +2382,7 @@ gpgkey为验证签名用的公钥。</p>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>可以看到这里又将 <code>KVMSlot</code> 转换为 <code>kvm_userspace_memory_region</code>，作为<code>ioctl()</code>的参数，交给内核中的 <code>KVM</code> 进行内存的注册【设置<code>GPA-&gt;HVA</code>的映射关系，在内核空间维护并管理 Guest 的内存】。</p>
 <p>至此 QEMU 侧负责管理内存的数据结构均已完成初始化，<strong>可以参考下面的图片了解各数据结构之间的对应关系</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127155506.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127155506.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127155506.png" alt=""  />
@@ -2400,8 +2391,7 @@ gpgkey为验证签名用的公钥。</p>
 
 </p>
 <h3 id="实际内存的分配">实际内存的分配</h3>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127160121.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127160121.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127160121.png" alt=""  />
@@ -2538,8 +2528,7 @@ gpgkey为验证签名用的公钥。</p>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>这样一来<code>ram</code>【其实就是<code>system memory</code>，整个<code>Guest</code>物理空间的大小】对应的 <code>RAMBlock</code> 中就分配好了 <code>GPA</code> 和 <code>HVA</code>，就可以<strong>将内存信息同步至 KVM 侧</strong>了。</p>
 <p>最后回到<code>pc_memory_init()</code>中，在分配完实际内存后，会先调用<code>memory_region_init_alias()</code>初始化<code>ram_below_4g</code>、<code>ram_above_4g</code>这两个<code>alias</code>，之后调用<code>memory_region_add_subregion()</code>将这两个 <code>alias</code> 指向<code>ram</code>这个实体 <code>MemoryRegion</code>。如下图，该函数最终会触发<code>kvm_region_add()</code>回调，将实际的内存信息传入 <code>KVM</code> 注册。该过程如下图所示，与之前分析的流程相同，此处不再赘述。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163205.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163205.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163205.png" alt=""  />
@@ -2571,8 +2560,7 @@ gpgkey为验证签名用的公钥。</p>
 <p>当发生<code>EPT Violation</code> 时，<code>VM-EXIT</code>到 <code>KVM</code> 中。如果是缺页，则根据 <code>GPA</code> 算出 <code>gfn</code>，再根据 <code>gfn</code> 找到对应的 <code>KVMSlot</code>，从中得到对应的 <code>HVA</code>。然后根据 <code>HVA</code> 算出对应的 <code>pfn</code>，确保该 <code>Page</code> 位于内存中。填好缺失的页之后，需要更新 <code>EPT</code>，完善其中缺少的页表项，逐层补全页表</p>
 </li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163418.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163418.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127163418.png" alt=""  />
@@ -2583,7 +2571,6 @@ gpgkey为验证签名用的公钥。</p>
 <blockquote>
 <p>虚拟机的物理内存空间里面的页面当然不是一开始就映射到物理页面的，只有当虚拟机的内存被访问的时候，也即 <code>mmap</code> 分配的虚拟内存空间被访问的时候，先查看 <code>EPT</code> 页表，是否已经映射过，如果已经映射过，则经过四级页表映射，就能访问到物理页面。
 如果没有映射过，则虚拟机会通过<code>VM-Exit</code>指令回到宿主机模式，通过 <code>handle_ept_violation</code> 补充页表映射。先是通过 <code>handle_mm_fault</code>为虚拟机的物理内存空间分配真正的物理页面，然后通过 <code>__direct_map</code> 添加 <code>EPT</code> 页表映射。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127171031.jpg" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220127171031.jpg">
@@ -2616,8 +2603,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。</li>
 </ul>
 <p>以 GPIO 为例：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211111102930.png" alt=""  />
@@ -2672,8 +2658,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 <li>实例化 <code>Object</code></li>
 <li>添加 <code>Property</code></li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/15-09-19-4995177f1aeb782fadaf586f8f5c8b32-qemu-QOM%E5%88%86%E6%9E%90.drawio%20-2--1a4eac.png" alt=""  />
@@ -2715,8 +2700,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 <p>什么是注册，说白了就是将一些可能需要的信息添加到系统中，在系统运行时能够随时调用到。就拿 Timer 来说，现在将一些信息添加到了列表，系统运行起来时我可以随时从链表中取出 Timer 这个设备的信息，用来实例化一个 Timer，但是我没有注册 Timer，也就是没有将其加入到链表，那我后期就无法找到它。</p>
 <p>怎么注册这些<code>TypeInfo</code>结构体呢？在实现的源码中有这个函数 <code>dw_timer_register_types()</code>，他是用来注册 Timer 这个设备的。</p>
 <p>我们追根溯源，调用过程如下，</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-03-53-4d2fcf4deb7a9ed9c13a22a7fe3111be-20221107160352-084c2a.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-03-53-4d2fcf4deb7a9ed9c13a22a7fe3111be-20221107160352-084c2a.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-03-53-4d2fcf4deb7a9ed9c13a22a7fe3111be-20221107160352-084c2a.png" alt=""  />
@@ -2733,8 +2717,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 <li>如果找到，说明这个类曾经被注册过，就报错；</li>
 <li>如果没有找到，说明这是一个新的类，则将 <code>Typeinfo</code> 里面信息填到 <code>TypeImpl</code> 里面。<code>type_table_add</code> 会将这个类注册到全局的表里面。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-11-19-19d9b8686c2a5758a0231181b0fb4dfa-qemu-%E6%B3%A8%E5%86%8C%E8%AE%BE%E5%A4%87.drawio-8a4c5c.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-11-19-19d9b8686c2a5758a0231181b0fb4dfa-qemu-%E6%B3%A8%E5%86%8C%E8%AE%BE%E5%A4%87.drawio-8a4c5c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/16-11-19-19d9b8686c2a5758a0231181b0fb4dfa-qemu-%E6%B3%A8%E5%86%8C%E8%AE%BE%E5%A4%87.drawio-8a4c5c.png" alt=""  />
@@ -2776,8 +2759,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 </span></span></code></pre></div><p><code>type_init</code>是个宏定义，调用了<code>__attribute__((constructor))</code>函数，我们知道这个 C 语言中位数不多的在<code>main</code>函数执行前，执行的函数。函数中调用了<code>register_module_init</code>注册函数，说明在<code>main</code>函数执行前，已经注册好硬件了。该函数将一个新的<code>ModuleEntry</code>加到链表里。</p>
 <p>注意，注册的只是个函数，并不是注册了设备。也就是已上过程，只是把一个 <code>ModuleEntry</code> 放到了一个链表里，这个 <code>ModuleEntry</code> 带了两个信息，一个是函数，一个是类型。这个函数就是我们真正的注册注册函数。</p>
 <p>已上过程大概是如下所示：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-31-54-b5c189903fc73c76057f57a95a10310d-qemu-module%20init%20%E9%93%BE%E8%A1%A8.drawio-1309c1.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-31-54-b5c189903fc73c76057f57a95a10310d-qemu-module%20init%20%E9%93%BE%E8%A1%A8.drawio-1309c1.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-31-54-b5c189903fc73c76057f57a95a10310d-qemu-module%20init%20%E9%93%BE%E8%A1%A8.drawio-1309c1.png" alt=""  />
@@ -2787,8 +2769,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
 </p>
 <p>那什么时候还真正注册设备呢，我们就得回到主函数，它有以下调用流程，在 <code>module_call_init</code> 中，我们会找到 <code>MODULE_INIT_QOM</code> 这种类型对应的 <code>ModuleTypeList</code>
 找出列表中所有的 <code>ModuleEntry</code>，然后调用每个 <code>ModuleEntry</code> 的 <code>init</code> 函数。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-34-25-ad40a288b1376c0f9136c609b7d7ee0c-20221107183424-6d1641.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-34-25-ad40a288b1376c0f9136c609b7d7ee0c-20221107183424-6d1641.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/18-34-25-ad40a288b1376c0f9136c609b7d7ee0c-20221107183424-6d1641.png" alt=""  />
@@ -2956,8 +2937,7 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
       <description>流程图 先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。 qemu_add_op</description>
       <content:encoded><![CDATA[<h2 id="流程图">流程图</h2>
 <p>先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg" alt=""  />
@@ -3178,8 +3158,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 </span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">instance_size</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">KVMState</span><span class="p">),</span>
 </span></span><span class="line"><span class="cl"><span class="p">};</span>
 </span></span></code></pre></div><p>调用流程如下：虚线表示返回</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210907133931.svg" alt=""  />
@@ -3194,8 +3173,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 <p>相同的过程在后面的代码中我们也可以看到，<code>class_init</code> 会生成<code>XXXClass</code>，就相当于 Java 里面的 <code>Class</code>对象，<code>TypeImpl</code> 还会有一个 <code>instance_init</code> 函数，相当于构造函数，用于根据 <code>XXXClass</code> 生成 <code>Object</code>，这就相当于 Java 反射里面最终创建的对象。和构造函数对应的还有 <code>instance_finalize</code>，相当于析构函数。</p>
 <p>这一套反射机制放在 <code>qom</code> 文件夹下面，全称 <code>QEMU Object Model</code>，也即用 C 实现了一套<strong>面向对象的反射机制</strong>。</p>
 <h2 id="初始化-machine">初始化 machine</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210913115046.svg" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210913115046.svg">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210913115046.svg" alt=""  />
@@ -3332,8 +3310,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">obj</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><p>至此，绕了这么大一圈，有关体系结构的对象才创建完毕，接下来很多的设备的初始化，包括 CPU 和内存的初始化，都是围绕着体系结构的对象来的，后面我们会常常看到<code>current_machine</code>。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220308180036.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220308180036.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220308180036.png" alt=""  />
@@ -3360,8 +3337,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 <p>用 VSCode 打开<code>qemu-6.X.X</code>文件夹，<code>Ctrl+Shift+D</code>打开调试配置。如果参考过<a href="https://dunky-z.github.io/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/">VSCode 中调试程序</a>这篇文章，接下来就很容易。我们只需要将<code>launch.jason</code>文件中的<code>program</code>属性改为<code>${workspaceFolder}/build/qemu-system-riscv32</code>即可。</p>
 <h2 id="调试">调试</h2>
 <p>打开<code>qemu-6.X.X/softmmu/main.c</code>文件，在<code>main</code>函数入口处打上断点，即可开始调试。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824194442.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824194442.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824194442.png" alt=""  />
@@ -3371,8 +3347,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 </p>
 <p>现在只需要点击屏幕上的图标，就可以快速的进行单步调试。</p>
 <p>如果需要进行命令行操作，在屏幕下方打开<code>DEBUG CONSOLE</code>，输入<code>-exec+正常命令行下的命令</code>即可在命令行中进行更多的调试。如查看断点信息<code>-exec info breakpoints</code></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824201427.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824201427.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210824201427.png" alt=""  />
@@ -3399,8 +3374,7 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 <p>开始下载时不加<code>--recursive</code>参数，只下载<code>riscv-gnu-toolchain</code>的主体内容，然后进入到<code>riscv-gnu-toolchain</code>文件夹下，手动下载子模块的内容。</p>
 <p>当下完<code>riscv-binutils</code>继续下载<code>riscv-gdb</code>时发现这两个项目是同一个项目，只是不同的分支。但是码云上并没有区分，但是我也没找到在码云上的对应分支。只能用油猴脚本了。</p>
 <p>如果你有油猴插件可以去<a href="https://greasyfork.org/zh-CN">greasyfork</a>搜索安装<strong>GitHub 镜像访问，加速下载</strong>这个脚本，刷新 GitHub 仓库界面就会多出几个镜像地址，一般下载都会快好几倍。如果不用油猴插件的可以用我复制好的链接。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210728155417.png" alt=""  />
@@ -3966,8 +3940,7 @@ When the KVM accelerator is used, it controls the size of the per-vCPU dirty pag
 </span></span></code></pre></div><p><code>-m</code>指定虚拟机内存大小，默认单位是 MB，<code>-enable-kvm</code>使用 KVM 进行加速，<code>-cdrom</code>添加 fedora 的安装镜像。</p>
 <p>该模式下，要比用户模式模拟慢得多，因为模拟了目标内核，以及设备输入/输出、中断等。</p>
 <h2 id="qemu-工作原理">QEMU 工作原理</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210721140349.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210721140349.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210721140349.png" alt=""  />
@@ -4008,8 +3981,7 @@ KVM 需要在虚拟机与宿主机架构相同时才生效。
 <ul>
 <li>因为各字段都在固定的位置，(如 RISC-V 的 <code>opcode</code> 都是固定在 <code>bits[6..0]</code> 的位置)。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2F5a051d22c43a2ce34069fecd2e4fb8c0.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2F5a051d22c43a2ce34069fecd2e4fb8c0.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2F5a051d22c43a2ce34069fecd2e4fb8c0.png" alt=""  />
@@ -4080,8 +4052,7 @@ KVM 需要在虚拟机与宿主机架构相同时才生效。
 </tbody>
 </table>
 <p>以 RISC-V 的 <code>U-type</code> 指令为例：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2Ffb558390c2c5a8c8b9e1645d90cabfc8.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2Ffb558390c2c5a8c8b9e1645d90cabfc8.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F18%2Ffb558390c2c5a8c8b9e1645d90cabfc8.png" alt=""  />
@@ -4377,8 +4348,7 @@ KVM 需要在虚拟机与宿主机架构相同时才生效。
 <p>最后 <code>addl_i</code> 的 decoder 还会调用 <code>trans_addl_i()</code> 这个 <code>translator function</code>。</p>
 <p>搭配之前介绍的 Fields、Argument Sets 及 Formats，让我们再看几个完整的例子应该会更清楚 <code>Decodetree</code> 是怎产生一个指令的 decoder 的。</p>
 <p>首先是 RISC-V 的 <code>lui</code> 及 <code>auipc</code> 指令：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F922be39211d73158159edf9993a2c906.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F922be39211d73158159edf9993a2c906.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F922be39211d73158159edf9993a2c906.png" alt=""  />
@@ -4609,8 +4579,7 @@ KVM 需要在虚拟机与宿主机架构相同时才生效。
 <p>与单纯使用 <code>Pattern</code> 最大不同的是，当一 <code>Pattern</code> 的 <code>trans_*()</code> 回传值为 <code>false</code> 时，不会直接回传 <code>false</code> (代表 decode 失败)，而是会接续着判断后续的 <code>Patterns</code> 是否相符。</p>
 <p>RISC-V Compressed-Extension 中的 <code>c.ebreak</code>、<code>c.jalr</code>、及 <code>c.add</code> 指令，由于这三个指令的格式非常相似，因此非常适合使用 <code>Pattern Group</code> 来定义：</p>
 <p>RISC-V spec. 中定义：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F722c64cc1a321ef23fab81e722a24154.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F722c64cc1a321ef23fab81e722a24154.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F19%2F722c64cc1a321ef23fab81e722a24154.png" alt=""  />

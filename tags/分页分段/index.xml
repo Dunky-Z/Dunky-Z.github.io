@@ -25,8 +25,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <p>在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。</p>
 <p>转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的<strong>虚拟地址的长度</strong>。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。</p>
 <p>如何开启分页机制呢？RISC-V 的分页机制是通过 satp（Supervisor address translation and protection）寄存器来开启的。satp 寄存器字段分布如下：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器" />
@@ -41,8 +40,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ul>
 <h1 id="sv39-多级页表机制">SV39 多级页表机制</h1>
 <h2 id="页表项描述">页表项描述</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项" />
@@ -62,8 +60,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <li>PPN 域包含物理页号，这是物理地址的一部分。若这个页表项是一个叶节点，那么 PPN 是转换后物理地址的一部分。否则 PPN 给出下一节页表的地址。</li>
 </ul>
 <h2 id="虚拟地址转换物理地址过程">虚拟地址转换物理地址过程</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  />

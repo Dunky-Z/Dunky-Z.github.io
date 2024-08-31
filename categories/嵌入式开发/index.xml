@@ -32,8 +32,7 @@
 <li>内存映射输入/输出（简称 MMIO）- 与主机 CPU 读取和写入内存到 ECAM 以执行配置空间访问类似，MMIO 可以用来映射设备的地址空间，以执行内存传输。主机机器在其物理地址空间中配置“内存窗口”，使 CPU 拥有一个内存地址窗口，这些内存地址神奇地转换为直接读取和写入设备。内存窗口在 RC 中解码，将 CPU 的读取和写入转换为传输到设备的数据 TLPs。硬件优化使得这种方法可以实现比配置空间访问快得多的吞吐量。然而，其速度仍然远远落后于 DMA 的批量传输速度。</li>
 <li>直接内存访问（简称 DMA）- DMA 是迄今为止最常见的数据传输形式，因为它具有原始传输速度和低延迟。每当驱动程序需要在主机和设备之间沿任一方向进行任何重要大小的传输时，它肯定会是 DMA。但与 MMIO 不同的是，DMA 是由设备本身启动的，而不是由主机 CPU 启动的。主机 CPU 将通过 MMIO 告诉设备 DMA 应该去哪里，设备本身负责开始和完成 DMA 传输。这允许设备在没有 CPU 参与的情况下执行 DMA 事务，与设备必须等待主机 CPU 告诉它每次传输做什么相比，这节省了大量的 CPU 周期。由于 DMA 的普遍性和重要性，从硬件实现和软件层面了解 DMA 非常有价值。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/ba1527f1a6204106c586315818355039.png" alt="MMIO 方法概述"  />
@@ -41,8 +40,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/a3c6fbf5ac22aed25da2b62c20ecb3f3.png" alt="从器件到 RAM 执行 DMA 的高级概述。当传输到 RAM 完成时，设备会中断 CPU。"  />
@@ -53,8 +51,7 @@
 <h2 id="mmio-简介">MMIO 简介</h2>
 <h3 id="什么是-bar">什么是 BAR？</h3>
 <p>由于配置空间限制为 4096 字节，因此之后没有太多可用空间用于特定于设备的功能。如果设备想要映射 1GB 的 MMIO 空间来访问其内部 RAM，该怎么办？没有办法将其放入 4096 字节的配置空间。因此，它将需要请求一个被称为 BAR（基地址寄存器）的东西。这是通过配置空间公开的一个寄存器，允许主机机器配置其内存的一个区域，直接映射到设备上。然后主机机器上的软件通过对 BAR 的物理地址的内存读/写指令来访问 BAR，就像我们在 ECAM 的第一部分中看到的 MMIO 一样。对设备内存映射进行读取或写入的操作将直接转换为发送到层次结构上的设备的数据包。当设备需要响应时，它将通过层次结构向主机机器发送一个新的数据包。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/333e258e5613b3c17bb19e1b5bcbf87b.png" alt="在主机上运行的设备驱动程序访问 BAR 映射，这些映射转换为通过 PCIe 发送到设备的数据包。"  />
@@ -64,8 +61,7 @@
 </p>
 <p>当 CPU 指令读取器件 MMIO 区域的内存时，会生成一个内存读取请求事务层数据包（MemRd TLP），该数据包从主机的 RC 向下传输到器件。这个 TLP 包的目的是通知设备希望读取设备，然后设备需要尽快响应请求地址上的内容。</p>
 <p>在 PCIe 中发送和接收的所有数据传输数据包都将采用 TLP 形式。回想一下第 1 部分，这些数据包是设备之间的所有通信都在 PCIe 中发生的中心抽象。这些数据包在出现数据传输错误（类似于网络中的 TCP）的情况下是可靠的，并且可以根据需要重试/重新发送。这确保了数据传输免受 PCIe 可以达到的极高速度下发生的恶劣电气干扰。我们很快就会仔细研究 TLP 的结构，但现在只需将这些视为您在 TCP 中看到的常规网络数据包。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/1167d45f8d32476dcb144eee4e65634e.png" alt="当器件响应时，CPU 会使用器件的结果更新 register 的内容。"  />
@@ -79,8 +75,7 @@
 <h3 id="如何枚举-bar">如何枚举 BAR？</h3>
 <p>设备使用其配置空间从软件请求内存区域。在枚举时，由主机确定该区域将放置在物理内存中的位置。每个器件在其配置空间（称为“寄存器”，因此称为基址寄存器）中都有 6 个 32 位值，当枚举器件时，软件将读取和写入这些值。这些寄存器描述了器件希望分配的每个 MMIO 区域的长度和对齐要求，每个可能的 BAR 一个，总共 6 个不同的区域。如果设备希望能够将其 BAR 映射到 4GB 空间（64 位 BAR）以上，它可以将两个 32 位寄存器组合在一起，形成一个 64 位 BAR，最多只留下三个 64 位 BAR。</p>
 <p>PCIe</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/037c6e9bb852b45b9e12c1a046ceec59.png" alt="Type 0 配置空间结构，显示 6 个 BAR。"  />
@@ -100,8 +95,7 @@
 <p>由于 DMA 的复杂性和涉及的部件数量，我将尝试以最直接的方式解释 DMA，并用大量图表来显示该过程。更令人困惑的是，每个设备都有不同的 DMA 接口。没有用于执行 DMA 的通用软件接口，只有器件的设计人员知道如何告诉该器件执行 DMA。值得庆幸的是，某些设备类别使用普遍认可的接口，例如大多数 SSD 使用的 NVMe 接口或 USB 3.0 的 XHCI 接口。如果没有标准接口，则只有硬件设计人员知道设备如何执行 DMA，因此生产设备的公司或个人需要是编写设备驱动程序的人，而不是依赖与操作系统捆绑的通用驱动程序与设备通信。</p>
 <h2 id="一个简单的-dma-传输---step-by-step">一个简单的 DMA 传输 - Step by Step</h2>
 <p>我们 DMA 旅程的第一步是查看传输的初始设置。这涉及几个步骤，为即将到来的 DMA 传输准备系统内存、内核和设备。在这种情况下，我们将设置 DMA，以便读取系统 RAM 中存在的 DMA 缓冲区中的内存内容，并将其放入 Target Memory 的器件板载 RAM 中。此时我们已经选择将此内存从 DMA Buffer 读取到器件上地址为 <code>0x8000</code> 中。目标是尽快将此内存从系统内存传输到设备，以便它可以开始处理它。假设在这种情况下，内存量几 M 字节，MMIO 会太慢，但为简单起见，我们将仅显示 32 字节的内存。这种传输将是最简单的 DMA 传输类型：将内存块的已知大小和地址从系统 RAM 复制到设备 RAM。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e485c2c5093a3098acb5d4fc616de33c.png" alt=""  />
@@ -124,8 +118,7 @@
 <li>Transfer Size（传输大小） - 我们要传输的大小（以字节为单位）。</li>
 <li>Initiate Transfer（启动传输标志位）- 一旦次寄存器写入 1，器件将开始在上面给出的地址之间进行传输。通过这种方式，驱动程序可以判断设备已完成填充缓冲区并准备好开始传输。这通常被称为门铃（Door Bell）寄存器。</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8c2b333dbb59e8bb8d2a92ae5766299e.png" alt=""  />
@@ -139,8 +132,7 @@
 <li>DMA 缓冲区 - 操作系统在 <code>0x001FF000</code> 分配内存块，因此这将是我们的源地址。</li>
 </ul>
 <p>有了这些信息，驱动程序现在可以将值编程到设备中，如下所示：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d481c375d9d43db63faf509106fd6dcd.png" alt=""  />
@@ -156,8 +148,7 @@
 <h3 id="插曲快速了解-tlp">插曲：快速了解 TLP</h3>
 <p>在查看链路上的 TLP 之前，让我们仔细了解一下数据包结构本身的概览。</p>
 <p>以下是内存读取请求和响应的两个 TLP。如前所述，用于内存操作的 TLP 利用请求和响应系统。执行读取的设备将生成特定地址和长度（以 4 字节 DWORD 为单位）的读取请求 TLP，然后坐下来等待完成数据包到达包含响应数据的链路。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/8354d9b795fe77dfbf296da3509b32b7.png" alt=""  />
@@ -171,8 +162,7 @@
 <p>设备收到并处理请求后，响应数据将以 Completion TLP 的形式发送回去。完成或“响应”数据包可以而且通常会被分段为许多较小的 TLP，这些 TLP 发送整体响应的一部分。这是因为在枚举期间，已确定设备和总线可以处理最大有效载荷大小（MPS）。MPS 可根据平台和设备功能进行配置，从 128 开始，最高可达 4096 的 2 次方大小。通常，此值约为 256 字节，这意味着需要将大型读取请求拆分为许多较小的 TLP。这些数据包中的每一个都有一个字段，该字段指示完成响应的原始请求的偏移量，有效负载中是返回的数据块。</p>
 <p>有一个常见的误解，即内存 TLP 使用 BDF 来寻址数据包需要去往的位置。其实请求仅使用内存地址来指示数据包的目的地，并且设备和目标之间的桥接设备负责将该数据包发送到其正确的位置。。然而，完成数据包确实利用请求者的 BDF 将数据返回给发起请求的设备。</p>
 <p>以下是一个展示内存读取和响应过程的图表，图中展示出请求会使用一个地址来发起请求，而完成的操作会使用请求中 Request 字段的 BDF 来发送相应应答：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/7b3a9443c759cbf8fe091903bb602eaf.png" alt=""  />
@@ -180,8 +170,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/39cc0bf0067bf486aaa2062470c8e45e.png" alt=""  />
@@ -195,8 +184,7 @@
 <p>在实验中，我使用真实设备配置了如上文所示的同类通用参数，并启动了 DMA。这个设备会发送真实的 TLPs，将系统 RAM 中的内存读取到设备里。因此，你将有机会罕见地查看在执行这种 DMA 时发送的实际 TLPs 的例子，除非有分析器，否则这些在传输过程中几乎无法看到。</p>
 <p>要查看此实验，请点击此链接至配套文章：<a href="https://ctf.re/pcie/experiment/linux/keysight/protocol-analyzer/2024/03/26/pcie-experiment-1/">Experiment - Packet Dumping PCIe DMA TLPs with a Protocol Analyzer and Pcileech – Reversing Engineering for the Soul</a></p>
 <p>以下是器件生成的内存读取请求以及请求如何遍历层次结构的框图。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/d5ceb838e8b89196864f787a56d02197.png" alt=""  />
@@ -220,8 +208,7 @@
 </blockquote>
 <p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
 <p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/31/e4d729f807a08b1dab3dddb0f10c88b2.png" alt=""  />
@@ -366,8 +353,7 @@
 </span></span></code></pre></div></li>
 </ol>
 <p>以上就是大致的移植流程了。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5b3d6d12e4e9e9b2b7aa5cc5fc6c8738.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5b3d6d12e4e9e9b2b7aa5cc5fc6c8738.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/5b3d6d12e4e9e9b2b7aa5cc5fc6c8738.png" alt=""  />
@@ -402,8 +388,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make -f Makefile.cmake <span class="nv">PRODUCT</span><span class="o">=</span>totalcompute/tc2 <span class="nv">MODE</span><span class="o">=</span>debug firmware-scp_ramfw
 </span></span></code></pre></div><p>源码编译成功后，会在<code>build/tc2/GNU/debug/firmware-scp_ramfw/bin</code>目录下生成二进制文件。具体编译参数，可以参考源码根目录下的<code>user_guide</code>文档。</p>
 <h2 id="初始化流程分析">初始化流程分析</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/15/9489caa086aadd2299d862a9267ff947.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/15/9489caa086aadd2299d862a9267ff947.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/15/9489caa086aadd2299d862a9267ff947.png" alt=""  />
@@ -525,8 +510,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">list</span><span class="p">(</span><span class="s">APPEND</span> <span class="s">SCP_MODULES</span> <span class="s2">&#34;bootloader&#34;</span><span class="p">)</span><span class="err">
 </span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">list</span><span class="p">(</span><span class="s">APPEND</span> <span class="s">SCP_MODULES</span> <span class="s2">&#34;juno-soc-clock&#34;</span><span class="p">)</span><span class="err">
 </span></span></span></code></pre></div><p>编译后会在 output 文件夹中生成<code>fwk_module_idx.h</code>文件，这个文件中会包含所有模块的索引，如下：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-48-59-f81a00af1d7e54bd428cf18f77a3465e-20240729144858-cdaa85.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-48-59-f81a00af1d7e54bd428cf18f77a3465e-20240729144858-cdaa85.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/14-48-59-f81a00af1d7e54bd428cf18f77a3465e-20240729144858-cdaa85.png" alt=""  />
@@ -545,8 +529,7 @@
       <content:encoded><![CDATA[<h2 id="配置windows与开发板网络通信">配置Windows与开发板网络通信</h2>
 <h3 id="配置windows侧网卡">配置Windows侧网卡</h3>
 <p>将Windows与开发板通过USB网卡连接，开发板的网卡插口选择eth0，也就是靠近拨码开关的网口。开发板开机，Windows的设备管理器中出现以下网卡表示网卡功能正常。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/90a28f55cd3ca3039694cb1c16ddff3e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/90a28f55cd3ca3039694cb1c16ddff3e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/90a28f55cd3ca3039694cb1c16ddff3e.png" alt=""  />
@@ -566,8 +549,7 @@
 <p>万万没想到一张整年闲置的WIFI网卡竟然派上了用场。</p>
 </blockquote>
 <p>选择WIFI网卡和USB网卡，右键桥接，这样就创建一个网桥，网桥会自动获取IP地址。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/25/07fff7094057ea29a1fd3ace9bdbb33e.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/25/07fff7094057ea29a1fd3ace9bdbb33e.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/25/07fff7094057ea29a1fd3ace9bdbb33e.png" alt=""  />
@@ -626,8 +608,7 @@
 <ol>
 <li>右键Windows徽标键，打开计算机管理，找到服务和应用程序，点击服务，找到<code>NFS Server</code>，右键重启。
 <ol>
-<li><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73eea915bc0492384cdf55949db30e6.png" alt=""  />
-
+<li>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73eea915bc0492384cdf55949db30e6.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73eea915bc0492384cdf55949db30e6.png" alt=""  />
@@ -638,7 +619,6 @@
 </ol>
 </li>
 <li>点击软件的输出选项卡，点击重启服务器，如果出现如图配置表示正确启动服务：
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/8003d546a8f10b949a43f8856d6b07d6.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/8003d546a8f10b949a43f8856d6b07d6.png">
@@ -675,8 +655,7 @@
 <h3 id="常见错误">常见错误</h3>
 <h4 id="挂载时报错portmap-query-failed-rpc-timed-out">挂载时报错：portmap query failed: RPC: Timed out</h4>
 <p>点击NFS服务的端口映射页面，可以查看RPC使用的所有端口，需要将这些端口都开放，或者直接关闭防火墙。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73ecc06edeb5e50f42ee12768fd1f68.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73ecc06edeb5e50f42ee12768fd1f68.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/07/21/b73ecc06edeb5e50f42ee12768fd1f68.png" alt=""  />
@@ -941,8 +920,7 @@
 </span></span></code></pre></div><p>配置编译选项</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- menuconfig
 </span></span></code></pre></div><p>选择静态库模式，设置路径：Settings -&gt; Build static binary (no shared libs)</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-51-50-e83454415403aacffad1e9320676356e-20240607105149-9cc407.png" alt=""  />
@@ -950,8 +928,7 @@
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-52-13-e92a2a3f782236215a33b93161226d99-20240607105212-428b5c.png" alt=""  />
@@ -1033,8 +1010,7 @@
 </span></span><span class="line"><span class="cl">sleep <span class="m">2</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nb">eval</span> <span class="nv">$cmd</span>
-</span></span></code></pre></div><p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png" alt=""  />
-
+</span></span></code></pre></div><p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-24-09-3656ec35f835ab8650a4628ceac4dad8-20240618172408-48a595.png" alt=""  />
@@ -1067,7 +1043,6 @@
 <ul>
 <li>BootROM 中配置 SPI 控制器的 <code>SPIC_CSR_01</code> 寄存器的<code>spi_bus_mode</code> 位可以配置 SPI 的模式；</li>
 <li>查阅 Flash 手册，找到配置总线模式的寄存器以及操作它的命令，如 WINBOND-W25Q128JW 这款 Flash 的配置寄存器为 <code>Status Register-2</code>，Flash 的寄存器是无法直接读写的，所以需要在 Flash 手册中找到操作这个寄存器的命令，在手册的 Instructions 章节可以找到这款 Flash 的配置命令为 <code>Write Status Register-2</code>，命令码为 <code>0x31</code>，只要我们向 Flash 发送 <code>0x31</code>，就可以配置 Flash 的总线模式了。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
@@ -1076,7 +1051,6 @@
 </div>
 
 
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
@@ -1102,7 +1076,6 @@
 <p>SFDP 是 JEDEC 发布的 JESD216 的一个新标准，目前的版本号是 V1.0。简而言之，SFDP（Serial Flash Discoverable Parameters）就相当于一张存储了 FLASH 部分属性的表，此表是不占用 FLASH 本身的存储空间的。SFDP 中的信息自出厂就被固定，只供读取，开发人员可通过发送操作指令 0x5A 来读取当前 FLASH 的 SFDP 相关内容，这有利于开发人员了解 FLASH 之间的差异，提高开发效率，缩短整个开发周期。</p>
 <p>也就是只要 Flash 研发时遵循了 JESD216 这个标准，我们都可以通过发送 0x5A 这个命令码，去获取Flash相关参数。最为关键的就是其中会保存 Flash 厂商的 ID，当我们获取到 Flash 厂商的 ID 时，我们就可以根据 ID 执行不同的配置操作。</p>
 <p>对于 WINBOND-W25Q128JW 这款 Flash，在数据手册的Feature里就可以看到它是支持 SFDP 的：
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">
@@ -1320,8 +1293,7 @@
 </ul>
 <p>此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。</p>
 <h2 id="起始状态">起始状态</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
@@ -1346,8 +1318,7 @@
 </li>
 </ul>
 <p>在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 <code>0xaa</code> 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
@@ -1385,8 +1356,7 @@
       <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。 4 线制 SPI 四个信号： SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：片选信号</description>
       <content:encoded><![CDATA[<h1 id="spi-概述">SPI 概述</h1>
 <p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
@@ -1470,8 +1440,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 <p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p>
 </blockquote>
 <p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。" />
@@ -1480,8 +1449,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 
 </p>
 <p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。" />
@@ -1489,8 +1457,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出" />
@@ -1498,8 +1465,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </div>
 
 </p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。"  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。" />
@@ -1509,8 +1475,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </p>
 <h1 id="多从机配置">多从机配置</h1>
 <h2 id="标准-spi-模式">标准 SPI 模式</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
@@ -1521,8 +1486,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 <p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p>
 <p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p>
 <h2 id="菊花链模式">菊花链模式</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
@@ -1532,8 +1496,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </p>
 <p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p>
 <p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
@@ -1560,8 +1523,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 <p><strong>DDR SDRAM</strong>（Double Data Rate SDRAM）：为双信道同步动态随机存取内存，是新一代的 SDRAM 技术。DDR 内存芯片的数据预取宽度（Prefetch）为 2 bit（SDRAM 的两倍）。</p>
 <p><strong>DDR2 SDRAM</strong>（Double Data Rate Two SDRAM）：为双信道两次同步动态随机存取内存。DDR2 内存 Prefetch 又再度提升至 4 bit（DDR 的两倍）</p>
 <p><strong>DDR3 SDRAM</strong>（Double Data Rate Three SDRAM）：为双信道三次同步动态随机存取内存。DDR3 内存 Prefetch 提升至 8 bit，即每次会存取 8 bits 为一组的数据。运算频率介于 800MHz -1600MHz 之间。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
@@ -1589,8 +1551,7 @@ SanDisk 公司出产的 eMMC</p>
 <p><strong>oneNAND</strong>
 三星公司出的一种 Nand，价格贵，用的少</p>
 <p><strong>SD 卡（Secure Digital Memory Card）</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
@@ -1599,8 +1560,7 @@ SanDisk 公司出产的 eMMC</p>
 
 </p>
 <p><strong>TF 卡（TransFLash Card, MicroSD）</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
@@ -1609,8 +1569,7 @@ SanDisk 公司出产的 eMMC</p>
 
 </p>
 <p><strong>MMC 卡</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
@@ -1636,8 +1595,7 @@ SanDisk 公司出产的 eMMC</p>
 <p><code>BootLoader</code>是芯片最初运行的代码吗？当然不是，其实每一块芯片在出厂时都在其内部的<code>ROM</code>中，烧录了它最基础的软件。CPU 搬运并运行的第一条代码的默认位置，就在<code>ROM</code>的地址空间。所以一切的起始都在硬件上。</p>
 <p>以 X86 架构的鼻祖 8086 芯片为例，按下开关的一瞬间，芯片 Reset 引脚接收到了电平跳变，在一连串电路的作用下，代码段寄存器<code>CS</code>恢复成<code>0XFFFF</code>，指令指针寄存器<code>IP</code>恢复成<code>0X0000</code>，他们组合成 20 位的地址正好等于 ROM 中存放第一条代码的位置。之后取出这里的指令在跳转到别处。</p>
 <p>ARM 架构的芯片也是类似的过程，对于 32 位的芯片，通电后，<code>PC</code>指针寄存器复位至零地址，随后从中断向量表表头的 reset 向量处获取下一个跳转的地址。这时候的代码已经以二进制形式存储，处理器可以直接搬到自身缓存中运行。有了这部分代码，就能跳转到存放有更多更复杂的代码的地址。执行硬件自检，基本的初始化操作，提供基础的输入输出支持。之后可以将操作系统从外部的存储空间加载到内部。代码就这样接力式的流转起来。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png" alt=""  />
@@ -1646,8 +1604,7 @@ SanDisk 公司出产的 eMMC</p>
 
 </p>
 <p>所以我们把出厂就写在<code>ROM</code>里，负责启动后续用户软件的软件，称为<code>Boot ROM</code>或者<code>ROM Code</code>。现在不一定是用只读存储器（Read Only Memory），但是至少是一块掉电不易失的存储器，现在主要用<code>EEPROM</code>，<code>NOR Flash</code>。我们一般没有权限修改它，但是它也不完全是黑盒，大部分芯片都会有外部启动配置引脚，通常是以拨码快关的形式。对于 PC 机来说，<code>Boot ROM</code>就是我们常说的<code>BIOS</code>，它也有启动配置途径。而且提供了交互界面，用于配置部分功能和选择后续的引导设备。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png" alt=""  />
@@ -1659,8 +1616,7 @@ SanDisk 公司出产的 eMMC</p>
 <p>这些事其实<code>Boot ROM</code>它也能做，但是<code>Boot ROM</code>实现的功能和配置方法不灵活，但是<code>Bootloader</code>是开发人员可以而完全控制的引导代码。</p>
 <p>在设计<code>Bootloader</code>时，<code>MCU</code>的引导步骤就开始和嵌入式 Linux 或者 PC 有所不同。这一定程度与芯片架构所采用的的存储方案有关。</p>
 <p>先来说<code>MCU</code>，与<code>SOC</code>相比<code>MCU</code>的主要特征是单核和或多核同构的微处理器，单核或多核同构，主频 &lt; 1GHz，没有<code>MMU</code>内存管理单元，只能运行实时操作系统。常见<code>MCU</code>内核：</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png" alt=""  />
@@ -1670,8 +1626,7 @@ SanDisk 公司出产的 eMMC</p>
 </p>
 <p>程序的主要运行介质为<code>NOR Flash</code>，因为和<code>RAM</code>一样有分离的地址线和数据线。并且可以以字节长度精确寻址，所以程序不需要拷贝到<code>RAM</code>中运行的。</p>
 <p>以英飞凌家的 TC27x 系列 MCU 为例，上电后的默认取址位置是<code>0x8FFF 8000</code>，这就是他的<code>Boot ROM</code>在<code>NorFlash</code>中的地址。并且这块<code>Boot Rom</code>分为<code>SSW</code>，<code>BSL</code>，<code>TF</code>。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png" alt=""  />
@@ -1688,8 +1643,7 @@ SanDisk 公司出产的 eMMC</p>
 <li>如有必要，还会开发一些基础诊断服务，串口交互程序等等。</li>
 </ul>
 <p>那么运行 Linux 的<code>SOC</code>和 PC 的这一过程有何不同呢。还是先看存储方案，运行嵌入式 Linux 的 SoC。一般将它的操作系统，文件系统和他的应用程序放在<code>nand flash</code>中。运行代码前，现将代码搬运到<code>SRAM</code>中，相比<code>MCU</code>多了一道步骤。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png" alt=""  />
@@ -1699,8 +1653,7 @@ SanDisk 公司出产的 eMMC</p>
 </p>
 <p>对于<code>SOC</code>的<code>Boot ROM</code> 和 PC 的<code>BIOS</code>而言，他们结束运行前的最终任务，是将某些代码从<code>nand flash</code>搬运到<code>SRAM</code>中，其中最重要的内容就是<code>Boot Loader</code>。</p>
 <p>而一般<code>SOC</code>的<code>Bootloader</code>，又分为<code>SPL</code>（Secondary Program Loader）和<code>uBOOT</code>两个阶段。<code>SPL</code>的 Secondary 就是相对于<code>BootROM</code>而言，他就像是接力赛中的第二棒选手。<code>SPL</code>会初始化更大空间的外部<code>DRAM</code>，再把<code>uBoot</code>搬运到外部<code>DRAM</code>中去运行。<code>uBoot</code>作为第三棒选手，开始运行它的初始化程序。之后再根据系统环境变量，将 OS 内核搬运到外部<code>DRAM</code>中去运行。OS 再完成根文件系统的加载等等等等。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif" alt=""  />
@@ -1731,8 +1684,7 @@ $$</p>
 $$</p>
 <p>假设定时器时钟频率为<code>1MHz</code>，那定时<code>1ms</code>该如何做？计数 1000 次即可。最大的计数值就是<strong>自动重载值</strong>，是我们需要设置的第二个参数。定时器被打开后，计数值就增加，一旦达到自动重载值就会出发定时器溢出中断，就实现了定时<code>1ms</code>。</p>
 <h2 id="计数模式">计数模式</h2>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png" alt=""  />
@@ -1751,8 +1703,7 @@ $$</p>
 <p>向下计数：计数器从自动装入的值 (TIMx_ARR) 开始向下计数到 0，然后从自动装入的值重新开始，并产生一个计数器向下溢出事件。</p>
 </li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png" alt=""  />

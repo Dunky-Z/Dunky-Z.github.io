@@ -19,8 +19,7 @@
 <p>1985 年，几家半导体厂商为了解决板级测试的问题，成立了 Joint Test Action Group（JTAG）联合测试行动小组，他们希望将测试点和测试电路集成在芯片内部引脚处。同时，留出一个统一协议的接口，大家都能通过这个接口来访问芯片的输入与输出状态。这样就省去了板级测试是的物理接触，同时还能进行逻辑性调试。后来 IEEE 组织，将这个方案制定成了标准 IEEE 1149.1，这就是现在我们常听到的 JTAG 调试。</p>
 <h2 id="边界扫描技术">边界扫描技术</h2>
 <p>实现 JTAG 调试最重要的一个技术就是边界扫描技术，核心思想是<strong>给芯片的每一个输入输出引脚，添加一个移位寄存器单元，也称为边界扫描单元</strong>（Boundary Scan Cell，BSC）。通过它一边可以实现对芯片输出数据的截取，另一边可以完成对输入数据的替代。正常运行状态下，这些寄存器又是透明般的存在。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141648874.gif" alt=""  />
@@ -29,8 +28,7 @@
 
 </p>
 <p>这些位于引脚边界的移位寄存器，还可以串在一起，形成一条边界扫描链，以串行的方式从外部更新扫描单元上的数据，以及对外输出边界扫描单元捕获的数据。如果板上有多个这样的芯片，他们还能以菊花链的形式串联在一起，这样就大大方便了测试的过程。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141654770.gif" alt=""  />
@@ -46,8 +44,7 @@
 <li>TMS(Test Mode Select)</li>
 <li>TRST(Test Reset)：可选，用于复位</li>
 </ul>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141655524.png" alt=""  />
@@ -61,7 +58,6 @@
 <blockquote>
 <p>补充：
 如果芯片支持 JTAG 调试，那么芯片上就必须有上述的四个接口，TDI，TDO，TCLK，TMS。
-<img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141725205.png" alt=""  />
 
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141725205.png">
@@ -90,8 +86,7 @@ GDB 与 OpenOCD 通过一些远程协议，如 TCP/IP，进行通信。这样就
 <p>因为每打一个断点，都需要宏单元相应的寄存器来保存地址信息。而寄存器数量是有限的，所以调试软件一旦和芯片建立起了连接，就会通过上述的另外一条控制寄存器获得该硬件断点宏单元所支持的最大断点数，这样你在调试过程中如果断点打多了，调试器就会报错。</p>
 <h2 id="为什么调试器能够烧录程序呢">为什么调试器能够烧录程序呢？</h2>
 <p>正常情况下，CPU 内核通过内部的系统总线，从 FLASH 或者 RAM 中获取运行的指令，交换数据，并在一定的驱动程序下，实现对 FLASH 的擦除和写入操作。为了把指令和数据直接给 CPU 内核，我们还需要定义一条扫描链，这条扫描链直接在系统总线上开了一个口子，通过上位机的调试信号，把相关的操作指令直接传到总线上，供 CPU 内核取用。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208141752418.gif" alt=""  />
@@ -130,8 +125,7 @@ GDB 与 OpenOCD 通过一些远程协议，如 TCP/IP，进行通信。这样就
 <p><strong>DDR SDRAM</strong>（Double Data Rate SDRAM）：为双信道同步动态随机存取内存，是新一代的 SDRAM 技术。DDR 内存芯片的数据预取宽度（Prefetch）为 2 bit（SDRAM 的两倍）。</p>
 <p><strong>DDR2 SDRAM</strong>（Double Data Rate Two SDRAM）：为双信道两次同步动态随机存取内存。DDR2 内存 Prefetch 又再度提升至 4 bit（DDR 的两倍）</p>
 <p><strong>DDR3 SDRAM</strong>（Double Data Rate Three SDRAM）：为双信道三次同步动态随机存取内存。DDR3 内存 Prefetch 提升至 8 bit，即每次会存取 8 bits 为一组的数据。运算频率介于 800MHz -1600MHz 之间。</p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205211606655.png" alt=""  />
@@ -159,8 +153,7 @@ SanDisk 公司出产的 eMMC</p>
 <p><strong>oneNAND</strong>
 三星公司出的一种 Nand，价格贵，用的少</p>
 <p><strong>SD 卡（Secure Digital Memory Card）</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192308956.png" alt=""  />
@@ -169,8 +162,7 @@ SanDisk 公司出产的 eMMC</p>
 
 </p>
 <p><strong>TF 卡（TransFLash Card, MicroSD）</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192309547.png" alt=""  />
@@ -179,8 +171,7 @@ SanDisk 公司出产的 eMMC</p>
 
 </p>
 <p><strong>MMC 卡</strong></p>
-<p><img loading="lazy" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
-
+<p>
 <div class="post-img-view">
 <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png">
 <img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205192312777.png" alt=""  />
