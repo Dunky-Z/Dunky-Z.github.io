@@ -26,13 +26,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <p>转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的<strong>虚拟地址的长度</strong>。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。</p>
 <p>如何开启分页机制呢？RISC-V 的分页机制是通过 satp（Supervisor address translation and protection）寄存器来开启的。satp 寄存器字段分布如下：</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <ul>
 <li>Mode 字段可以决定是否开启分页以及分页级数。Mode=0 时，不开启分页；Mode=8 时，开启 Sv39 分页机制。</li>
 <li>ASID（Address Space Identifier，地址空间标识符）域是可选的，它可以用来降低上下文切换的开销。目前我们暂不考虑这个字段的作用。</li>
@@ -41,13 +71,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <h1 id="sv39-多级页表机制">SV39 多级页表机制</h1>
 <h2 id="页表项描述">页表项描述</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>Sv39 页表项（page-table entry，PTE）的布局，从左到右分别包含如下所述的域：</p>
 <ul>
 <li>V 位决定了该页表项的其余部分是否有效 (V=1 时有效)。若 V=0，则任何遍历到此页表项的虚址转换操作都会导致页错误。</li>
@@ -61,13 +121,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ul>
 <h2 id="虚拟地址转换物理地址过程">虚拟地址转换物理地址过程</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>当 satp 寄存器中开启分页时，S 模式和 U 模式中访存的地址都会被视为虚拟地址，需要将其转换为物理地址。虚拟地址转换物理地址的过程如下：</p>
 <ul>
 <li>从 satp 寄存器中读取 PPN，得到根页表的物理地址，为了表述方便，我们将其记做三级页表基地址 satp.PPN；</li>
@@ -313,22 +403,82 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <h2 id="什么是虚拟寻址">什么是虚拟寻址？</h2>
 <p>如果主存被分为长度为$M$的单字节大小的数组，每个字节都对应一个物理地址，CPU 通过这个唯一的地址访问主存，这样的方式就是<strong>物理寻址</strong>。
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png" alt=""  />
-</a>
-</div>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212125636.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html>
 现代处理器使用<strong>虚拟寻址</strong>的方式。CPU 通过生成的<strong>虚拟地址</strong>来访问内存，这个地址在送到内存之前会被转换成<strong>物理地址</strong>。这个过程称为<strong>地址翻译</strong>。CPU 芯片上叫做<strong>内存管理单元</strong>（Memory Management Unit, MMU）的专用硬件，利用存放在主存中的<strong>查询表</strong>来动态翻译虚拟地址，该表的内容由操作系统管理。
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202207212128486.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <h2 id="虚拟内存作为缓存的工具">虚拟内存作为缓存的工具</h2>
 <p>概念上而言，虚拟内存被组织成为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组，也就是<strong>字节数组</strong>。每个字节都有一个唯一的虚拟地址作为数组的索引。磁盘上活动的数组内容被缓存在主存中。在存储器结构中，较低层次上的磁盘的数据被分割成块，这些块作为和较高层次的主存之间的传输单元。<strong>主存作为虚拟内存的缓存</strong>。</p>
 <p>虚拟内存被分割为大小固定的块，这些块叫<strong>虚拟页</strong>（Virtual Page，VP），类似的物理内存也有<strong>物理页</strong>(Physical Page, PP)。虚拟页有三种不同的状态：</p>
@@ -354,45 +504,165 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <li>地址：表示 DRAM 中相应的物理页的起始位置，这个物理页中缓存了该虚拟页。</li>
 </ul>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208122157633.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <h3 id="页命中与缺页">页命中与缺页</h3>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png" alt=""  />
-</a>
-</div>
 
-l</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208130940717.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html>l</p>
 <p>当 CPU 访问已被缓存的地址时，就叫做<strong>页命中</strong>。如访问上图 VP2，虚拟地址索引到 PTE2，此时有效位为 1，地址翻译硬件就知道该地址被缓存了。</p>
 <p>当 CPU 访问未被缓存的地址时，会导致<strong>缺页</strong>。如访问上图的 VP3，虚拟地址索引到 PTE3，此时有效位为 0，地址翻译硬件就知道该地址未被缓存，需要从磁盘中读取。</p>
 <p>这时会触发一个<strong>缺页异常</strong>。<strong>缺页异常调用内核中的缺页异常处理程序</strong>，该程序会选择一个牺牲页，在此例中就是存放在 PP 3 中的 VP 4。如果 VP 4 已经被修改了，那么内核就会将它复制回磁盘。无论哪种情况，内核都会修改 VP 4 的页表条目，反映出 VP 4 不再缓存在主存中这一事实。</p>
 <p>接下来，内核从磁盘复制 VP 3 到内存中的 PP 3，更新 PTE 3，随后返回。当异常处理程序返回时，它会<strong>重新启动导致缺页的指令</strong>，该指令会把导致缺页的虚拟地址重发送到地址翻译硬件。但是现在，VP 3 已经缓存在主存中了，那么页命中也能由地址翻译硬件正常处理了。图 9-7 展示了在缺页之后我们的示例页表的状态。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131434643.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>在虚拟内存的习惯说法中，块被称为页。在磁盘和内存之间传送页的活动叫做<strong>交换</strong>（swapping）或者<strong>页面调度</strong>（paging）。页从磁盘换入（或者页面调入）DRAM 和从 DRAM 换出（或者页面调出）磁盘。一直等待，直到最后时刻，也就是当有不命中发生时，才换入页面的这种策略称为按需页面调度（demand paging）。</p>
 <h2 id="虚拟内存作为内存管理的工具">虚拟内存作为内存管理的工具</h2>
 <p>之前我们只讨论了一个页表的情况，但是实际上操作系统为<strong>每个进程都分配了一个独立的页表</strong>。多个虚拟页面可以映射到同一个共享物理页面上。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131441255.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>按需页面调度和独立的虚拟地址空间的结合，对系统中内存的使用和管理造成了深远的影响。特别地，VM 简化了链接和加载、代码和数据共享，以及应用程序的内存分配。</p>
 <ul>
 <li><strong>简化链接</strong>。独立的地址空间允许每个进程的内存映像使用相同的基本格式，而<strong>不管代码和数据实际存放在物理内存的何处</strong>。例如，一个给定的 Linux 系统上的每个进程都使用类似的内存格式。对于 64 位地址空间，代码段总是从虚拟地址 0x400000 开始。数据段跟在代码段之后，中间有一段符合要求的对齐空白。栈占据用户进程地址空间最高的部分，并向下生长。这样的一致性极大地简化了链接器的设计和实现，<strong>允许链接器生成完全链接的可执行文件，这些可执行文件是独立于物理内存中代码和数据的最终位置的</strong>。</li>
@@ -403,13 +673,43 @@ l</p>
 <h2 id="虚拟内存作为内存保护的工具">虚拟内存作为内存保护的工具</h2>
 <p>操作系统中的用户程序不应该修改只读的代码段，也不应该读取或者修改内核中的代码和数据结构或者访问私有的以及其他的进程的内存，如果无法对用户进程的内存访问进行限制，攻击者就可以访问和修改其他进程的内存影响系统的安全。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131522719.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>通过在页表中添加页面的保护属性，可以让操作系统在页面被访问时进行检查，如果页面被保护为只读，则操作系统会报错。</p>
 <p>在图 9-10 这个示例中，每个 PTE 中已经添加了三个许可位。SUP 位表示进程是否必须运行在内核（超级用户）模式下才能访问该页。运行在内核模式中的进程可以访问任何页面，但是运行在用户模式中的进程只允许访问那些 SUP 为 0 的页面。READ 位和 WRITE 位控制对页面的读和写访问。例如，如果进程 i 运行在用户模式下，那么它有读 VP 0 和读写 VP 1 的权限。然而，不允许它访问 VP 2。</p>
 <p>如果一条指令违反了这些许可条件，那么 CPU 就触发一个一般保护故障，将控制传递给一个内核中的异常处理程序。Linux shell 一般将这种异常报告为<strong>段错误</strong>（segmentation fault）。</p>
@@ -496,22 +796,82 @@ l</p>
 </tbody>
 </table>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527131.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>图 9-12 展示了 MMU 如何利用页表来实现地址翻译。CPU 中的一个控制寄存器，<strong>页表基址寄存器</strong>（Page Table Base Register，PTBR）指向当前页表。$n$ 位的虚拟地址包含两个部分：一个 $p$ 位的<strong>虚拟页面偏移</strong>（Virtual Page Offset，VPO）和一个$\small (n-p)$位的<strong>虚拟页号</strong>（Virtual Page Number，VPN）。MMU 利用 VPN 来选择适当的 PTE。例如，VPN 0 选择 PTE 0，VPN 1 选择 PTE 1，以此类推。将页表条目中<strong>物理页号</strong>（Physical Page Number，PPN）和虚拟地址中的 VP。串联起来，就得到相应的物理地址。注意，因为物理和虚拟页面都是 P 字节的，所以<strong>物理页面偏移（Physical Page Offset，PPO）和 VPO 是相同的</strong>。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131527491.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>图 9-13a 展示了当页面命中时，CPU 硬件执行的步骤。</p>
 <ul>
 <li>第 1 步：处理器生成一个
@@ -533,13 +893,43 @@ l</p>
 <p>每次 CPU 访问一个虚拟地址，MMU 就必须查找 PTE，以便将虚拟地址翻译为物理地址。在最糟糕的情况下，这会要求从内存多取一次数据，代价是几十到几百个周期。如果 PTE 碰巧缓存在 L1 中，那么开销就下降到 1 个或 2 个周期。为了消除这样的开销，在 MMU 中包括了一个关于 PTE 的小的缓存，称为<strong>翻译后备缓冲器</strong>（Translation Lookaside Buffer，TLB）。</p>
 <p>TLB 是一个小的、虚拟寻址的缓存，其中<strong>每一行都保存着一个由单个 PTE 组成的块</strong>。TLB 通常有高度的相联度。如图 9-15 所示，用于组选择和行匹配的索引和标记字段是从虚拟地址中的虚拟页号中提取出来的。如果 TLB 有$\small T = 2^t$个组，那么 <strong>TLB 索引</strong>（TLBI）是由 VPN 的 $t$ 个最低位组成的，而 <strong>TLB 标记</strong>（TLBT）是由 VPN 中剩余的位组成的。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131546427.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>图 9-16a 展示了当 TLB 命中时（通常情况）所包括的步骤。这里的关键点是，所有的地址翻译步骤都是在芯片上的 MMU 中执行的，因此非常快。</p>
 <ul>
 <li>第 1 步：CPU 产生一个虚拟地址。</li>
@@ -548,13 +938,43 @@ l</p>
 <li>第 5 步：高速缓存/主存将所请求的数据字返回给 CPU。</li>
 </ul>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131547576.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>当 TLB 不命中时，MMU 必须从 L1 缓存中取出相应的 PTE，如图 9-16b 所示。新取出的 PTE 存放在 TLB 中，可能会覆盖一个已经存在的条目。</p>
 <h3 id="多级页表">多级页表</h3>
 <p>32 位环境下，虚拟地址空间共 4GB。如果分成 4KB 一个页，那就是 1M 个页。每个页表项需要 4 个字节来存储，那么整个 4GB 空间的映射就需要 4MB 的内存来存储映射表。如果每个进程都有自己的映射表，100 个进程就需要 400MB 的内存。对于内核来讲，有点大了。</p>
@@ -563,25 +983,85 @@ l</p>
 <p>页目录有 1K 项，用 10 位就可以表示访问页目录的哪一项。这一项其实对应的是一整页的页表项，也即 4K 的页表项。每个页表项也是 4 个字节，因而一整页的页表项是 1K 个。再用 10 位就可以表示访问页表项的哪一项，页表项中的一项对应的就是一个页，是存放数据的页，这个页的大小是 4K，用 12 位可以定位这个页内的任何一个位置。</p>
 <p>这样加起来正好 32 位，也就是用前 10 位定位到页目录表中的一项。将这一项对应的页表取出来共 1k 项，再用中间 10 位定位到页表中的一项，将这一项对应的存放数据的页取出来，再用最后 12 位定位到页中的具体位置访问数据。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211129192245.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>你可能会问，如果这样的话，映射 4GB 地址空间就需要 4MB+4KB 的内存，这样不是更大 了吗？当然如果页是满的，当时是更大了，但是，我们往往不会为一个进程分配那么多内 存。
 比如说，上面图中，我们假设只给这个进程分配了一个数据页。如果只使用页表，也需要完 整的 1M 个页表项共 4M 的内存，但是如果使用了页目录，页目录需要 1K 个全部分配，占用内存 4K，但是里面只有一项使用了。到了页表项，只需要分配能够管理那个数据页的页表项页就可以了，也就是说，最多 4K，这样内存就节省多了</p>
 <p>当然对于 64 位的系统，两级肯定不够了，就变成了四级目录，分别是全局页目录项 PGD（Page Global Directory）、上层页目录项 PUD（Page Upper Directory）、中间
 页目录项 PMD（Page Middle Directory）和页表项 PTE（Page Table Entry）。也就是一级页表，二级页表，三级页表，四级页表。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202208131820091.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 ]]></content:encoded>
     </item>
   </channel>

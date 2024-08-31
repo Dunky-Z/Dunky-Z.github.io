@@ -98,13 +98,43 @@
 <p>为了避免消耗过多资源并影响 Gitea 实例，Gitea 和 Runner 一般运行在不同的机器上。但是同一个 Runner 启动的容器一定在同一台机器上。我这里演示的统一都在同一台 x86 架构的机器上。</p>
 <p>因为都运行在 x86 架构的机器上，所有执行任务的 Container 也一定是 x86 架构的。但是我们了解了上面的 binfmt_misc 机制后，就可以在容器内部通过注册不同架构的二进制格式，从而在 x86 架构的机器上运行不同架构的二进制文件。就可以实现多架构应用构建。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/17-49-15-4cd035ef3794eae7de157dd25af6148e-giteaactionsrunner-5cf8e3.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>打开 Gitea 的 tea 的项目源码找到它的 release <a href="https://gitea.com/gitea/tea/src/commit/c74177556b8e63252491003f1cbcd3882bfff15d/.gitea/workflows/release-nightly.yml#L53">workflow 文件</a>，可以看到它使用了<code>docker/setup-qemu-action@v3</code>这个 action 来实现多架构构建。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl">- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Set up QEMU</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">docker/setup-qemu-action@v3</span><span class="w">

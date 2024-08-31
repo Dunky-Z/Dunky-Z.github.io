@@ -18,13 +18,43 @@
 <p>目前主流电脑的 CPU 都是多核心的，多核心的有点就是在不能提升 CPU 主频后，通过增加核心来提升 CPU 吞吐量。每个核心都有自己的 L1 Cache 和 L2 Cache，只是共用 L3 Cache 和主内存。每个核心操作是独立的，每个核心的 Cache 就不是同步更新的，这样就会带来缓存一致性（Cache Coherence）的问题。</p>
 <p>举个例子，如图：
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>有 2 个 CPU，主内存里有个变量<code>x=0</code>。CPU A 中有个需要将变量<code>x</code>加<code>1</code>。CPU A 就将变量<code>x</code>加载到自己的缓存中，然后将变量<code>x</code>加<code>1</code>。因为此时 CPU A 还未将缓存数据写回主内存，CPU B 再读取变量<code>x</code>时，变量<code>x</code>的值依然是<code>0</code>。</p>
 <p>这里的问题就是所谓的缓存一致性问题，因为 CPU A 的缓存与 CPU B 的缓存是不一致的。</p>
 <h2 id="如何解决缓存一致性问题">如何解决缓存一致性问题</h2>

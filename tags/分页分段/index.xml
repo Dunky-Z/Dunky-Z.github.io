@@ -26,13 +26,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <p>转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的<strong>虚拟地址的长度</strong>。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。</p>
 <p>如何开启分页机制呢？RISC-V 的分页机制是通过 satp（Supervisor address translation and protection）寄存器来开启的。satp 寄存器字段分布如下：</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/5d1ec6e9adaf743f7c9abc177cd12eb1.png" alt=""  title="RV64 架构下的 satp 寄存器" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <ul>
 <li>Mode 字段可以决定是否开启分页以及分页级数。Mode=0 时，不开启分页；Mode=8 时，开启 Sv39 分页机制。</li>
 <li>ASID（Address Space Identifier，地址空间标识符）域是可选的，它可以用来降低上下文切换的开销。目前我们暂不考虑这个字段的作用。</li>
@@ -41,13 +71,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 <h1 id="sv39-多级页表机制">SV39 多级页表机制</h1>
 <h2 id="页表项描述">页表项描述</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/86e06238c562bdd238e868fcd819df3c.png" alt=""  title="Sv39 页表项" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>Sv39 页表项（page-table entry，PTE）的布局，从左到右分别包含如下所述的域：</p>
 <ul>
 <li>V 位决定了该页表项的其余部分是否有效 (V=1 时有效)。若 V=0，则任何遍历到此页表项的虚址转换操作都会导致页错误。</li>
@@ -61,13 +121,43 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ul>
 <h2 id="虚拟地址转换物理地址过程">虚拟地址转换物理地址过程</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/09/05/48e6ce48ffb827a10371344ad07324c2.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>当 satp 寄存器中开启分页时，S 模式和 U 模式中访存的地址都会被视为虚拟地址，需要将其转换为物理地址。虚拟地址转换物理地址的过程如下：</p>
 <ul>
 <li>从 satp 寄存器中读取 PPN，得到根页表的物理地址，为了表述方便，我们将其记做三级页表基地址 satp.PPN；</li>

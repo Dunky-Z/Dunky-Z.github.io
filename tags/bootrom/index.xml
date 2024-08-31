@@ -32,21 +32,81 @@
 <li>BootROM 中配置 SPI 控制器的 <code>SPIC_CSR_01</code> 寄存器的<code>spi_bus_mode</code> 位可以配置 SPI 的模式；</li>
 <li>查阅 Flash 手册，找到配置总线模式的寄存器以及操作它的命令，如 WINBOND-W25Q128JW 这款 Flash 的配置寄存器为 <code>Status Register-2</code>，Flash 的寄存器是无法直接读写的，所以需要在 Flash 手册中找到操作这个寄存器的命令，在手册的 Instructions 章节可以找到这款 Flash 的配置命令为 <code>Write Status Register-2</code>，命令码为 <code>0x31</code>，只要我们向 Flash 发送 <code>0x31</code>，就可以配置 Flash 的总线模式了。
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  />
-</a>
-</div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html>
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  />
-</a>
-</div>
-
-</li>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></li>
 <li>如何向 Flash 发送指令？需要将真正要发送的指令写入 SPI 的寄存器<code>SPIC_CSR_06</code>，该寄存器的各个 Bit 可以配置命令码，命令类型，命令是否有效等信息。我们将之前的命令码<code>0x31</code>写入到<code>SPIC_CSR_06</code>的<code>command_code</code>位，然后将<code>SPIC_CSR_06</code>的<code>command_type</code>位设置为<code>write status register</code>，SPI 就会自动将这些信息发送给 Flash。Flash 接收到命令后，会根据命令码执行配置寄存器的操作。</li>
 </ul>
 </li>
@@ -65,13 +125,43 @@
 <p>也就是只要 Flash 研发时遵循了 JESD216 这个标准，我们都可以通过发送 0x5A 这个命令码，去获取Flash相关参数。最为关键的就是其中会保存 Flash 厂商的 ID，当我们获取到 Flash 厂商的 ID 时，我们就可以根据 ID 执行不同的配置操作。</p>
 <p>对于 WINBOND-W25Q128JW 这款 Flash，在数据手册的Feature里就可以看到它是支持 SFDP 的：
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 ]]></content:encoded>
     </item>
     <item>
@@ -116,13 +206,43 @@
 <p>此时各个器件的输出级场效应管均处在截止状态，即释放总线，由两条信号线各自的上拉电阻把电平拉高。</p>
 <h2 id="起始状态">起始状态</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/e9d2b88fa97d66c8a93d089299d6f636.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <ul>
 <li>SCL 为高电平，SDA 由高电平变为低电平</li>
 </ul>
@@ -141,13 +261,43 @@
 </ul>
 <p>在 IIC 总线上传送的每一位数据都有一个时钟脉冲相对应 (或同步控制)，即在 SCL 串行时钟的配合下，数据在 SDA 上从高位向低位依次串行传送每一位的数据。进行数据传送时，在 SCL 呈现高电平期间，SDA 上的电平必须保持稳定，低电平为数据 0，高电平为数据 1。只有在 SCL 为低电平期间，才允许 SDA 上的电平改变状态。下图是 <code>0xaa</code> 在 IIC 总线上有效传输 (有效传输是指第 9 个时钟的高电平期间，从机给主机反馈了一个有效的应答位 0) 的图示</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/d851ded7e34114e925809dbcf33fa894.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <blockquote>
 <p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p>
 </blockquote>
@@ -175,17 +325,47 @@
       <link>https://lifeislife.cn/posts/spi%E5%8D%8F%E8%AE%AE/</link>
       <pubDate>Tue, 19 Jul 2022 14:23:40 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/spi%E5%8D%8F%E8%AE%AE/</guid>
-      <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。 4 线制 SPI 四个信号： SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：片选信号</description>
+      <description>SPI 概述 SPI 是一种同步的、全双工的、高速的串行通信总线。 &lt;!DOCTYPE html&gt; Responsive Image 4 线制 SPI 四个信号： SCLK：串行时钟信号，由主设备产生，用于同步数据传输。 CS：</description>
       <content:encoded><![CDATA[<h1 id="spi-概述">SPI 概述</h1>
 <p>SPI 是一种同步的、全双工的、高速的串行通信总线。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/19-17-11-68acbe1aebbf2173bbc3401dffd69c5a-20230814191709-b01232.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>4 线制 SPI 四个信号：</p>
 <ul>
 <li>SCLK：串行时钟信号，由主设备产生，用于同步数据传输。</li>
@@ -263,69 +443,279 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </blockquote>
 <p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-15-5c6c2c600194fb53f85df52262dad7ef-20230815085012-956ab0.png" alt=""  title=" SPI 模式 0 ，CPOL=0 ，CPHA=0 ： CLK 空闲状态 =低电平，数据在上升沿采样，并在下降沿移出。" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>下图给出了 SPI 模式 1 的时序图。在此模式下，时钟极性为 0，表示时钟信号的空闲状态为低电平。此模式下的时钟相位为 1，表示数据在下降沿采样（由橙色虚线显示），并且数据在时钟信号的上升沿移出（由蓝色虚线显示）。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-28-a01e2572490707cc3b3a2cbad4e05533-20230815085026-b1efe3.png" alt=""  title="SPI 模式 1 ， CPOL = 0 ， CPHA = 1 ： CLK 空闲状态  = 低电平，数据在下降沿采样， 并在上升沿移出。" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-42-dba0e3a19915b00ed54953a271095f0a-20230815085039-cbaff8.png" alt=""  title="SPI 模式 2 ， CPOL = 1 ， CPHA = 1 ： CLK 空闲状态  = 高电平，数据在下降沿采样， 并在上升沿移出" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。" />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-50-57-3256fcb2422ad57e875cfbeb87d64b7b-20230815085056-9b7476.png" alt=""  title="SPI 模式 3 ， CPOL=1 ， CPHA=0：CLK空闲状态 =高电平，数据在上升沿采样，并在下降沿移出。" style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <h1 id="多从机配置">多从机配置</h1>
 <h2 id="标准-spi-模式">标准 SPI 模式</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/08-59-19-58306989e27c67dfcffff44c1ed40855-20230815085917-6b0c7d.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>在常规模式下，主机需要为每个从机提供单独的片选信号。一旦主机使能（拉低）片选信号，MOSI/MISO 线上的时钟和数据便可用于所选的从机。如果使能多个片选信号，则 MISO 线上的数据会被破坏，因为主机无法识别哪个从机正在传输数据。</p>
 <p>从上图可以看出，随着从机数量的增加，来自主机的片选线的数量也增加。这会快速增加主机需要提供的输入和输出数量，并限制可以使用的从机数量。可以使用其他技术来增加常规模式下的从机数量，例如使用多路复用器产生片选信号。</p>
 <h2 id="菊花链模式">菊花链模式</h2>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/09-00-50-8735cd63c5a6e4f29f2c92bef5391529-20230815090047-fb7f9d.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>在菊花链模式下，所有从机的片选信号连接在一起，数据从一个从机传播到下一个从机。在此配置中，所有从机同时接收同一 SPI 时钟。来自主机的数据直接送到第一个从机，该从机将数据提供给下一个从机，依此类推。</p>
 <p>使用该方法时，由于数据是从一个从机传播到下一个从机，所以传输数据所需的时钟周期数与菊花链中的从机位置成比例。为使第 3 个从机能够获得数据，需要 24 个时钟脉冲，而常规 SPI 模式下只需 8 个时钟脉冲。下图显示了时钟周期和通过菊花链的数据传播。并非所有 SPI 器件都支持菊花链模式。请参阅产品数据手册以确认菊花链是否可用。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/10-38-26-69352144e54b0d62f2077c7e94a2a32a-20230815103825-b99e54.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <h1 id="spi-实现">SPI 实现</h1>
 <h1 id="参考资料">参考资料</h1>
 <p><a href="https://www.analog.com/cn/analog-dialogue/articles/introduction-to-spi-interface.html">SPI 接口简介 | 亚德诺半导体</a></p>
@@ -345,44 +735,164 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 <p>以 X86 架构的鼻祖 8086 芯片为例，按下开关的一瞬间，芯片 Reset 引脚接收到了电平跳变，在一连串电路的作用下，代码段寄存器<code>CS</code>恢复成<code>0XFFFF</code>，指令指针寄存器<code>IP</code>恢复成<code>0X0000</code>，他们组合成 20 位的地址正好等于 ROM 中存放第一条代码的位置。之后取出这里的指令在跳转到别处。</p>
 <p>ARM 架构的芯片也是类似的过程，对于 32 位的芯片，通电后，<code>PC</code>指针寄存器复位至零地址，随后从中断向量表表头的 reset 向量处获取下一个跳转的地址。这时候的代码已经以二进制形式存储，处理器可以直接搬到自身缓存中运行。有了这部分代码，就能跳转到存放有更多更复杂的代码的地址。执行硬件自检，基本的初始化操作，提供基础的输入输出支持。之后可以将操作系统从外部的存储空间加载到内部。代码就这样接力式的流转起来。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>所以我们把出厂就写在<code>ROM</code>里，负责启动后续用户软件的软件，称为<code>Boot ROM</code>或者<code>ROM Code</code>。现在不一定是用只读存储器（Read Only Memory），但是至少是一块掉电不易失的存储器，现在主要用<code>EEPROM</code>，<code>NOR Flash</code>。我们一般没有权限修改它，但是它也不完全是黑盒，大部分芯片都会有外部启动配置引脚，通常是以拨码快关的形式。对于 PC 机来说，<code>Boot ROM</code>就是我们常说的<code>BIOS</code>，它也有启动配置途径。而且提供了交互界面，用于配置部分功能和选择后续的引导设备。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>除了芯片自带的<code>Boot ROM</code>，还需要再给自己实际的应用程序，写一个二次引导代码或者 N 次引导代码，用作操作系统，文件系统加载等等。我们所说的<code>Bootloader</code>时，其实大多数就是这样的二次引导代码。</p>
 <p>这些事其实<code>Boot ROM</code>它也能做，但是<code>Boot ROM</code>实现的功能和配置方法不灵活，但是<code>Bootloader</code>是开发人员可以而完全控制的引导代码。</p>
 <p>在设计<code>Bootloader</code>时，<code>MCU</code>的引导步骤就开始和嵌入式 Linux 或者 PC 有所不同。这一定程度与芯片架构所采用的的存储方案有关。</p>
 <p>先来说<code>MCU</code>，与<code>SOC</code>相比<code>MCU</code>的主要特征是单核和或多核同构的微处理器，单核或多核同构，主频 &lt; 1GHz，没有<code>MMU</code>内存管理单元，只能运行实时操作系统。常见<code>MCU</code>内核：</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>程序的主要运行介质为<code>NOR Flash</code>，因为和<code>RAM</code>一样有分离的地址线和数据线。并且可以以字节长度精确寻址，所以程序不需要拷贝到<code>RAM</code>中运行的。</p>
 <p>以英飞凌家的 TC27x 系列 MCU 为例，上电后的默认取址位置是<code>0x8FFF 8000</code>，这就是他的<code>Boot ROM</code>在<code>NorFlash</code>中的地址。并且这块<code>Boot Rom</code>分为<code>SSW</code>，<code>BSL</code>，<code>TF</code>。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>SSW 每次上电必须运行，他会根据写在<code>program flash</code>，<code>PFO</code>地址的前 32byte 中的配置字，来决定<code>SSW</code>执行完的跳转地址。我们可以选择一个合适的跳转地址，比如<code>0x80000020</code>，放上自己写的<code>Bootloader</code>。也可以选择不跳转，运行厂家提供的<code>Bootloader</code>（BSL）。</p>
 <p><code>MCU</code>下的<code>Bootloader</code>主要完成的事情有以下：</p>
 <ul>
@@ -393,23 +903,83 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 </ul>
 <p>那么运行 Linux 的<code>SOC</code>和 PC 的这一过程有何不同呢。还是先看存储方案，运行嵌入式 Linux 的 SoC。一般将它的操作系统，文件系统和他的应用程序放在<code>nand flash</code>中。运行代码前，现将代码搬运到<code>SRAM</code>中，相比<code>MCU</code>多了一道步骤。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 <p>对于<code>SOC</code>的<code>Boot ROM</code> 和 PC 的<code>BIOS</code>而言，他们结束运行前的最终任务，是将某些代码从<code>nand flash</code>搬运到<code>SRAM</code>中，其中最重要的内容就是<code>Boot Loader</code>。</p>
 <p>而一般<code>SOC</code>的<code>Bootloader</code>，又分为<code>SPL</code>（Secondary Program Loader）和<code>uBOOT</code>两个阶段。<code>SPL</code>的 Secondary 就是相对于<code>BootROM</code>而言，他就像是接力赛中的第二棒选手。<code>SPL</code>会初始化更大空间的外部<code>DRAM</code>，再把<code>uBoot</code>搬运到外部<code>DRAM</code>中去运行。<code>uBoot</code>作为第三棒选手，开始运行它的初始化程序。之后再根据系统环境变量，将 OS 内核搬运到外部<code>DRAM</code>中去运行。OS 再完成根文件系统的加载等等等等。</p>
 <p>
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 ]]></content:encoded>
     </item>
   </channel>

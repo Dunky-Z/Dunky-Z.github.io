@@ -32,21 +32,81 @@
 <li>BootROM 中配置 SPI 控制器的 <code>SPIC_CSR_01</code> 寄存器的<code>spi_bus_mode</code> 位可以配置 SPI 的模式；</li>
 <li>查阅 Flash 手册，找到配置总线模式的寄存器以及操作它的命令，如 WINBOND-W25Q128JW 这款 Flash 的配置寄存器为 <code>Status Register-2</code>，Flash 的寄存器是无法直接读写的，所以需要在 Flash 手册中找到操作这个寄存器的命令，在手册的 Instructions 章节可以找到这款 Flash 的配置命令为 <code>Write Status Register-2</code>，命令码为 <code>0x31</code>，只要我们向 Flash 发送 <code>0x31</code>，就可以配置 Flash 的总线模式了。
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  />
-</a>
-</div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fe7024b05e381b724d3471744f323de76.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html>
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2F350d91ef1d63ed0c5650e4dfd2c72917.png" alt=""  />
-</a>
-</div>
-
-</li>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></li>
 <li>如何向 Flash 发送指令？需要将真正要发送的指令写入 SPI 的寄存器<code>SPIC_CSR_06</code>，该寄存器的各个 Bit 可以配置命令码，命令类型，命令是否有效等信息。我们将之前的命令码<code>0x31</code>写入到<code>SPIC_CSR_06</code>的<code>command_code</code>位，然后将<code>SPIC_CSR_06</code>的<code>command_type</code>位设置为<code>write status register</code>，SPI 就会自动将这些信息发送给 Flash。Flash 接收到命令后，会根据命令码执行配置寄存器的操作。</li>
 </ul>
 </li>
@@ -65,13 +125,43 @@
 <p>也就是只要 Flash 研发时遵循了 JESD216 这个标准，我们都可以通过发送 0x5A 这个命令码，去获取Flash相关参数。最为关键的就是其中会保存 Flash 厂商的 ID，当我们获取到 Flash 厂商的 ID 时，我们就可以根据 ID 执行不同的配置操作。</p>
 <p>对于 WINBOND-W25Q128JW 这款 Flash，在数据手册的Feature里就可以看到它是支持 SFDP 的：
 
-<div class="post-img-view">
-<a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">
-<img src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  />
-</a>
-</div>
 
-</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F03%2F30%2Fbe54a549cc9266d120b1e2db37d68555.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
 ]]></content:encoded>
     </item>
   </channel>
