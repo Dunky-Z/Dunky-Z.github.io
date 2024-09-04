@@ -4,7 +4,7 @@
     <title>Makefile on 夜云泊</title>
     <link>https://lifeislife.cn/tags/makefile/</link>
     <description>Recent content in Makefile on 夜云泊</description>
-    <generator>Hugo -- 0.133.1</generator>
+    <generator>Hugo -- 0.134.0</generator>
     <language>zh</language>
     <lastBuildDate>Mon, 26 Sep 2022 21:36:18 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/makefile/index.xml" rel="self" type="application/rss+xml" />
@@ -13,7 +13,37 @@
       <link>https://lifeislife.cn/posts/makefile%E5%9F%BA%E7%A1%80/</link>
       <pubDate>Mon, 26 Sep 2022 21:36:18 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/makefile%E5%9F%BA%E7%A1%80/</guid>
-      <description>目标、依赖、命令 目标就是我们要去 make xxx 的那个 xxx，就是我们最终要生成的东西。 依赖是用来生成目录的原材料 命令就是加工方法，所以 make xxx 的过程其实就</description>
+      <description>&lt;h2 id=&#34;目标依赖命令&#34;&gt;目标、依赖、命令&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;目标就是我们要去 make xxx 的那个 xxx，就是我们最终要生成的东西。&lt;/li&gt;
+&lt;li&gt;依赖是用来生成目录的原材料&lt;/li&gt;
+&lt;li&gt;命令就是加工方法，所以 make xxx 的过程其实就是使用命令将依赖加工成目标的过程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;通配符--和-makefile-自动推导&#34;&gt;通配符 &lt;code&gt;%&lt;/code&gt; 和 Makefile 自动推导&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;%&lt;/code&gt; 是 Makefile 中的通配符，代表一个或几个字母。也就是说&lt;code&gt;%.o&lt;/code&gt;就代表所有以&lt;code&gt;.o&lt;/code&gt;为结尾的文件。&lt;/li&gt;
+&lt;li&gt;所谓自动推导其实就是 Makefile 的规则。当 Makefile 需要某一个目标时，他会把这个目标去套规则说明，一旦套上了某个规则说明，则 Makefile 会试图寻找这个规则中的依赖，如果能找到则会执行这个规则用依赖生成目标。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;makefile-中定义和使用变量&#34;&gt;Makefile 中定义和使用变量&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Makefile 中定义和使用变量，和 shell 脚本中非常相似。相似的是都没有变量类型，直接定义使用，引用变量时用&lt;code&gt;$var&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;伪目标phony&#34;&gt;伪目标（&lt;code&gt;.PHONY&lt;/code&gt;）&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;伪目标意思是这个目标本身不代表一个文件，执行这个目标不是为了得到某个文件或东西，而是单纯为了执行这个目标下面的命令。&lt;/li&gt;
+&lt;li&gt;伪目标一般都没有依赖，因为执行伪目标就是为了执行目标下面的命令。既然一定要执行命令了那就不必加依赖，因为不加依赖意思就是无条件执行。&lt;/li&gt;
+&lt;li&gt;伪目标可以直接写，不影响使用；但是有时候为了明确声明这个目标是伪目标会在伪目标的前面用&lt;code&gt;.PHONY&lt;/code&gt;来明确声明它是伪目标。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;makfile-中引用其他-makefile&#34;&gt;Makfile 中引用其他 Makefile&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;有时候 Makefile 总体比较复杂，因此分成好几个 Makefile 来写。然后在主 Makefile 中引用其他的，用 &lt;code&gt;include&lt;/code&gt; 指令来引用。引用的效果也是原地展开，和 C 语言中的头文件包含非常相似。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;赋值&#34;&gt;赋值&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;=&lt;/code&gt;最简单的赋值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;:=&lt;/code&gt;一般也是赋值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;以上这两个大部分情况下效果是一样的，但是有时候不一样。用&lt;code&gt;=&lt;/code&gt;赋值的变量，在被解析时他的值取决于最后一次赋值时的值，所以你看变量引用的值时不能只往前面看，还要往后面看。用&lt;code&gt;:=&lt;/code&gt;来赋值的，则是就地直接解析，只用往前看即可。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="目标依赖命令">目标、依赖、命令</h2>
 <ul>
 <li>目标就是我们要去 make xxx 的那个 xxx，就是我们最终要生成的东西。</li>
@@ -89,7 +119,8 @@
       <link>https://lifeislife.cn/posts/makefile%E7%A1%AE%E5%AE%9A%E5%AE%8F%E5%AE%9A%E4%B9%89/</link>
       <pubDate>Wed, 27 Jul 2022 08:28:03 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/makefile%E7%A1%AE%E5%AE%9A%E5%AE%8F%E5%AE%9A%E4%B9%89/</guid>
-      <description>有时需要通过make编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。 当前的需求是代码中有一</description>
+      <description>&lt;p&gt;有时需要通过&lt;code&gt;make&lt;/code&gt;编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。&lt;/p&gt;
+&lt;p&gt;当前的需求是代码中有一部分代码通过宏定义来确定编译的是 DIE0 版本还是 DIE1 版本，如果定义了&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt; 就使用 DIE0 的基地址，如果未定义就使用 DIE1 的基地址。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>有时需要通过<code>make</code>编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。</p>
 <p>当前的需求是代码中有一部分代码通过宏定义来确定编译的是 DIE0 版本还是 DIE1 版本，如果定义了<code>DIE_ORDINAL_0</code> 就使用 DIE0 的基地址，如果未定义就使用 DIE1 的基地址。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="cp">#define DIE_ORDINAL_0

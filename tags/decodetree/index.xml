@@ -4,7 +4,7 @@
     <title>Decodetree on 夜云泊</title>
     <link>https://lifeislife.cn/tags/decodetree/</link>
     <description>Recent content in Decodetree on 夜云泊</description>
-    <generator>Hugo -- 0.133.1</generator>
+    <generator>Hugo -- 0.134.0</generator>
     <language>zh</language>
     <atom:link href="https://lifeislife.cn/tags/decodetree/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -12,7 +12,7 @@
       <link>https://lifeislife.cn/posts/qemu-decodetree%E8%AF%A6%E8%A7%A3/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qemu-decodetree%E8%AF%A6%E8%A7%A3/</guid>
-      <description>QEMU 在 decode 指令的时候，需要调用各平台所定义的 instruction decoders 来解析指令。如在 ARM 平台下，就定义了：disas_arm_insn()、disas_thumb_i</description>
+      <description>&lt;p&gt;QEMU 在 decode 指令的时候，需要调用各平台所定义的 instruction decoders 来解析指令。如在 ARM 平台下，就定义了：&lt;code&gt;disas_arm_insn()&lt;/code&gt;、&lt;code&gt;disas_thumb_insn()&lt;/code&gt; 及 &lt;code&gt;disas_thumb2_insn()&lt;/code&gt; 等来分别负责 ARM 32-bits 指令、ARM Thumb 指令及 ARM Thumb2 指令的解析。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>QEMU 在 decode 指令的时候，需要调用各平台所定义的 instruction decoders 来解析指令。如在 ARM 平台下，就定义了：<code>disas_arm_insn()</code>、<code>disas_thumb_insn()</code> 及 <code>disas_thumb2_insn()</code> 等来分别负责 ARM 32-bits 指令、ARM Thumb 指令及 ARM Thumb2 指令的解析。</p>
 <p>而 <code>Decodetree</code> 则是由 <code>Bastian Koppelmann</code> 于 2017 年在 移植 RISC-V QEMU 的时候所提出来的机制 (详见：<a href="https://lists.gnu.org/archive/html/qemu-devel/2017-07/msg07735.html">讨论邮件1</a>、<a href="https://lists.gnu.org/archive/html/qemu-devel/2017-10/msg05046.html">讨论邮件2</a>)。提出该机制主要是因为过往的 instruction decoders (如：ARM) 都是采用一堆 <code>switch-case</code> 来做判断。不仅难阅读，也难以维护。</p>
 <p>因此 <code>Bastian Koppelmann</code> 就提出了 <code>Decodetree</code> 的机制，开发者只需要通过 <code>Decodetree</code> 的语法定义各个指令的格式，便可交由 <code>Decodetree</code> 来动态生成对应包含 <code>switch-case</code> 的 instruction decoder <code>.c</code> 文档。</p>
@@ -95,30 +95,30 @@
 <p><code>Field</code> (32-bits 指令) 最后会生成对应的 <code>extract32()</code> 及 <code>sextract32()</code> 代码，以用来取得指令中各字段的值：</p>
 <h3 id="field-示例">Field 示例</h3>
 <table>
-<thead>
-<tr>
-<th>Input</th>
-<th>Generated code</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>%disp 0:s16</td>
-<td>sextract(i, 0, 16)</td>
-</tr>
-<tr>
-<td>%imm9 16:6 10:3</td>
-<td>extract(i, 16, 6) &laquo; 3</td>
-</tr>
-<tr>
-<td>%disp12 0:s1 1:1 2:10</td>
-<td>sextract(i, 0, 1) &laquo; 11</td>
-</tr>
-<tr>
-<td>%shimm8 5:s8 13:1 !function=expand_shimm8</td>
-<td>expand_shimm8(sextract(i, 5, 8)) &laquo; 1</td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th style="text-align: left">Input</th>
+          <th style="text-align: left">Generated code</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">%disp 0:s16</td>
+          <td style="text-align: left">sextract(i, 0, 16)</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">%imm9 16:6 10:3</td>
+          <td style="text-align: left">extract(i, 16, 6) &laquo; 3</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">%disp12 0:s1 1:1 2:10</td>
+          <td style="text-align: left">sextract(i, 0, 1) &laquo; 11</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">%shimm8 5:s8 13:1 !function=expand_shimm8</td>
+          <td style="text-align: left">expand_shimm8(sextract(i, 5, 8)) &laquo; 1</td>
+      </tr>
+  </tbody>
 </table>
 <p>以 RISC-V 的 <code>U-type</code> 指令为例：</p>
 <p>

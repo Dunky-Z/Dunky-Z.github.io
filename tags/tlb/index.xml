@@ -4,7 +4,7 @@
     <title>TLB on 夜云泊</title>
     <link>https://lifeislife.cn/tags/tlb/</link>
     <description>Recent content in TLB on 夜云泊</description>
-    <generator>Hugo -- 0.133.1</generator>
+    <generator>Hugo -- 0.134.0</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 17 Jul 2022 21:45:20 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/tlb/index.xml" rel="self" type="application/rss+xml" />
@@ -13,7 +13,8 @@
       <link>https://lifeislife.cn/posts/%E7%90%86%E8%A7%A3%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/</link>
       <pubDate>Sun, 17 Jul 2022 21:45:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E7%90%86%E8%A7%A3%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98/</guid>
-      <description>为什么需要虚拟内存？ CPU 访问内存的最自然的方式就是使用物理地址，这种方式称为物理寻址。1，计算机中并不是只有一个程序在运行，如果它们都是用物理</description>
+      <description>&lt;h2 id=&#34;为什么需要虚拟内存&#34;&gt;为什么需要虚拟内存？&lt;/h2&gt;
+&lt;p&gt;CPU 访问内存的最自然的方式就是使用物理地址，这种方式称为&lt;strong&gt;物理寻址&lt;/strong&gt;。1，计算机中并不是只有一个程序在运行，如果它们都是用物理寻址的方式，那么所有程序必须在链接之前确定好自己所用到的内存范围，否则两个程序就可能会发生冲突。2，程序大于内存的问题早在上世纪六十年代就出现，后来出现了&lt;strong&gt;覆盖技术&lt;/strong&gt;（Overlay），把程序分割成许多片段。程序开始执行时，将覆盖管理模块装入内存，该管理模块立即装入并运行覆盖 0。执行完成后，覆盖 0 通知管理模块装入覆盖 1，或者占用覆盖 0 的上方位置（如果有空间），或者占用覆盖 0（如果没有空间）。把一个大程序分割成小的、模块化的片段是非常费时和枯燥的，并且易于出错。很少程序员擅长使用覆盖技术。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="为什么需要虚拟内存">为什么需要虚拟内存？</h2>
 <p>CPU 访问内存的最自然的方式就是使用物理地址，这种方式称为<strong>物理寻址</strong>。1，计算机中并不是只有一个程序在运行，如果它们都是用物理寻址的方式，那么所有程序必须在链接之前确定好自己所用到的内存范围，否则两个程序就可能会发生冲突。2，程序大于内存的问题早在上世纪六十年代就出现，后来出现了<strong>覆盖技术</strong>（Overlay），把程序分割成许多片段。程序开始执行时，将覆盖管理模块装入内存，该管理模块立即装入并运行覆盖 0。执行完成后，覆盖 0 通知管理模块装入覆盖 1，或者占用覆盖 0 的上方位置（如果有空间），或者占用覆盖 0（如果没有空间）。把一个大程序分割成小的、模块化的片段是非常费时和枯燥的，并且易于出错。很少程序员擅长使用覆盖技术。</p>
 <p>为了更加有效地管理内存并且少出错，现代系统提供了一种对主存的抽象概念，叫做<strong>虚拟内存</strong>(VM)。主要有三个功能：</p>
@@ -338,84 +339,84 @@
 <h2 id="地址翻译">地址翻译</h2>
 <p>基本参数</p>
 <table>
-<thead>
-<tr>
-<th style="text-align:left">符号</th>
-<th style="text-align:left">描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">$$\small N=2^n$$</td>
-<td style="text-align:left">虚拟地址空间中的地址数量</td>
-</tr>
-<tr>
-<td style="text-align:left">$$\small M=2^m$$</td>
-<td style="text-align:left">物理地址空间中的地址数量</td>
-</tr>
-<tr>
-<td style="text-align:left">$$\small P=2^p$$</td>
-<td style="text-align:left">页的大小（字节）</td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th style="text-align: left">符号</th>
+          <th style="text-align: left">描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">$$\small N=2^n$$</td>
+          <td style="text-align: left">虚拟地址空间中的地址数量</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">$$\small M=2^m$$</td>
+          <td style="text-align: left">物理地址空间中的地址数量</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">$$\small P=2^p$$</td>
+          <td style="text-align: left">页的大小（字节）</td>
+      </tr>
+  </tbody>
 </table>
 <p>虚拟地址（VA）的组成部分</p>
 <table>
-<thead>
-<tr>
-<th style="text-align:left">符号</th>
-<th style="text-align:left">描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">VPO</td>
-<td style="text-align:left">虚拟页面偏移量（字节）</td>
-</tr>
-<tr>
-<td style="text-align:left">VPN</td>
-<td style="text-align:left">虚拟页号</td>
-</tr>
-<tr>
-<td style="text-align:left">TLBI</td>
-<td style="text-align:left">TLB 索引</td>
-</tr>
-<tr>
-<td style="text-align:left">TLBT</td>
-<td style="text-align:left">TLB 标记</td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th style="text-align: left">符号</th>
+          <th style="text-align: left">描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">VPO</td>
+          <td style="text-align: left">虚拟页面偏移量（字节）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">VPN</td>
+          <td style="text-align: left">虚拟页号</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TLBI</td>
+          <td style="text-align: left">TLB 索引</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">TLBT</td>
+          <td style="text-align: left">TLB 标记</td>
+      </tr>
+  </tbody>
 </table>
 <p>物理地址（PA）的组成部分</p>
 <table>
-<thead>
-<tr>
-<th style="text-align:left">符号</th>
-<th style="text-align:left">描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">PPO</td>
-<td style="text-align:left">物理页面偏移量（字节）</td>
-</tr>
-<tr>
-<td style="text-align:left">PPN</td>
-<td style="text-align:left">物理页号</td>
-</tr>
-<tr>
-<td style="text-align:left">CO</td>
-<td style="text-align:left">缓冲块内的字节偏移量</td>
-</tr>
-<tr>
-<td style="text-align:left">CI</td>
-<td style="text-align:left">高速缓存索引</td>
-</tr>
-<tr>
-<td style="text-align:left">CT</td>
-<td style="text-align:left">高速缓存标记</td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th style="text-align: left">符号</th>
+          <th style="text-align: left">描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">PPO</td>
+          <td style="text-align: left">物理页面偏移量（字节）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">PPN</td>
+          <td style="text-align: left">物理页号</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">CO</td>
+          <td style="text-align: left">缓冲块内的字节偏移量</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">CI</td>
+          <td style="text-align: left">高速缓存索引</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">CT</td>
+          <td style="text-align: left">高速缓存标记</td>
+      </tr>
+  </tbody>
 </table>
 <p>
 
