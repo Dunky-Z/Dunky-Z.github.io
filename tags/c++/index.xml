@@ -4,7 +4,7 @@
     <title>C&#43;&#43; on 夜云泊</title>
     <link>https://lifeislife.cn/tags/c&#43;&#43;/</link>
     <description>Recent content in C&#43;&#43; on 夜云泊</description>
-    <generator>Hugo -- 0.134.1</generator>
+    <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 13 Nov 2021 19:00:29 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/c++/index.xml" rel="self" type="application/rss+xml" />
@@ -15,7 +15,11 @@
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3c-%E4%B8%ADvector%E5%A3%B0%E6%98%8E%E9%94%99%E8%AF%AFexpected-parameter-declarator/</guid>
       <description>&lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C++&#34; data-lang=&#34;C++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;QVector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;uint32_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;buttonPins&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;声明了一个长度为 3 的&lt;code&gt;vector&lt;/code&gt;数组，编译是会报这个错误。&lt;/p&gt;</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;声明了一个长度为 3 的&lt;code&gt;vector&lt;/code&gt;数组，编译是会报这个错误。&lt;/p&gt;
+&lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
+&lt;p&gt;编译器可能无法区分这是一个成员函数声明还是一个成员变量声明，也就是产生歧义。&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;方法 1：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl">    <span class="n">QVector</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span> <span class="n">buttonPins</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
 </span></span></code></pre></div><p>声明了一个长度为 3 的<code>vector</code>数组，编译是会报这个错误。</p>
@@ -48,7 +52,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;puts&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;参数中的三个点号，就是 C 语言中可变参数的标识。这样的函数称为可变参数函数。这种函数需要固定数量的&lt;strong&gt;强制参数&lt;/strong&gt;（mandatory argument），后面是&lt;strong&gt;数量可变的可选参数&lt;/strong&gt;（optional argument）。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>学习过程中查看了<code>printf()</code>源码，遇到了这样的函数定义，</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">printf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">,</span> <span class="p">...){</span>
 </span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>

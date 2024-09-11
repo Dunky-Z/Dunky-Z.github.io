@@ -4,7 +4,7 @@
     <title>QEMU on 夜云泊</title>
     <link>https://lifeislife.cn/tags/qemu/</link>
     <description>Recent content in QEMU on 夜云泊</description>
-    <generator>Hugo -- 0.134.1</generator>
+    <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 07 Jul 2024 10:22:12 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/qemu/index.xml" rel="self" type="application/rss+xml" />
@@ -195,7 +195,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install bridge-utils -y
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# UML（User-mode linux）工具        &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install uml-utilities  -y   
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;配置脚本&#34;&gt;配置脚本&lt;/h2&gt;
+&lt;h3 id=&#34;qemu-ifup&#34;&gt;qemu-ifup&lt;/h3&gt;
+&lt;p&gt;将下面的脚本保存为文件 &lt;code&gt;qemu-ifup&lt;/code&gt;，并赋予可执行权限：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="quick-setup">Quick Setup</h1>
 <h2 id="安装工具">安装工具</h2>
 <p>安装两个网络管理工具用于建立网桥以及虚拟网卡：</p>
@@ -984,7 +986,12 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;                 gawk git bison flex texinfo gperf libtool patchutils mingw-w64 libmpc-dev &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;                 libmpfr-dev libgmp-dev libexpat-dev libfdt-dev zlib1g-dev libglib2.0-dev &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;                 libpixman-1-dev libncurses5-dev libncursesw5-dev meson libvirglrenderer-dev libsdl2-dev  -y
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo add-apt-repository ppa:deadsnakes/ppa
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install python3.8 python3-pip  -y
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install -f
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip3 install meson
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;下载qemu&#34;&gt;下载QEMU&lt;/h2&gt;
+&lt;p&gt;建立文件夹用于编译：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<blockquote>
 <p>基于Ubuntu 18.04，QEMU 8.0.2，OpenEuler 22.09</p>
 </blockquote>
@@ -3006,7 +3013,13 @@ gpgkey为验证签名用的公钥。</p>
       <description>&lt;h2 id=&#34;qemu-模拟外设的原理&#34;&gt;QEMU 模拟外设的原理&lt;/h2&gt;
 &lt;p&gt;QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。
 QEMU 的模拟外设的原理很简单：&lt;strong&gt;硬件即内存&lt;/strong&gt;。
-要在 QEMU 上模拟某个外设，思路就是：&lt;/p&gt;</description>
+要在 QEMU 上模拟某个外设，思路就是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CPU 读某个地址时，QEMU 模拟外设的行为，把数据返回给 CPU&lt;/li&gt;
+&lt;li&gt;CPU 写某个地址时，QEMU 获得数据，用来模拟外设的行为。
+即：要模拟外设备，我们只需要针对外设的地址提供对应的读写函数即可。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;以 GPIO 为例：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="qemu-模拟外设的原理">QEMU 模拟外设的原理</h2>
 <p>QEMU 主要是实现了 CPU 核的模拟，可以读写某个地址。
 QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
@@ -3530,7 +3543,45 @@ QEMU 的模拟外设的原理很简单：<strong>硬件即内存</strong>。
       <pubDate>Wed, 01 Sep 2021 18:22:14 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9Fcpu%E5%88%9B%E5%BB%BA/</guid>
       <description>&lt;h2 id=&#34;流程图&#34;&gt;流程图&lt;/h2&gt;
-&lt;p&gt;先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。&lt;/p&gt;</description>
+&lt;p&gt;先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="流程图">流程图</h2>
 <p>先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。</p>
 <p>
@@ -4046,7 +4097,9 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
       <guid>https://lifeislife.cn/posts/vscode%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95qemu/</guid>
       <description>&lt;p&gt;了解了如何在&lt;a href=&#34;https://dunky-z.github.io/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/&#34;&gt;VSCode 中调试程序&lt;/a&gt;，接下来我们在 VSCode 中搭建调试 QEMU 的环境。&lt;/p&gt;
 &lt;h2 id=&#34;配置&#34;&gt;配置&lt;/h2&gt;
-&lt;p&gt;首先我们需要&lt;a href=&#34;https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/&#34;&gt;下载和编译 QEMU 源码&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;首先我们需要&lt;a href=&#34;https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/&#34;&gt;下载和编译 QEMU 源码&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./configure --enable-debug --target-list=riscv32-softmmu,riscv32-linux-user --enable-kvm
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一定要加上&lt;code&gt;--enable-debug&lt;/code&gt;，编译出的程序才带有调试信息，不用设置安装路径，编译时会自动在 qemu 文件夹下自动创建一个&lt;code&gt;build&lt;/code&gt;文件夹，编译后的程序也在&lt;code&gt;build&lt;/code&gt;文件夹下。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>了解了如何在<a href="https://dunky-z.github.io/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/">VSCode 中调试程序</a>，接下来我们在 VSCode 中搭建调试 QEMU 的环境。</p>
 <h2 id="配置">配置</h2>
 <p>首先我们需要<a href="https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/">下载和编译 QEMU 源码</a></p>
@@ -4240,7 +4293,21 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;功能
-显示帮助信息并退出&lt;/p&gt;</description>
+显示帮助信息并退出&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;子参数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;调用实例&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qemu-system-riscv32 -h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;-version&#34;&gt;&lt;code&gt;-version&lt;/code&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;功能
+显示 qemu 版本信息并退出&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="调用文档">调用文档</h1>
 <p><code>qemu-system-x86_64 [options] [disk_image] </code>
 <code>disk_image</code>是 IDE 硬盘 0 的原始硬盘映像。某些目标不需要磁盘映像。</p>

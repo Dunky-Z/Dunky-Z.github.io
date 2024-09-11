@@ -4,7 +4,7 @@
     <title>RISC-v 入门 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/risc-v-%E5%85%A5%E9%97%A8/</link>
     <description>Recent content in RISC-v 入门 on 夜云泊</description>
-    <generator>Hugo -- 0.134.1</generator>
+    <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
     <lastBuildDate>Thu, 22 Sep 2022 09:37:54 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/risc-v-%E5%85%A5%E9%97%A8/index.xml" rel="self" type="application/rss+xml" />
@@ -622,7 +622,8 @@
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;如果有多个 HART，那就可以同时执行多个指令执行流。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="任务切换">任务切换</h1>
 <h2 id="任务简介">任务简介</h2>
 <h3 id="多任务与上下文">多任务与上下文</h3>
@@ -3501,7 +3502,93 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
       <guid>https://lifeislife.cn/posts/risc-v%E5%85%A5%E9%97%A8-risc-v%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B/</guid>
       <description>&lt;h2 id=&#34;汇编语法介绍&#34;&gt;汇编语法介绍&lt;/h2&gt;
 &lt;p&gt;一条典型的 RISC-V 汇编语句由三个部分组成&lt;code&gt;[label:][operation][comment]&lt;/code&gt;。
-后缀&lt;code&gt;.s&lt;/code&gt;和&lt;code&gt;.S&lt;/code&gt;区别：后者纯汇编。&lt;/p&gt;</description>
+后缀&lt;code&gt;.s&lt;/code&gt;和&lt;code&gt;.S&lt;/code&gt;区别：后者纯汇编。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;label(标号)&lt;/li&gt;
+&lt;li&gt;operation 可以有以下多种类型：
+&lt;ul&gt;
+&lt;li&gt;instruction (指令) ：直接对应二进制机器指令的宇符串&lt;/li&gt;
+&lt;li&gt;pseudo-instruction (伪指令) ：为了提高编写代码的效率，可以用一条伪指令指示汇编器产生多条实际的指令 (instructions)。&lt;/li&gt;
+&lt;li&gt;directive (指示/伪操作) ：通过类似指令的形式(以&amp;quot;.&amp;ldquo;开头),通知汇编器如何控制代码的产生等，不对应具体的指令。&lt;/li&gt;
+&lt;li&gt;macro：采用.macro/.endm 自定义的宏
+例子&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.macro do_nothing  # directive
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  nop    # pseudo-instruction
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  nop    # pseudo-instruction
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.endm      # directive
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  .text    # directive
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  .global _start  # directive
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;_start:     # Label
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  li x6, 5  # pseudo-instruction
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  li x7, 4  # pseudo-instruction
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  add x5, x6, x7  # instruction
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  do_nothing  # Calling macro
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;stop:  j stop    # statement in one line
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  .end    # End of file
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;comment（注释）以&lt;code&gt;#&lt;/code&gt;开头到行尾&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;risc-v-汇编指令总览&#34;&gt;RISC-V 汇编指令总览&lt;/h2&gt;
+&lt;h3 id=&#34;操作对象&#34;&gt;操作对象&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;寄存器
+&lt;ul&gt;
+&lt;li&gt;32个通用寄存器,&lt;code&gt;x0 ~ x31&lt;/code&gt;（注意：本章节课程仅涉及RV32I的通用寄存器组）；&lt;/li&gt;
+&lt;li&gt;在 RISC-V 中，Hart 在执行算术逻辑运算时所操作的数据必须直接来自寄存器。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;内存
+&lt;ul&gt;
+&lt;li&gt;Hart可以执行在寄存器和内存之间的数据读写操作；&lt;/li&gt;
+&lt;li&gt;读写操作使用字节 (Byte) 为基本单位进行寻址；&lt;/li&gt;
+&lt;li&gt;RV32可以访问最多&lt;code&gt;2^32&lt;/code&gt;个字节的内存空间。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;编码格式&#34;&gt;编码格式&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210826142737.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="汇编语法介绍">汇编语法介绍</h2>
 <p>一条典型的 RISC-V 汇编语句由三个部分组成<code>[label:][operation][comment]</code>。
 后缀<code>.s</code>和<code>.S</code>区别：后者纯汇编。</p>
@@ -5317,7 +5404,52 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;p&gt;冯诺依曼架构&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;一根总线，开销小，控制逻辑实现简单&lt;/p&gt;</description>
+&lt;p&gt;一根总线，开销小，控制逻辑实现简单&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;执行效率低&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529332.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202108211529332.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="计算机基础">计算机基础</h2>
 <h3 id="计算机硬件基础">计算机硬件基础</h3>
 <p>两大硬件架构</p>

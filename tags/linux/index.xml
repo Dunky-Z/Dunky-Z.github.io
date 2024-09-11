@@ -4,7 +4,7 @@
     <title>Linux on 夜云泊</title>
     <link>https://lifeislife.cn/tags/linux/</link>
     <description>Recent content in Linux on 夜云泊</description>
-    <generator>Hugo -- 0.134.1</generator>
+    <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 10 Aug 2024 15:42:13 +0800</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/linux/index.xml" rel="self" type="application/rss+xml" />
@@ -1726,7 +1726,13 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;idle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;     &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;current_proc&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;idle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;p - pool 表示什么？
+假设我们有一个名为 pool 的数组，其中包含了多个类型为 struct proc 的元素，并且有一个指针 p 指向其中的某个元素。
+当 p 指向 pool 数组的第一个元素时，p - pool 的结果将是 0，因为指针相对于数组首地址的偏移量为 0。
+当 p 指向 pool 数组的第二个元素时，p - pool 的结果将是 1，因为指针相对于数组首地址的偏移量为 1。
+以此类推，当 p 指向 pool 数组的第 N 个元素时，p - pool 的结果将是 N-1，因为指针相对于数组首地址的偏移量为 N-1。
+总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 启动时初始化进程表
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="nf">proc_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
@@ -2182,7 +2188,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;- &lt;span class=&#34;nt&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;apache-commons-jexl&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;- &lt;span class=&#34;nt&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;apache-poi&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;- &lt;span class=&#34;nt&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;apache-rat&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我想按照 &lt;code&gt;name&lt;/code&gt; 的字母顺序排序，可以使用 &lt;code&gt;yq&lt;/code&gt; 工具来实现。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="背景">背景</h1>
 <p>配置 <code>yaml</code> 文件时会遇到需要将配置的内容按照键值排序的情况，比如下面这样<code>riscv_fork_list.yaml</code>：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">packages</span><span class="p">:</span><span class="w">
@@ -2269,7 +2275,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;main&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;run_next_app&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;run_next_app&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;load_app&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;loader_init&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_app_num&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">flowchart</span> <span class="n">TB</span>
 </span></span><span class="line"><span class="cl">    <span class="n">subgraph</span> <span class="n">entry</span><span class="o">.</span><span class="n">S</span>
 </span></span><span class="line"><span class="cl">        <span class="n">_entry</span><span class="p">[</span><span class="n">_entry</span><span class="p">]</span>
@@ -2321,7 +2327,7 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;       .   &lt;span class=&#34;nv&#34;&gt;oo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;@o+&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;           &lt;span class=&#34;nv&#34;&gt;o&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;ss&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+----&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;SHA256&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;-----+
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一直回车确定，生成公私钥，保存在&lt;code&gt;~/.ssh&lt;/code&gt;目录下。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="生成密钥对">生成密钥对</h1>
 <p>宿主机任意下目录执行：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">$ ssh-keygen -t rsa
@@ -2408,7 +2414,39 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; tags              &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;                                                                                                                                                      &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; updated_at        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 2023-06-28T06:26:10Z                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+-------------------+--------------------------------+
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;openstack security group rule create --proto tcp --dst-port &lt;span class=&#34;m&#34;&gt;22&lt;/span&gt; default
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;root@allone:~# openstack security group rule  create --proto tcp --dst-port &lt;span class=&#34;m&#34;&gt;22&lt;/span&gt; default
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+-------------------+--------------------------------------+
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; Field             &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; Value                                                                                                                                                   &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+-------------------+--------------------------------------------+
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; created_at        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 2023-06-28T06:26:15Z                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; description       &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;                                                                                                                                                         &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; direction         &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; ingress                                                                                                                                                 &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; ether_type        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; IPv4                                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; id                &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; af699cf9-5fc0-45e2-a009-0bb7828e2d1a                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; location          &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;cloud&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, project.domain_id&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;, project.domain_name&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;Default&amp;#39;&lt;/span&gt;, project.id&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;6396365541a74b6b8ea8812d1af05e70&amp;#39;&lt;/span&gt;, project.name&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;admin&amp;#39;&lt;/span&gt;, &lt;span class=&#34;nv&#34;&gt;region_name&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;, &lt;span class=&#34;nv&#34;&gt;zone&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; name              &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; None                                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; port_range_max    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;22&lt;/span&gt;                                                                                                                                                      &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; port_range_min    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;22&lt;/span&gt;                                                                                                                                                      &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; project_id        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 6396365541a74b6b8ea8812d1af05e70                                                                                                                        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; protocol          &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; tcp                                                                                                                                                     &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; remote_group_id   &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; None                                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; remote_ip_prefix  &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 0.0.0.0/0                                                                                                                                               &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; revision_number   &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;                                                                                                                                                       &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; security_group_id &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; f10a3927-5e76-47b4-8691-4169348845ae                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; tags              &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt;                                                                                                                                                      &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; updated_at        &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 2023-06-28T06:26:15Z                                                                                                                                    &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+-------------------+-----------------+
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;命令行方式&#34;&gt;命令行方式&lt;/h1&gt;
+&lt;h2 id=&#34;生成秘钥&#34;&gt;生成秘钥&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ssh-keygen -q -N “”
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-q&lt;/code&gt; 选项表示静默模式，即在生成密钥对的过程中不会输出任何提示信息或警告。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-N&lt;/code&gt; 选项后面可以跟一个密码作为参数。该密码将用于保护生成的私钥文件。如果不指定 &lt;code&gt;-N&lt;/code&gt; 参数，则私钥文件将不受密码保护。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;该命令会在&lt;code&gt;~/.ssh/&lt;/code&gt;目录中自动生成一对公私钥。默认私钥名称：id_rsa，默认公钥名称：id_rsa.pub&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="基础配置">基础配置</h1>
 <p>添加安全组规则，允许 Ping 和 SSH 访问虚拟机：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">openstack security group rule create --proto icmp default
@@ -2699,7 +2737,24 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
       <pubDate>Mon, 26 Jun 2023 22:38:02 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/virtualbox-ubuntu%E6%97%A0%E6%B3%95%E8%81%94%E7%BD%91/</guid>
       <description>&lt;h1 id=&#34;解决方案&#34;&gt;解决方案&lt;/h1&gt;
-&lt;p&gt;VirtualBox Ubuntu 无法联网，重启后可以联网但是几分钟后断开网络。笔者的情况是因为 NetworkManager 自动修改了网络配置导致无法联网，具体现象是开机后网卡信息如下：&lt;/p&gt;</description>
+&lt;p&gt;VirtualBox Ubuntu 无法联网，重启后可以联网但是几分钟后断开网络。笔者的情况是因为 NetworkManager 自动修改了网络配置导致无法联网，具体现象是开机后网卡信息如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;user@allone:~$ ifconfig
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brq64ff9b38-fa: &lt;span class=&#34;nv&#34;&gt;flags&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;4163&amp;lt;UP,BROADCAST,RUNNING,MULTICAST&amp;gt;  mtu &lt;span class=&#34;m&#34;&gt;1500&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ether ce:29:de:12:35:06  txqueuelen &lt;span class=&#34;m&#34;&gt;1000&lt;/span&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;Ethernet&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        RX packets &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  bytes &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;0.0 B&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        RX errors &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  dropped &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  overruns &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  frame &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        TX packets &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  bytes &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;0.0 B&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        TX errors &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  dropped &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; overruns &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  carrier &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  collisions &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;enp0s3: &lt;span class=&#34;nv&#34;&gt;flags&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;4163&amp;lt;UP,BROADCAST,RUNNING,MULTICAST&amp;gt;  mtu &lt;span class=&#34;m&#34;&gt;1500&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        inet6 fe80::2e8f:2be6:3752:dec4  prefixlen &lt;span class=&#34;m&#34;&gt;64&lt;/span&gt;  scopeid 0x20&amp;lt;link&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ether 08:00:27:18:31:21  txqueuelen &lt;span class=&#34;m&#34;&gt;1000&lt;/span&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;Ethernet&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        RX packets &lt;span class=&#34;m&#34;&gt;947&lt;/span&gt;  bytes &lt;span class=&#34;m&#34;&gt;584483&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;584.4 KB&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        RX errors &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  dropped &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  overruns &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  frame &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        TX packets &lt;span class=&#34;m&#34;&gt;800&lt;/span&gt;  bytes &lt;span class=&#34;m&#34;&gt;116611&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;116.6 KB&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        TX errors &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  dropped &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; overruns &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  carrier &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  collisions &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;此时网络可以正常使用，经过一两分钟后网络信息如下：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="解决方案">解决方案</h1>
 <p>VirtualBox Ubuntu 无法联网，重启后可以联网但是几分钟后断开网络。笔者的情况是因为 NetworkManager 自动修改了网络配置导致无法联网，具体现象是开机后网卡信息如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">user@allone:~$ ifconfig
@@ -2792,7 +2847,11 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Add the repo for Clang 11 &lt;code&gt;stable-old&lt;/code&gt; for Ubuntu 18.04 Bionic&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sudo tee -a /etc/apt/sources.list
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get update
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Install practically everything (except &lt;code&gt;python-clang-11&lt;/code&gt; which for some reason doesn&amp;rsquo;t work)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get install libllvm-11-ocaml-dev libllvm11 llvm-11 llvm-11-dev llvm-11-doc llvm-11-examples llvm-11-runtime &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;clang-11 clang-tools-11 clang-11-doc libclang-common-11-dev libclang-11-dev libclang1-11 clang-format-11 clangd-11 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;libfuzzer-11-dev lldb-11 lld-11 libc++-11-dev libc++abi-11-dev libomp-11-dev -y
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Make Clang 11 and everything related to it defaults&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="从-apt-安装">从 APT 安装</h2>
 <p>Install the GPG Key for <code>https://apt.llvm.org/</code></p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key <span class="p">|</span> sudo apt-key add -
@@ -2944,7 +3003,28 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-C   &lt;span class=&#34;c1&#34;&gt;#在文件和目录列表上加上色彩，便于区分文件类型&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-P pattern    &lt;span class=&#34;c1&#34;&gt;#只显示匹配正则表式的文件或目录名称&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-I pattern    &lt;span class=&#34;c1&#34;&gt;#与上结果相反&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;实例&#34;&gt;实例&lt;/h2&gt;
+&lt;p&gt;显示当前目录及其子目录下的文件及目录名称&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ tree                 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── CODE_OF_CONDUCT.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── CONTRIBUTING.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── Fedora-35
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   ├── Dockerfile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   └── Readme.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── LICENSE
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── README.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── Ubuntu-20
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   ├── Dockerfile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   ├── Readme.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   ├── init_edkrepo_conf.sh
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│   └── ubuntu20_dev_entrypoint.sh
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└── Windows-2022
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ├── Dockerfile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    └── Readme.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;m&#34;&gt;3&lt;/span&gt; directories, &lt;span class=&#34;m&#34;&gt;12&lt;/span&gt; files
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只显示一层目录结构&lt;/p&gt;</description>
       <content:encoded><![CDATA[<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">-a   <span class="c1">#显示所有文件</span>
 </span></span><span class="line"><span class="cl">-d   <span class="c1">#只显示目录（名称）</span>
 </span></span><span class="line"><span class="cl">-l   <span class="c1">#显示链接文件的原始文件</span>
@@ -3023,7 +3103,9 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;HOME_URL&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://www.debian.org/&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;SUPPORT_URL&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://www.debian.org/support&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;BUG_REPORT_URL&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://bugs.debian.org/&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;括号里的&lt;code&gt;buster&lt;/code&gt;就是版本信息。&lt;/p&gt;
+&lt;h2 id=&#34;获取镜像地址&#34;&gt;获取镜像地址&lt;/h2&gt;
+&lt;p&gt;打开&lt;a href=&#34;https://mirrors.tuna.tsinghua.edu.cn/help/debian/&#34;&gt;debian | 清华大学开源软件镜像站&lt;/a&gt;，选择&lt;code&gt;buster&lt;/code&gt;版本，复制所有镜像地址。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="确认-debian-版本">确认 Debian 版本</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ cat /etc/os-release               
 </span></span><span class="line"><span class="cl"><span class="nv">PRETTY_NAME</span><span class="o">=</span><span class="s2">&#34;Debian GNU/Linux 10 (buster)&#34;</span>
@@ -3545,7 +3627,11 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;命令行执行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;stty sane
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>
 
@@ -3703,7 +3789,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
       <link>https://lifeislife.cn/posts/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E4%B8%80%E5%8F%B0nas%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
       <pubDate>Sat, 10 Sep 2022 11:37:47 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E4%B8%80%E5%8F%B0nas%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
-      <description>&lt;p&gt;技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。&lt;/p&gt;</description>
+      <description>&lt;p&gt;技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。&lt;/p&gt;
+&lt;p&gt;自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。</p>
 <p>自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。</p>
 <h2 id="准备阶段">准备阶段</h2>
@@ -6079,7 +6166,9 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;h2 id=&#34;准备环境及工具链&#34;&gt;准备环境及工具链&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
-&lt;p&gt;安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。&lt;/p&gt;</description>
+&lt;p&gt;安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！&lt;/p&gt;</description>
       <content:encoded><![CDATA[<blockquote>
 <p>参考自<a href="https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel">PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki</a></p>
 </blockquote>
@@ -6321,7 +6410,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
       <pubDate>Mon, 11 Jul 2022 09:55:39 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/csapp-lab-cache-lab/</guid>
       <description>&lt;h2 id=&#34;预备知识&#34;&gt;预备知识&lt;/h2&gt;
-&lt;p&gt;开始这个实验前，需要学习《CSAPP 第六章-存储器层次结构》的相关内容，与缓存相关的内容，我也做了相关的&lt;a href=&#34;https://dunky-z.github.io/2022/07/10/CPU-Cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/&#34;&gt;CPU Cache 高速缓存学习记录&lt;/a&gt;可以参考。&lt;/p&gt;</description>
+&lt;p&gt;开始这个实验前，需要学习《CSAPP 第六章-存储器层次结构》的相关内容，与缓存相关的内容，我也做了相关的&lt;a href=&#34;https://dunky-z.github.io/2022/07/10/CPU-Cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/&#34;&gt;CPU Cache 高速缓存学习记录&lt;/a&gt;可以参考。&lt;/p&gt;
+&lt;p&gt;实验相关的文件可以从&lt;a href=&#34;http://csapp.cs.cmu.edu/3e/labs.html&#34;&gt;CS:APP3e, Bryant and O&amp;rsquo;Hallaron&lt;/a&gt;下载。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="预备知识">预备知识</h2>
 <p>开始这个实验前，需要学习《CSAPP 第六章-存储器层次结构》的相关内容，与缓存相关的内容，我也做了相关的<a href="https://dunky-z.github.io/2022/07/10/CPU-Cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/">CPU Cache 高速缓存学习记录</a>可以参考。</p>
 <p>实验相关的文件可以从<a href="http://csapp.cs.cmu.edu/3e/labs.html">CS:APP3e, Bryant and O&rsquo;Hallaron</a>下载。</p>
@@ -6605,7 +6695,15 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
       <pubDate>Thu, 09 Jun 2022 22:50:54 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-watch%E5%91%A8%E6%9C%9F%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4/</guid>
       <description>&lt;h2 id=&#34;功能&#34;&gt;功能&lt;/h2&gt;
-&lt;p&gt;watch 命令的功能如其名，可以监视命令的执行结果。它实现的原理就是每隔一段时间执行一次命令，然后显示结果。他的用途很广，具体怎么用就靠想象力了。&lt;/p&gt;</description>
+&lt;p&gt;watch 命令的功能如其名，可以监视命令的执行结果。它实现的原理就是每隔一段时间执行一次命令，然后显示结果。他的用途很广，具体怎么用就靠想象力了。&lt;/p&gt;
+&lt;h2 id=&#34;命令参数&#34;&gt;命令参数&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-n # 或--interval  watch默认每2秒运行一下程序，可以用-n或-interval来指定间隔的时间。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-d # 或--differences  用-d或--differences 选项watch 会高亮显示变化的区域。 而-d=cumulative选项会把变动过的地方(不管最近的那次有没有变动)都高亮显示出来。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-t # 或-no-title  会关闭watch命令在顶部的时间间隔,命令，当前时间的输出。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-h # 或--help # 查看帮助文档
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;实例&#34;&gt;实例&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;watch -d &amp;#39;ls -l | grep tmp&amp;#39;       # 监测当前目录中 scf&amp;#39; 的文件的变化
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<h2 id="功能">功能</h2>
 <p>watch 命令的功能如其名，可以监视命令的执行结果。它实现的原理就是每隔一段时间执行一次命令，然后显示结果。他的用途很广，具体怎么用就靠想象力了。</p>
 <h2 id="命令参数">命令参数</h2>
@@ -9360,7 +9458,15 @@ DMA（Direct Memory Access），直接内存访问。使用 DMA 的好处就是�
       <guid>https://lifeislife.cn/posts/linux%E5%AE%89%E8%A3%85nodejs/</guid>
       <description>&lt;h2 id=&#34;安装-nodejs-过程&#34;&gt;安装 Node.js 过程&lt;/h2&gt;
 &lt;p&gt;进入该网站&lt;a href=&#34;https://nodejs.org/zh-cn/download/&#34;&gt;下载 | Node.js&lt;/a&gt;
-也可以进入该网站下载历史版本，&lt;a href=&#34;https://nodejs.org/en/download/releases/&#34;&gt;Previous Releases | Node.js&lt;/a&gt;&lt;/p&gt;</description>
+也可以进入该网站下载历史版本，&lt;a href=&#34;https://nodejs.org/en/download/releases/&#34;&gt;Previous Releases | Node.js&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;进入 download 目录，&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-gdscript3&#34; data-lang=&#34;gdscript3&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;cd&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;download&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;wget&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;https&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;//&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;nodejs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;org&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dist&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v10&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;16.3&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;node&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v10&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;16.3&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;linux&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x64&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;xz&lt;/span&gt;  &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;O&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nodejs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;xz&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;解压&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;tar -xvf node-v10.16.3-linux-x64.tar.xz
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;改名 Node.js&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mv node-v10.16.3-linux-x64 nodejs
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将 npm，node 两个程序建立软连接，能够全局可用&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="安装-nodejs-过程">安装 Node.js 过程</h2>
 <p>进入该网站<a href="https://nodejs.org/zh-cn/download/">下载 | Node.js</a>
 也可以进入该网站下载历史版本，<a href="https://nodejs.org/en/download/releases/">Previous Releases | Node.js</a></p>
@@ -9399,7 +9505,15 @@ DMA（Direct Memory Access），直接内存访问。使用 DMA 的好处就是�
       <pubDate>Wed, 05 Jan 2022 13:01:47 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3unable-to-install-libpng12-so-0/</guid>
       <description>&lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;apt&lt;/code&gt;工具损坏了，在修复时使用了&lt;code&gt;sudo apt-get install -f&lt;/code&gt;命令，中途会提示需要安装&lt;code&gt;libpng12-0&lt;/code&gt;，但是始终无法安装，会提示如下错误。&lt;/p&gt;</description>
+&lt;p&gt;&lt;code&gt;apt&lt;/code&gt;工具损坏了，在修复时使用了&lt;code&gt;sudo apt-get install -f&lt;/code&gt;命令，中途会提示需要安装&lt;code&gt;libpng12-0&lt;/code&gt;，但是始终无法安装，会提示如下错误。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Unpacking libpng12-0:amd64 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;1.2.50-2+deb8u3&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; ... dpkg: error 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;processing archive libpng12-0_1.2.50-2+deb8u3_amd64.deb 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;--install&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;: unable to install new version of &lt;span class=&#34;s1&#34;&gt;&amp;#39;/usr/lib/
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s1&#34;&gt;x86_64-linux-gnu/libpng12.so.0&amp;#39;&lt;/span&gt;: No such file or directory 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Errors were encountered &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; processing: libpng12-0_1.2.50-2
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+deb8u3_amd64.deb
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
+&lt;p&gt;具体原因未知，网上答案众说纷纭。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p><code>apt</code>工具损坏了，在修复时使用了<code>sudo apt-get install -f</code>命令，中途会提示需要安装<code>libpng12-0</code>，但是始终无法安装，会提示如下错误。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Unpacking libpng12-0:amd64 <span class="o">(</span>1.2.50-2+deb8u3<span class="o">)</span> ... dpkg: error 
@@ -9639,7 +9753,9 @@ DMA（Direct Memory Access），直接内存访问。使用 DMA 的好处就是�
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
+&lt;p&gt;磁盘检测不能通过，可能是因为系统突然断电或其它未正常关闭系统导致。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>
 
@@ -9696,7 +9812,10 @@ DMA（Direct Memory Access），直接内存访问。使用 DMA 的好处就是�
 &lt;h3 id=&#34;linux&#34;&gt;Linux&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get install clang-format
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;windows&#34;&gt;windows&lt;/h3&gt;
-&lt;p&gt;每每到这时候就越能感受到用 Linux 作为开发环境的优势，Windows 安装就稍显复杂了。&lt;/p&gt;</description>
+&lt;p&gt;每每到这时候就越能感受到用 Linux 作为开发环境的优势，Windows 安装就稍显复杂了。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;你可以选择安装完整的 LLVM，在&lt;code&gt;bin&lt;/code&gt;目录可以看到&lt;code&gt;clang-format.exe&lt;/code&gt;。安装完后，将 &lt;code&gt;bin&lt;/code&gt; 目录&lt;strong&gt;添加到环境变量&lt;/strong&gt;中。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="安装">安装</h2>
 <h3 id="linux">Linux</h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install clang-format
@@ -10439,7 +10558,10 @@ Align macro definitions on consecutive lines. This will result in formattings li
       <guid>https://lifeislife.cn/posts/linux%E6%96%87%E4%BB%B6%E5%88%A0%E9%99%A4%E4%BB%8D%E7%84%B6%E5%9C%A8trash%E7%9B%AE%E5%BD%95%E4%B8%8B%E5%8D%A0%E7%94%A8%E7%A9%BA%E9%97%B4%E8%AF%A5%E5%A6%82%E4%BD%95%E5%88%A0%E9%99%A4trash%E4%B8%8B%E7%9A%84%E6%96%87%E4%BB%B6/</guid>
       <description>&lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
 &lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
-&lt;p&gt;查阅了一个&lt;a href=&#34;https://askubuntu.com/questions/351400/deleting-contents-of-local-share-trash-expunged&#34;&gt;网上的答案&lt;/a&gt;，大意就是，你删除了属于你的文件夹，但其中包含属于另一个用户的文件时，文件可能会卡住，就会在 Trash 目录里不会被彻底删除。&lt;/p&gt;</description>
+&lt;p&gt;查阅了一个&lt;a href=&#34;https://askubuntu.com/questions/351400/deleting-contents-of-local-share-trash-expunged&#34;&gt;网上的答案&lt;/a&gt;，大意就是，你删除了属于你的文件夹，但其中包含属于另一个用户的文件时，文件可能会卡住，就会在 Trash 目录里不会被彻底删除。&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo rm -rv /home/&amp;lt;your_username&amp;gt;/.local/share/Trash/expunged/*
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;PS：发现一个好用的磁盘分析工具，Linux 内置应用&lt;code&gt;Disk Usage Analyzer&lt;/code&gt;。按&lt;code&gt;Win&lt;/code&gt;键后搜索框搜索即可打开。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <h2 id="探究原因">探究原因</h2>
 <p>查阅了一个<a href="https://askubuntu.com/questions/351400/deleting-contents-of-local-share-trash-expunged">网上的答案</a>，大意就是，你删除了属于你的文件夹，但其中包含属于另一个用户的文件时，文件可能会卡住，就会在 Trash 目录里不会被彻底删除。</p>
@@ -10499,7 +10621,7 @@ Align macro definitions on consecutive lines. This will result in formattings li
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 2 文件描述符，标准错误&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# &amp;gt; 重定向符，输出&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# &amp;amp;1 文件描述符&amp;amp;，文件描述符1 标准输入&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;该命令功能即将&lt;code&gt;make&lt;/code&gt;编译时输出，标准错误重定向为标准输入，写入到&lt;code&gt;make.log&lt;/code&gt;文件中。符号的含义可以参考&lt;a href=&#34;&#34;&gt;Linux 文件描述符&lt;/a&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>在命令行编译项目时，经常遇到编译结果太长，覆盖了最先输出的结果，此时就需要将结果输出到文件再查看。命令如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">make &gt; make.log 2&gt;<span class="p">&amp;</span><span class="m">1</span>
 </span></span><span class="line"><span class="cl"><span class="c1"># make 编译命令</span>
@@ -10516,7 +10638,8 @@ Align macro definitions on consecutive lines. This will result in formattings li
       <pubDate>Thu, 30 Sep 2021 11:13:02 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/linux%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</guid>
       <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
-&lt;p&gt;Linux 中一切皆文件，比如 C++ 源文件、视频文件、Shell 脚本、可执行文件等，就连键盘、显示器、鼠标等硬件设备也都是文件。&lt;/p&gt;</description>
+&lt;p&gt;Linux 中一切皆文件，比如 C++ 源文件、视频文件、Shell 脚本、可执行文件等，就连键盘、显示器、鼠标等硬件设备也都是文件。&lt;/p&gt;
+&lt;p&gt;一个 Linux 进程可以打开成百上千个文件，为了表示和区分已经打开的文件，Linux 会给每个文件分配一个编号（一个 ID），这个编号就是一个整数，被称为&lt;strong&gt;文件描述符&lt;/strong&gt;（File Descriptor）。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="前言">前言</h2>
 <p>Linux 中一切皆文件，比如 C++ 源文件、视频文件、Shell 脚本、可执行文件等，就连键盘、显示器、鼠标等硬件设备也都是文件。</p>
 <p>一个 Linux 进程可以打开成百上千个文件，为了表示和区分已经打开的文件，Linux 会给每个文件分配一个编号（一个 ID），这个编号就是一个整数，被称为<strong>文件描述符</strong>（File Descriptor）。</p>
@@ -10725,7 +10848,8 @@ Align macro definitions on consecutive lines. This will result in formattings li
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   27 | #include &amp;lt;bits/libc-header-start.h&amp;gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;compilation terminated.
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;问题解决&#34;&gt;问题解决&lt;/h2&gt;
+&lt;p&gt;问题原因猜测是默认 gcc 只提供当前机器的版本，解决如下&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>想要分别编译 32 位和 64 位的程序时，gcc 出现了错误，</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">In file included from func_call.c:1:
@@ -10744,7 +10868,45 @@ Align macro definitions on consecutive lines. This will result in formattings li
       <pubDate>Wed, 01 Sep 2021 18:22:14 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qemu%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E8%99%9A%E6%8B%9Fcpu%E5%88%9B%E5%BB%BA/</guid>
       <description>&lt;h2 id=&#34;流程图&#34;&gt;流程图&lt;/h2&gt;
-&lt;p&gt;先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。&lt;/p&gt;</description>
+&lt;p&gt;先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210901182329.svg&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="流程图">流程图</h2>
 <p>先开个头吧，把创建流程稍微捋一下，找到创建虚拟 CPU 的模块。至于中间的流程还没有详细分析，万事开头难，先上手再说吧。</p>
 <p>
@@ -11280,7 +11442,26 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;abort&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这里，我们创建的子程序运行了一个最最简单的命令 &lt;code&gt;ls&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C++&#34; data-lang=&#34;C++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//createprocess.c
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/types.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;extern&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;create_process&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;program&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;**&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;arg_list&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;arg_list&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;s&#34;&gt;&amp;#34;ls&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;s&#34;&gt;&amp;#34;-l&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;s&#34;&gt;&amp;#34;/etc/yum.repos.d/&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nb&#34;&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;create_process&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;ls&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;arg_list&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;编译&#34;&gt;编译&lt;/h3&gt;
+&lt;p&gt;CPU 看不懂源码里的函数，命令，CPU 只认二进制数据，所以源码需要翻译成&lt;code&gt;01&lt;/code&gt;二进制数据，这个过程就是**编译（Compile）**的过程。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="进程">进程</h2>
 <h3 id="源码">源码</h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="c1">//process.c
@@ -12545,6 +12726,45 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
         });
     &lt;/script&gt;
 &lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;主题：dallas&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/12-36-51-167fdec4a32cab8991e86880c5f8ca19-20220911123650-efd6fd.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/12-36-51-167fdec4a32cab8991e86880c5f8ca19-20220911123650-efd6fd.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="效果">效果</h2>
 <p>主题：evan</p>
@@ -12771,7 +12991,9 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
       <guid>https://lifeislife.cn/posts/vscode%E5%8D%95%E6%AD%A5%E8%B0%83%E8%AF%95qemu/</guid>
       <description>&lt;p&gt;了解了如何在&lt;a href=&#34;https://dunky-z.github.io/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/&#34;&gt;VSCode 中调试程序&lt;/a&gt;，接下来我们在 VSCode 中搭建调试 QEMU 的环境。&lt;/p&gt;
 &lt;h2 id=&#34;配置&#34;&gt;配置&lt;/h2&gt;
-&lt;p&gt;首先我们需要&lt;a href=&#34;https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/&#34;&gt;下载和编译 QEMU 源码&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;首先我们需要&lt;a href=&#34;https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/&#34;&gt;下载和编译 QEMU 源码&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./configure --enable-debug --target-list=riscv32-softmmu,riscv32-linux-user --enable-kvm
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一定要加上&lt;code&gt;--enable-debug&lt;/code&gt;，编译出的程序才带有调试信息，不用设置安装路径，编译时会自动在 qemu 文件夹下自动创建一个&lt;code&gt;build&lt;/code&gt;文件夹，编译后的程序也在&lt;code&gt;build&lt;/code&gt;文件夹下。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>了解了如何在<a href="https://dunky-z.github.io/2021/08/23/VSCode%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F/">VSCode 中调试程序</a>，接下来我们在 VSCode 中搭建调试 QEMU 的环境。</p>
 <h2 id="配置">配置</h2>
 <p>首先我们需要<a href="https://dunky-z.github.io/2021/07/23/QEMU%E5%88%9D%E8%AF%86/">下载和编译 QEMU 源码</a></p>
@@ -13222,7 +13444,13 @@ qemu 会模拟多种体系结构，常用的有普通 PC 机，也即 x86 的 32
       <guid>https://lifeislife.cn/posts/linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96/</guid>
       <description>&lt;h2 id=&#34;系统初始化&#34;&gt;系统初始化&lt;/h2&gt;
 &lt;h3 id=&#34;x86-架构概述&#34;&gt;x86 架构概述&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;CPU（Central Processing Unit）&lt;/strong&gt;：中央处理器，计算机所有设备都围绕它展开工作。&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;CPU（Central Processing Unit）&lt;/strong&gt;：中央处理器，计算机所有设备都围绕它展开工作。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;运算单元：只管算，例如做加法、做位移等等。但是，它不知道应该算哪些数据，运算结果应该放在哪里。&lt;/li&gt;
+&lt;li&gt;数据单元：运算单元计算的数据如果每次都要经过总线，到内存里面现拿，这样就太慢了，所以就有了数据单元。数据单元包括 CPU 内部的缓存和寄存器组，空间很小，但是速度飞快，可以暂时存放数据和运算结果。&lt;/li&gt;
+&lt;li&gt;控制单元：有了放数据的地方，也有了算的地方，还需要有个指挥到底做什么运算的地方，这就是控制单元。控制单元是一个统一的指挥中心，它可以获得下一条指令，然后执行这条指令。这个指令会指导运算单元取出数据单元中的某几个数据，计算出个结果，然后放在数据单元的某个地方。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;内存（Memory）&lt;/strong&gt;：CPU 本身不能保存大量数据，许多复杂的计算需要将中间结果保存下来就必须用到内存。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="系统初始化">系统初始化</h2>
 <h3 id="x86-架构概述">x86 架构概述</h3>
 <p><strong>CPU（Central Processing Unit）</strong>：中央处理器，计算机所有设备都围绕它展开工作。</p>
@@ -14801,7 +15029,15 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-f force 会覆盖本地已经存在的文件
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-h -m -V 分别为帮助，帮助，版本
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-e 比较复杂，可以通过该选项，写一些脚本来做一些复杂的事情
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;examples&#34;&gt;Examples&lt;/h2&gt;
+&lt;h3 id=&#34;替换文件名中的特定字段&#34;&gt;替换文件名中的特定字段&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rename &amp;#34;s/AA/aa/&amp;#34; *  # 把文件名中的AA替换成aa
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;修改文件后缀&#34;&gt;修改文件后缀&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rename &amp;#34;s/.html/.php/&amp;#34; *     # 把.html 后缀的改成 .php后缀
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rename &amp;#34;s/.png/.jpg/&amp;#34; *      # 将 png 改为 jpg
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;添加后缀&#34;&gt;添加后缀&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;rename &amp;#34;s/$/.txt/&amp;#34; *     # 把所有的文件名都以txt结尾
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;$&lt;/code&gt;正则表达式中表示结尾。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="commands">Commands</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">rename [options] &#34;s/oldname/newname/&#34; file
 </span></span></code></pre></div><p>格式就很容易看出来怎么用的，就是<code>/</code>不能丢。</p>
@@ -14868,7 +15104,13 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-p  指定 kill 命令只打印相关进程的进程号，而不发送任何信号
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-s  指定发送信号
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-u  指定用户
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;examples&#34;&gt;Examples&lt;/h2&gt;
+&lt;h3 id=&#34;查看所有信号&#34;&gt;查看所有信号&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;➜   kill -l
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;HUP INT QUIT ILL TRAP ABRT BUS FPE KILL USR1 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;SEGV USR2 PIPE ALRM TERM STKFLT CHLD CONT STOP 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;TSTP TTIN TTOU URG XCPU XFSZ VTALRM PROF WINCH POLL PWR SYS
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;常用信号&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>对于在前台运行的程序，我们可以用<code>Ctrl+C</code>来终止运行，但是在后台的程序就必须用<code>kill</code>命令来终止了。</p>
 <h2 id="command">Command</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-l  信号，若果不加信号的编号参数，则使用“-l”参数会列出全部的信号名称
@@ -14905,7 +15147,10 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
       <link>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E4%BF%A1%E5%8F%B7signal/</link>
       <pubDate>Wed, 11 Aug 2021 10:59:22 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E4%BF%A1%E5%8F%B7signal/</guid>
-      <description>&lt;p&gt;关于进程间通信的概述可以查看&lt;a href=&#34;https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/&#34;&gt;Linux 操作系统 - 进程间通信&lt;/a&gt;，&lt;a href=&#34;https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory&#34;&gt;代码同步在这里&lt;/a&gt;。&lt;/p&gt;</description>
+      <description>&lt;p&gt;关于进程间通信的概述可以查看&lt;a href=&#34;https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/&#34;&gt;Linux 操作系统 - 进程间通信&lt;/a&gt;，&lt;a href=&#34;https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory&#34;&gt;代码同步在这里&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;本文通过实例介绍通过共享内存实现进程间通信。&lt;/p&gt;
+&lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
+&lt;p&gt;信号就像实际生产过程中的应急预案，发生了某个异常就会启动特定的应急预案，为了响应各类异常情况，所以就定义了很多个信号，信号的名称是在头文件&lt;code&gt;signal.h&lt;/code&gt;中定义的，信号都以&lt;code&gt;SIG&lt;/code&gt;开头，常用的信号并不多，常用的信号如下：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>关于进程间通信的概述可以查看<a href="https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">Linux 操作系统 - 进程间通信</a>，<a href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory">代码同步在这里</a>。</p>
 <p>本文通过实例介绍通过共享内存实现进程间通信。</p>
 <h2 id="简介">简介</h2>
@@ -14995,7 +15240,10 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
       <link>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98sharedmemory/</link>
       <pubDate>Tue, 10 Aug 2021 17:41:26 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1ipc%E4%B9%8B%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98sharedmemory/</guid>
-      <description>&lt;p&gt;关于进程间通信的概述可以查看&lt;a href=&#34;https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/&#34;&gt;Linux 操作系统 - 进程间通信&lt;/a&gt;，&lt;a href=&#34;https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory&#34;&gt;代码同步在这里&lt;/a&gt;。&lt;/p&gt;</description>
+      <description>&lt;p&gt;关于进程间通信的概述可以查看&lt;a href=&#34;https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/&#34;&gt;Linux 操作系统 - 进程间通信&lt;/a&gt;，&lt;a href=&#34;https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory&#34;&gt;代码同步在这里&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;本文通过实例介绍通过共享内存实现进程间通信。&lt;/p&gt;
+&lt;h2 id=&#34;shmget得到一个共享内存标识符或创建一个共享内存对象&#34;&gt;shmget(得到一个共享内存标识符或创建一个共享内存对象)&lt;/h2&gt;
+&lt;p&gt;我们可以通过&lt;code&gt;shmget&lt;/code&gt;函数创建或打开共享内存，通过函数签名&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>关于进程间通信的概述可以查看<a href="https://dunky-z.github.io/2021/08/10/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">Linux 操作系统 - 进程间通信</a>，<a href="https://github.com/Dunky-Z/learning-linux/tree/main/IPC/SharedMemory">代码同步在这里</a>。</p>
 <p>本文通过实例介绍通过共享内存实现进程间通信。</p>
 <h2 id="shmget得到一个共享内存标识符或创建一个共享内存对象">shmget(得到一个共享内存标识符或创建一个共享内存对象)</h2>
@@ -15724,7 +15972,11 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-l：仅列出行；
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-w：仅列出多少字 (英文单字)；
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-m：多少字符
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;使用实例&#34;&gt;使用实例&lt;/h2&gt;
+&lt;p&gt;统计&lt;code&gt;hello.c&lt;/code&gt;文件夹下文件总共多少行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ wc -l  hello.c
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;m&#34;&gt;14&lt;/span&gt; hello.c
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;统计文件夹下文件的个数&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>想知道自己代码写了多少行，可以一个<code>wc</code>命令搞定。</p>
 <h2 id="可选参数">可选参数</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">-l：仅列出行；
@@ -15752,7 +16004,45 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
       <guid>https://lifeislife.cn/posts/linux%E6%9B%B4%E6%8D%A2ubuntu%E8%BD%AF%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%BA%90/</guid>
       <description>&lt;p&gt;Ubuntu 默认是国外的源，软件下载和更新都比较慢。两种方法将下载源换成国内的源。&lt;/p&gt;
 &lt;h2 id=&#34;用软件和更新工具&#34;&gt;用&amp;quot;软件和更新&amp;quot;工具&lt;/h2&gt;
-&lt;p&gt;从 Ubuntu 菜单中找到&lt;strong&gt;软件和更新&lt;/strong&gt;这个应用并打开。&lt;/p&gt;</description>
+&lt;p&gt;从 Ubuntu 菜单中找到&lt;strong&gt;软件和更新&lt;/strong&gt;这个应用并打开。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210730112638.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210730112638.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>Ubuntu 默认是国外的源，软件下载和更新都比较慢。两种方法将下载源换成国内的源。</p>
 <h2 id="用软件和更新工具">用&quot;软件和更新&quot;工具</h2>
 <p>从 Ubuntu 菜单中找到<strong>软件和更新</strong>这个应用并打开。</p>
@@ -16055,7 +16345,20 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
       <description>&lt;p&gt;&lt;code&gt;df&lt;/code&gt;全称&lt;code&gt;disk filesystem&lt;/code&gt; ，以磁盘分区为单位查看文件系统，可以查看磁盘文件占用空间，磁盘剩余空间等信息。&lt;/p&gt;
 &lt;h2 id=&#34;命令格式&#34;&gt;命令格式&lt;/h2&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;df [] []
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;可选参数&#34;&gt;可选参数&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-a      全部文件系统列表
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-h      方便阅读方式显示
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-H      等于“-h”，但是计算式，1K=1000，而不是 1K=1024
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-i      显示 inode 信息
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-k      区块为 1024 字节
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-l      只显示本地文件系统
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-m      区块为 1048576 字节
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;--no-sync 忽略 sync 命令
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-P      输出格式为 POSIX
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;--sync  在取得磁盘信息前，先执行 sync 命令
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-T      文件系统类型
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;使用实例&#34;&gt;使用实例&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;df -T&lt;/code&gt;显示包含文件系统，类型，可用大小，已用大小，挂载点等信息。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p><code>df</code>全称<code>disk filesystem</code> ，以磁盘分区为单位查看文件系统，可以查看磁盘文件占用空间，磁盘剩余空间等信息。</p>
 <h2 id="命令格式">命令格式</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">df [] []
@@ -16184,7 +16487,13 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是在用命令行构建 project 时可能会报错&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qmake -project
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;could not find a Qt installation of &amp;#39;&amp;#39;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这时候需要&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get install qt5-default 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;好了可以愉快玩耍了。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;瞎折腾&lt;/p&gt;
+&lt;h2 id=&#34;下载-qt&#34;&gt;下载 Qt&lt;/h2&gt;
+&lt;p&gt;从 Qt5.15.0 起，对于开源用户，Qt 官方不再提供独立安装文件，且不再有 bug 修复版本（比如 Qt5.15.1），如果从官网下载，需要自己编译。虽然想试试编译，但是虚拟机刚开始开的空间太小了，还是另寻他法吧。以后有机会再来编译试试新功能。若读者有兴趣可以从&lt;a href=&#34;https://download.qt.io/archive/qt/&#34;&gt;官网&lt;/a&gt;下载源码并编译。或者参考&lt;a href=&#34;https://wiki.qt.io/Building_Qt_5_from_Git#Getting_the_source_code&#34;&gt;官方的编译教程&lt;/a&gt;，从 GitHub 上下载。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>真蠢，之前费那么大劲，只要一句命令就完事了</p>
 <h2 id="下载安装">下载安装</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">sudo apt install qtcreator
@@ -16589,7 +16898,21 @@ A：磁盘文件系统多种多样，硬盘出厂时不能限制只能用一种�
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;功能
-显示帮助信息并退出&lt;/p&gt;</description>
+显示帮助信息并退出&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;子参数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;调用实例&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qemu-system-riscv32 -h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;-version&#34;&gt;&lt;code&gt;-version&lt;/code&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;功能
+显示 qemu 版本信息并退出&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h1 id="调用文档">调用文档</h1>
 <p><code>qemu-system-x86_64 [options] [disk_image] </code>
 <code>disk_image</code>是 IDE 硬盘 0 的原始硬盘映像。某些目标不需要磁盘映像。</p>
@@ -17066,7 +17389,9 @@ When the KVM accelerator is used, it controls the size of the per-vCPU dirty pag
       <pubDate>Wed, 21 Jul 2021 15:02:58 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BB%80%E4%B9%88%E6%98%AF%E9%A9%B1%E5%8A%A8%E9%A9%B1%E5%8A%A8%E7%9A%84%E4%BD%9C%E7%94%A8%E5%8F%88%E6%98%AF%E4%BB%80%E4%B9%88/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;任何一个计算机系统的运行都是系统中软硬件协作的结果，没有硬件的软件是空中楼阁，而没有软件的硬件则只是一堆废铁。&amp;ndash;&lt;a href=&#34;https://blog.csdn.net/yunfenglw/article/details/39337343&#34;&gt;天朗 - 星空&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;任何一个计算机系统的运行都是系统中软硬件协作的结果，没有硬件的软件是空中楼阁，而没有软件的硬件则只是一堆废铁。&amp;ndash;&lt;a href=&#34;https://blog.csdn.net/yunfenglw/article/details/39337343&#34;&gt;天朗 - 星空&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;硬件是底层基础，所有软件代码的运行平台，相对固定不易改变，而软件是具体的应用，它灵活多变，可以应对用户的不同需求。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<blockquote>
 <p>任何一个计算机系统的运行都是系统中软硬件协作的结果，没有硬件的软件是空中楼阁，而没有软件的硬件则只是一堆废铁。&ndash;<a href="https://blog.csdn.net/yunfenglw/article/details/39337343">天朗 - 星空</a></p>
 </blockquote>

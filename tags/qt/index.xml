@@ -4,7 +4,7 @@
     <title>Qt on 夜云泊</title>
     <link>https://lifeislife.cn/tags/qt/</link>
     <description>Recent content in Qt on 夜云泊</description>
-    <generator>Hugo -- 0.134.1</generator>
+    <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
     <lastBuildDate>Fri, 18 Mar 2022 13:50:35 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/qt/index.xml" rel="self" type="application/rss+xml" />
@@ -14,7 +14,14 @@
       <pubDate>Fri, 18 Mar 2022 13:50:35 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E7%A8%8B%E5%BA%8F%E6%94%BE%E5%88%B0%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E5%B1%8F%E8%94%BDqdebug%E8%BE%93%E5%87%BA/</guid>
       <description>&lt;h2 id=&#34;可执行程序放到指定目录&#34;&gt;可执行程序放到指定目录&lt;/h2&gt;
-&lt;p&gt;默认情况下 QtCreator 会将编译链接后的可执行程序与中间生成的文件防盗&lt;code&gt;build-***-&lt;/code&gt;文件中，如何能将可执行文件生成在指定目录？&lt;/p&gt;</description>
+&lt;p&gt;默认情况下 QtCreator 会将编译链接后的可执行程序与中间生成的文件防盗&lt;code&gt;build-***-&lt;/code&gt;文件中，如何能将可执行文件生成在指定目录？&lt;/p&gt;
+&lt;p&gt;修改&lt;code&gt;.pro&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CONFIG(debug ,debug|release){
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    DESTDIR = ../debug
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}else{
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    DESTDIR = ../release
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;debug&lt;/code&gt;版本放在&lt;code&gt;../debug&lt;/code&gt;目录中，&lt;code&gt;release&lt;/code&gt;版本放在&lt;code&gt;../release&lt;/code&gt;目录中。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="可执行程序放到指定目录">可执行程序放到指定目录</h2>
 <p>默认情况下 QtCreator 会将编译链接后的可执行程序与中间生成的文件防盗<code>build-***-</code>文件中，如何能将可执行文件生成在指定目录？</p>
 <p>修改<code>.pro</code>:</p>
@@ -47,7 +54,8 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;QObject::connect: Cannot queue arguments of &lt;span class=&#34;nb&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;QTextCursor&amp;#39;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; 
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;Make sure &lt;span class=&#34;s1&#34;&gt;&amp;#39;QTextCursor&amp;#39;&lt;/span&gt; is registered using qRegisterMetaType&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;.&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
+&lt;p&gt;原因是&lt;strong&gt;我们不能通过线程来修改 UI，较为安全的修改用户界面的方式是向 UI 窗口发送信号 (signal)&lt;/strong&gt;，较为简单的方式是使用 Qt threading 类。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>我在线程中直接调用了 QTextEdit 的 append 函数时，候就会出现下面的错误：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">QObject::connect: Cannot queue arguments of <span class="nb">type</span> <span class="s1">&#39;QTextCursor&#39;</span>
@@ -83,7 +91,15 @@
       <pubDate>Thu, 02 Dec 2021 10:35:14 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E8%B7%A8%E7%AA%97%E5%8F%A3%E6%8E%A7%E4%BB%B6%E7%B1%BB%E4%BC%A0%E9%80%92%E6%95%B0%E6%8D%AE/</guid>
       <description>&lt;h2 id=&#34;问题简介&#34;&gt;问题简介&lt;/h2&gt;
-&lt;p&gt;本文基于&lt;a href=&#34;https://blog.csdn.net/shihoongbo/article/details/48681979&#34;&gt;【Qt】窗体间传递数据（跨控件跨类），三种情况与处理方法&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;本文基于&lt;a href=&#34;https://blog.csdn.net/shihoongbo/article/details/48681979&#34;&gt;【Qt】窗体间传递数据（跨控件跨类），三种情况与处理方法&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;已知三个窗体，A 为 B C 的父控件，B 与 C 互为兄弟控件
+那么参数传递分三种情况：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;B 向 A（C 向 A）传递参数&lt;/li&gt;
+&lt;li&gt;B 向 C（C 向 B）传递参数&lt;/li&gt;
+&lt;li&gt;A 向 B（A 向 C）传递参数&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;三个空间关系模型参考如下，&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="问题简介">问题简介</h2>
 <p>本文基于<a href="https://blog.csdn.net/shihoongbo/article/details/48681979">【Qt】窗体间传递数据（跨控件跨类），三种情况与处理方法</a></p>
 <p>已知三个窗体，A 为 B C 的父控件，B 与 C 互为兄弟控件
@@ -244,7 +260,10 @@
 &lt;h3 id=&#34;linux&#34;&gt;Linux&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get install clang-format
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;windows&#34;&gt;windows&lt;/h3&gt;
-&lt;p&gt;每每到这时候就越能感受到用 Linux 作为开发环境的优势，Windows 安装就稍显复杂了。&lt;/p&gt;</description>
+&lt;p&gt;每每到这时候就越能感受到用 Linux 作为开发环境的优势，Windows 安装就稍显复杂了。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;你可以选择安装完整的 LLVM，在&lt;code&gt;bin&lt;/code&gt;目录可以看到&lt;code&gt;clang-format.exe&lt;/code&gt;。安装完后，将 &lt;code&gt;bin&lt;/code&gt; 目录&lt;strong&gt;添加到环境变量&lt;/strong&gt;中。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="安装">安装</h2>
 <h3 id="linux">Linux</h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install clang-format
@@ -1008,7 +1027,24 @@ Align macro definitions on consecutive lines. This will result in formattings li
 &lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;新建的工程师 MainWindow 子类工程，没有设置父窗口。&lt;/p&gt;</description>
+&lt;p&gt;新建的工程师 MainWindow 子类工程，没有设置父窗口。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;没有将控件的父窗口设置成自己定义的 widget。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C++&#34; data-lang=&#34;C++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&amp;lt;QMainWindow&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;QMainWindow&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;QMainWindow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;QMainWindow&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;parent&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;QMainWindow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;parent&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ui&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Ui&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;QMainWindow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     &lt;span class=&#34;n&#34;&gt;ui&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;setupUi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;this&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     &lt;span class=&#34;n&#34;&gt;QPushButton&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;button_1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;QPushButton&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;add&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;     &lt;span class=&#34;n&#34;&gt;QPushButton&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;button_1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;QPushButton&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;del&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;方法 1：给按钮控件设置父窗口：QWidget，并且把按钮添加到父窗口中。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>在新窗口中的构造函数中添加控件运行后却没有显示</p>
 <h2 id="探究原因">探究原因</h2>
@@ -1291,7 +1327,9 @@ Align macro definitions on consecutive lines. This will result in formattings li
       <pubDate>Sat, 25 Sep 2021 19:17:46 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qtcreator%E4%BF%AE%E6%94%B9%E9%A1%B9%E7%9B%AE%E6%9E%84%E5%BB%BA%E7%9B%AE%E5%BD%95/</guid>
       <description>&lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
-&lt;p&gt;QtCreator 构建项目时，会在统计目录新建一个&lt;code&gt;build-xxx-debug&lt;/code&gt;的目录，如果想要自己修改这个目录的位置，名称，该怎么办。&lt;/p&gt;</description>
+&lt;p&gt;QtCreator 构建项目时，会在统计目录新建一个&lt;code&gt;build-xxx-debug&lt;/code&gt;的目录，如果想要自己修改这个目录的位置，名称，该怎么办。&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;仅修改工具（Tool）–&amp;gt;选项 (Options)–&amp;gt;构建和运行 (Build&amp;amp;Run) 中&lt;code&gt;Default build directory：./%{CurrentBuild:Name}&lt;/code&gt;是不会生效的。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>QtCreator 构建项目时，会在统计目录新建一个<code>build-xxx-debug</code>的目录，如果想要自己修改这个目录的位置，名称，该怎么办。</p>
 <h2 id="解决方法">解决方法</h2>
@@ -1628,7 +1666,9 @@ Align macro definitions on consecutive lines. This will result in formattings li
       <link>https://lifeislife.cn/posts/qt%E7%BB%98%E5%88%B6%E7%B3%BB%E7%BB%9F/</link>
       <pubDate>Fri, 27 Aug 2021 14:39:12 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E7%BB%98%E5%88%B6%E7%B3%BB%E7%BB%9F/</guid>
-      <description>&lt;p&gt;本篇文章所涉及代码可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/QtRoad2&#34;&gt;此处查看&lt;/a&gt;。&lt;/p&gt;</description>
+      <description>&lt;p&gt;本篇文章所涉及代码可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/QtRoad2&#34;&gt;此处查看&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;绘制系统简介&#34;&gt;绘制系统简介&lt;/h2&gt;
+&lt;p&gt;Qt 的绘图系统允许使用相同的 API 在屏幕和其它打印设备上进行绘制。整个绘图系统基于&lt;code&gt;QPainter&lt;/code&gt;,&lt;code&gt;QPainterDevice&lt;/code&gt;和&lt;code&gt;QPaintEngine&lt;/code&gt;三个类。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>本篇文章所涉及代码可在<a href="https://github.com/Dunky-Z/learning-qt/tree/main/QtRoad2">此处查看</a>。</p>
 <h2 id="绘制系统简介">绘制系统简介</h2>
 <p>Qt 的绘图系统允许使用相同的 API 在屏幕和其它打印设备上进行绘制。整个绘图系统基于<code>QPainter</code>,<code>QPainterDevice</code>和<code>QPaintEngine</code>三个类。</p>
@@ -2739,6 +2779,44 @@ Align macro definitions on consecutive lines. This will result in formattings li
         });
     &lt;/script&gt;
 &lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820152316.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210820152316.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="效果预览">效果预览</h2>
 <p>
@@ -3292,7 +3370,47 @@ Align macro definitions on consecutive lines. This will result in formattings li
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;效果预览&#34;&gt;效果预览&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210818130510.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20210818130510.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+完整项目及资源文件请在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/Demo/login&#34;&gt;Github&lt;/a&gt;查看。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<h2 id="框架类图">框架类图</h2>
 <p>
 
@@ -3737,7 +3855,8 @@ QStringLiteral:如果该 QString 不会修改的话，那使用 QStringLiteral</
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;点击&lt;code&gt;Choose&lt;/code&gt;，设置资源文件名和路径。资源文件是一系列文件的集合，比如我要建立一个图片的资源文件，我可以设置&lt;code&gt;img&lt;/code&gt;为资源文件名，将来所有图片类资源，都放到这个资源文件里，加入还有音频类的文件，我可以新建一个&lt;code&gt;audio&lt;/code&gt;的资源文件，以后所有音频类的文件都放到这个资源文件下。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>QtCreator➜新建文件或项目➜Qt➜Qt Resource File</p>
 <p>
 
@@ -3903,7 +4022,9 @@ QStringLiteral:如果该 QString 不会修改的话，那使用 QStringLiteral</
       <link>https://lifeislife.cn/posts/qt%E4%BA%8B%E4%BB%B6/</link>
       <pubDate>Mon, 09 Aug 2021 09:55:07 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E4%BA%8B%E4%BB%B6/</guid>
-      <description>&lt;p&gt;本篇文章所涉及代码可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/Event&#34;&gt;此处查看&lt;/a&gt;&lt;/p&gt;</description>
+      <description>&lt;p&gt;本篇文章所涉及代码可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/Event&#34;&gt;此处查看&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;事件以及与信号的区别&#34;&gt;事件以及与信号的区别&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;事件&lt;/strong&gt;（event）是由系统或者 Qt 本身在不同的时刻发出的。当用户按下鼠标、敲下键盘，或者是窗口需要重新绘制的时候，都会发出一个相应的事件。一些事件在对用户操作做出响应时发出，如键盘事件等；另一些事件则是由系统自动发出，如计时器事件。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>本篇文章所涉及代码可在<a href="https://github.com/Dunky-Z/learning-qt/tree/main/Event">此处查看</a></p>
 <h2 id="事件以及与信号的区别">事件以及与信号的区别</h2>
 <p><strong>事件</strong>（event）是由系统或者 Qt 本身在不同的时刻发出的。当用户按下鼠标、敲下键盘，或者是窗口需要重新绘制的时候，都会发出一个相应的事件。一些事件在对用户操作做出响应时发出，如键盘事件等；另一些事件则是由系统自动发出，如计时器事件。</p>
@@ -4261,7 +4382,8 @@ QStringLiteral:如果该 QString 不会修改的话，那使用 QStringLiteral</
       <link>https://lifeislife.cn/posts/qt%E5%AF%B9%E8%AF%9D%E6%A1%86/</link>
       <pubDate>Thu, 05 Aug 2021 10:11:33 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E5%AF%B9%E8%AF%9D%E6%A1%86/</guid>
-      <description>&lt;p&gt;本篇文章所涉及代码，可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/Dialog&#34;&gt;此处查看&lt;/a&gt;&lt;/p&gt;</description>
+      <description>&lt;p&gt;本篇文章所涉及代码，可在&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/Dialog&#34;&gt;此处查看&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Qt 中使用 QDialog 类实现对话框。就像主窗口一样，我们通常会设计一个类继承 QDialog。QDialog（及其子类，以及所有 Qt::Dialog 类型的类）的对于其 parent 指针都有额外的解释：&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>本篇文章所涉及代码，可在<a href="https://github.com/Dunky-Z/learning-qt/tree/main/Dialog">此处查看</a></p>
 <p>Qt 中使用 QDialog 类实现对话框。就像主窗口一样，我们通常会设计一个类继承 QDialog。QDialog（及其子类，以及所有 Qt::Dialog 类型的类）的对于其 parent 指针都有额外的解释：</p>
 <p>如果 parent 为 NULL，则该对话框会作为一个顶层窗口，否则则作为其父组件的子对话框（此时，其默认出现的位置是 parent 的中心）。</p>
@@ -4319,7 +4441,9 @@ QStringLiteral:如果该 QString 不会修改的话，那使用 QStringLiteral</
       <pubDate>Wed, 04 Aug 2021 11:34:10 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/qt%E6%B7%BB%E5%8A%A0%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本文是学习【&lt;a href=&#34;https://www.devbean.net/2012/08/qt-study-road-2-catelog/&#34;&gt;Qt 学习之路&lt;/a&gt;】的学习笔记，源码非原创。&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/MainWindow&#34;&gt;Github&lt;/a&gt;同步本文更改的代码。&lt;/p&gt;</description>
+&lt;p&gt;本文是学习【&lt;a href=&#34;https://www.devbean.net/2012/08/qt-study-road-2-catelog/&#34;&gt;Qt 学习之路&lt;/a&gt;】的学习笔记，源码非原创。&lt;a href=&#34;https://github.com/Dunky-Z/learning-qt/tree/main/MainWindow&#34;&gt;Github&lt;/a&gt;同步本文更改的代码。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在建立 Qt 学习代码仓时，推送到远程的代码比较乱，所以用&lt;code&gt;gitignore&lt;/code&gt;文件屏蔽了一些。相关方法在&lt;a href=&#34;https://dunky-z.github.io/2021/08/04/Git%E4%B8%AD%E6%B7%BB%E5%8A%A0gitignore%E5%B9%B6%E6%9B%B4%E6%96%B0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93/&#34;&gt;这里&lt;/a&gt;。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<blockquote>
 <p>本文是学习【<a href="https://www.devbean.net/2012/08/qt-study-road-2-catelog/">Qt 学习之路</a>】的学习笔记，源码非原创。<a href="https://github.com/Dunky-Z/learning-qt/tree/main/MainWindow">Github</a>同步本文更改的代码。</p>
 </blockquote>
@@ -4449,7 +4573,13 @@ QStringLiteral:如果该 QString 不会修改的话，那使用 QStringLiteral</
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是在用命令行构建 project 时可能会报错&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qmake -project
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;could not find a Qt installation of &amp;#39;&amp;#39;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pr</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这时候需要&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt-get install qt5-default 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;好了可以愉快玩耍了。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;瞎折腾&lt;/p&gt;
+&lt;h2 id=&#34;下载-qt&#34;&gt;下载 Qt&lt;/h2&gt;
+&lt;p&gt;从 Qt5.15.0 起，对于开源用户，Qt 官方不再提供独立安装文件，且不再有 bug 修复版本（比如 Qt5.15.1），如果从官网下载，需要自己编译。虽然想试试编译，但是虚拟机刚开始开的空间太小了，还是另寻他法吧。以后有机会再来编译试试新功能。若读者有兴趣可以从&lt;a href=&#34;https://download.qt.io/archive/qt/&#34;&gt;官网&lt;/a&gt;下载源码并编译。或者参考&lt;a href=&#34;https://wiki.qt.io/Building_Qt_5_from_Git#Getting_the_source_code&#34;&gt;官方的编译教程&lt;/a&gt;，从 GitHub 上下载。&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>真蠢，之前费那么大劲，只要一句命令就完事了</p>
 <h2 id="下载安装">下载安装</h2>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">sudo apt install qtcreator
