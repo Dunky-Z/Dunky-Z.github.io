@@ -6,8 +6,66 @@
     <description>Recent content in Bug 踩坑记录 on 夜云泊</description>
     <generator>Hugo -- 0.134.2</generator>
     <language>zh</language>
-    <lastBuildDate>Sat, 02 Mar 2024 22:21:23 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 15 Sep 2024 10:10:20 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/bug-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>解决systemd-journald查看日志出现Missed  kernel messages</title>
+      <link>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3missed--kernel-messages/</link>
+      <pubDate>Sun, 15 Sep 2024 10:10:20 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3missed--kernel-messages/</guid>
+      <description>&lt;p&gt;在使用 &lt;code&gt;systemd-journald&lt;/code&gt; 进行日志管理时，遇到内核日志输出过快导致日志丢失的情况时，一般是由于 &lt;code&gt;journald&lt;/code&gt; 的缓冲区设置过小，无法处理快速输出的内核消息。本文将介绍问题原因，并给出相应的解决方案。&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>在使用 <code>systemd-journald</code> 进行日志管理时，遇到内核日志输出过快导致日志丢失的情况时，一般是由于 <code>journald</code> 的缓冲区设置过小，无法处理快速输出的内核消息。本文将介绍问题原因，并给出相应的解决方案。</p>
+<h2 id="问题描述">问题描述</h2>
+<p>当内核日志输出过快时，<code>systemd-journald</code> 可能会因其内部缓冲区设置过小而无法处理所有日志，导致部分日志信息丢失。表现为系统日志中出现类似以下的错误：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Missed xxx kernel messages
+</span></span></code></pre></div><p>这种情况通常出现在内核大量输出调试信息、系统初始化阶段日志频繁输出，或系统发生较大故障时。</p>
+<h2 id="原因分析">原因分析</h2>
+<p><code>systemd-journald</code> 是一个处理系统日志的服务，包括内核日志。它通过监听 <code>/dev/kmsg</code> 获取内核日志信息。journald 使用一个内部缓冲区来暂存日志，如果日志流速过快而 <code>journald</code> 无法及时处理，这个缓冲区会被填满，导致消息溢出或丢失。</p>
+<p>默认情况下，<code>journald</code> 的日志缓冲区大小较小，可能无法应对高频率的日志输出。此外，<code>journald</code> 还可能受限于某些系统资源的配置，如最大消息大小、日志文件大小等。</p>
+<h2 id="解决方案">解决方案</h2>
+<p>我们可以通过以下几个步骤来缓解或解决内核日志丢失问题：</p>
+<h3 id="1-增加-systemd-journald-缓存大小">1. 增加 <code>systemd-journald</code> 缓存大小</h3>
+<p>通过调整 <code>systemd-journald</code> 的配置来增大其缓冲区，可以减少日志丢失的情况。</p>
+<p>编辑 <code>journald</code> 的配置文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo vim /etc/systemd/journald.conf
+</span></span></code></pre></div><p>找到以下参数并进行调整：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># RuntimeMaxUse: 设置运行时日志文件的最大使用空间。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 可以将此值设为较大的值，例如 100M。</span>
+</span></span><span class="line"><span class="cl"><span class="na">RuntimeMaxUse</span><span class="o">=</span><span class="s">100M</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># SystemMaxUse: 设置系统日志文件的最大使用空间。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 可以将此值设为 500M。</span>
+</span></span><span class="line"><span class="cl"><span class="na">SystemMaxUse</span><span class="o">=</span><span class="s">500M</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># RateLimitInterval: 限制日志接收速率的时间间隔。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 可以适当延长此时间，例如 10s。</span>
+</span></span><span class="line"><span class="cl"><span class="na">RateLimitInterval</span><span class="o">=</span><span class="s">10s</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># RateLimitBurst: 限制日志接收速率的最大突发数。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 增加突发限制，比如 10000。</span>
+</span></span><span class="line"><span class="cl"><span class="na">RateLimitBurst</span><span class="o">=</span><span class="s">10000</span>
+</span></span></code></pre></div><p>保存并关闭文件，然后重启 <code>journald</code> 服务使配置生效：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart systemd-journald
+</span></span></code></pre></div><h3 id="2-调整内核日志环形缓冲区的大小">2. 调整内核日志环形缓冲区的大小</h3>
+<p>内核日志存储在一个环形缓冲区中，该缓冲区的大小可以通过 <code>dmesg</code> 命令查看和调整。默认的缓冲区可能较小，可以通过 <code>kernel</code> 命令行参数 <code>log_buf_len</code> 来调整。</p>
+<p>编辑 <code>grub</code> 配置文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo vim /etc/default/grub
+</span></span></code></pre></div><p>在 <code>GRUB_CMDLINE_LINUX_DEFAULT</code> 行中添加如下参数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">GRUB_CMDLINE_LINUX_DEFAULT</span><span class="o">=</span><span class="s2">&#34;log_buf_len=16M&#34;</span>
+</span></span></code></pre></div><p>这将内核日志缓冲区设置为 16M。保存并更新 grub：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo update-grub
+</span></span></code></pre></div><p>然后重启系统以应用更改：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo reboot
+</span></span></code></pre></div><h3 id="3-禁用日志速率限制">3. 禁用日志速率限制</h3>
+<p>如果日志速率限制不符合当前系统需求，可以考虑禁用速率限制，尤其是在开发和调试环境中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo vim /etc/systemd/journald.conf
+</span></span></code></pre></div><p>在配置文件中禁用日志速率限制：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">RateLimitInterval</span><span class="o">=</span><span class="s">0</span>
+</span></span><span class="line"><span class="cl"><span class="na">RateLimitBurst</span><span class="o">=</span><span class="s">0</span>
+</span></span></code></pre></div><p>保存文件并重启 <code>systemd-journald</code> 服务：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart systemd-journald
+</span></span></code></pre></div>]]></content:encoded>
+    </item>
     <item>
       <title>解决系统依赖错误GLIBCXX_3.4.29 not found</title>
       <link>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3%E7%B3%BB%E7%BB%9F%E4%BE%9D%E8%B5%96%E9%94%99%E8%AF%AFglibcxx-3-4-29-not-found/</link>
