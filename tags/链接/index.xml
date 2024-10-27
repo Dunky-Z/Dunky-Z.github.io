@@ -3,7 +3,7 @@
   <channel>
     <title>链接 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E9%93%BE%E6%8E%A5/</link>
-    <description>Recent content in 链接 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 链接 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 08 May 2022 21:32:23 +0000</lastBuildDate>
@@ -13,9 +13,166 @@
       <link>https://lifeislife.cn/posts/%E9%93%BE%E6%8E%A5%E8%84%9A%E6%9C%AC%E5%85%A5%E9%97%A8/</link>
       <pubDate>Sun, 08 May 2022 21:32:23 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E9%93%BE%E6%8E%A5%E8%84%9A%E6%9C%AC%E5%85%A5%E9%97%A8/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;重定位&#34;&gt;重定位&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;重定位&#34;&gt;重定位&lt;/h2&gt;
 &lt;p&gt;位置无关编码 (PIC，position independent code)：汇编源文件被编码成二进制可执行程序时编码方式与位置（内存地址）无关。&lt;/p&gt;
-&lt;p&gt;位置有关编码：汇编源码编码成二进制可执行程序后和内存地址是有关的。&lt;/p&gt;</description>
+&lt;p&gt;位置有关编码：汇编源码编码成二进制可执行程序后和内存地址是有关的。&lt;/p&gt;
+&lt;p&gt;我们在设计一个程序时，会给这个程序指定一个运行地址（链接地址）。就是说我们在编译程序时其实心里是知道我们程序将来被运行时的地址（运行地址）的，而且必须给编译器链接器指定这个地址（链接地址）才行。&lt;/p&gt;
+&lt;p&gt;最后得到的二进制程序理论上是和你指定的运行地址有关的，将来这个程序被执行时必须放在当时编译链接时给定的那个地址（链接地址）下才行，否则不能运行（就叫位置有关代码）。但是有个别特别的指令他可以跟指定的地址（链接地址）没有关系，也就是说这些代码实际运行时不管放在哪里都能正常运行。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;运行地址&lt;/strong&gt;：由运行时决定的（编译链接时是无法绝对确定运行时地址的）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;链接地址&lt;/strong&gt;：由程序员在编译链接的过程中，通过&lt;code&gt;Makefile&lt;/code&gt;中&lt;code&gt;-Ttext xxx&lt;/code&gt;或者&lt;strong&gt;在链接脚本中指定&lt;/strong&gt;的。程序员事先会预知自己的程序的执行要求，并且有一个期望的执行地址，并且会用这个地址来做链接地址。&lt;/p&gt;
+&lt;p&gt;举例：Linux 中的应用程序。&lt;code&gt;gcc hello.c -o hello&lt;/code&gt;，这时使用默认的链接地址就是&lt;code&gt;0x0&lt;/code&gt;，所以应用程序都是链接在&lt;code&gt;0x0&lt;/code&gt;地址的。因为应用程序运行在操作系统的一个进程中，在这个进程中这个应用程序独享 4G 的虚拟地址空间。所以应用程序都可以链接到 0 地址，因为每个进程都是从 0 地址开始的。（编译时可以不给定链接地址而都使用&lt;code&gt;0x0&lt;/code&gt;）&lt;/p&gt;
+&lt;h2 id=&#34;编译链接过程&#34;&gt;编译链接过程&lt;/h2&gt;
+&lt;h3 id=&#34;每个过程的作用&#34;&gt;每个过程的作用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;预编译：预编译器执行。替换宏定义，删除注释等工作。&lt;/li&gt;
+&lt;li&gt;编译：编译器来执行。把源码&lt;code&gt;.c .S&lt;/code&gt;编程机器码&lt;code&gt;.o&lt;/code&gt;文件。&lt;/li&gt;
+&lt;li&gt;链接：链接器来执行。把&lt;code&gt;.o&lt;/code&gt;文件中的各函数（段）按照一定规则（链接脚本来指定）累积在一起，形成可执行文件。&lt;/li&gt;
+&lt;li&gt;strip：strip 是把可执行程序中的符号信息给拿掉，以节省空间。（Debug 版本和 Release 版本）&lt;/li&gt;
+&lt;li&gt;objcopy：由可执行程序生成可烧录的镜像&lt;code&gt;bin&lt;/code&gt;文件。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;编译后生成的段&#34;&gt;编译后生成的段&lt;/h3&gt;
+&lt;p&gt;段就是程序的一部分，我们把整个程序的所有东西分成了一个一个的段，给每个段起个名字，然后在链接时就可以用这个名字来指示这些段。也就是说给段命名就是为了在链接脚本中用段名来让段放在合适的位置。&lt;/p&gt;
+&lt;p&gt;段名分为 2 种：一种是编译器链接器内部定好的，一种是程序员自己指定的、自定义的段名。
+已有段名：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;代码段：（.text），又叫文本段，代码段其实就是函数编译后生成的东西&lt;/li&gt;
+&lt;li&gt;数据段：（.data），数据段就是 C 语言中有显式初始化为非 0 的全局变量&lt;/li&gt;
+&lt;li&gt;bss 段：（.bss），又叫 ZI（zero initial）段，就是零初始化段，对应 C 语言中初始化为 0 的全局变量。&lt;/li&gt;
+&lt;li&gt;自定义段名：段名由程序员自己定义，段的属性和特征也由程序员自己定义。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;C 语言中全局变量如果未显式初始化，值是 0。本质就是 C 语言把这类全局变量放在了 bss 段，从而保证了为 0。
+C 运行时环境如何保证显式初始化为非 0 的全局变量的值在 main 之前就被赋值了？就是因为它把这类变量放在了.data 段中，而.data 段会在 main 执行之前被处理（初始化）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;链接脚本&#34;&gt;链接脚本&lt;/h2&gt;
+&lt;h3 id=&#34;链接脚本做什么事&#34;&gt;链接脚本做什么事？&lt;/h3&gt;
+&lt;p&gt;链接脚本其实是个规则文件，他是程序员用来指挥链接器工作的。链接器会参考链接脚本，并且使用其中规定的规则来处理&lt;code&gt;.o&lt;/code&gt;文件中那些段，将其链接成一个可执行程序。&lt;/p&gt;
+&lt;p&gt;链接脚本的关键内容有 2 部分：段名 + 地址（作为链接地址的内存地址）。把段，放到一个地址的意思。&lt;/p&gt;
+&lt;p&gt;链接脚本就像是一个从上到下顺序执行的一个代码&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;.&lt;/code&gt; 表示当前位置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;=&lt;/code&gt; 表示赋值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;*&lt;/code&gt; 表示通配符&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;链接脚本里的符号，可以在汇编源码里引用。&lt;/p&gt;
+&lt;p&gt;一个简易示例：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;SECTIONS
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    . = 0xd0024000; # 当前地址为0xd0024000
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .text : {
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        start.o
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        * (.text)   # 所有的text段
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .data : {
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        * (.data)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    bss_start = .;  # bss_start的值为当前地址，是执行到这里的地址，不是最上面. = 0xd0024000的地址
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .bss : {
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        * (.bss)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    bss_end  = .;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;怎么做&#34;&gt;怎么做？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;任务：在 SRAM 中将代码从 0xd0020010 重定位到 0xd0024000&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;第一点：通过链接脚本将代码链接到 0xd0024000
+重定位代码的作用就是：在PIC执行完之前（在代码中第一句位置有关码执行之前）必须将整个代码搬移到0xd0024000位置去执行，这就是重定位。&lt;/p&gt;
+&lt;p&gt;第二点：dnw 下载时将 bin 文件下载到 0xd0020010
+这样就能完成，下载代码与运行代码位置不同。&lt;/p&gt;
+&lt;p&gt;第三点：代码执行时通过代码前段的少量位置无关码将整个代码搬移到 0xd0024000。&lt;/p&gt;
+&lt;p&gt;第四点：使用一个长跳转跳转到 0xd0024000 处的代码继续执行，重定位完成。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;长跳转&lt;/strong&gt;：一种跳转指令，类似于分支指令 B，BL 等作用的指令，跳转指令通过给 PC（r15）赋一个新值来完成代码跳转。当我们执行完重定位后，&lt;strong&gt;实际上 SRAM 中有两份代码的镜像&lt;/strong&gt;（一份是我们下载到 0xd0020010 处的，一份是重定位到 0xd0024000 处的），这两份代码内容完全相同。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;短跳转&lt;/strong&gt;：短跳转指令可以实现向前或向后 32MB 的地址空间跳转。&lt;/p&gt;
+&lt;p&gt;当链接地址和运行地址相同是，短跳转和长跳转实际效果一样。但是当链接地址和运行地址不同时，短跳转和长跳转就有差异了，这时候段跳转执行的是运行地址处的那一份，而长跳转执行的是链接地址的那一份。&lt;/p&gt;
+&lt;p&gt;重定位实际就是在运行地址处执行一段位置无关码 PIC，让这段 PIC（也就是重定位代码）从运行地址处把整个程序镜像拷贝一份到链接地址处，完了之后使用一句长跳转指令从运行地址处直接跳转到链接地址处去执行同一个函数（led_blink），这样就实现了重定位之后的无缝连接。&lt;/p&gt;
+&lt;p&gt;汇编代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;/*
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; * 文件名：    led.s    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; * 作者：    朱老师（朱友鹏）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; * 描述：    演示重定位（在SRAM内部重定位）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; */
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;#define WTCON        0xE2700000
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;#define SVC_STACK    0xd0037d80
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.global _start                    // 把_start链接属性改为外部，这样其他文件就可以看见_start了
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;_start:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 第1步：关看门狗（向WTCON的bit5写入0即可）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r0, =WTCON
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r1, =0x0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    str r1, [r0]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 第2步：设置SVC栈
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr sp, =SVC_STACK
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 第3步：开/关icache
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    mrc p15,0,r0,c1,c0,0;            // 读出cp15的c1到r0中
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    //bic r0, r0, #(1&amp;lt;&amp;lt;12)            // bit12 置0  关icache
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    orr r0, r0, #(1&amp;lt;&amp;lt;12)            // bit12 置1  开icache
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    mcr p15,0,r0,c1,c0,0;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 第4步：重定位
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    adr r0, _start          // adr加载时就叫短加载，此处adr指令用于加载_start当前运行地址，详解见正文    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r1, =_start         // ldr加载时如果目标寄存器是pc就叫长跳转，如果目标寄存器是r1等就叫长加载    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            // 此处ldr指令用于加载_start的链接地址:0xd0024000
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // bss段的起始地址
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r2, =bss_start    // 就是我们重定位代码的结束地址，重定位只需重定位代码段和数据段即可
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        // 该符号在链接脚本里定义
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    cmp r0, r1            // 比较_start的运行时地址和链接地址是否相等
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    beq clean_bss        // 如果相等说明不需要重定位，所以跳过copy_loop，直接到clean_bss
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        // 如果不相等说明需要重定位，那么会顺序执行下面的copy_loop进行重定位
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        // 重定位完成后继续执行clean_bss。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;// 用汇编来实现的一个while循环
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;copy_loop:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r3, [r0], #4    // 源   r0内容写入r3，然后r0自增4
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    str r3, [r1], #4    // 目的 r3内容写入r1，然后r1自增4
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        // 这两句代码就完成了4个字节内容的拷贝
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    cmp r1, r2            // r1和r2都是用ldr加载的，都是链接地址，所以r1不断+4总能等于r2
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    bne copy_loop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;// 清bss段，其实就是在链接地址处把bss段全部清零
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;clean_bss:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r0, =bss_start                    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr r1, =bss_end
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    cmp r0, r1                // 如果r0等于r1，说明bss段为空，直接继续执行下面的代码
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    beq run_on_dram            // 清除bss完之后的地址
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    mov r2, #0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;clear_loop:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    str r2, [r0], #4        // 先将r2中的值放入r0所指向的内存地址（r0中的值作为内存地址），
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    cmp r0, r1                // 然后r0 = r0 + 4
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    bne clear_loop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;//    清理完bss段后重定位就结束了。然后当前的状况是：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;//    1、当前运行地址还在0xd0020010开头的（重定位前的）那一份代码中运行着。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;//    2、此时SRAM中已经有了2份代码，1份在d0020010开头，另一份在d0024000开头的位置。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;//    然后就要长跳转了。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;run_on_dram:    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 长跳转到led_blink开始第二阶段
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ldr pc, =led_blink                // ldr指令实现长跳转，把led_blink的值，写入pc寄存器
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 从这里之后就可以开始调用C程序了
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    //bl led_blink                    // bl指令实现短跳转
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    // 汇编最后的这个死循环不能丢
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    b .
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;adr&lt;/code&gt;与 ldr 伪指令的区别：&lt;code&gt;ldr&lt;/code&gt;和&lt;code&gt;adr&lt;/code&gt;都是伪指令&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;adr&lt;/code&gt;短加载，指令加载符号地址，加载的是运行时地址；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ldr&lt;/code&gt;长加载，指令在加载符号地址时，加载的是链接地址；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;重定位就是汇编代码中的&lt;code&gt;copy_loop&lt;/code&gt;函数，代码的作用是使用循环结构来逐句复制代码到链接地址。
+复制的源地址是 SRAM 的&lt;code&gt;0xd0020010&lt;/code&gt;，复制目标地址是 SRAM 的&lt;code&gt;0xd0024000&lt;/code&gt;，复制长度是&lt;code&gt;bss_start&lt;/code&gt;减去&lt;code&gt;_start&lt;/code&gt;，所以复制的长度就是整个重定位需要重定位的长度，也就是整个程序中代码段 + 数据段的长度。&lt;code&gt;bss&lt;/code&gt;段（bss 段中就是 0 初始化的全局变量）不需要重定位。&lt;/p&gt;
+&lt;p&gt;清除&lt;code&gt;bss&lt;/code&gt;段是为了满足 C 语言的运行时要求（C 语言要求显式初始化为 0 的全局变量，或者未显式初始化的全局变量的值为 0，实际上 C 语言编译器就是通过清&lt;code&gt;bss&lt;/code&gt;段来实现 C 语言的这个特性的）。一般情况下我们的程序是不需要负责清零&lt;code&gt;bss&lt;/code&gt;段的（C 语言编译器和链接器会帮我们的程序自动添加一段头程序，这段程序会在我们的 main 函数之前运行，这段代码就负责清除&lt;code&gt;bss&lt;/code&gt;）。但是在我们代码重定位了之后，因为编译器帮我们附加的代码只是帮我们清除了运行地址那一份代码中的&lt;code&gt;bss&lt;/code&gt;，而未清除重定位地址处开头的那一份代码的&lt;code&gt;bss&lt;/code&gt;，所以重定位之后需要自己去清除&lt;code&gt;bss&lt;/code&gt;。&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="重定位">重定位</h2>
 <p>位置无关编码 (PIC，position independent code)：汇编源文件被编码成二进制可执行程序时编码方式与位置（内存地址）无关。</p>
 <p>位置有关编码：汇编源码编码成二进制可执行程序后和内存地址是有关的。</p>

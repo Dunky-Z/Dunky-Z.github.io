@@ -3,7 +3,7 @@
   <channel>
     <title>读书笔记 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
-    <description>Recent content in 读书笔记 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 读书笔记 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Wed, 30 Mar 2022 11:12:31 +0000</lastBuildDate>
@@ -13,11 +13,861 @@
       <link>https://lifeislife.cn/posts/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
       <pubDate>Wed, 30 Mar 2022 11:12:31 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%87%AA%E6%88%91%E4%BF%AE%E5%85%BB%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;静态链接&#34;&gt;静态链接&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;静态链接&#34;&gt;静态链接&lt;/h2&gt;
 &lt;p&gt;库是一组目标文件的包，就是一些常用的代码编译成目标文件后打包存放。&lt;/p&gt;
 &lt;h2 id=&#34;第三章-目标文件里有什么&#34;&gt;第三章 目标文件里有什么&lt;/h2&gt;
 &lt;h3 id=&#34;目标文件的格式&#34;&gt;目标文件的格式&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;目标文件&lt;/strong&gt;从结构上讲，它是已经编译后的可执行文件格式，只是还没有经过链接的过程，其中可能有些符号或者有些地址还没有被调整。&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;目标文件&lt;/strong&gt;从结构上讲，它是已经编译后的可执行文件格式，只是还没有经过链接的过程，其中可能有些符号或者有些地址还没有被调整。&lt;/p&gt;
+&lt;p&gt;现在 PC 平台流形的可执行文件格式，主要是 Windows 下的 PE（Portable Executable）和 Linux 下的 ELF（Executable Linkable Format）,它们都是 COFF（Common file format）格式的变种。&lt;/p&gt;
+&lt;p&gt;指令和数据分开存放的好处：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;一方面当程序被装载后，数据和指令分别被映射到两个虚存区域。由于数据区域对于进程来说是可读写的，而指令区域对于进程来说是只读的，所以这两个虚存区域的权限可以被设置成可读写和只读，这样可以防止程序的指令被有意或无意地改写。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;另一方面是现代 CPU 有强大的缓存体系，由于缓存很重要，所以程序必须尽量提高缓存命中率。指令区和数据区分离有利于提高程序的局部性。现代 CPU 的缓存一般都被设计成数据缓存和指令缓存，所以程序的指令和数据分开存放对于 CPU 的缓存命中率提高有好处。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;第三个原因，也是最重要的原因，就是当系统中运行着多个该进程副本时，他们的指令都是一样的，所以内存中只需要保存一份程序的指令部分。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;真正了牛逼的程序员对自己的程序每一个字节都了如指掌。&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -h  SimpleSsection.o  # 打印elf文件各个段的信息
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;size SimpleSsection.o           # 查看elf文件各个段的长度
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -s -d SimpleSsection.o # -s将所有段内容以十六进制打印，-d将所有包含指令的段反汇编
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;段名称&lt;/th&gt;
+          &lt;th&gt;内容&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.data&lt;/td&gt;
+          &lt;td&gt;- 初始化的全局变量 &lt;br&gt; - 局部静态变量&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.rodata&lt;/td&gt;
+          &lt;td&gt;只读数据段，对这个段的任何修改都是非法的，保证了程序的安全性。 &lt;br&gt; 有时候编译器会把字符串放到 data 段&lt;br&gt; - 只读变量 const 修饰 &lt;br&gt; - 字符串常量&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.bss&lt;/td&gt;
+          &lt;td&gt;不占磁盘空间， &lt;br&gt;- 未初始化的全局变量 &lt;br&gt; - 未初始化的局部静态变量 &lt;br&gt; - 初始化为 0 的静态变量&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.comment&lt;/td&gt;
+          &lt;td&gt;存放编译器版本信息，比如字符串“GCC：（GNU）4.2.0”&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.line&lt;/td&gt;
+          &lt;td&gt;调试时的行号表，即源代码行号与编译后指令的对应表&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.note&lt;/td&gt;
+          &lt;td&gt;额外的编译器信息，如程序公司名，版本号&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.symtab&lt;/td&gt;
+          &lt;td&gt;Symbol Table 符号表&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.plt&lt;/td&gt;
+          &lt;td&gt;动态链接的跳转表&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;.got&lt;/td&gt;
+          &lt;td&gt;动态链接的全局入口表&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;段名称都是&lt;code&gt;.&lt;/code&gt;前缀，表示这些表名字是系统保留的，应用程序也可以使用一些非系统保留的名字作为段名称。比如可以加入一个&lt;code&gt;music&lt;/code&gt;段，里面存一首 mp3 音乐，运行起来后就会播放音乐，打算自定义段不能使用&lt;code&gt;.&lt;/code&gt;作为前缀，以免与系统保留段名冲突。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q: 如何将一个二进制文件，如图片，MP3 文件作为目标文件的一个段？
+A: 可以使用 objcopy 工具，比如有一个图片 image..jpg，大小为 0x2100 字节：
+$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;正常情况下编译出来的目标文件，代码会放到&lt;code&gt;.text&lt;/code&gt;段，但是有时候你希望变量或者某些代码能放到你指定的段中去，以实现某些特定的功能。比如为了满足某些硬件的内存和 IO 地址布局。GCC 提供了扩展机制，使得程序员可以指定变量所处的段：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;__attribute__((section(&amp;#34;FOO&amp;#34;))) int global = 42;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;__attribute__((section(&amp;#34;BAR&amp;#34;))) void foo;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;elf-文件结构&#34;&gt;ELF 文件结构&lt;/h3&gt;
+&lt;p&gt;使用&lt;code&gt;readelf&lt;/code&gt;命令查看 elf 文件详细信息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;ELF 魔数，确认文件类型。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;文件类型&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;常量&lt;/th&gt;
+          &lt;th&gt;值&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;ET_REL&lt;/td&gt;
+          &lt;td&gt;1&lt;/td&gt;
+          &lt;td&gt;可重定位文件，一般问.o文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;ET_EXEC&lt;/td&gt;
+          &lt;td&gt;2&lt;/td&gt;
+          &lt;td&gt;可执行文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;ET_DYN&lt;/td&gt;
+          &lt;td&gt;3&lt;/td&gt;
+          &lt;td&gt;共享目标文件，一般为.so文件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;机器类型&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;常量&lt;/th&gt;
+          &lt;th&gt;值&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_M32&lt;/td&gt;
+          &lt;td&gt;1&lt;/td&gt;
+          &lt;td&gt;AT&amp;amp;T WE 32100&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_SPARC&lt;/td&gt;
+          &lt;td&gt;2&lt;/td&gt;
+          &lt;td&gt;SPARC&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_M386&lt;/td&gt;
+          &lt;td&gt;3&lt;/td&gt;
+          &lt;td&gt;Intel x86&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_68K&lt;/td&gt;
+          &lt;td&gt;4&lt;/td&gt;
+          &lt;td&gt;Motorola 68000&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_88K&lt;/td&gt;
+          &lt;td&gt;5&lt;/td&gt;
+          &lt;td&gt;Motorola 88000&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;EM_860&lt;/td&gt;
+          &lt;td&gt;6&lt;/td&gt;
+          &lt;td&gt;Intel 80860&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;段表&lt;/strong&gt;是保存各个段的基本属性的结构。段表是除文件头外最重要的结构。编译器，链接器和装载器都是依靠段表来定位和访问各个段的属性。&lt;/p&gt;
+&lt;h3 id=&#34;链接的接口---符号&#34;&gt;链接的接口 - 符号&lt;/h3&gt;
+&lt;h4 id=&#34;符号表结构&#34;&gt;符号表结构&lt;/h4&gt;
+&lt;p&gt;链接过程的本质就是要把多个不同的目标文件之间相互粘到一起。&lt;/p&gt;
+&lt;p&gt;目标文件 B 要用到目标文件 A 的函数&lt;code&gt;foo&lt;/code&gt;，我们称目标文件 A&lt;strong&gt;定义&lt;/strong&gt;了函数&lt;code&gt;foo&lt;/code&gt;，目标文件 B&lt;strong&gt;引用&lt;/strong&gt;了目标文件 A 的函数&lt;code&gt;foo&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;链接中，我们将函数和变量统称为&lt;strong&gt;符号&lt;/strong&gt;，函数名或变量名就是符号名。、&lt;/p&gt;
+&lt;p&gt;每一个目标文件都会有一个相应的符号表，表里记录了目标文件中所用到的所有符号。每个符号都有一个对应值，叫符号值，对于变量和函数来说，符号值就是他们的地址。&lt;/p&gt;
+&lt;p&gt;符号类型：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义在本目标文件的全局符号，可以被其他目标引用。&lt;/li&gt;
+&lt;li&gt;在本目标文件中应用的全局符号，却没有定义在本目标文件。&lt;/li&gt;
+&lt;li&gt;段名称，也就是段起始地址。&lt;/li&gt;
+&lt;li&gt;局部符号，一些静态变量等。&lt;/li&gt;
+&lt;li&gt;行号信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最重要的就是第一类和第二类。链接只关心全局符号的相互粘合，其他都是次要的。&lt;/p&gt;
+&lt;p&gt;可以使用 &lt;code&gt;readelf&lt;/code&gt; &lt;code&gt;objdump&lt;/code&gt; &lt;code&gt;nm&lt;/code&gt;等命令查看符号信息。&lt;/p&gt;
+&lt;h4 id=&#34;特殊符号&#34;&gt;特殊符号&lt;/h4&gt;
+&lt;p&gt;一些特殊符号，没有在程序中定义，但是可以直接声明并引用它：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;__executable_start&lt;/code&gt;，程序起始地址，不是入口地址，是程序最开始的地址。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;__etext&lt;/code&gt; &lt;code&gt;__etext&lt;/code&gt;  &lt;code&gt;etext&lt;/code&gt; 代码段结束地址，代码段最末尾的地址。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;_edata&lt;/code&gt; &lt;code&gt;edata&lt;/code&gt; 数据段结束地址，数据段最末尾地址。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;__end&lt;/code&gt;  &lt;code&gt;end&lt;/code&gt; 程序结束地址。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;符号修饰&#34;&gt;符号修饰&lt;/h4&gt;
+&lt;p&gt;符号应与对应的函数或者变量同名，但是在 C 语言发明时，已经存在了很多库和目标文件，如果再用一样的函数或变量就会冲突为了避免冲突，C 语言编译后符号名前会加上下划线&lt;code&gt;_&lt;/code&gt;，如&lt;code&gt;foo&lt;/code&gt;变成&lt;code&gt;_foo&lt;/code&gt;，Fortran 语言编译后会在符号前后加上下划线&lt;code&gt;_foo_&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;C++具有类，继承，重载等复杂机制，为了支持这些复杂特性，人们发明了&lt;strong&gt;符号修饰&lt;/strong&gt;和&lt;strong&gt;符号改编&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;函数签名&lt;/strong&gt;包含了一个函数的信息，包括函数名，参数类型，所在类和名称空间等信息。它用于识别不同的函数。在编译器和链接器处理符号时，使用某种名称修饰的方法，是的每个函数签名对应一个&lt;strong&gt;修饰后名称&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;由于不同的编译器采用不同的名字修饰方式，必然导致由不同编译器编译产生的目标文件无法正常互相链接，这是导致不同编译器之间不能互操作的主要原因之一。&lt;/p&gt;
+&lt;h4 id=&#34;extern-c&#34;&gt;extern C&lt;/h4&gt;
+&lt;p&gt;C++为了兼容 C，C++编译器会将在&lt;code&gt;extern C&lt;/code&gt; 的大括号内部的代码当做 C 语言代码处理，这样就不会使用 C++的名称修饰机制。（也就不会在编译的时候加上下划线）&lt;/p&gt;
+&lt;p&gt;但是 C 语言并不支持&lt;code&gt;extern C&lt;/code&gt;关键字，又不能为同一个库函数写两套头文件，这时候就可以用 C++的宏，&lt;code&gt;__cplusplus&lt;/code&gt;。C++编译器会在编译 C++的程序时默认定义这个宏，我们可以用条件宏来判断当前编译单元是不是 C++代码。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#ifdef __cplusplus
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;extern&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;C&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#endif
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;memset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#ifdef __cplusplus
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#endif
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;弱符号与强符号&#34;&gt;弱符号与强符号&lt;/h4&gt;
+&lt;p&gt;我们经常碰到符号重定义，多个目标文件中含有相同名字全局符号的定义，那么这些目标文件链接的时候就会出现符号重定义的错误。比如在两个文件中定义了相同的全局变量。&lt;/p&gt;
+&lt;p&gt;对于C/C++来说，编译器默认函数和初始化了的全局变量为强符号，未初始化的全局变量为弱符号。&lt;/p&gt;
+&lt;p&gt;也可以使用 GCC 的&lt;code&gt;__attribute__((weak))&lt;/code&gt;来定义任何一个强符号为弱符号。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不允许强符号被多次定义，如果多次定义，则链接器报重复定义错误；&lt;/li&gt;
+&lt;li&gt;如果一个符号在某文件中是强符号，在其他文件中都是弱符号，那么选择强符号。&lt;/li&gt;
+&lt;li&gt;如果一个符号在所有目标文件中都是弱符号，那么选择其中占用空间最大的一个。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;第四章-静态链接&#34;&gt;第四章 静态链接&lt;/h2&gt;
+&lt;h3 id=&#34;空间地址分配&#34;&gt;空间地址分配&lt;/h3&gt;
+&lt;p&gt;可执行文件中的代码段和数据段就是多个文件合并而来的，对于多个文件链接器如何将它们合并到输出文件？&lt;/p&gt;
+&lt;p&gt;按序叠加：最简单的方式，按照输入文件顺序依次合并。这会导致大量碎片，比如 x86 的硬件，段的装载地址和空间的对齐单位是页，也就是 4096 字节，那么如果一个段的长度只有 1 字节，它在内存里也要占用 4096 字节。&lt;/p&gt;
+&lt;p&gt;相似段合并：将所有相同性质的段合并在一起。&lt;/p&gt;
+&lt;p&gt;现在的链接器基本上采用第二种。使用这种方法的链接器都采用一种叫两步链接的方法。&lt;/p&gt;
+&lt;p&gt;第一步，空间与地址分配。扫描所有的输入目标文件，并且获得各个段的长度，属性和位置，并将输入目标文件中的符号表所有的符号定义和符号引用收集起来，统一放到一个全局符号表。这一步，链接器将能够获得所有输入目标文件的段长度，并且将他们合并，计算出输出文件中各个段合并后的长度和位置，并建立映射关系。&lt;/p&gt;
+&lt;p&gt;第二部，符号解析与重定位。使用上面收集到的信息，读取输入文件中段的数据，重定位信息。并且进行符号解析与重定位，调整代码中的地址。&lt;/p&gt;
+&lt;p&gt;VMA（Virtual Memory Address）虚拟地址，LMA（Load Memory Address）加载地址。正常情况这两个值是一样的。&lt;/p&gt;
+&lt;p&gt;链接之前目标文件的所有短 VMA 都是 0，因为虚拟空间还没有被分配，默认为 0，链接之后各个段就会被分配相应的虚拟地址。&lt;/p&gt;
+&lt;p&gt;Linux 下，ELF 可执行文件默认从地址&lt;code&gt;0x8048000&lt;/code&gt;开始分配。&lt;/p&gt;
+&lt;h3 id=&#34;符号解析与重定位&#34;&gt;符号解析与重定位&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -d  查看代码段反汇编结果
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;源代码在编译成目标文件时并不知道函数的调用地址。需要通过链接时重定位。&lt;/p&gt;
+&lt;p&gt;链接器如何知道哪些指令需要被调整？这就用到了&lt;strong&gt;重定位表&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;重定位表就是 ELF 文件的一个段，所以其实重定位表也可以叫重定位段。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -r 查看重定位表
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每个要被重定位的地方叫一个重定位入口（Relocation Entry）。&lt;/p&gt;
+&lt;p&gt;重定位过程也伴随着符号的解析过程，每个目标文件都可能定义一些符号，或引用到定义在其他文件的符号。重定位过程中，每个重定位的入口都是对一个符号的引用，那么当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器就会取查找由所有输入目标文件的符号表组成的全局符号表，找到对应的符号进行重定位。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;readelf -s 查看符号表
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于 32 位 x86 平台下的 ELF 文件的重定位入口所修正的指令寻址方式只有两种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;绝对近址 32 位寻址&lt;/li&gt;
+&lt;li&gt;相对近址 32 位寻址&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;x86 基本重定位类型&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;宏定义&lt;/th&gt;
+          &lt;th&gt;值&lt;/th&gt;
+          &lt;th&gt;重定位修正方法&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;R_386_32&lt;/td&gt;
+          &lt;td&gt;1&lt;/td&gt;
+          &lt;td&gt;绝对寻址修正 S+A&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;R_386_PC32&lt;/td&gt;
+          &lt;td&gt;2&lt;/td&gt;
+          &lt;td&gt;相对寻址修正 S+A-P&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;A = 保存在被修正位置的值
+P = 被修正的位置 (相对于段开始的偏移量或者虚拟地址)，注意，该值可通过 r_offset 计算得到
+S = 符号的实际地址，即由 &lt;code&gt;r_info&lt;/code&gt;的高 24 位指定的符号的实际地址&lt;/p&gt;
+&lt;h2 id=&#34;第六章-可执行文件的装载与进程&#34;&gt;第六章 可执行文件的装载与进程&lt;/h2&gt;
+&lt;p&gt;程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。&lt;/p&gt;
+&lt;h3 id=&#34;common-块&#34;&gt;COMMON 块&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q:在目标文件中，编译器为什么不直接把未初始化的全局变量也当做未初始化的局部静态变量一样处理，为它在 BSS 段分配空间，而是将其标记为一个 COMMON 类型的变量？
+A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;GCC 的&lt;code&gt;-fno-common&lt;/code&gt;吧所有未初始化的全局变量不以 COMMON 块形式处理。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;__attribute__&lt;/code&gt;扩展也可以实现，&lt;code&gt;int global __attribute__((nocommon))&lt;/code&gt;。这样未初始化的全局变量就是强符号。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q: 为什么静态运行库里面一个目标文件只包含一个函数？比如 libc.o 里面 printf.o 只包含 printf() 函数，strlen.o 只有 strlen 函数？
+A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;链接的过程控制&#34;&gt;链接的过程控制&lt;/h3&gt;
+&lt;h2 id=&#34;第-6-章-可执行文件的装载与进程&#34;&gt;第 6 章 可执行文件的装载与进程&lt;/h2&gt;
+&lt;p&gt;程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;可执行文件在装载时实际上是被映射的虚拟空间，所以可执行文件又被叫做映像文件 (Image)。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Segment 和 Section  很难从中文翻译上区分，ELF 文件按 Section 存储的，从装载的角度 ELF 文件又可以按照 Segment 划分。&lt;/p&gt;
+&lt;h4 id=&#34;段地址对齐&#34;&gt;段地址对齐&lt;/h4&gt;
+&lt;p&gt;可执行文件需要被装载，装载一般通过虚拟内存页映射机制完成，页是映射的最小单位，对于 x86 处理器来说，默认页大小为 4096 字节，所以内存空间的长度必须是 4096 的整数倍，并且这段空间在物理内存和进程虚拟地址空间的起始地址必须是 4096 的整数倍。&lt;/p&gt;
+&lt;h2 id=&#34;第-7-章-动态链接&#34;&gt;第 7 章 动态链接&lt;/h2&gt;
+&lt;h2 id=&#34;第七章-动态链接&#34;&gt;第七章 动态链接&lt;/h2&gt;
+&lt;h3 id=&#34;为什么要动态链接&#34;&gt;为什么要动态链接？&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;内存和磁盘空间：如果两个程序都用到一个静态库，链接时就会有静态库的两个副本，运行时就会占用两份内存。&lt;/li&gt;
+&lt;li&gt;程序的开发与发布：一个程序用到的静态库如果有更新，那么程序就需要重新链接，发布给用户。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;要解决以上问题，最简单的方法就是把程序的模块相互分割开来，形成独立的文件，而不再将它们静态链接。就是不对目标文件进行链接，而等到程序运行时再链接。这就是&lt;strong&gt;动态链接的基本思想&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;动态链接模块的装载地址是从&lt;code&gt;0x00000000&lt;/code&gt;开始的。&lt;/p&gt;
+&lt;p&gt;共享对象的最终装载地址在编译时是不确定的。&lt;/p&gt;
+&lt;h3 id=&#34;地址无关代码&#34;&gt;地址无关代码&lt;/h3&gt;
+&lt;p&gt;静态共享库：将程序的各个模块交给操作系统管理，操作系统在某个特定的地址划分出一些地址块，为那些已知的模块预留足够的空间。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;装载时重定位&lt;/strong&gt;：程序在编译时被装载的目标地址为&lt;code&gt;0x1000&lt;/code&gt;，但是在装载时操作系统发现&lt;code&gt;0x1000&lt;/code&gt;这个地址已经被别的程序使用了，从&lt;code&gt;0x4000&lt;/code&gt;开始有一块足够大的空间可以容纳，那么该程序就可以被装载至&lt;code&gt;0x4000&lt;/code&gt;，程序指令和数据所有引用都只需要加上&lt;code&gt;0x3000&lt;/code&gt;偏移量即可。因为他们在程序中的相对位置是不会改变的。&lt;/p&gt;
+&lt;p&gt;地址无关代码为了解决共享对象指令中对绝对地址的重定位问题，基本想法是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分就可以保持不变，而数据部分可以在每个进程中拥有一个副本。&lt;/p&gt;
+&lt;p&gt;模块中四类地址引用：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204092152653.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004886.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101004869.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;模块内部调用或者跳转&lt;/strong&gt;
+不需要重定位，本身就是地址无关的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;模块内部数据访问&lt;/strong&gt;
+指令中不能包含数据的绝对地址，所以使用相对寻址的方式。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;模块间数据访问&lt;/strong&gt;
+把跟地址相关的部分放到数据段里面。ELF 的做法是在数据段里面建立一个指向这些数据的指针数据，称为&lt;strong&gt;全局偏移表&lt;/strong&gt;（GOT）。当代码需要引用全局变量时，可以通过 GOT 间接引用。&lt;/p&gt;
+&lt;p&gt;链接器在装载时会查找每个变量的地址，填充 GOT 每个项，当指令中需要访问变量时，程序会先找到 GOT，根据 GOT 中对应的地址，找到对应的变量。GOT 本身放在数据段，所以他可以在模块装载时被修改，并且每个进程有独立副本，相互不影响。&lt;/p&gt;
+&lt;p&gt;以访问变量 b 为例，程序首先计算出变量 b 的地址在 GOT 中的位置，即&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;0x10000000 + 0x454 + 0x118c + 0xfffffff8 = 0x100015d8&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;0xfffffff8&lt;/code&gt;为&lt;code&gt;-8&lt;/code&gt;的补码表示，然后使用寄存器间接寻址方式给变量 b 赋值 2。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;模块间调用跳转&lt;/strong&gt;
+类似于模块机数据访问，不同的是 GOT 中相应项保存的是目标函数的地址。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;各种地址引用方式&lt;/strong&gt;&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;&lt;/th&gt;
+          &lt;th&gt;指令跳转，调用&lt;/th&gt;
+          &lt;th&gt;数据访问&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;模块内部&lt;/td&gt;
+          &lt;td&gt;相对跳转和调用&lt;/td&gt;
+          &lt;td&gt;相对地址访问&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;模块外部&lt;/td&gt;
+          &lt;td&gt;间接跳转和调用（GOT）&lt;/td&gt;
+          &lt;td&gt;间接访问（GOT）&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q : -fpic 和-fPIC 的区别？
+A: 都是 GCC 产生地址无关代码的参数。&lt;code&gt;-fpic&lt;/code&gt;产生的代码较小，&lt;code&gt;-fPIC&lt;/code&gt;产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上&lt;code&gt;-fpic&lt;/code&gt;会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q: 如果一个共享对象 lib.so 中定义了一个全局变量 G，进程 A 和进程 B 都是用了 lib.so。那么当进程 A 改变这个全局变量时，进程 B 的 G 是否受到影响？
+A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果代码不是地址无关的，它就不能被多个进程共享，就失去了节省内存的优点。但是装载是重定位的共享对象的运行速度要比使用地址无关代码的共享对象快，因为它省去了地址无关代码中每次访问全局数据和函数是需要做一次计算当前地址以及间接地址寻址的过程。&lt;/p&gt;
+&lt;h3 id=&#34;延迟绑定-plt&#34;&gt;延迟绑定 PLT&lt;/h3&gt;
+&lt;p&gt;动态链接要比静态链接慢，一是因为动态链接下，对全局和静态数据的访问都要进行复杂的 GOT 定位，然后间接寻址。另外，程序开始执行时，动态链接器都要进行一次链接工作。&lt;/p&gt;
+&lt;p&gt;而在一个程序运行过程中，可能很多函数在程序执行完时都不会用到，如果一开始就把所有函数链接好实际就是一种浪费，所有 ELF 采用了一种叫做延迟绑定的做法，基本思想就是当函数&lt;strong&gt;第一次使用时&lt;/strong&gt;才进行绑定（符号查找，重定位等）。&lt;/p&gt;
+&lt;p&gt;ELF 使用 PLT（Procedure Linkage Table）来实现延迟绑定。以调用&lt;code&gt;bar()&lt;/code&gt;函数为例，之前的做法是通过 GOT 中的相应项进行跳转，而延迟绑定下，在这过程中间加了一层 PLT 间接跳转。每个外部函数在 PLT 中都有一个对应项，比如&lt;code&gt;bar()&lt;/code&gt;在 PLT 中项的地址为&lt;code&gt;bar@plt&lt;/code&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;bar@plt:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    jmp *(bar@GOT)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    push n
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    push moduleID
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    jump _dl_runtime_resolve
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第一条是指令通过 GOT 间接跳转的指令，如果链接器在初始化阶段已经初始化该项，并将&lt;code&gt;bar()&lt;/code&gt;地址填入该项，那么就能正确跳转到&lt;code&gt;bar()&lt;/code&gt;。但是为了延迟绑定，链接器初始化时并没有将&lt;code&gt;bar()&lt;/code&gt;地址填入，而是将第二条指令&lt;code&gt;push n&lt;/code&gt;的地址填入了&lt;code&gt;bar@GOT&lt;/code&gt;中，这一步不需要查找符号，代价很低。&lt;/p&gt;
+&lt;p&gt;第一条指令的效果就是跳转到第二条指令，第二条指令将数字&lt;code&gt;n&lt;/code&gt;压入堆栈，这个数字是&lt;code&gt;bar&lt;/code&gt;这个符号引用在重定位表&lt;code&gt;.rel.plt&lt;/code&gt;中的下标。第三条指令将模块 ID 压入堆栈，最后跳转到&lt;code&gt;_dl_runtime_resolve&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;_dl_runtime_resolve&lt;/code&gt;进行一系列工作后将&lt;code&gt;bar()&lt;/code&gt;真正地址填入到&lt;code&gt;bar@GOT&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;一旦&lt;code&gt;bar()&lt;/code&gt;这个函数被解析完，当面再次调用&lt;code&gt;bar@plt&lt;/code&gt;时，第一条&lt;code&gt;jump&lt;/code&gt;指令就能跳转到&lt;code&gt;bar()&lt;/code&gt;的真正地址。&lt;code&gt;bar()&lt;/code&gt;函数返回时根据堆栈里保存的&lt;code&gt;EIP&lt;/code&gt;直接返回到调用者，而不会执行&lt;code&gt;bar@plt&lt;/code&gt;中第二条指令。&lt;strong&gt;那段代码只会在符号未被解析时执行一次&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;PLT 在 ELF 文件中以独立段存在，段名通常叫做&lt;code&gt;.plt&lt;/code&gt;，因为它本身是一些地址无关的代码，所以可以跟代码段合并成同一个可读可执行的 Segment 被装载入内存。&lt;/p&gt;
+&lt;h3 id=&#34;动态链接相关结构&#34;&gt;动态链接相关结构&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;.interp 段&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;objdump -s a.out
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Contents of section .interp:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;804811 2f6c6962 2f6c696d 6c696e78 782e736f  /lib/ld-linux.so.2
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;里面保存的就是可执行文件所需要的动态链接器的路径，在 Linux 下，可执行文件动态链接器几乎都是&lt;code&gt;/lib/ld-linux.so.2&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这是个软链接，会他会指向系统中安装的动态链接器。当系统中的 Glibc 库更新时，软链接也会指向新的动态链接器，所以&lt;code&gt;.interp&lt;/code&gt;段不需要修改。&lt;/p&gt;
+&lt;p&gt;可以通过以下命令查看可执行文件需要的动态链接器的路径：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ readelf -l a.out &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep interpreter
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;Requesting program interpreter: /lib/ld-linux.so.2&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;.dynamic 段&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;动态链接 ELF 中最重要的结构，这里保存了动态链接器所需要的基本信息，如依赖哪些共享对象，动态链接符号表的位置，动态链接重定位表的位置，共享对象初始化代码的地址等。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;动态符号表&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Program1&lt;/code&gt;程序一来&lt;code&gt;Lib.so&lt;/code&gt;，引用到了里面的&lt;code&gt;foobar()&lt;/code&gt;函数，那么对于&lt;code&gt;Program1&lt;/code&gt;来说，称&lt;code&gt;Program1&lt;/code&gt;导入（Import）了&lt;code&gt;foobar&lt;/code&gt;函数，&lt;code&gt;foobar&lt;/code&gt;是&lt;code&gt;Program1&lt;/code&gt;的导入函数。&lt;/p&gt;
+&lt;p&gt;而站在&lt;code&gt;Lib.so&lt;/code&gt;角度来说，它定义了&lt;code&gt;foobar&lt;/code&gt;函数，我们称&lt;code&gt;Lib.so&lt;/code&gt;导出（Export）了&lt;code&gt;foobar&lt;/code&gt;函数，&lt;code&gt;foobar&lt;/code&gt;是&lt;code&gt;Lib.so&lt;/code&gt;的导出函数。&lt;/p&gt;
+&lt;p&gt;为了表示动态链接这些模块之间的符号导入导出关系，ELF 专门有一个叫做动态符号表的段来保存这些信息，段名通常叫&lt;code&gt;.dynsym&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;.dynsym&lt;/code&gt;只保存与动态链接相关的符号，对于那些模块内部的符号，比如模块私有变量则不保存。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;动态链接重定位表&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;PIC 模式的共享对象也需要重定位。&lt;/p&gt;
+&lt;p&gt;对于使用 PIC 技术的可执行文件或共享对象来说，虽然代码段不需要重定位，但是数据段还包含了绝对地址的引用，因为代码段中绝对地址相关的部分被分离出来，变成了 GOT，而 GOT 实际上是数据段的一部分。&lt;/p&gt;
+&lt;p&gt;目标文件的重定位在静态链接时完成，共享对象的重定位在装载时完成。&lt;/p&gt;
+&lt;p&gt;目标文件里包含专门用于重定位信息的重定位表，比如&lt;code&gt;.rel.text&lt;/code&gt;表示是代码段重定位表，&lt;code&gt;.rel.data&lt;/code&gt;表示数据段重定位表。&lt;/p&gt;
+&lt;p&gt;共享对象里类似的重定位表叫做&lt;code&gt;.rel.dyn&lt;/code&gt;和&lt;code&gt;.rel.plt&lt;/code&gt;。&lt;code&gt;.rel.dyn&lt;/code&gt;实际上是对数据引用的修正，它所修正的位置位于&lt;code&gt;.got&lt;/code&gt;以及数据段；&lt;code&gt;.rel.plt&lt;/code&gt;实际上是对代码引用的修正，它所修正的位置位于&lt;code&gt;.got.plt&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;用以下命令可以查看重定位表；&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204101958979.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;printf&lt;/code&gt;这个重定位入口，它的类型为&lt;code&gt;R_386_JUMP_SLOT&lt;/code&gt;，它的偏移为&lt;code&gt;0x000015d8&lt;/code&gt;。它实际位于&lt;code&gt;.got.plt&lt;/code&gt;中，前三项是被系统占用的，第四项开始才是真正存放导入函数地址的地方，刚好是&lt;code&gt;0x000015c8 + 4 * 3 = 0x000015d4&lt;/code&gt;，即&lt;code&gt;__gmon_start__&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;当动态链接器要进行重定位时，先查找&lt;code&gt;printf&lt;/code&gt;的地址，假设链接器在全局符号表中找到&lt;code&gt;printf&lt;/code&gt;的地址为&lt;code&gt;0x08801234&lt;/code&gt;，那么链接器就会将这个地址填入&lt;code&gt;.got.plt&lt;/code&gt;中偏移为&lt;code&gt;0x000015d8&lt;/code&gt;的位置。&lt;strong&gt;从而实现了地址重定位，即动态链接最关键的一步&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204102010906.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;动态链接时进程堆栈初始化信息&#34;&gt;动态链接时进程堆栈初始化信息&lt;/h3&gt;
+&lt;h3 id=&#34;动态链接的步骤和实现&#34;&gt;动态链接的步骤和实现&lt;/h3&gt;
+&lt;p&gt;动态链接分为三步：启动动态链接本身，装载所有的共享对象，重定位和初始化。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：动态链接器本身是动态链接还是静态链接？
+A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：动态链接器本身必须是 PIC 的吗？
+A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：动态链接器可以被当做可执行文件运行，那么它的装载地址是多少？
+A：ld.so 的装载地址跟一般的共享对象一样，即&lt;code&gt;0x00000000&lt;/code&gt;。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;显示运行时链接&#34;&gt;显示运行时链接&lt;/h3&gt;
+&lt;h2 id=&#34;第-10-章-内存&#34;&gt;第 10 章 内存&lt;/h2&gt;
+&lt;h3 id=&#34;程序的内存布局&#34;&gt;程序的内存布局&lt;/h3&gt;
+&lt;p&gt;在 32 位操作系统里，有 4GB 的寻址能力，大部分操作系统会将一部分挪给内核使用，应用程序无法直接访问这段内存。这部分称为内核空间。Windows 默认将高地址的 2GB 分给内核，Linux 默认分 1GB 给内核。&lt;/p&gt;
+&lt;p&gt;剩下的称为用户空间，在用户空间里也有一些特殊的地址区间：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;栈：维护函数调用上下文，通常在用户空间的最高地址处分配。&lt;/li&gt;
+&lt;li&gt;堆：用来容纳程序动态分配的内存区域，当使用 malloc 或者 new 分配内存时，得到的内存来自于堆。通常在栈下方。&lt;/li&gt;
+&lt;li&gt;可执行文件映像：存储可执行文件再内存里的映像，由装载器在装载时将可执行文件的内存读取活映射到这里。&lt;/li&gt;
+&lt;li&gt;保留区：保留区并不是一个单一的内存区域，而是对内存中受到保护而禁止访问的内存区域的总称。比如&lt;code&gt;NULL&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301614683.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;栈与调用惯例&#34;&gt;栈与调用惯例&lt;/h3&gt;
+&lt;p&gt;栈保存了一个函数调用所需要的维护信息，通常这被称为栈帧。一般包括如下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;函数的返回地址和参数&lt;/li&gt;
+&lt;li&gt;临时变量&lt;/li&gt;
+&lt;li&gt;保存的上下文&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;一个函数的调用流程：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632031.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202204301632216.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;I386 标准函数进入和退出指令序列，基本形式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;push ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov ebp, esp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sub esp, x
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[push reg1]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[push regn]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;函数实际内存
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[pop regn]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[pop reg1]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov esp, ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pop ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ret
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Hot Patch Prologue 热补丁&lt;/strong&gt;
+在 Windows 函数里，有些函数尽管使用了标准的进入指令序列，但是在这些指令之前却插入了一些特殊内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov edi,edi
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这条指令没有任何用，在汇编之后会成为一个占用 2 字节的机器码，纯粹为了占位符而存在，使用这条指令开头的函数整体看起来是这样的：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;FUNCTION:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov edi,edi
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;push ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov ebp, esp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中 nop 占 1 个字节，也是占位符，FUNCTION 为一个标号，表示函数入口，本身不占空间。&lt;/p&gt;
+&lt;p&gt;设计成这样的函数在运行时可以很容易被其他函数替换掉，在上面的指令序列中调用的函数是 FUNCTION，但是我们可以做一些修改，可以在运行时刻意改成调用函数 REPLACEMENT_FUNCTION。首先在进程内存空间任意处写入 REPLACEMENT_FUNCTION 的定义：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;REPLACEMENT_FUNCTION:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;push ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov ebp, esp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov esp, ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pop ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ret
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后修改原函数的内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;LABEL:         # 标号不占字节
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;jmp REPLACEMENT_FUNCTION # 占5字节，刚好五个nop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;FUNCTION:      # 函数入口标号，不占字节
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;jmp LABEL      # 近跳指令，占2字节，跳跃到上方，即使截获失败也不影响原函数执行
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;push ebp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mov ebp, esp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将 5 个&lt;code&gt;nop&lt;/code&gt;换成一个&lt;code&gt;jmp&lt;/code&gt;指令，然后将占用两个字节的&lt;code&gt;mov edi,edi&lt;/code&gt;换成另一个&lt;code&gt;jmp&lt;/code&gt;指令。因为这个&lt;code&gt;jmp&lt;/code&gt;指令跳转的距离非常近，因此被汇编器翻译成了一个“近跳”指令，这种指令只占用两个字节。但&lt;strong&gt;只能跳跃到当前地址前后 127 个字节范围的目标位置&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;这里的替换机制，可以实现一种叫做&lt;em&gt;钩子&lt;/em&gt;（HOOK）的技术，允许用户在某时刻截获特定函数的调用。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;函数传递参数时压栈顺序，传递参数是寄存器传参还是栈传参等等都需要遵守一定的约定，否则函数将无法正确执行，这样的约定称为&lt;strong&gt;调用惯例&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;一个调用惯例一般会规定如下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;函数参数的传递顺序和方式
+&lt;ul&gt;
+&lt;li&gt;调用方压栈，函数自己从栈用取参数&lt;/li&gt;
+&lt;li&gt;调用方压栈顺序：从左至右，还是从右至左？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;栈的维护方式
+&lt;ul&gt;
+&lt;li&gt;参数出栈，可以由调用方完成还是由函数自己完成？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;名字修饰的策略
+&lt;ul&gt;
+&lt;li&gt;为了链接的时候对调用惯例进行区分，调用惯例要对函数本身的名字进行修饰，不同调用惯例有不同的名字修饰策略&lt;/li&gt;
+&lt;li&gt;没有显示指定调用惯例的函数默认是&lt;code&gt;cdecl&lt;/code&gt;惯例&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_cdecl&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是&lt;code&gt;__attribute__((cdecl))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;附录&#34;&gt;附录&lt;/h2&gt;
+&lt;h3 id=&#34;文件名&#34;&gt;文件名&lt;/h3&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;英文名&lt;/th&gt;
+          &lt;th&gt;Linux&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;扩展名&lt;/th&gt;
+          &lt;th&gt;英文名&lt;/th&gt;
+          &lt;th&gt;Windows&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;扩展名&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;DSO-Dynamic Shared Objects&lt;/td&gt;
+          &lt;td&gt;ELF 动态链接文件，动态共享对象，共享对象&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;.so&lt;/td&gt;
+          &lt;td&gt;DLL-Dynamic Linking Library&lt;/td&gt;
+          &lt;td&gt;动态链接库&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;.dll&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Static Shared Library&lt;/td&gt;
+          &lt;td&gt;静态共享库&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;2222&lt;/td&gt;
+          &lt;td&gt;2222&lt;/td&gt;
+          &lt;td&gt;2222&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;2222&lt;/td&gt;
+          &lt;td&gt;2222&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1111&lt;/td&gt;
+          &lt;td&gt;1111&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="静态链接">静态链接</h2>
 <p>库是一组目标文件的包，就是一些常用的代码编译成目标文件后打包存放。</p>
 <h2 id="第三章-目标文件里有什么">第三章 目标文件里有什么</h2>
@@ -879,7 +1729,7 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
       <link>https://lifeislife.cn/posts/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
       <pubDate>Mon, 29 Nov 2021 23:20:18 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h1 id=&#34;代码整洁之道&#34;&gt;代码整洁之道&lt;/h1&gt;
+      <description>&lt;h1 id=&#34;代码整洁之道&#34;&gt;代码整洁之道&lt;/h1&gt;
 &lt;h2 id=&#34;整洁代码&#34;&gt;整洁代码&lt;/h2&gt;
 &lt;h3 id=&#34;整洁之道&#34;&gt;整洁之道&lt;/h3&gt;
 &lt;ul&gt;
@@ -890,7 +1740,719 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
 &lt;p&gt;时时保持代码整洁，稍后等于永不（&lt;strong&gt;Later equals never&lt;/strong&gt;）；&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;整洁代码力求集中，每个函数、每个类和每个模块都全神贯注于一件事；&lt;/p&gt;</description>
+&lt;p&gt;整洁代码力求集中，每个函数、每个类和每个模块都全神贯注于一件事；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;整洁代码简单直接，从不隐藏设计者的意图；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;整洁代码应当有单元测试和验收测试。它使用有意义的命名，代码通过其字面表达含义；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;消除重复代码，提高代码表达力。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;有意义的命名&#34;&gt;有意义的命名&lt;/h2&gt;
+&lt;h3 id=&#34;避免误导&#34;&gt;避免误导&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&amp;ldquo;一组账号&amp;quot;别用&lt;code&gt;accountList&lt;/code&gt;表示，&lt;code&gt;List&lt;/code&gt;对程序员有特殊含义，可以用 &lt;code&gt;accountGroup&lt;/code&gt;、&lt;code&gt;bunchOfAccounts&lt;/code&gt;、甚至是&lt;code&gt;accounts&lt;/code&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;不使用区别较小的名称&lt;/strong&gt;，&lt;code&gt;ZYXControllerForEfficientHandlingOfStrings&lt;/code&gt;和 &lt;code&gt;ZYXControllerForEfficientStorageOfStrings&lt;/code&gt;难以辨别；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;不使用小写 l、大写 O 作变量名，看起来像常量 1、0。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;做有意义的区分&#34;&gt;做有意义的区分&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;不以数字系列命名&lt;/strong&gt;(a1、a2、a3)，按照真实含义命名；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;Product/ProductInfo/ProductData&lt;/code&gt;&lt;/strong&gt; 意思无区别，只统一用一个；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;别写冗余的名字，变量名别带&lt;code&gt;variable&lt;/code&gt;、表名别带&lt;code&gt;table&lt;/code&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;使用读得出来的名称&#34;&gt;使用读得出来的名称&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;genymdhms&lt;/code&gt;（生成日期，年、月、日、时、分、秒）肯定不如&lt;code&gt;generation timestamp&lt;/code&gt;（生成时间戳）方便交流。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;使用可搜索的名称&#34;&gt;使用可搜索的名称&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;单字母名称和数字常量很难在上下文中找出。名称长短应与其作用域大小相对应，越是频繁出现的变量名称得越容易搜索 (越长)。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;命名时避免使用编码&#34;&gt;命名时避免使用编码&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;把类型和作用域编码进名称里增加了解码负担。意味着新人除了了解代码逻辑之外，还需要学习这种&lt;strong&gt;编码语言&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;别使用&lt;strong&gt;匈牙利语标记法&lt;/strong&gt;(格式：&lt;strong&gt;[Prefix]-BaseTag-Name&lt;/strong&gt; 其中 BaseTag 是数据类型的缩写，Name 是变量名字)，纯属多余。例如，&lt;code&gt;szCmdLine&lt;/code&gt;的前缀&lt;code&gt;sz&lt;/code&gt;表示“以零结束的字符串”；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;不必用&lt;code&gt;m_&lt;/code&gt;前缀来表明成员变量；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;接口和实现别在名称中编码。接口名&lt;code&gt;IShapeFactory&lt;/code&gt;的&lt;strong&gt;前导&amp;quot;I&amp;quot;是废话&lt;/strong&gt;。如果接口和实现必须选一个编码，宁可选实现，&lt;code&gt;ShapeFactoryImp&lt;/code&gt;都比对接口名称编码来的好。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;避免思维映射&#34;&gt;避免思维映射&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;不应当让读者在脑中把你的名称翻译为他们熟知的名称。例如，循环计数器自然有可能被命名为&lt;code&gt;i&lt;/code&gt;或&lt;code&gt;j&lt;/code&gt;或&lt;code&gt;k&lt;/code&gt;，但千万别用字母&lt;code&gt;l&lt;/code&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;专业程序员了解，&lt;strong&gt;明确是王道&lt;/strong&gt;，编写能方便他人理解的代码。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;类名方法名&#34;&gt;类名、方法名&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;类名应当是名词&lt;/strong&gt;或名词短语，&lt;strong&gt;方法名应当是动词&lt;/strong&gt;或动词短语。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;命名不要耍宝幽默&#34;&gt;命名不要耍宝幽默&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;言到意到，意到言到，不要在命名上展示幽默感。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;每个概念用一个词&#34;&gt;每个概念用一个词&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;fetch&lt;/code&gt;、&lt;code&gt;retrieve&lt;/code&gt;、&lt;code&gt;get&lt;/code&gt;约定一个一直用即可。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;尽管使用计算机科学术语&#34;&gt;尽管使用计算机科学术语&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;只有程序员才会读你的代码，不需要按照问题所在邻域取名称。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;别用双关语&#34;&gt;别用双关语&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;add&lt;/code&gt;方法一般语义是：根据两个值获得一个新的值。&lt;strong&gt;如果要把单个值加入到某个集合&lt;/strong&gt;，用&lt;code&gt;insert&lt;/code&gt;或&lt;code&gt;append&lt;/code&gt;命名更好，这里用&lt;code&gt;add&lt;/code&gt;就是双关语了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;添加有意义的语境&#34;&gt;添加有意义的语境&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;很少有名称能自我说明，&lt;strong&gt;需要用良好命名的类、函数、或者命名空间来放置名称&lt;/strong&gt;，给读者提供语境，如果做不到的话，给名称添加前缀就是最后一招了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;函数&#34;&gt;函数&lt;/h2&gt;
+&lt;h3 id=&#34;越短越好&#34;&gt;越短越好&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;短小，20 行封顶；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;if/else/while&lt;/code&gt;语句的代码块应该只有一行，该行应该是一个函数调用语句；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;函数的缩进层级不应该多于一层或两层。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;一个函数只做一件事&#34;&gt;一个函数只做一件事&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果函数只是做了该函数名下&lt;strong&gt;同一抽象层上的步骤&lt;/strong&gt;，则函数只做了一件事；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;要判断函数是否不止做了一件事，就是要看是否能&lt;strong&gt;再拆出一个函数&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;每个函数一个抽象层级&#34;&gt;每个函数一个抽象层级&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;向下规则&lt;/strong&gt;：让代码拥有自顶向下的阅读顺序。每个函数后面都跟着位于下一抽象层级的函数，这样一来，在查看函数列表时，就能循抽象层级向下阅读了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;switch-语句&#34;&gt;switch 语句&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;把 switch 埋在较低的抽象层级&lt;/strong&gt;，一般可以放在抽象工厂底下，用于创建多态对象。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;使用描述性的名称&#34;&gt;使用描述性的名称&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;函数越短小、功能越集中，就越便于取个好名字；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;别害怕长名称，&lt;strong&gt;长而具有描述性的名称，要比短而令人费解的名称好，要比描述性的长注释好；&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;别害怕花时间取名字。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;函数参数&#34;&gt;函数参数&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;参数越少越好&lt;/strong&gt;，0 参数最好，尽量避免用三个以上参数；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;参数越多，编写组合参数的测试用例就越困难；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;别用标识参数&lt;/strong&gt;，向函数传入&lt;code&gt;bool&lt;/code&gt;值是不好的，这意味着函数不止做一件事。可以将此函数拆成两个；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果函数需要&lt;strong&gt;两个、三个或者三个以上参数&lt;/strong&gt;，就说明其中&lt;strong&gt;一些参数应该封装成类了&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;将参数的顺序编码进函数名&lt;/strong&gt;，减轻记忆参数顺序的负担，例如 &lt;code&gt;assertExpectedEqualsActual(expected, actual)&lt;/code&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;副作用-函数在正常工作任务之外对外部环境所施加的影响&#34;&gt;副作用 (函数在正常工作任务之外对外部环境所施加的影响)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;检查密码并且初始化&lt;code&gt;session&lt;/code&gt;的方法命名为&lt;code&gt;checkPasswordAndInitializeSession&lt;/code&gt;而非 &lt;code&gt;checkPassword&lt;/code&gt;，&lt;strong&gt;即使违反单一职责原则也不要有副作用&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;避免使用&amp;quot;输出参数&amp;rdquo;，&lt;strong&gt;如果函数必须修改某种状态，就修改所属对象的状态吧&lt;/strong&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;设置-写-和查询-读-分离&#34;&gt;设置 (写) 和查询 (读) 分离&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;```C
+if(set(&amp;quot;username&amp;quot;, &amp;quot;unclebob&amp;quot;)) 
+{ 
+    ... 
+}
+```
+
+含义模糊不清。应该改为:
+
+```c
+if (attributeExists(&amp;quot;username&amp;quot;)) 
+{ 
+    setAttribute(&amp;quot;username&amp;quot;, &amp;quot;unclebob&amp;quot;);
+}
+```
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;使用异常代替返回错误码&#34;&gt;使用异常代替返回错误码&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;返回错误码&lt;/strong&gt;会要求调用者立刻处理错误，从而&lt;strong&gt;引起深层次的嵌套结构&lt;/strong&gt;；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;deletePate&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;page&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E_OK&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;xxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E_OK&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;yyy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E_OK&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nf&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nf&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nf&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;else&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;所以需要用&lt;code&gt;try catch&lt;/code&gt;异常机制；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;try&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;deletePage&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;xxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;yyy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;zzz&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;catch&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Exception&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;e&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;getMessage&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;());&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;try/catch&lt;/code&gt;代码块丑陋不堪，所以最好把&lt;code&gt;try&lt;/code&gt;和 &lt;code&gt;catch&lt;/code&gt;代码块的主体抽离出来，单独形成函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;try&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;do&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;catch&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Exception&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;不要写重复代码&#34;&gt;不要写重复代码&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;重复是软件中一切邪恶的根源。当算法改变时需要修改多处地方。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;结构化编程&#34;&gt;结构化编程&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;只要函数保持短小，偶尔出现的&lt;code&gt;return&lt;/code&gt;、&lt;code&gt;break&lt;/code&gt;、&lt;code&gt;continue&lt;/code&gt;语句没有坏处，甚至还比单入单出原则更具有表达力。&lt;code&gt;goto&lt;/code&gt;只有在大函数里才有道理，应该尽量避免使用。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;并不需要一开始就按照这些规则写函数，没人做得到。想些什么就写什么，然后再打磨这些代码，按照这些规则组装函数。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;注释&#34;&gt;注释&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;若编程语言足够有表现力，我们就不需要注释；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;注释总是一种失败，因为我们无法找到不用注释就能表达自我的方法；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;代码在演化，注释却不总是随之变动，会变得越来越不准确。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;用代码来阐述&#34;&gt;用代码来阐述&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;创建一个与注释所言同一事物的函数即可，&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// check to see if the employee is eligible for full benefits 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;employee&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;falgs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;HOURLY_FLAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;employee&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;65&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;应替换为&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;employee&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;isEligibleForFullBenefits&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;())&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;好注释&#34;&gt;好注释&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;法律信息，并且只要有可能就指向标准许可或者外部文档，而不是放全文；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;提供基本信息，如解释某个&lt;strong&gt;抽象方法的返回值&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;对意图的解释，反应了作者某个决定后面的意图；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;阐释。把某些&lt;strong&gt;晦涩的参数或者返回值&lt;/strong&gt;的意义&lt;strong&gt;翻译成可读的形式&lt;/strong&gt;(更好的方法是让它们自身变得足够清晰，但是类似标准库的代码我们无法修改)；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;b&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;compareTo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;//b &amp;gt; a
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;警示。&lt;code&gt;// don&#39;t run unless you have some time to kill&lt;/code&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;TODO&lt;/code&gt;注释；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;放大 一些看似不合理之物的重要性。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;坏注释&#34;&gt;坏注释&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;自言自语；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;多余的注释。&lt;strong&gt;把逻辑在注释里写一遍不能比代码提供更多信息&lt;/strong&gt;，读它不比读代码简单。&lt;strong&gt;一目了然的成员变量别加注释&lt;/strong&gt;，显得很多余；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;误导性注释；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;遵循规矩的注释。&lt;strong&gt;每个函数都加注释、每个变量都加注释是愚蠢的&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;日志式注释。有了代码版本控制工具，不必在文件开头维护修改时间、修改人这类日志式的注释；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;能用函数或者变量表示就别用注释&lt;/strong&gt;；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// does the module from the global list &amp;lt;mod&amp;gt; &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// depend on the subsystem we are part of?&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;smodule&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getDependSubsystems&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;().&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;contains&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;subSysMod&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getSubSystem&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;())&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以改为：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;ArrayList&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;moduleDependees&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;smodule&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getDependSubsystems&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ourSubSystem&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;subSysMod&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getSubSystem&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;moduleDependees&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;contains&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ourSubSystem&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;位置标记。&lt;strong&gt;标记多了会被我们忽略掉&lt;/strong&gt;；&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;///////////////////// Actions //////////////////////////&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;右括号注释；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;try&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// if
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// while
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// try
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果你想标记右括号，其实应该做的是缩短函数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;署名 &lt;code&gt;/* add by rick */&lt;/code&gt; 源代码控制工具会记住你，&lt;strong&gt;署名注释跟不上代码的演变&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;注释掉的代码。会导致看到这段代码其他人不敢删除，使用版本控制系统，可以大胆删除需要注释的代码；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;信息过多。别在注释中添加有趣的历史话题或者无关的细节；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;没解释清楚的注释。注释的作用是解释未能自行解释的代码，如果注释本身还需要解释就太遗憾了；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;短函数的函数头注释。&lt;strong&gt;为短函数选个好名字比函数头注释要好&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;非公共API函数的&lt;code&gt;javadoc/phpdoc&lt;/code&gt;注释。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;格式&#34;&gt;格式&lt;/h2&gt;
+&lt;h3 id=&#34;垂直格式&#34;&gt;垂直格式&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;短文件比长文件更易于理解。&lt;strong&gt;平均200行，最多不超过500行的单个文件可以构造出色的系统&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;像报纸一样排版，由略及详，层层递进；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;区隔: 封包声明、导入声明、每个函数之间，都用空白行分隔开，&lt;strong&gt;空白行下面标识着新的独立概念&lt;/strong&gt;，表示一个思路的开始&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;靠近: 紧密相关的代码应该互相靠近，例如&lt;strong&gt;一个类里的属性之间别用空白行隔开&lt;/strong&gt;；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ReporterConfig&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//The class name of the reporter listener&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_className&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//The properties of the reporter listener&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;List&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_properties&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ArrayList&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;addProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;property&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_properties&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;add&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;property&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;///////////////////////对比////////////////////////////////////&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ReporterConfig&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_className&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;List&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_properties&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ArrayList&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;addProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Property&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;property&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m_properties&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;add&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;property&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;变量声明应尽可能靠近其使用位置&lt;/strong&gt;：循环中的控制变量应该总是在循环语句中声明；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;成员变量应该放在类的顶部声明&lt;/strong&gt;，不要四处放置；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;如果某个函数调用了另外一个，就应该把它们放在一起&lt;/strong&gt;。我们希望底层细节最后展现出来，不用沉溺于细节，所以&lt;strong&gt;调用者尽可能放在被调用者之上；&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;执行同一基础任务的几个函数应该放在一起。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;水平格式&#34;&gt;水平格式&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;一行代码不必死守80字符的上限，偶尔到达100字符不超过120字符即可；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;区隔与靠近: 空格强调左右两边的分割。&lt;strong&gt;赋值运算符两边加空格，函数名与左圆括号之间不加空格，乘法运算符在与加减法运算符组合时不用加空格(a*b - c)&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;不必水平对齐。例如声明一堆成员变量时，各行不用每一个单词都对齐，代码自动格式化工具通常会把这类对齐消除掉；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt;　&lt;span class=&#34;nc&#34;&gt;FitNesseExpediter&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;implements&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ResponseSender&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　 &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Socket&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　　　　　　 &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;socket&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　 &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;InputStream&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　　   &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　 &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;OutputStream&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　　  &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;output&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　 &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Request&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　　　　　  &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;request&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;　　
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;短小的&lt;code&gt;if&lt;/code&gt;、&lt;code&gt;while&lt;/code&gt;、函数里最好也不要违反缩进规则，不要这样:&lt;code&gt;if (xx == yy) z = 1&lt;/code&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;while&lt;/code&gt;语句为空，最好分行写分号；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C++&#34; data-lang=&#34;C++&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;while&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;团队规则&#34;&gt;团队规则&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;团队绝对不要用各种不同的风格来编写源代码，这样会增加其复杂度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;对象和数据结构&#34;&gt;对象和数据结构&lt;/h2&gt;
+&lt;h3 id=&#34;数据抽象&#34;&gt;数据抽象&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;对象：暴露行为 (接口),隐藏数据 (私有变量)  ；&lt;/li&gt;
+&lt;li&gt;数据结构：没有明显的行为 (接口),暴露数据。如&lt;code&gt;DTO&lt;/code&gt;(Data Transfer Objects)、&lt;code&gt;Entity&lt;/code&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;数据对象的反对称性&#34;&gt;数据，对象的反对称性&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;使用&lt;strong&gt;数据结构便于&lt;/strong&gt;在不改动现在数据结构的前提下&lt;strong&gt;添加新函数&lt;/strong&gt;；使用&lt;strong&gt;对象便于&lt;/strong&gt;在不改动既有函数的前提下&lt;strong&gt;添加新类&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用&lt;strong&gt;数据结构难以添加新数据结构&lt;/strong&gt;，因为必须修改所有函数；使用&lt;strong&gt;对象难以添加新函数&lt;/strong&gt;，因为必须修改所有类；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;万物皆对象只是个传说，有时候我们也会在简单数据结构上做一些过程式的操作。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;law-of-demeter&#34;&gt;Law of Demeter&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;模块不应该了解它所操作对象的内部情形&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;class C&lt;/code&gt;的方法&lt;code&gt;f&lt;/code&gt;只应该调用以下对象的方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;C&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在方法&lt;code&gt;f&lt;/code&gt;里创建的对象&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;作为参数传递给方法&lt;code&gt;f&lt;/code&gt;的对象&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;C&lt;/code&gt;持有的对象&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;方法不应调用 &lt;strong&gt;由任何函数返回的对象&lt;/strong&gt; 的方法。下面的代码违反了 demeter 定律：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;final&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;outputDir&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ctxt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getOptions&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;().&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getScratchDir&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;().&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getAbsolutePath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;一个简单例子是，人可以命令一条狗行走（walk），但是不应该直接指挥狗的腿行走，应该由狗去指挥控制它的腿如何行走。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;错误处理&#34;&gt;错误处理&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;错误处理很重要，但是不能凌乱到打乱代码逻辑。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;使用异常而不是返回错误码&#34;&gt;使用异常而不是返回错误码&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果使用错误码，调用者必须在函数返回时&lt;strong&gt;立刻处理错误&lt;/strong&gt;，但这很容易被我们忘记；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;错误码通常会导致&lt;strong&gt;嵌套&lt;/strong&gt;&lt;code&gt;if else&lt;/code&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;先写-try-catch-语句&#34;&gt;先写 try-catch 语句&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;当编写可能会抛异常的代码时，先写好&lt;code&gt;try-catch&lt;/code&gt;再往里堆逻辑。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;在-catch-里尽可能的记录&#34;&gt;在 catch 里尽可能的记录&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;在&lt;code&gt;catch&lt;/code&gt;里尽可能的记录错误信息，记录失败的操作以及失败的类型&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;依调用者定义异常类&#34;&gt;依调用者定义异常类&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;对错误分类有很多方式。可以依其来源分类：是来自组件还是其他地方？或依其类型分类：是设备错误、网络错误还是编程错误？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;别返回-null-值&#34;&gt;别返回 null 值&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;返回&lt;code&gt;null&lt;/code&gt;值只要一处没检查&lt;code&gt;null&lt;/code&gt;，应用程序就会失败；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;当想返回&lt;code&gt;null&lt;/code&gt;值的时候，&lt;strong&gt;可以试试抛出异常，或者返回特例模式的对象。&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;别传递-null-值&#34;&gt;别传递 null 值&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在方法中传递&lt;code&gt;null&lt;/code&gt;值是一种糟糕的做法，应该尽量避免；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在方法里用&lt;code&gt;if&lt;/code&gt;或&lt;code&gt;assert&lt;/code&gt;过滤&lt;code&gt;null&lt;/code&gt;值参数，但是还是会出现运行时错误，没有良好的办法对付调动者意外传入的&lt;code&gt;null&lt;/code&gt;值，恰当的做法就是&lt;strong&gt;禁止传入&lt;code&gt;null&lt;/code&gt;值&lt;/strong&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;边界&#34;&gt;边界&lt;/h2&gt;
+&lt;h3 id=&#34;将第三方代码干净利落地整合进自己的代码中&#34;&gt;将第三方代码干净利落地整合进自己的代码中&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;避免公共 API 返回边界接口，或者将边界接口作为参数传递给 API。将边界保留在近亲类中；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;不要在生产代码中试验新东西，而是编写测试来理解第三方代码；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;避免我们的代码过多地了解第三方代码中的特定信息。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;学习性测试是一种精确试验，帮助我们增进对 API 的理解。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;单元测试&#34;&gt;单元测试&lt;/h2&gt;
+&lt;h3 id=&#34;tddtest-driven-development-三定律&#34;&gt;TDD(Test-driven development) 三定律&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;First Law: You may not write production code until you have written a failing unit test.&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Second Law: You may not write more of a unit test than is sufficient to fail, and not compiling is failing.&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Third Law: You may not write more production code than is sufficient to pass the currently failing test.&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;保持测试整洁&#34;&gt;保持测试整洁&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;脏测试等同于没测试&lt;/strong&gt;，测试代码越脏生产代码越难修改；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;测试代码和生产代码一样重要；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;整洁的测试代码最应具有的要素是：&lt;strong&gt;整洁性&lt;/strong&gt;。&lt;strong&gt;测试代码中不要有大量重复代码的调用。&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;每个测试一个断言&#34;&gt;每个测试一个断言&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;每个测试函数&lt;strong&gt;有且仅有一个断言语句&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;每个测试函数中&lt;strong&gt;只测试一个概念&lt;/strong&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;整洁的测试依赖于-first-规则&#34;&gt;整洁的测试依赖于 FIRST 规则&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;fast&lt;/strong&gt;: 测试代码应该&lt;strong&gt;能够快速运行&lt;/strong&gt;，因为我们需要频繁运行它；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;independent&lt;/strong&gt;: 测试应该&lt;strong&gt;相互独立&lt;/strong&gt;，某个测试不应该依赖上一个测试的结果，测试可以以任何顺序进行；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;repeatable&lt;/strong&gt;: 测试应可以在任何环境中通过；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;self-validating&lt;/strong&gt;: 测试应该有&lt;code&gt;bool&lt;/code&gt;值输出，不应通过查看日志来确认测试结果，不应手工对比两个文本文件确认测试结果；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;timely&lt;/strong&gt;: 及时编写测试代码。&lt;strong&gt;单元测试应该在生产代码之前编写&lt;/strong&gt;，否则生产代码会变得难以测试。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;类&#34;&gt;类&lt;/h2&gt;
+&lt;h3 id=&#34;类的组织&#34;&gt;类的组织&lt;/h3&gt;
+&lt;p&gt;以下针对 JAVA 语言，其他语言类似，变量在前，方法在后，公有在前，私有在后。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;公共静态常量&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;私有静态变量&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;私有实体变量&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;公共函数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;私有工具函数&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果测试需要调用一个函数或变量，可以设为保护类型。&lt;/p&gt;
+&lt;h3 id=&#34;类应该短小&#34;&gt;类应该短小&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;对于函数我们计算&lt;strong&gt;代码行数&lt;/strong&gt;衡量大小，对于类我们使用&lt;strong&gt;权责&lt;/strong&gt;来衡量；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;类的名称应当描述其权责&lt;/strong&gt;。类的命名是判断类长度的第一个手段，如果无法为某个类命以准确的名称，这个类就太长了。类名包含模糊的词汇，如&lt;code&gt;Processor&lt;/code&gt;、&lt;code&gt;Manager&lt;/code&gt;、&lt;code&gt;Super&lt;/code&gt;，这种现象就说明有不恰当的&lt;strong&gt;权责聚集&lt;/strong&gt;情况；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;单一权责原则（Single Responsibility Principle，SRP）: 类或者模块应该有一个权责——只有一条修改的理由 (A class should have only one reason to change.)；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;系统应该由许多短小的类而不是少量巨大的类组成；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;类应该只有少量的实体变量，如果一个类中每个实体变量都被每个方法所使用，则说明该类具有&lt;strong&gt;最大的内聚性&lt;/strong&gt;。创建最大化的内聚类不太现实，但是应该以高内聚为目标，&lt;strong&gt;内聚性越高说明类中的方法和变量互相依赖、互相结合形成一个逻辑整体&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;保持内聚性就会得到许多短小的类&lt;/strong&gt;。如果你想把一个大函数的某一小部分拆解成单独的函数，拆解出的函数使用了大函数中的 4 个变量，不必&lt;strong&gt;将 4 个变量作为参数传递到新函数里&lt;/strong&gt;，仅需&lt;strong&gt;将这 4 个变量提升为大函数所在类的实体变量&lt;/strong&gt;，但是这么做却因为实体变量的增多而丧失了类的内聚性，更好多做法是&lt;strong&gt;让这 4 个变量拆出来，拥有自己的类&lt;/strong&gt;。将大函数拆解成小函数往往是将类拆分为小类的时机。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;为了修改而组织&#34;&gt;为了修改而组织&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;类应当对扩展开放，对修改封闭 (开放闭合原则)；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在理想系统中，我们通过扩展系统而非修改现有代码来添加新特性。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;系统&#34;&gt;系统&lt;/h2&gt;
+&lt;h3 id=&#34;将系统的构造与使用分开&#34;&gt;将系统的构造与使用分开&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;软件系统应将起始过程和之后的运行逻辑分开。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;分解-main&#34;&gt;分解 main&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;将全部构造过程搬迁到 main&lt;/strong&gt;或者被称之为&lt;code&gt;main&lt;/code&gt;的模块中，涉及系统其余部分时，&lt;strong&gt;假设所有对象都已经正确构造&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;依赖注入 (DI)，控制反转 (IoC) 是分离构造与使用的强大机制。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;迭代&#34;&gt;迭代&lt;/h2&gt;
+&lt;h3 id=&#34;表达力&#34;&gt;表达力&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;作者把代码写的越清晰，其他人理解代码就越快；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;太多时候我们深入于要解决的问题中，写出能工作的代码之后，就转移到下一个问题上，没有下足功夫调整代码让后来者易于阅读。多少尊重一下我们的手艺，花一点点时间在每个函数和类上。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;尽可能少的类和方法&#34;&gt;尽可能少的类和方法&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;为了保持类和函数的短小，我们可能会早出太多细小的类和方法；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;类和方法数量太多，有时是由毫无意义的教条主义导致的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;以上-4-条规则优先级依次递减重要的是测试消除重复表达意图&#34;&gt;以上 4 条规则优先级依次递减。重要的是测试、消除重复、表达意图&lt;/h3&gt;
+&lt;h2 id=&#34;并发编程&#34;&gt;并发编程&lt;/h2&gt;
+&lt;h3 id=&#34;为什么要并发编程&#34;&gt;为什么要并发编程&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;并发总能改进性能；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;编写并发程序无需修改设计；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在采用&lt;code&gt;Web&lt;/code&gt;或&lt;code&gt;EJB&lt;/code&gt;容器的时候，理解并发问题并不重要。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;防御并发代码问题的原则与技巧&#34;&gt;防御并发代码问题的原则与技巧&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;遵循单一职责原则。分离并发代码与非并发代码；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;限制临界区数量、限制对共享数据的访问；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;避免使用共享数据，使用对象的副本；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;线程尽可能地独立，不与其他线程共享数据。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
       <content:encoded><![CDATA[<h1 id="代码整洁之道">代码整洁之道</h1>
 <h2 id="整洁代码">整洁代码</h2>
 <h3 id="整洁之道">整洁之道</h3>

@@ -3,7 +3,7 @@
   <channel>
     <title>Bootloader on 夜云泊</title>
     <link>https://lifeislife.cn/tags/bootloader/</link>
-    <description>Recent content in Bootloader on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Bootloader on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 18 Dec 2021 22:32:27 +0000</lastBuildDate>
@@ -13,8 +13,259 @@
       <link>https://lifeislife.cn/posts/%E8%8A%AF%E7%89%87%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B%E5%85%A8%E8%A7%A3%E6%9E%90/</link>
       <pubDate>Sat, 18 Dec 2021 22:32:27 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%8A%AF%E7%89%87%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B%E5%85%A8%E8%A7%A3%E6%9E%90/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;内容总结自 B 站 Up&lt;a href=&#34;https://www.bilibili.com/video/BV1AN411R7Be/?spm_id_from=333.788.recommend_more_video.1&#34;&gt;【蛋饼嵌入式】我提着鞋带拎自己？嵌入式芯片启动过程全解析，彻底理解 bootloader&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;当你按下电源开关的那一瞬间，第一行代码如何在芯片上运行起来的呢？嵌入式软件代码需要一定的方式烧录到芯片中才能运行，除了物理刻蚀，无论是通讯端口的传输或者调试端口的烧录，都需要驱动程序的支持。所以说是&lt;strong&gt;程序烧录了程序，软件启动了软件&lt;/strong&gt;。&lt;/p&gt;</description>
+      <description>&lt;p&gt;内容总结自 B 站 Up&lt;a href=&#34;https://www.bilibili.com/video/BV1AN411R7Be/?spm_id_from=333.788.recommend_more_video.1&#34;&gt;【蛋饼嵌入式】我提着鞋带拎自己？嵌入式芯片启动过程全解析，彻底理解 bootloader&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;当你按下电源开关的那一瞬间，第一行代码如何在芯片上运行起来的呢？嵌入式软件代码需要一定的方式烧录到芯片中才能运行，除了物理刻蚀，无论是通讯端口的传输或者调试端口的烧录，都需要驱动程序的支持。所以说是&lt;strong&gt;程序烧录了程序，软件启动了软件&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;这就像自己提着自己的鞋带，把自己拎起来。靴子（Boot）,鞋带（Strap），提鞋带（Loader）。这就是&lt;code&gt;Boot Strap Loader&lt;/code&gt;的命名来源。通常称&lt;code&gt;BootLoader&lt;/code&gt;，中文翻译为&lt;strong&gt;自举&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;BootLoader&lt;/code&gt;是芯片最初运行的代码吗？当然不是，其实每一块芯片在出厂时都在其内部的&lt;code&gt;ROM&lt;/code&gt;中，烧录了它最基础的软件。CPU 搬运并运行的第一条代码的默认位置，就在&lt;code&gt;ROM&lt;/code&gt;的地址空间。所以一切的起始都在硬件上。&lt;/p&gt;
+&lt;p&gt;以 X86 架构的鼻祖 8086 芯片为例，按下开关的一瞬间，芯片 Reset 引脚接收到了电平跳变，在一连串电路的作用下，代码段寄存器&lt;code&gt;CS&lt;/code&gt;恢复成&lt;code&gt;0XFFFF&lt;/code&gt;，指令指针寄存器&lt;code&gt;IP&lt;/code&gt;恢复成&lt;code&gt;0X0000&lt;/code&gt;，他们组合成 20 位的地址正好等于 ROM 中存放第一条代码的位置。之后取出这里的指令在跳转到别处。&lt;/p&gt;
+&lt;p&gt;ARM 架构的芯片也是类似的过程，对于 32 位的芯片，通电后，&lt;code&gt;PC&lt;/code&gt;指针寄存器复位至零地址，随后从中断向量表表头的 reset 向量处获取下一个跳转的地址。这时候的代码已经以二进制形式存储，处理器可以直接搬到自身缓存中运行。有了这部分代码，就能跳转到存放有更多更复杂的代码的地址。执行硬件自检，基本的初始化操作，提供基础的输入输出支持。之后可以将操作系统从外部的存储空间加载到内部。代码就这样接力式的流转起来。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191002002.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;所以我们把出厂就写在&lt;code&gt;ROM&lt;/code&gt;里，负责启动后续用户软件的软件，称为&lt;code&gt;Boot ROM&lt;/code&gt;或者&lt;code&gt;ROM Code&lt;/code&gt;。现在不一定是用只读存储器（Read Only Memory），但是至少是一块掉电不易失的存储器，现在主要用&lt;code&gt;EEPROM&lt;/code&gt;，&lt;code&gt;NOR Flash&lt;/code&gt;。我们一般没有权限修改它，但是它也不完全是黑盒，大部分芯片都会有外部启动配置引脚，通常是以拨码快关的形式。对于 PC 机来说，&lt;code&gt;Boot ROM&lt;/code&gt;就是我们常说的&lt;code&gt;BIOS&lt;/code&gt;，它也有启动配置途径。而且提供了交互界面，用于配置部分功能和选择后续的引导设备。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191009985.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;除了芯片自带的&lt;code&gt;Boot ROM&lt;/code&gt;，还需要再给自己实际的应用程序，写一个二次引导代码或者 N 次引导代码，用作操作系统，文件系统加载等等。我们所说的&lt;code&gt;Bootloader&lt;/code&gt;时，其实大多数就是这样的二次引导代码。&lt;/p&gt;
+&lt;p&gt;这些事其实&lt;code&gt;Boot ROM&lt;/code&gt;它也能做，但是&lt;code&gt;Boot ROM&lt;/code&gt;实现的功能和配置方法不灵活，但是&lt;code&gt;Bootloader&lt;/code&gt;是开发人员可以而完全控制的引导代码。&lt;/p&gt;
+&lt;p&gt;在设计&lt;code&gt;Bootloader&lt;/code&gt;时，&lt;code&gt;MCU&lt;/code&gt;的引导步骤就开始和嵌入式 Linux 或者 PC 有所不同。这一定程度与芯片架构所采用的的存储方案有关。&lt;/p&gt;
+&lt;p&gt;先来说&lt;code&gt;MCU&lt;/code&gt;，与&lt;code&gt;SOC&lt;/code&gt;相比&lt;code&gt;MCU&lt;/code&gt;的主要特征是单核和或多核同构的微处理器，单核或多核同构，主频 &amp;lt; 1GHz，没有&lt;code&gt;MMU&lt;/code&gt;内存管理单元，只能运行实时操作系统。常见&lt;code&gt;MCU&lt;/code&gt;内核：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191051828.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;程序的主要运行介质为&lt;code&gt;NOR Flash&lt;/code&gt;，因为和&lt;code&gt;RAM&lt;/code&gt;一样有分离的地址线和数据线。并且可以以字节长度精确寻址，所以程序不需要拷贝到&lt;code&gt;RAM&lt;/code&gt;中运行的。&lt;/p&gt;
+&lt;p&gt;以英飞凌家的 TC27x 系列 MCU 为例，上电后的默认取址位置是&lt;code&gt;0x8FFF 8000&lt;/code&gt;，这就是他的&lt;code&gt;Boot ROM&lt;/code&gt;在&lt;code&gt;NorFlash&lt;/code&gt;中的地址。并且这块&lt;code&gt;Boot Rom&lt;/code&gt;分为&lt;code&gt;SSW&lt;/code&gt;，&lt;code&gt;BSL&lt;/code&gt;，&lt;code&gt;TF&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191055339.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;SSW 每次上电必须运行，他会根据写在&lt;code&gt;program flash&lt;/code&gt;，&lt;code&gt;PFO&lt;/code&gt;地址的前 32byte 中的配置字，来决定&lt;code&gt;SSW&lt;/code&gt;执行完的跳转地址。我们可以选择一个合适的跳转地址，比如&lt;code&gt;0x80000020&lt;/code&gt;，放上自己写的&lt;code&gt;Bootloader&lt;/code&gt;。也可以选择不跳转，运行厂家提供的&lt;code&gt;Bootloader&lt;/code&gt;（BSL）。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;MCU&lt;/code&gt;下的&lt;code&gt;Bootloader&lt;/code&gt;主要完成的事情有以下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;关闭看门狗，初始化中断和 trap 向量表，进行时钟和外设初始化，让芯片正常运行起来。&lt;/li&gt;
+&lt;li&gt;提供&lt;code&gt;CAN&lt;/code&gt;,&lt;code&gt;UART&lt;/code&gt;, &lt;code&gt;ETH&lt;/code&gt;等用于通讯功能的驱动，能够接收外部数据传输请求。&lt;/li&gt;
+&lt;li&gt;提供&lt;code&gt;FLASH&lt;/code&gt;的读写与擦除驱动，设计服务来对通讯端口接收到的更新代码进行校验、存储，以及跳转操作系统或后续应用程序代码。&lt;/li&gt;
+&lt;li&gt;如有必要，还会开发一些基础诊断服务，串口交互程序等等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么运行 Linux 的&lt;code&gt;SOC&lt;/code&gt;和 PC 的这一过程有何不同呢。还是先看存储方案，运行嵌入式 Linux 的 SoC。一般将它的操作系统，文件系统和他的应用程序放在&lt;code&gt;nand flash&lt;/code&gt;中。运行代码前，现将代码搬运到&lt;code&gt;SRAM&lt;/code&gt;中，相比&lt;code&gt;MCU&lt;/code&gt;多了一道步骤。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191101930.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;对于&lt;code&gt;SOC&lt;/code&gt;的&lt;code&gt;Boot ROM&lt;/code&gt; 和 PC 的&lt;code&gt;BIOS&lt;/code&gt;而言，他们结束运行前的最终任务，是将某些代码从&lt;code&gt;nand flash&lt;/code&gt;搬运到&lt;code&gt;SRAM&lt;/code&gt;中，其中最重要的内容就是&lt;code&gt;Boot Loader&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;而一般&lt;code&gt;SOC&lt;/code&gt;的&lt;code&gt;Bootloader&lt;/code&gt;，又分为&lt;code&gt;SPL&lt;/code&gt;（Secondary Program Loader）和&lt;code&gt;uBOOT&lt;/code&gt;两个阶段。&lt;code&gt;SPL&lt;/code&gt;的 Secondary 就是相对于&lt;code&gt;BootROM&lt;/code&gt;而言，他就像是接力赛中的第二棒选手。&lt;code&gt;SPL&lt;/code&gt;会初始化更大空间的外部&lt;code&gt;DRAM&lt;/code&gt;，再把&lt;code&gt;uBoot&lt;/code&gt;搬运到外部&lt;code&gt;DRAM&lt;/code&gt;中去运行。&lt;code&gt;uBoot&lt;/code&gt;作为第三棒选手，开始运行它的初始化程序。之后再根据系统环境变量，将 OS 内核搬运到外部&lt;code&gt;DRAM&lt;/code&gt;中去运行。OS 再完成根文件系统的加载等等等等。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202112191116399.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>内容总结自 B 站 Up<a href="https://www.bilibili.com/video/BV1AN411R7Be/?spm_id_from=333.788.recommend_more_video.1">【蛋饼嵌入式】我提着鞋带拎自己？嵌入式芯片启动过程全解析，彻底理解 bootloader</a></p>
 <p>当你按下电源开关的那一瞬间，第一行代码如何在芯片上运行起来的呢？嵌入式软件代码需要一定的方式烧录到芯片中才能运行，除了物理刻蚀，无论是通讯端口的传输或者调试端口的烧录，都需要驱动程序的支持。所以说是<strong>程序烧录了程序，软件启动了软件</strong>。</p>
 <p>这就像自己提着自己的鞋带，把自己拎起来。靴子（Boot）,鞋带（Strap），提鞋带（Loader）。这就是<code>Boot Strap Loader</code>的命名来源。通常称<code>BootLoader</code>，中文翻译为<strong>自举</strong>。</p>

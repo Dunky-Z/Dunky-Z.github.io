@@ -3,7 +3,7 @@
   <channel>
     <title>多进程 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/</link>
-    <description>Recent content in 多进程 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 多进程 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Fri, 08 Sep 2023 10:01:20 +0000</lastBuildDate>
@@ -13,7 +13,84 @@
       <link>https://lifeislife.cn/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</link>
       <pubDate>Fri, 08 Sep 2023 10:01:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC5%E7%AB%A0-%E8%BF%9B%E7%A8%8B%E5%8F%8A%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;首先，&lt;code&gt;.section .data&lt;/code&gt; 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，&lt;code&gt;_app_num&lt;/code&gt; 是一个标签，表示一个 64 位的整数，初始值为 23。接下来是一系列的标签，分别代表了应用程序的起始地址，每个标签都是 64 位的整数。&lt;/p&gt;</description>
+      <description>&lt;p&gt;首先，&lt;code&gt;.section .data&lt;/code&gt; 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，&lt;code&gt;_app_num&lt;/code&gt; 是一个标签，表示一个 64 位的整数，初始值为 23。接下来是一系列的标签，分别代表了应用程序的起始地址，每个标签都是 64 位的整数。&lt;/p&gt;
+&lt;p&gt;接着，&lt;code&gt;.section .data&lt;/code&gt; 后面又出现了一个标签 &lt;code&gt;_app_names&lt;/code&gt;，它是一个字符串数组，包含了一组字符串，分别命名为 &amp;ldquo;ch2b_exit&amp;rdquo;、&amp;ldquo;ch2b_hello_world&amp;rdquo;、&amp;ldquo;ch2b_power&amp;rdquo; 等等。这些字符串名字对应了前面定义的应用程序的起始地址。&lt;/p&gt;
+&lt;p&gt;再往下，出现了一个标签 &lt;code&gt;INIT_PROC&lt;/code&gt;，它是一个字符串，表示初始化进程的名称，值为 &amp;ldquo;usershell&amp;rdquo;。&lt;/p&gt;
+&lt;p&gt;之后，每个应用程序都有自己的标签和段名，比如 &lt;code&gt;app_0_start&lt;/code&gt;、&lt;code&gt;app_1_start&lt;/code&gt; 等等。每个标签都包含一个指令 &lt;code&gt;.incbin&lt;/code&gt;，它用于将一个二进制文件（以字符串形式指定文件路径）插入到当前段中。&lt;/p&gt;
+&lt;h1 id=&#34;进程初始化分析&#34;&gt;进程初始化分析&lt;/h1&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;scheduler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;fetch_task&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 获取下一个要执行的进程
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;nf&#34;&gt;swtch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;curenv&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nextenv&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 切换到下一个进程上下文
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// Per-process state
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;proc&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;enum&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;procstate&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;state&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;     &lt;span class=&#34;c1&#34;&gt;// 进程状态
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;               &lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;       &lt;span class=&#34;c1&#34;&gt;// 进程 ID
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;ustack&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;// 进程用户栈虚拟地址 (用户页表)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;kstack&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;// 进程内核栈虚拟地址 (内核页表)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;trapframe&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;trapframe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 进程中断帧
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 用于保存进程内核态的寄存器信息，进程切换时使用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;pagetable_t&lt;/span&gt;       &lt;span class=&#34;n&#34;&gt;pagetable&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// User page table
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;max_page&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;program_brk&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;heap_bottom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;proc&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;parent&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// Parent process
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;exit_code&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;file&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;files&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;FD_BUFFER_SIZE&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;];&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;uint32&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;syscall_times&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;MAX_SYSCALL_NUM&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;];&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 系统调用次数统计
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uint64&lt;/span&gt;     &lt;span class=&#34;n&#34;&gt;start_time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;                     &lt;span class=&#34;c1&#34;&gt;// 进程开始运行时间
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;vma&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;vmas&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;NVMA&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;];&lt;/span&gt;                     &lt;span class=&#34;c1&#34;&gt;// 虚拟内存区域
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;};&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;wait-系统调用的功能&#34;&gt;wait 系统调用的功能&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;wait&lt;/code&gt; 系统调用是用于处理子进程终止状态的系统调用。其主要功能是等待子进程的终止，并获取子进程的退出状态信息。在操作系统中，当一个父进程创建了一个子进程后，通常会使用 &lt;code&gt;wait&lt;/code&gt; 来等待子进程的终止，以便进行后续的处理，如回收子进程的资源或获取其运行结果。&lt;/p&gt;
+&lt;p&gt;以下是 &lt;code&gt;wait&lt;/code&gt; 系统调用的主要功能：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;等待子进程终止&lt;/strong&gt;：父进程调用 &lt;code&gt;wait&lt;/code&gt; 系统调用后，会进入阻塞状态，等待子进程终止。如果子进程已经终止，那么 &lt;code&gt;wait&lt;/code&gt; 立即返回，否则父进程会一直等待直到子进程终止。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;获取子进程的退出状态&lt;/strong&gt;：&lt;code&gt;wait&lt;/code&gt; 系统调用会获取子进程的退出状态信息，包括子进程的退出码（通常是一个整数）。这个退出码可以告诉父进程子进程的终止情况，例如是否成功执行等。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;回收子进程资源&lt;/strong&gt;：一旦子进程终止，其占用的系统资源（如内存、文件描述符等）通常需要由父进程来回收，以避免资源泄漏。&lt;code&gt;wait&lt;/code&gt; 系统调用在等待子进程终止后，会自动回收这些资源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;处理僵尸进程&lt;/strong&gt;：在某些情况下，子进程可能会在终止后成为僵尸进程，即已经终止但其进程描述符仍然存在。父进程可以使用 &lt;code&gt;wait&lt;/code&gt; 来回收这些僵尸进程，释放相关资源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;code&gt;exec&lt;/code&gt;、&lt;code&gt;fork&lt;/code&gt; 和 &lt;code&gt;spawn&lt;/code&gt; 是操作系统中常见的进程管理系统调用，各自具有不同的功能和用途：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;exec&lt;/code&gt; 系统调用&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;功能&lt;/strong&gt;：&lt;code&gt;exec&lt;/code&gt; 系统调用用于在当前进程的上下文中加载并执行一个新的程序。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;用途&lt;/strong&gt;：通常在一个进程需要替换自身的执行映像时使用。它会加载一个新的可执行文件，覆盖当前进程的地址空间和代码段，然后开始执行新的程序。这个新程序可以是完全不同的程序，从而允许进程动态切换到不同的应用程序，而不需要创建新的进程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;fork&lt;/code&gt; 系统调用&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;功能&lt;/strong&gt;：&lt;code&gt;fork&lt;/code&gt; 系统调用用于创建一个与当前进程几乎完全相同的新进程，包括代码、数据和上下文等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;用途&lt;/strong&gt;：通常用于创建新的进程，新进程称为子进程，它从父进程继承了大部分状态，然后可以在独立的地址空间中执行不同的操作。&lt;code&gt;fork&lt;/code&gt; 创建的子进程是父进程的副本，可以并行执行不同的任务。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;code&gt;spawn&lt;/code&gt; 系统调用&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;功能&lt;/strong&gt;：&lt;code&gt;spawn&lt;/code&gt; 系统调用通常用于创建新的进程并执行指定的程序。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;用途&lt;/strong&gt;：类似于 &lt;code&gt;fork&lt;/code&gt;，它也创建了一个新的进程，但不像 &lt;code&gt;fork&lt;/code&gt; 那样完全复制父进程。相反，&lt;code&gt;spawn&lt;/code&gt; 允许你指定一个新程序的路径和参数，而不是完全复制当前进程的状态。这使得它更适合用于启动新程序，而不是简单地创建一个进程副本。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;总结：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;exec&lt;/code&gt; 用于替换当前进程的执行映像，允许加载和执行新程序。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fork&lt;/code&gt; 用于创建一个几乎与父进程相同的新进程，新进程成为父进程的副本。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spawn&lt;/code&gt; 通常用于创建一个新进程并执行指定的程序，允许指定不同的程序路径和参数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;附录&#34;&gt;附录&lt;/h1&gt;
+&lt;p&gt;本章任务：
+在次 -&amp;gt; 在此&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>首先，<code>.section .data</code> 表示定义了一个数据段，在这个段中定义了一系列的全局变量。其中，<code>_app_num</code> 是一个标签，表示一个 64 位的整数，初始值为 23。接下来是一系列的标签，分别代表了应用程序的起始地址，每个标签都是 64 位的整数。</p>
 <p>接着，<code>.section .data</code> 后面又出现了一个标签 <code>_app_names</code>，它是一个字符串数组，包含了一组字符串，分别命名为 &ldquo;ch2b_exit&rdquo;、&ldquo;ch2b_hello_world&rdquo;、&ldquo;ch2b_power&rdquo; 等等。这些字符串名字对应了前面定义的应用程序的起始地址。</p>
 <p>再往下，出现了一个标签 <code>INIT_PROC</code>，它是一个字符串，表示初始化进程的名称，值为 &ldquo;usershell&rdquo;。</p>

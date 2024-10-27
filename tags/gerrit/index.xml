@@ -3,7 +3,7 @@
   <channel>
     <title>Gerrit on 夜云泊</title>
     <link>https://lifeislife.cn/tags/gerrit/</link>
-    <description>Recent content in Gerrit on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Gerrit on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Fri, 29 Jul 2022 13:58:27 +0000</lastBuildDate>
@@ -13,8 +13,52 @@
       <link>https://lifeislife.cn/posts/gerrit%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E6%8A%84%E9%80%81%E6%8F%90%E9%86%92/</link>
       <pubDate>Fri, 29 Jul 2022 13:58:27 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/gerrit%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E6%8A%84%E9%80%81%E6%8F%90%E9%86%92/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;公司使用 Gerrit 作为 Review 平台，但是每次提交代码都需要手动添加 Reviewer，还要抄送组内成员，这种重复性劳动，程序员是绝不能容忍的。gerrit 提供了发送邮件的功能。&lt;/p&gt;</description>
+      <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+&lt;p&gt;公司使用 Gerrit 作为 Review 平台，但是每次提交代码都需要手动添加 Reviewer，还要抄送组内成员，这种重复性劳动，程序员是绝不能容忍的。gerrit 提供了发送邮件的功能。&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;官方示例：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git push ssh://john.doe@git.example.com:29418/kernel/common HEAD:refs/for/experimental%r=a@a.com,cc=b@o.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后的&lt;code&gt;%&lt;/code&gt;是个分隔符，&lt;code&gt;r=&#39;a@a.com&lt;/code&gt;表示 Reviewer 是&lt;code&gt;a@a.com&lt;/code&gt;，&lt;code&gt;cc=b@o.com&lt;/code&gt;表示抄送组内成员是&lt;code&gt;b@o.com&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意！邮箱之间不能有空格！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;以一个仓库为例：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git push origin HEAD:refs/for/branch_dev_name%cc=zhangsan@qq.com,cc=lisi@qq.com,cc=wangerma@qq.com,cc=chenwu@qq.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是要这么写，岂不是把操作搞更复杂了。&lt;/p&gt;
+&lt;p&gt;终极办法，打开项目路径下的&lt;code&gt;.git&lt;/code&gt;目录。编辑&lt;code&gt;config&lt;/code&gt;文件：&lt;/p&gt;
+&lt;p&gt;原文件里有如下字段：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[core]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; repositoryformatversion = 0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; filemode = false
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; bare = false
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; logallrefupdates = true
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; ignorecase = true
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[remote &amp;#34;origin&amp;#34;]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; fetch = +refs/heads/*:refs/remotes/origin/*
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我们可以将远程仓库名换成容易区分的名字，自己随意：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[core]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; repositoryformatversion = 0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; filemode = false
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; bare = false
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; logallrefupdates = true
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; ignorecase = true
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[remote &amp;#34;origin&amp;#34;]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; fetch = +refs/heads/*:refs/remotes/origin/*
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;# 以下为新增内容
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[remote &amp;#34;review&amp;#34;]
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; url = git@github.com:Dunky-Z/Dunky-Z.github.io.git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; fetch = +refs/heads/*:refs/remotes/origin/*
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; push =  HEAD:refs/for/%cc=zhangsan@qq.com,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; cc=lisi@qq.com,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; cc=wangerma@qq.com,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; cc=chenwu@qq.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;下次想要推送需要 review 的代码，就直接执行&lt;code&gt;git push review&lt;/code&gt;，其中&lt;code&gt;push&lt;/code&gt;就相当于：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;push HEAD:refs/for/%cc=zhangsan@qq.com,cc=lisi@qq.com,cc=wangerma@qq.com,cc=chenwu@qq.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://gerrit-review.googlesource.com/Documentation/user-upload.html#push_create,&#34;&gt;Gerrit Code Review - Uploading Changes&lt;/a&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="背景">背景</h2>
 <p>公司使用 Gerrit 作为 Review 平台，但是每次提交代码都需要手动添加 Reviewer，还要抄送组内成员，这种重复性劳动，程序员是绝不能容忍的。gerrit 提供了发送邮件的功能。</p>
 <h2 id="解决方法">解决方法</h2>

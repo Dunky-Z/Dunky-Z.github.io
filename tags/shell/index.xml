@@ -3,7 +3,7 @@
   <channel>
     <title>Shell on 夜云泊</title>
     <link>https://lifeislife.cn/tags/shell/</link>
-    <description>Recent content in Shell on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Shell on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 25 Sep 2022 22:35:16 +0000</lastBuildDate>
@@ -13,7 +13,7 @@
       <link>https://lifeislife.cn/posts/%E5%B5%8C%E5%85%A5%E5%BC%8Fshell%E5%9F%BA%E7%A1%80/</link>
       <pubDate>Sun, 25 Sep 2022 22:35:16 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E5%B5%8C%E5%85%A5%E5%BC%8Fshell%E5%9F%BA%E7%A1%80/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;脚本语言&#34;&gt;脚本语言&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;脚本语言&#34;&gt;脚本语言&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;常用的脚本语言有 sh、bash、csh、ksh、perl、python；&lt;/li&gt;
 &lt;li&gt;在 Linux 下常用的脚本语言其实就是 bash、sh；&lt;/li&gt;
@@ -44,7 +44,134 @@
 &lt;li&gt;shell 程序的正文，由很多行 shell 语句构成。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;shell-语法&#34;&gt;shell 语法&lt;/h2&gt;
-&lt;p&gt;shell 就是把以前命令行中键入执行的命令写成了程序。shell 其实就是为了避免反复的在命令行下手工输入而发明的一种把手工输入步骤记录下来，然后通过执行 shell 脚本程序就能再次复述原来记录的手工输入过程的一种技术。&lt;/p&gt;</description>
+&lt;p&gt;shell 就是把以前命令行中键入执行的命令写成了程序。shell 其实就是为了避免反复的在命令行下手工输入而发明的一种把手工输入步骤记录下来，然后通过执行 shell 脚本程序就能再次复述原来记录的手工输入过程的一种技术。&lt;/p&gt;
+&lt;h3 id=&#34;shell-中的变量定义和引用&#34;&gt;shell 中的变量定义和引用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;变量定义和初始化。shell 是弱类型语言（语言中的变量如果有明确的类型则属于强类型语言；变量没有明确类型就是弱类型语言），和 C 语言不同。在 shell 编程中定义变量不需要制定类型，也没有类型这个概念。&lt;/li&gt;
+&lt;li&gt;变量定义时可以初始化，使用&lt;code&gt;=&lt;/code&gt;进行初始化赋值。在 shell 中赋值的=两边是不能有空格的。
+注意：shell 对语法非常在意，非常严格。很多地方空格都是必须没有或者必须有，而且不能随意有没有空格。&lt;/li&gt;
+&lt;li&gt;变量赋值，变量定义后可以再次赋值，新的赋值会覆盖老的赋值。shell 中并不刻意区分变量的定义和赋值，反正每个变量就是一个符号，这个符号的值就是最后一个给他赋值时的值。&lt;/li&gt;
+&lt;li&gt;变量引用。shell 中引用一个变量必须使用&lt;code&gt;$&lt;/code&gt;符号，&lt;code&gt;$&lt;/code&gt;符号就是变量解引用符号。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注意：&lt;code&gt;$&lt;/code&gt;符号后面跟一个字符串，这个字符串就会被当作变量去解析。如果这个字符串本身没有定义，执行时并不会报错，而是把这个变量解析为空。也就是说在 shell 中没有被定义的变量其实就相当于是一个定义并赋值为空的变量。&lt;/p&gt;
+&lt;p&gt;注意：变量引用的时候可以&lt;code&gt;$var&lt;/code&gt;，也可以&lt;code&gt;${var}&lt;/code&gt;。这两种的区别是在某些情况下只能用&lt;code&gt;${var}&lt;/code&gt;而不能简单的&lt;code&gt;$var&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;shell-中无引用单引号和双引号的区别&#34;&gt;shell 中无引用、单引号和双引号的区别&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;shell 中使用字符串可以不加双引号，直接使用。而且有空格时也可以，但是缺陷是不能输出&lt;code&gt;&amp;quot;&lt;/code&gt;或者其他转义字符。&lt;/li&gt;
+&lt;li&gt;shell 中也可以使用单引号来表示字符串，也是直接使用的，不能输出转义字符。&lt;/li&gt;
+&lt;li&gt;单引号中：完全字面替换（不可包含单引号本身）&lt;/li&gt;
+&lt;li&gt;双引号中：
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;$&lt;/code&gt;加变量名可以取变量的值&lt;/li&gt;
+&lt;li&gt;反引号仍表示命令替换&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\$&lt;/code&gt;表示&lt;code&gt;$&lt;/code&gt;的字面值（输出$符号）&lt;/li&gt;
+&lt;li&gt;`表示`的字面值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\&amp;quot;&lt;/code&gt;表示&lt;code&gt;&amp;quot;&lt;/code&gt;的字面值&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;\\&lt;/code&gt;表示&lt;code&gt;\&lt;/code&gt;的字面值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;除以上情况之外，在其它字符前面的\无特殊含义，只表示字面值。&lt;/p&gt;
+&lt;p&gt;单引号会原样输出，双引号可以调用命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;PATH_A&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;`pwd`/include&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;PATH_B&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;`pwd`/include&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$PATH_A&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# /home/a/b/include&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$PATH_B&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# `pwd`/include&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;shell-中调用-linux-命令&#34;&gt;shell 中调用 Linux 命令&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;直接执行&lt;/li&gt;
+&lt;li&gt;反引号括起来执行。有时候我们在 shell 中调用 Linux 命令是为了得到这个命令的返回值（结果值），这时候就适合用一对反引号 (键盘上 ESC 按键下面的那个按键，和&lt;code&gt;~&lt;/code&gt;在一个按键上) 来调用执行命令。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;shell-中的选择分支结构&#34;&gt;shell 中的选择分支结构&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;shell 的 &lt;code&gt;if&lt;/code&gt; 语言用法很多，在此只介绍常用的，其他感兴趣可以自己去学&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;典型&lt;code&gt;if&lt;/code&gt;语言格式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; 表达式 &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  xxx
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  yyy
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  zzz
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  xxx
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ddd
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  uuu
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;if-的典型应用&#34;&gt;if 的典型应用&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-f&lt;/code&gt;判断文件是否存在，注意&lt;code&gt;[]&lt;/code&gt;里面&lt;strong&gt;前后都有空格&lt;/strong&gt;，不能省略&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-d&lt;/code&gt;判断目录是否存在&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;&amp;quot;str1&amp;quot; = &amp;quot;str2&amp;quot;&lt;/code&gt;判断字符串是否相等，注意&lt;strong&gt;用一个等号而不是两个&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;判断数字是否相等&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-eq&lt;/code&gt;等于&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-gt&lt;/code&gt;大于&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-lt&lt;/code&gt;小于&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-ge&lt;/code&gt;大于等于&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-le&lt;/code&gt;小于等于&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-z&lt;/code&gt;判断字符串是否为空，注意&lt;code&gt;-z&lt;/code&gt;判断时如果变量本身没定义也是不成立（也就是说-z 认为没定义不等于为空）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-o&lt;/code&gt;表示逻辑或，连接两个表达式&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;if [ 10 -eq 10 -o  ]; then&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;&amp;amp;&amp;amp;&lt;/code&gt; &lt;code&gt;||&lt;/code&gt;表示逻辑与和逻辑或&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;shell-中的循环结构&#34;&gt;shell 中的循环结构&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;for&lt;/code&gt; 循环，要求能看懂、能改即可。不要求能够完全不参考写出来。因为毕竟嵌入式并不需要完全重新手写。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;while&lt;/code&gt; 循环，和 C 语言的循环在逻辑上无差别，要注意很多格式要求，譬如：&lt;code&gt;while&lt;/code&gt; 后面的 &lt;code&gt;[]&lt;/code&gt; 两边都有空格，&lt;code&gt;[]&lt;/code&gt; 后面有分号（如果 do 放在一行的话），&lt;code&gt;i++&lt;/code&gt;的写法中有两层括号。&lt;/p&gt;
+&lt;h3 id=&#34;echo-的创建和追加输入文件&#34;&gt;echo 的创建和追加输入文件&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;在 shell 中可以直接使用 &lt;code&gt;echo&lt;/code&gt; 指令新建一个文件，并且将一些内容传入这个文件中。创建文件并输入内容的关键就是&lt;code&gt;&amp;gt;&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;还可以使用 &lt;code&gt;echo&lt;/code&gt; 指令配合追加符号&lt;code&gt;&amp;gt;&amp;gt;&lt;/code&gt; 向一个已经存在的文件末尾追加输入内容。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;shell-中其他值得关注的知识点&#34;&gt;shell 中其他值得关注的知识点&lt;/h3&gt;
+&lt;h4 id=&#34;case-语句&#34;&gt;case 语句&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;shell 中的 case 语句和 C 语言中的 switch case 语句作用一样，格式有差异&lt;/li&gt;
+&lt;li&gt;shell 中的 case 语句天生没有 &lt;code&gt;break&lt;/code&gt;，也不需要&lt;code&gt;break&lt;/code&gt;，和 C 语言中的 switch case 不同。shell 中的 case 默认就是匹配上哪个执行哪个，不会说执行完了还去执行后面的其他 case&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;调用-shell-程序的传参&#34;&gt;调用 shell 程序的传参&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;C 语言中可以通过 &lt;code&gt;main&lt;/code&gt; 函数的 &lt;code&gt;argc&lt;/code&gt; 和 &lt;code&gt;argv&lt;/code&gt; 给程序传参&lt;/li&gt;
+&lt;li&gt;shell 程序本身也可以在调用时传参给他。在 shell 程序内部使用传参也是使用的一些特定符号来表示的，包括：
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;$#&lt;/code&gt;表示调用该 shell 时传参的个数。（&lt;code&gt;$#&lt;/code&gt;计数时只考虑真正的参数个数）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$0、$1、$2·····&lt;/code&gt;则依次表示传参的各个参数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./a.out aa bb cc     
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# argc = 4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# argv[0] = ./a.out&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# argv[1] 是第一个有效参数····&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; a.sh aa bb cc  
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# $# = 3&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# $0是执行这个 shell 程序的解析程序的名字&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# $1是第一个有效参数的值&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# $2是第 2 个有效参数的值·····&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;while-循环和-case-语言和传参结合&#34;&gt;while 循环和 case 语言和传参结合&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;shell 中的 &lt;code&gt;break&lt;/code&gt; 关键字和 &lt;code&gt;C&lt;/code&gt; 语言中意义相同（都是跳出）但是用法不同。因为 shell 中 &lt;code&gt;case&lt;/code&gt; 语句默认不用 &lt;code&gt;break&lt;/code&gt; 的，因此在 &lt;code&gt;shell&lt;/code&gt; 中 &lt;code&gt;break&lt;/code&gt; 只用于循环跳出。所以当 &lt;code&gt;while&lt;/code&gt; 中内嵌 &lt;code&gt;case&lt;/code&gt; 语句时，&lt;code&gt;case&lt;/code&gt; 中的 &lt;code&gt;break&lt;/code&gt; 是跳出外层的 &lt;code&gt;while&lt;/code&gt; 循环的，不是用来跳出 &lt;code&gt;case&lt;/code&gt; 语句的。&lt;/li&gt;
+&lt;li&gt;shell 中的&lt;code&gt;$# $1&lt;/code&gt;等内置变量的值是可以被改变，被 &lt;code&gt;shift&lt;/code&gt; 指令改变。&lt;code&gt;shift&lt;/code&gt; 指令有点像左移运算符，把我们给 shell 程序的传参左移了一个移出去了，原来的&lt;code&gt;$2&lt;/code&gt;变成了新的&lt;code&gt;$1&lt;/code&gt;，原来的&lt;code&gt;$#&lt;/code&gt;少了 1 个。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="脚本语言">脚本语言</h2>
 <ul>
 <li>常用的脚本语言有 sh、bash、csh、ksh、perl、python；</li>

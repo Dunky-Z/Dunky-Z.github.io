@@ -3,7 +3,7 @@
   <channel>
     <title>NAS on 夜云泊</title>
     <link>https://lifeislife.cn/tags/nas/</link>
-    <description>Recent content in NAS on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in NAS on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 10 Aug 2024 20:00:13 +0800</lastBuildDate>
@@ -13,7 +13,65 @@
       <link>https://lifeislife.cn/posts/qbittorrent%E8%AE%BE%E7%BD%AE%E5%8D%95%E7%8B%AC%E7%9A%84%E5%9B%BA%E6%80%81%E7%A1%AC%E7%9B%98%E4%BD%9C%E4%B8%BA%E4%B8%B4%E6%97%B6%E4%B8%8B%E8%BD%BD%E7%9B%98/</link>
       <pubDate>Sat, 10 Aug 2024 20:00:13 +0800</pubDate>
       <guid>https://lifeislife.cn/posts/qbittorrent%E8%AE%BE%E7%BD%AE%E5%8D%95%E7%8B%AC%E7%9A%84%E5%9B%BA%E6%80%81%E7%A1%AC%E7%9B%98%E4%BD%9C%E4%B8%BA%E4%B8%B4%E6%97%B6%E4%B8%8B%E8%BD%BD%E7%9B%98/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;为了避免qBittorrnet在下载文件时对机械硬盘频繁读写，可以将固态硬盘作为临时下载盘，在下载完成后再将文件移动到机械硬盘。qBittorrentk可以通过简单的设置就能实现这一目的。&lt;/p&gt;</description>
+      <description>&lt;p&gt;为了避免qBittorrnet在下载文件时对机械硬盘频繁读写，可以将固态硬盘作为临时下载盘，在下载完成后再将文件移动到机械硬盘。qBittorrentk可以通过简单的设置就能实现这一目的。&lt;/p&gt;
+&lt;p&gt;首先需要将固态硬盘映射到qBittorrent的容器中。我是使用docker-compose部署的qBittorrent，所以需要在&lt;code&gt;docker-compose.yml&lt;/code&gt;中添加一个volume：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;services&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;qbittorrent&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;image&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;linuxserver/qbittorrent:latest&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;container_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;qbittorrent&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;restart&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;always&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;ports&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;environment&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;TZ=Asia/Shanghai&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;volumes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/root/sharedfolder/appdata/qbittorrent:/config&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/root/sharedfolder/downloads/qbittorrent:/downloads&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/srv/download-disk/downloads/qbittorrent:/download-disk&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中&lt;code&gt;/root/sharedfolder/downloads/qbittorrent:/downloads&lt;/code&gt;是原来机械硬盘的目录，我们不需要动他。&lt;code&gt;/srv/download-disk/downloads/qbittorrent:/download-disk&lt;/code&gt;是新的固态硬盘的目录，我在&lt;code&gt;download-disk&lt;/code&gt;目录下新建了和之前一样的目录结构。将它映射到容器的&lt;code&gt;/download-disk&lt;/code&gt;目录下。&lt;/p&gt;
+&lt;p&gt;进入qBittorrent的web页面，&lt;strong&gt;先全选所有的任务，将任务暂停&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;点击工具-&amp;gt;选项-&amp;gt;下载，设置保存未完成的文件到固态硬盘。路径就是我们在&lt;code&gt;docker-compose.yml&lt;/code&gt;中设置的&lt;code&gt;/download-disk&lt;/code&gt;目录下的&lt;code&gt;qbincomplete&lt;/code&gt;目录。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/436fd7ea3757be4efe21a7050c22db57.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2024/08/10/436fd7ea3757be4efe21a7050c22db57.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;重启qBittorrent容器，这样就设置好了。&lt;/p&gt;
+&lt;p&gt;再次登录qBittorrent的web页面，qBittorrent会自动将之前暂停的任务都移动到固态硬盘&lt;code&gt;/download-disk&lt;/code&gt;中。你在宿主机的&lt;code&gt;/srv/download-disk/downloads/qbittorrent/qbincomplete&lt;/code&gt;目录下就能看到这些任务。你可以重新启动所有任务，当他们移动完成后就会继续下载。下载完成后就会自动移动到机械硬盘中。也就是你设置的默认下载位置，比如我的下载位置为&lt;code&gt;/root/sharedfolder/downloads/qbittorrent/qbcomplete&lt;/code&gt;。&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>为了避免qBittorrnet在下载文件时对机械硬盘频繁读写，可以将固态硬盘作为临时下载盘，在下载完成后再将文件移动到机械硬盘。qBittorrentk可以通过简单的设置就能实现这一目的。</p>
 <p>首先需要将固态硬盘映射到qBittorrent的容器中。我是使用docker-compose部署的qBittorrent，所以需要在<code>docker-compose.yml</code>中添加一个volume：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">services</span><span class="p">:</span><span class="w">
@@ -79,7 +137,7 @@
       <link>https://lifeislife.cn/posts/docker%E9%83%A8%E7%BD%B2radarr%E5%88%AE%E5%89%8A%E7%94%B5%E5%BD%B1/</link>
       <pubDate>Thu, 17 Aug 2023 22:46:26 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/docker%E9%83%A8%E7%BD%B2radarr%E5%88%AE%E5%89%8A%E7%94%B5%E5%BD%B1/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h1 id=&#34;docker-composeyml&#34;&gt;docker-compose.yml&lt;/h1&gt;
+      <description>&lt;h1 id=&#34;docker-composeyml&#34;&gt;docker-compose.yml&lt;/h1&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-YAML&#34; data-lang=&#34;YAML&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;version&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;3.7&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;services&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
@@ -135,7 +193,47 @@
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;导入视频：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/17/81a242b30d3ab2d29b7f4bf92ba246de.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/17/81a242b30d3ab2d29b7f4bf92ba246de.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h1 id="docker-composeyml">docker-compose.yml</h1>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-YAML" data-lang="YAML"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
@@ -239,8 +337,1467 @@
       <link>https://lifeislife.cn/posts/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E4%B8%80%E5%8F%B0nas%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8/</link>
       <pubDate>Sat, 10 Sep 2022 11:37:47 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E4%B8%80%E5%8F%B0nas%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1%E5%99%A8/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。&lt;/p&gt;
-&lt;p&gt;自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。&lt;/p&gt;</description>
+      <description>&lt;p&gt;技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。&lt;/p&gt;
+&lt;p&gt;自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。&lt;/p&gt;
+&lt;h2 id=&#34;准备阶段&#34;&gt;准备阶段&lt;/h2&gt;
+&lt;p&gt;威联通的几款中意的 NAS 放购物车很久了，如果硬盘没有这么早坏掉，可能在双十一就买整机了，现在离双十一还早，硬件价格都不便宜，想来想去还是买二手硬件攒一台更划算。如果买整机，硬盘加 NAS 主机就得五千大洋，只是用来存文件，部署个 Jellyfin 看电影用，属实奢侈了。&lt;/p&gt;
+&lt;p&gt;￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥￥&lt;/p&gt;
+&lt;p&gt;买二手就得从零开始学。生命不休，折腾不止。经过一次完整的 NAS 攒机过程发现，其实 NAS 就是安装了专用系统的一台电脑而已。这个专用系统就是面向网络存储开发的，如群晖，威联通，开源的 OMV，FreeNAS 等等。&lt;/p&gt;
+&lt;p&gt;既然是一台电脑，其实攒 NAS 就和攒电脑一样，选配好以下几大件即可。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CPU&lt;/li&gt;
+&lt;li&gt;主板&lt;/li&gt;
+&lt;li&gt;散热器&lt;/li&gt;
+&lt;li&gt;机箱&lt;/li&gt;
+&lt;li&gt;内存&lt;/li&gt;
+&lt;li&gt;电源&lt;/li&gt;
+&lt;li&gt;机箱风扇&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下面分别介绍在攒机过程中遇到的一些概念，参数到底是什么意思。&lt;/p&gt;
+&lt;h3 id=&#34;cpu&#34;&gt;CPU&lt;/h3&gt;
+&lt;h4 id=&#34;cpu-型号字母数字都是什么意思&#34;&gt;CPU 型号字母数字都是什么意思&lt;/h4&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-03-26-07978c9e6aae76e3d1a4ac48df0521f1-20220910190326-c46d16.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-03-26-07978c9e6aae76e3d1a4ac48df0521f1-20220910190326-c46d16.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Intel&lt;/strong&gt; 是英特尔的英文名称，也是目前热门的 CPU 品牌；&lt;/li&gt;
+&lt;li&gt;“酷睿”代表英特尔品牌下面向普通消费者的一个 CPU 系列，一般划分为 Core（酷睿）、Pentium（奔腾）、Celeron（赛扬）、Xeon（至强）、Atom（凌动）等；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;i5&lt;/strong&gt; 代表这款 CPU 定位中端，在其下面还有 i3，在其上面还有 i7 和 i9，同一代中，数字越大，性能越强；但是不同代 - 数之间，性能不能直接相比，比如 12 代的 i5 在理论性能上是强于 10 代 i7 的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;12&lt;/strong&gt; 代表这款 CPU 的代数，说明其已经发展到第十二代了，数字越大越新；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;600&lt;/strong&gt; 这三位数字代表 Intel SKU 型号划分，一般来说 Core i7 有固定几个 SKU，比方说 700；Core i5 有 600/500/400；Core i3 有 300/100 等等，一般来说数字越大说明隶属的 Core 系列越高级，同级别下比较，数字越大频率越高，换句话说性能就越强，比方说 Core i5-8600 默认 3.1GHz，睿频 4.3GHz，比 Core i5-8500 默认 3.0GHz，睿频 4.1GHz 要强。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;K&lt;/strong&gt; 带 K 的表示不锁频，可以配合 Z 系列主板进行超频操作，适合会超频玩家使用，比方说 i7-12700K，i5-12600K 等&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;F&lt;/strong&gt; 带 F 的表示不带集成显卡，&lt;strong&gt;你必须配合独立显卡使用&lt;/strong&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当然，除了例子中的这种情况，我们还会遇到其它 CPU 型号的后缀：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;K&lt;/strong&gt;：表示支持超频且内置核显的 CPU 型号，例如型号：i5-12600K、i7-12700K；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;F&lt;/strong&gt;：表示无内置核显，例如型号：i5-12400F、i7-12700F；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;KF&lt;/strong&gt;：表示支持超频且无内置核显的 CPU 型号，例如型号：i5-12600KF，i7-12700KF。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;T&lt;/strong&gt;：表示低功耗版，相同型号下功耗更低，性能也差一些，例如型号：i7-10700T；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;X/XE&lt;/strong&gt;：表示至尊旗舰级，例如型号：i9-10980XE。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;KS&lt;/strong&gt;：可以理解为官方超频版，提升了主频的版本，例如 i9-9900K 和 i9-9900KS，i9-9900KS 出厂的主频要高于 K，例如型号：i9-9900KS。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;U&lt;/strong&gt;：低电压，性能弱些但功耗低，通常出现在轻薄本中，举例型号：i7 10510U；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;H&lt;/strong&gt;：标压，性能强，通常出现在游戏本中，举例型号：i5-11300H&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Y&lt;/strong&gt;：超低电压，性能很弱功耗非常低，通常出现在轻薄本中，举例型号：i3-10110Y；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HK&lt;/strong&gt;：一般使用在 Intel 高端发烧级 CPU 上，可超频，举例型号：i9-11980HK；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;G&lt;/strong&gt;：G1、G4 以及 G7 等，G 后面的数字表示核显性能强弱，数字越大代表核显性能越强，通常数字小于 4 的是集成的普通超高清 (UHD) 核显，大于等于 4 的是集成的高性能锐炬 (Iris) 核显。Intel 移动版 CPU 后缀，举例型号：i5-1155G7、i3-1115G4、i3-1005G1；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HQ&lt;/strong&gt;：标准电压，Q 板载四核，早期的老后缀，举例型号：i7-7700HQ；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;MQ&lt;/strong&gt;：标准电压，Q 插拔四核，早期的老后缀，举例型号：i7-4810MQ；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;：早期后缀 M 就是移动端 CPU，只是为了与台式机区别开，举例型号：i7-2620M。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;主板&#34;&gt;主板&lt;/h3&gt;
+&lt;h4 id=&#34;atxmicro-atxmini-itx-区别&#34;&gt;ATX，Micro-ATX，Mini-ITX 区别&lt;/h4&gt;
+&lt;p&gt;在了解买啥主板时，不免会看到各种 TX，比如我买的这块七彩虹 B460iTX 主板，简称就是七彩虹 B460i，还有不带最后字母&lt;code&gt;i&lt;/code&gt;的。他们有啥区别呢？其实这就是表示了主板的尺寸。主板尺寸常见的有三种尺寸：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;标准-ATX：30.5 厘米 x 24.4 厘米&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Micro-ATX：24.4 cm x 24.4 cm&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Mini-ITX：17 厘米 x 17 厘米&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/17-03-20-6cc06a3d6fbf9247c002ff2aacbb89bd-20220910170319-1e2047.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/17-03-20-6cc06a3d6fbf9247c002ff2aacbb89bd-20220910170319-1e2047.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;一般攒机会用标准 ATX，或者 MATX 也很常用，而 ITX 就常被用来搭建低功耗的服务器，如我们要搭建的 NAS。因为它是 7*24 小时不间断工作的，功耗是需要多考虑的。&lt;/p&gt;
+&lt;h3 id=&#34;散热器&#34;&gt;散热器&lt;/h3&gt;
+&lt;h4 id=&#34;风冷与水冷&#34;&gt;风冷与水冷&lt;/h4&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-02-33-f393351f39da51508625fc8283335b1c-20220911100231-f4fd24.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-02-33-f393351f39da51508625fc8283335b1c-20220911100231-f4fd24.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;风冷就是散热鳍片加风扇。散热鳍片会穿入铜管，铜管与下方底座相连，底座与 CPU 直接接触。CPU 热量铜管底座传导给铜管，铜管传导给散热鳍片，散热鳍片铜管风扇散热。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-04-38-a5cb1d964c6f3dd6fc71c2bca88d4369-20220911100437-034a9d.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-04-38-a5cb1d964c6f3dd6fc71c2bca88d4369-20220911100437-034a9d.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;水冷就是水冷头加风扇。简单理解就是风冷的铜管换成了液体。液体流动传导比铜管更快。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-05-10-47f4e854323ea9e8d86896342153705a-20220911100509-80682d.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-05-10-47f4e854323ea9e8d86896342153705a-20220911100509-80682d.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;各有优缺点，风冷更安全，比较简单，性能上限比较低，而水冷在外观、性能方面有很大的优势，缺点就是相对比较贵，还有漏液风险，不过现在的水冷漏液概率很小。细分的话风冷还有下压式，下压式比较适合 itx 小机箱，而塔式就适合普通机箱，水冷也分一体式水冷和分体式水冷，常见的都是一体式水冷。&lt;/p&gt;
+&lt;h3 id=&#34;机箱&#34;&gt;机箱&lt;/h3&gt;
+&lt;h4 id=&#34;塔式机架与刀片区别&#34;&gt;塔式，机架与刀片区别&lt;/h4&gt;
+&lt;p&gt;塔式服务器外形和普通家用服务器相差不多，塔式主机在主板扩展上有优势，一般预留接口较多，方便扩展。适用于入门和工作站。&lt;/p&gt;
+&lt;p&gt;机架服务器的外观安装工业标准统一设计，需要配合机柜统一使用，主要用于企业服务器密集部署。机架服务器因为需要密集紧凑，所以在设计时会非常紧凑，充分利用有限的空间。机架服务器宽度 19 英寸，高度以 U 为单位 (1U=1.75 英寸 =44.45 毫米）.&lt;/p&gt;
+&lt;p&gt;刀片服务器的主体结构是主体机箱中可以有许多热拔插的主板，每一块主板都可以独立运行自己的系统，这些主板可以集合成一个服务器集群，在集群模式下可以连接起来提供更好的网络以及共享资源。&lt;/p&gt;
+&lt;h4 id=&#34;全塔中塔与小塔区别&#34;&gt;全塔，中塔与小塔区别&lt;/h4&gt;
+&lt;p&gt;形容的是机箱的大小。&lt;/p&gt;
+&lt;p&gt;普通机箱，只能放 mATX 主板和一个标准电源，仅有 1-2 个光驱位；&lt;/p&gt;
+&lt;p&gt;中塔机箱 AT，X 主板甚至是 EATX 主板和一个标准电源，拥有 3-4 个光驱位；&lt;/p&gt;
+&lt;p&gt;全塔机箱，可以在主板上下的位置都安放一个电源，一共放两个电源拥有 4 个以上的光驱位。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-48-02-b90a4e4404769b82bc4d601d082bdf72-20220910224802-d6b6f5.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-48-02-b90a4e4404769b82bc4d601d082bdf72-20220910224802-d6b6f5.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;内存&#34;&gt;内存&lt;/h3&gt;
+&lt;h3 id=&#34;电源&#34;&gt;电源&lt;/h3&gt;
+&lt;h4 id=&#34;全模组半模组与非模组区别&#34;&gt;全模组，半模组与非模组区别&lt;/h4&gt;
+&lt;p&gt;总结一句话就是能不能拔掉不需要的供电线，能拔多少。&lt;/p&gt;
+&lt;h5 id=&#34;非模组&#34;&gt;非模组&lt;/h5&gt;
+&lt;p&gt;一个都不能拔，电源线直接从电源内部引出，输出线缆固定，无法进行扩展。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-23-12-6d2af37077c958056be73653cfffd322-20220910222311-675160.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-23-12-6d2af37077c958056be73653cfffd322-20220910222311-675160.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h5 id=&#34;半模组&#34;&gt;半模组&lt;/h5&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-32-37-16daab986b991e007eeff650353e0479-20220910223236-f0ab87.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-32-37-16daab986b991e007eeff650353e0479-20220910223236-f0ab87.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;能拔一部分，输出设计上既有非模组电源的直出线，又有全模组电源的扩展接口。&lt;/p&gt;
+&lt;h5 id=&#34;全模组&#34;&gt;全模组&lt;/h5&gt;
+&lt;p&gt;能全拔，所有线缆都能按需插上。因为一般一块主板不会把所有电源线都用上，这样只需要插上自己需要的线缆即可，可以保证走线清楚，机箱清爽。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-20-52-266a816bdbffa27b7d2ad02eabb07a52-20220910222051-61c37f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/22-20-52-266a816bdbffa27b7d2ad02eabb07a52-20220910222051-61c37f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h4 id=&#34;金牌银牌和铜牌啥区别&#34;&gt;金牌，银牌和铜牌啥区别&lt;/h4&gt;
+&lt;p&gt;金牌，银牌，铜牌指的是电源的转换效率。有钛金、白金、金牌、银牌、铜牌、白牌等档次，档次越高，转换效率也越高，但成本也越高，功率越小，相对成本也越高。每个“牌”对应的攻略转换或者参数也是不同的。&lt;/p&gt;
+&lt;p&gt;白牌：最低要求是 20-100% 负载下，转换效率必须达到 80%；&lt;/p&gt;
+&lt;p&gt;铜牌：与上同条件大于等于 82%，85%@50% 负载；&lt;/p&gt;
+&lt;p&gt;银牌：大于等于 85%，88%@50% 负载；&lt;/p&gt;
+&lt;p&gt;金牌：大于等于 87%，90%@50% 负载；&lt;/p&gt;
+&lt;p&gt;白金牌：90%@20% 负载、92%@50% 负载、89%@100% 负载。&lt;/p&gt;
+&lt;p&gt;钛金牌：要求 10%、20%、50%、100% 负载下的效率分别为 90%、94%、96%、92%。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;举个例子：
+500w 金牌和 500w 铜牌，都能带动 500w 功耗的电脑。金牌电源在 100% 负载时，转换率超过 87%，可以算一下，500/0.87=575w 耗电。
+铜牌 100% 负载转换率超过 82% 500/0.82=610w耗电，简单说就是好电源省电。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;硬盘&#34;&gt;硬盘&lt;/h3&gt;
+&lt;h4 id=&#34;固态硬盘&#34;&gt;固态硬盘&lt;/h4&gt;
+&lt;h4 id=&#34;机械硬盘&#34;&gt;机械硬盘&lt;/h4&gt;
+&lt;h5 id=&#34;垂直盘-pmr-与叠瓦盘-smr-区别&#34;&gt;垂直盘 PMR 与叠瓦盘 SMR 区别&lt;/h5&gt;
+&lt;blockquote&gt;
+&lt;p&gt;作者：一起学点什么
+链接：&lt;a href=&#34;https://www.zhihu.com/question/369882964/answer/2227127605&#34;&gt;https://www.zhihu.com/question/369882964/answer/2227127605&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;垂直磁记录（Perpendicular magnetic recording，PMR），也称为传统磁性记录 (conventional magnetic recording，CMR)，由于 SMR 其实也是垂直式磁记录的一种，只是相较于垂直磁记录方式磁盘优化了写入密度，因此为了避免被认为所有垂直磁记录的硬盘都是 SMR 硬盘，大家也习惯把非 SMR 的垂直机械盘称为 CMR。&lt;/p&gt;
+&lt;p&gt;最开始由于硬盘容量提升的需求，磁性记录颗粒的尺寸需要不断下降，导致出现了电磁学上的超顺磁效应（超顺磁性：当某些具有磁性的颗粒小于某个尺寸时，外场产生的磁取向力太小而无法抵抗热扰动的干扰，而导致其磁化性质与顺磁体（通俗来说就是指材料对磁场响应很弱的磁）相似。），这就限制了硬盘容量提升的潜力。&lt;/p&gt;
+&lt;p&gt;之前硬盘厂商使用纵向（平行，Longitudinal Magnetic Recording，LMR）读写技术，磁性记录颗粒的易磁化方向相对于碟片是平行的，颗粒沿着碟片圆周以端对端排列，所以便有机会出现 SS（南）和 NN（北）的互斥排列。当颗粒的尺寸不断下降而密度不断提升，在室温的情况下颗粒便会对随机的热运动异常敏感，失去稳定性，导致出现比特（0 和 1）翻转的现象，记录的数据因此被破坏。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-37-25-bcc8863e8c481995128e5057ef677657-v2-0c0c8d0fa144f9492a3f4599bcff3fa2_720w-d47981.jpeg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-37-25-bcc8863e8c481995128e5057ef677657-v2-0c0c8d0fa144f9492a3f4599bcff3fa2_720w-d47981.jpeg&#34; alt=&#34;平行读写方式和垂直读写方式&#34;  title=&#34;
+平行读写方式和垂直读写方式&#34; style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;而为了解决以上问题，后来就开发出了垂直磁记录技术（Perpendicular Recording）的硬盘，这种硬盘中的磁性记录颗粒的易磁化方向相对于碟片是垂直的，允许使用单极磁头配合磁记录介质下的软磁层将信息写入磁记录介质中，这样采用具有相同饱和磁化强度的材料所制备的垂直写入磁头，能产生远多于传统写入磁头所能产生的磁场。更大的写入磁场允许我们使用具有更高磁各向异性的材料来制备磁记录介质，而磁各向异性越强，出现超顺磁性效应的临界体积就越小，因此，碟片中的存储密度可以在一定程度内得到进一步的提高。&lt;/p&gt;
+&lt;p&gt;但是这样虽然提高了硬盘的存储密度，但是很快也就达到了瓶颈，工程师又开始想新的方法来提高硬盘的存储密度，这就诞生了大家都知道的 SMR 叠瓦盘。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-37-44-9854e0b7be55864a3c8d88d85706ae3e-v2-70621980e9aa04789beee8ac77360de4_720w-bdb6ea.jpeg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-37-44-9854e0b7be55864a3c8d88d85706ae3e-v2-70621980e9aa04789beee8ac77360de4_720w-bdb6ea.jpeg&#34; alt=&#34;传统垂直读写硬盘的写入磁头和读写磁头的宽度&#34;  title=&#34;传统垂直读写硬盘的写入磁头和读写磁头的宽度&#34; style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;叠瓦式机械硬盘（Shingled magnetic recording，SMR，直译为分层磁记录）：也是一种用于硬盘驱动器的磁存储数据记录技术，可提高存储密度和每个驱动器的整体存储容量。常规的硬盘驱动器通过写入彼此平行而不重叠的磁道来记录数据，例如 PMR。而叠瓦磁记录技术的硬盘写入的新磁道则与先前写入的磁道部分重叠，从而使先前的磁道更窄，因此能拥有更高的磁道密度，进而提高磁盘容量。使用叠瓦磁技术的磁道相互重叠，与用作屋顶的瓦片堆叠方式类似。之所以能这样做是因为磁盘写入磁头由于物理上的原因比读取磁头宽上许多，因而由正常方式写入的磁道宽度远比读取磁头所需的磁道宽度来得宽，此外为了避免磁道间相互干扰，磁道和磁道之间其实还有一部分空隙，因此读取信息的磁道仅占所有磁道的很小一部分，很大的磁盘空间都被浪费了，只是因为技术原因我们不能将写入磁头制作的和读取磁头一样小。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-38-47-933fcaeee57c194da4f9583cf2298ab8-v2-d64bf87cc1454f8ec91a398abfbbedc6_720w-d978c7.jpeg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-38-47-933fcaeee57c194da4f9583cf2298ab8-v2-d64bf87cc1454f8ec91a398abfbbedc6_720w-d978c7.jpeg&#34; alt=&#34;CMR 硬盘原理&#34;  title=&#34;CMR硬盘原理&#34; style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-38-58-83f62c2d4e2e8cbcdec45f6befd1be96-v2-6f1171496af614dea6c148afe5953a43_720w-c5eb05.jpeg&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/10-38-58-83f62c2d4e2e8cbcdec45f6befd1be96-v2-6f1171496af614dea6c148afe5953a43_720w-c5eb05.jpeg&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;由于磁道存在重叠，叠瓦式磁盘的写入过程较为复杂。如果我们随机写入一个磁道，由于写入磁头的宽度比磁道宽，因此写入会影响到临近磁道，如果这个临近磁道有数据，这些数据就也需要依次重写以免数据被破坏，依此类推。因此，SMR 磁盘一般分成很多块只能追加数据（顺序写入）的区域（Zone），这和固态硬盘的闪存页管理类似。使用“设备管理”（device-managed）方式的 SMR 磁盘通过内部固件处理了 SMR 磁盘复杂的写入问题，从而对用户封装了 SMR 磁盘的复杂性，令用户可以像使用 PMR 硬盘一样随机写入 SMR 硬盘。其他 SMR 磁盘则使用“主机管理”（host-managed）方式，需要操作系统识别 SMR 磁盘并拥有能对 SMR 磁盘进行正确顺序写入的驱动程序才能被正常使用。&lt;/p&gt;
+&lt;p&gt;叠瓦盘相较于垂直盘性能也有一定下降，因为传统的 CMR 硬盘磁道之间不会互相干扰，写入数据时可以任意进行写入，而叠瓦盘由于在一个磁道写入数据时不可避免会影响相邻的磁道，需要将下一磁道的数据先拿出（暂时放入硬盘 CMR 缓冲区）再进行写入，而恢复下一磁道的数据则又会对下下磁道的数据进行影响，则又需要先取出下下磁道的数据，因此完成传统垂直硬盘一次的写入操作，叠瓦式硬盘则需要多次的写入，同样的数据量需要更多的写入操作，也会增大损坏的概率。&lt;/p&gt;
+&lt;h2 id=&#34;配件选购&#34;&gt;配件选购&lt;/h2&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;配件&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;型号&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;价格&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;主板&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;七彩虹 B460-ITX&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;300^1^&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;CPU&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I3-10100&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;600^1^&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;机箱&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Invasion X5&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;330^1^&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;电源&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;振华冰山金蝶 550W&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;300^1^&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;硬盘&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;西数 HC550&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1390&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;SSD&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;xxxxx&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;旧电脑拆的&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;散热器&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;利民 AX120 RSE&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;74&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;内存条&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;酷兽 DDR4 16G&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;245&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;合计&lt;/strong&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;3239&lt;/strong&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;1.表示二手价格&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;主板-1&#34;&gt;主板&lt;/h3&gt;
+&lt;p&gt;刚入门其实最头疼的就是到底买什么型号，因为各个配件之间又有兼容问题，比如相中了一款 ITX 的机箱，但是主板却是 ATX 的，主板都放不进机箱里，这就很麻烦。所以我们首先要确定一个配件，其余配件都安装这个配件的规格去买，并且都要适配这个配件。那么这个配件最好的选择就是主板。&lt;/p&gt;
+&lt;p&gt;我们先确定自己要买一个什么样的主板，让所有其他的配件都适配这个主板。选择主板的好处是，主板上各个接口就能体现出这台 NAS 的性能。不至于配件买的太离谱。&lt;/p&gt;
+&lt;h3 id=&#34;机箱-1&#34;&gt;机箱&lt;/h3&gt;
+&lt;p&gt;微型机箱买 ITX 板，MINI 机箱买 M-ATX 板和 ITX 板，中塔机箱买 ATX 板。因为 NAS 是个服务器，可能会永远被放在墙角，所以颜值不重要，实用才是王道，买一个盘位多实用性强的就行。&lt;/p&gt;
+&lt;p&gt;在前期准备时看到很多推荐迎广的机箱，本来决定要买它，但是了解到 NAS 的本质就是一台电脑主机时，意识到为何不买个电脑机箱？为何要选择成品的机箱？虽然成品的 NAS 机箱有硬盘位，可热插拔。但是我为啥要去插拔服务器上的硬盘？&lt;/p&gt;
+&lt;p&gt;当我有这个意识后，我的选择一下子多了起来，我最终选了逛淘宝偶然看的 Invasion 机箱。十分简约的外形，甚至还有玻璃侧罩，四格金属硬盘架专为 NAS 打造。只要不到三百块。于是立马转头打开小黄鱼，一搜还真有转卖的，升级版的 8 格硬盘架只要 330。收到货后也很满意，几乎是全新的，玻璃膜都没有撕，还送了俩风扇。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/4d93dc601559f515fbe2a0e261eb2776.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/4d93dc601559f515fbe2a0e261eb2776.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/0264f7b051cac66705feee6e3441dd52.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/0264f7b051cac66705feee6e3441dd52.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;cpu-1&#34;&gt;CPU&lt;/h3&gt;
+&lt;p&gt;选择 CPU 对于小白来说最重要的就是要选择带核显的 CPU，因为 NAS 上显卡其实没必要，CPU 的核显就绰绰有余了，如果既没有显卡也没有核显就会无法亮机。所以选择 CPU 时要选择带核显的，也就是 Intel 的 CPU 型号不带&lt;code&gt;F&lt;/code&gt;的，比如我最终选择的 I3-10100。AMD 的 CPU 型号标识我也没弄清楚，可以自己搜索一下自己想要的 CPU 是否有核显。&lt;/p&gt;
+&lt;p&gt;其次就是功耗，因为 NAS 要 7*24 小时运行，所以选择性能低一点的 CPU 就好了，另外就是需要关注 CPU 是否有音视频解码的能力。因为平时爱折腾，想着以后指不定在 NAS 上折腾些啥，所以选择了性能不算低的 I3-10100。两个月体验下来，性能还是过剩了，日常基本上都处于待机状态，只有周末看电影会用一下，CPU 利用率很低，好在日常功耗只有 30W。-&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/6e6ec183f0c08fc29eb6b01410090dce.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/10/22/6e6ec183f0c08fc29eb6b01410090dce.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;安装-ovm-openmediavaultt&#34;&gt;安装 OVM (OpenMediaVaultt)&lt;/h2&gt;
+&lt;p&gt;参考视频：&lt;a href=&#34;https://www.bilibili.com/video/BV1FJ411s7xR?spm_id_from=333.999.0.0&amp;amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44&#34;&gt;蜗牛星际安装开源 NAS 系统 Openmediavault 及初始化配置（司波图）——OMV 系列教程 01&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;为什么选择它&#34;&gt;为什么选择它&lt;/h3&gt;
+&lt;p&gt;OpenMediaVault（以下均简称 OMV）是除 FreeNAS 外目前使用最广泛的开源 NAS 系统。&lt;/p&gt;
+&lt;h3 id=&#34;预备软件下载&#34;&gt;预备软件下载&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.openmediavault.org/download.html&#34;&gt;下载 OpenMediaVaultt 系统&lt;/a&gt;，我选择的是 ISO 格式 Old Stable 版本，虽然想用最新的版本，但是第一次安装没有成功，选择了旧版本安装成功了。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.wepe.com.cn/&#34;&gt;下载 微 PE 工具箱&lt;/a&gt;，用来格式化系统盘，如果是新买的系统盘就不需要下载。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://rufus.ie/zh/&#34;&gt;下载 Rufus 轻松创建 USB 启动盘&lt;/a&gt;，这个必须要用的。&lt;/p&gt;
+&lt;h3 id=&#34;制作启动盘&#34;&gt;制作启动盘&lt;/h3&gt;
+&lt;p&gt;需要一个容量大于 4G 的 U 盘，用 Rufus 将 OMV 写入 U 盘即可。安装时会从 U 盘启动，然后将系统安装到插在主板上的系统盘内。&lt;/p&gt;
+&lt;p&gt;启动盘制作就不详细说了，都是一键式操作。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/14-36-53-d083a346dc428783efefcddcb2a46001-20220911143652-19d632.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/14-36-53-d083a346dc428783efefcddcb2a46001-20220911143652-19d632.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;制作完后进入 U 盘内查看是否写入成功&lt;/strong&gt;，U 盘内是否有文件，或者查看一下 U 盘使用大小，如果比系统 ISO 大小还小，那肯定没有写成功。我就制作了三遍才发现没有写成功，虽然能看到启动选项，但是进入安装就黑屏，因为根本没有可以安装的文件。&lt;/p&gt;
+&lt;p&gt;如果没有制作成功，尝试&lt;strong&gt;格式化&lt;/strong&gt;U 盘后重新制作。&lt;/p&gt;
+&lt;h3 id=&#34;安装过程&#34;&gt;安装过程&lt;/h3&gt;
+&lt;p&gt;参考视频即可，很详细。&lt;/p&gt;
+&lt;h3 id=&#34;踩坑记录&#34;&gt;踩坑记录&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# git&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# python&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install python
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# vim&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install vim
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;docker-配置&#34;&gt;Docker 配置&lt;/h2&gt;
+&lt;h3 id=&#34;安装-portainer-管理容器&#34;&gt;安装 Portainer 管理容器&lt;/h3&gt;
+&lt;h3 id=&#34;更换国内镜像源&#34;&gt;更换国内镜像源&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-55-03-a846141c4a3997752a278ef1c604c554-20220910185502-99a3e2.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-55-03-a846141c4a3997752a278ef1c604c554-20220910185502-99a3e2.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-58-15-eefc8207a6905d28a7b76e0a142f18d5-20220910185815-3b0c01.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/18-58-15-eefc8207a6905d28a7b76e0a142f18d5-20220910185815-3b0c01.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;网易 &lt;code&gt;http://hub-mirror.c.163.com&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;ustc &lt;code&gt;http://docker.mirrors.ustc.edu.cn&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;阿里云 &lt;code&gt;http://&amp;lt;你的 ID&amp;gt;.mirror.aliyuncs.com&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;或者使用一位网友提供的    &lt;code&gt;http://1nj0zren.mirror.aliyuncs.com&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因为可能有朋友看了比较老的教程（比如我，:( ），可能会用到一些停止服务的进行，如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;https://dockerhub.azk8s.cn&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;https://reg-mirror.qiniu.com&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;https://registry.docker-cn.com&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果无法拉取镜像，检查是否用了这几个，如果用了请换镜像源。&lt;/p&gt;
+&lt;h3 id=&#34;安装-jellyfin-部署影音服务器&#34;&gt;安装 Jellyfin 部署影音服务器&lt;/h3&gt;
+&lt;h3 id=&#34;安装-transmission-下载&#34;&gt;安装 Transmission 下载&lt;/h3&gt;
+&lt;h3 id=&#34;安装-qbittorrent-下载&#34;&gt;安装 qBittorrent 下载&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/16-06-33-65041d0b29059db114c6bd10b20ab2f2-20220911160632-a3bdd5.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/16-06-33-65041d0b29059db114c6bd10b20ab2f2-20220911160632-a3bdd5.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/16-07-40-0ace26a48fbe6b421fdc1ad168d752f9-20220911160739-66337b.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/16-07-40-0ace26a48fbe6b421fdc1ad168d752f9-20220911160739-66337b.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h4 id=&#34;添加-tracker-list&#34;&gt;添加 tracker list&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/ngosang/trackerslist&#34;&gt;ngosang/trackerslist: Updated list of public BitTorrent trackers&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-58-26-68faa5378bc8e252b13251e864575545-20220910195825-1f3492.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/19-58-26-68faa5378bc8e252b13251e864575545-20220910195825-1f3492.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;安装-jackett-搜索种子&#34;&gt;安装 Jackett 搜索种子&lt;/h3&gt;
+&lt;p&gt;Docker 中安装，选择网易的镜像，阿里的镜像太旧了。&lt;/p&gt;
+&lt;p&gt;配置端口号&lt;code&gt;9117&lt;/code&gt;，映射两个路径即可。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/15-24-34-0d1575f2892b0426b6885e28d550337e-20220911152433-8a2a1d.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/15-24-34-0d1575f2892b0426b6885e28d550337e-20220911152433-8a2a1d.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/15-27-11-008863a6cee878d735268752cf4b7ffa-20220911152710-5366dc.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/11/15-27-11-008863a6cee878d735268752cf4b7ffa-20220911152710-5366dc.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;安装过程参考&lt;a href=&#34;https://github.com/qbittorrent/search-plugins/wiki/How-to-configure-Jackett-plugin&#34;&gt;How to configure Jackett plugin&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;点击&lt;a href=&#34;https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/jackett.py&#34;&gt;这里下载源码&lt;/a&gt;，复制全文并保存为&lt;code&gt;jackett.py&lt;/code&gt;文件。&lt;/p&gt;
+&lt;p&gt;如果按照以上安装 qBittorrent 那么保存路径为共享文件夹下&lt;code&gt;appdata/qBittorrent/nova3/engines/&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;如果没找到，找找是否有以下路径。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;~/.local/share/data/qBittorrent/nova3/engines/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 或者&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;~/.local/share/qBittorrent/nova3/engines/
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;再在相同路径下，新建一个配置文件&lt;code&gt;jackett.json&lt;/code&gt;，写入以下配置：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;#34;api_key&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;YOUR_API_KEY_HERE&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;#34;tracker_first&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;// 如果你登录 OMV 的地址是 192.168.0.1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;#34;url&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;http://192.168.0.1:9117&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;安装-hlink-硬链接持续做种&#34;&gt;安装 Hlink 硬链接持续做种&lt;/h3&gt;
+&lt;p&gt;下载的文件名太过杂乱，可以用 TMM 等刮削工具刮削，重命名，建立影音库。但是重命名后就无法做种。想起了 Linux 有硬链接功能，在&lt;a href=&#34;https://dunky-z.github.io/2021/08/03/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4-ln%E8%BD%AF%E7%A1%AC%E9%93%BE%E6%8E%A5/&#34;&gt;每天学命令-ln 软硬链接&lt;/a&gt;这篇文章中有详细说明。简言之就是创建的硬链接可以任意&lt;strong&gt;修改文件名&lt;/strong&gt;，看上去是一份拷贝，但是&lt;strong&gt;实际不占用硬盘空间&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;下载的文件太多，又是文件夹嵌套，手动创建比较麻烦，有人专门为这个需求开源了一个项目&lt;a href=&#34;https://hlink.likun.me/&#34;&gt;hlink&lt;/a&gt;，可以批量创建硬链接。这里还是以使用 Docker 为例。&lt;/p&gt;
+&lt;h4 id=&#34;配置-docker&#34;&gt;配置 Docker&lt;/h4&gt;
+&lt;p&gt;镜像名：likun7981/hlink
+端口号：9090
+目录映射：/media :  /root/sharedfolder
+环境变量：HLINK_HOME：/root/sharedfolder/appdata/hlink  选择自己放配置文件的目录即可&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;/root/sharedfolder 是我挂载的硬盘的根目录，建议映射根目录，不要创建多个目录，比如映射/root/sharedfolder/movie 和/root/sharedfolder/music。因为硬链接不支持跨盘符创建，虽然我们本地 music 和 movie 是在一个盘符，但是这样&lt;strong&gt;映射在容器中就是两个盘&lt;/strong&gt;，就会无法创建硬链接，所以只映射一个根目录。
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/10-23-24-4ece9b26e4043a836b1fa2a2781600b9-20220912102324-27d38f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/10-23-24-4ece9b26e4043a836b1fa2a2781600b9-20220912102324-27d38f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/09-41-48-1cd8143da0c9ffaca54a212f2ffd670e-20220912094147-3cc75f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/09-41-48-1cd8143da0c9ffaca54a212f2ffd670e-20220912094147-3cc75f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/09-41-15-50e436e132411b5528505e58911d636b-20220912094115-081991.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/09-41-15-50e436e132411b5528505e58911d636b-20220912094115-081991.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h4 id=&#34;配置-hlink&#34;&gt;配置 Hlink&lt;/h4&gt;
+&lt;p&gt;浏览器输入 IP:9090，打开配置界面。&lt;/p&gt;
+&lt;p&gt;添加一个新配置，注释十分详细，就不赘述了，但是路径一定要写对，可以新建两个测试目录，测试一下是否能够创建成功。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/10-32-40-510edbcdcf05ffe8054b5581ed7c9057-20220912103239-8b23ae.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/12/10-32-40-510edbcdcf05ffe8054b5581ed7c9057-20220912103239-8b23ae.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;两个重要配置解释：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;/**&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;/media&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;是容器里的目录，因为我只映射了一个目录，所以这就是容器的根目录&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;对应到我主机，就是/root/sharedfolder&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;这个目录&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;所以/media/downloads/qbittorrent/qbcomplete/movie&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;就是/root/sharedfolder/downloads/qbittorrent/qbcomplete/movie&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;后一个路径/media/media/movie&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;同理&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;等价于/root/sharedfolder/media/movie&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;err&#34;&gt;/**&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;前一个路径是下载的路径，这里的文件都是不能重命名整理的&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;后一个路径是影音库的路径，hlink&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;执行完会在这里创建相同的文件链接&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;这个链接可以任意修改，移动，删除&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;pathsMapping:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      &lt;span class=&#34;err&#34;&gt;&amp;#39;/media/downloads/qbittorrent/qbcomplete/movie&amp;#39;:&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;&amp;#39;/media/media/movie&amp;#39;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;/**&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;设置&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;打开缓存，这样即使影音库里的文件被删除，移动&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   &lt;span class=&#34;err&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;也不会创建新的硬链接&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   &lt;span class=&#34;err&#34;&gt;*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;err&#34;&gt;openCache:&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;缓存的文件信息在右上角&lt;strong&gt;编辑缓存&lt;/strong&gt;可以查看，如果已经执行过创建硬链接但是没有显示，&lt;code&gt;Shfit+F5&lt;/code&gt;刷新界面重试。&lt;/p&gt;
+&lt;h2 id=&#34;踩坑记录-1&#34;&gt;踩坑记录&lt;/h2&gt;
+&lt;h3 id=&#34;主板无法识别固态硬盘&#34;&gt;主板无法识别固态硬盘&lt;/h3&gt;
+&lt;p&gt;因为想利用上三年前从笔记本上拆下来的固态，但没注意接口的协议。主板现在大多默认支持 NEVe 协议，但是我的硬盘是很久之前的 SATA 协议。这块 B460i 主板默认支持 NVMe 协议的，但是也支持 SATA 协议，需要更改跳帽。&lt;/p&gt;
+&lt;p&gt;找了半天图片没有找到一样的，官网的图片是和说明书上的一样是拨动开关形式的，但是我买的二手的是跳帽（哭），不会是买到假的了吧。开关全部拨到左边才支持 SATA 协议。用跳帽也是一样，必须都连接的是左边两个引脚。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-11-07-355ce9f2442639e47b0e24f9773b2e84-20220910161106-f6986f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-11-07-355ce9f2442639e47b0e24f9773b2e84-20220910161106-f6986f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-09-53-5ceae123a355652ef1f45bb0e9b72dd9-20220910160952-9c6773.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/10/16-09-53-5ceae123a355652ef1f45bb0e9b72dd9-20220910160952-9c6773.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;无法识别-u-盘启动盘&#34;&gt;无法识别 U 盘启动盘&lt;/h3&gt;
+&lt;p&gt;引导模式有两种 UEFI 和 Legacy，这个在做启动盘时就确定了。如果主板使用的 UEFI 模式，而启动盘制作的是 Legacy 模式，就无法识别，需要在 Bios 里找到启动模式选择的相关选项，配置可以使用 Legacy 模式或者 UEFI。（记录这些时已经不想再进 Bios 了所以也没有图片，总之要配置引导方式，避免过滤了一些引导方式导致 U 盘无法识别）&lt;/p&gt;
+&lt;h3 id=&#34;不同网段设备无法互通&#34;&gt;不同网段设备无法互通&lt;/h3&gt;
+&lt;h3 id=&#34;ovm-无法挂载移动硬盘&#34;&gt;OVM 无法挂载移动硬盘&lt;/h3&gt;
+&lt;p&gt;报错：The filesystem label contains blanks. Please remove them by renaming the filesystem to be able to mount it.&lt;/p&gt;
+&lt;p&gt;移动硬盘名里有空格，插到 Windows 上重命名一下即可。&lt;/p&gt;
+&lt;h3 id=&#34;ifconfig-not-found&#34;&gt;ifconfig not found&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# ifconfig&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install net-tools
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;ll-not-found&#34;&gt;ll not found&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;vim ~/.bashrc
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 找到 #alias ll=’ls -l’，去掉前面的#就可以了。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; ~/.bashrc
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/498113584&#34;&gt;CPU 型号解读：教你 CPU 型号后缀怎么看？CPU 型号后面的字母和数字区别是什么？ - 知乎&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://einverne.github.io/post/2018/12/build-nas-from-scratch.html&#34;&gt;从零开始搭建 NAS: 硬件篇 | Verne in GitHub&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://einverne.github.io/post/2020/02/build-nas-from-scratch-software.html&#34;&gt;从零搭建一台 NAS：软件篇 | Verne in GitHub&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/mahoon411/article/details/106963398&#34;&gt;Intel CPU 型号解读以及如何粗略判断 Intel CPU 的性能 (i3、i5、i7 以及 CPU 的代数)_吮指原味张的博客-CSDN 博客_cpu 代数&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.zuiyu1818.cn/posts/NAS_qBittorrent.html&#34;&gt;NAS | 群晖安装 qBittorrent 套件并优化设置、替换 UI（非 docker 安装） | 醉渔小站&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.jianshu.com/p/405fe33b9032&#34;&gt;Docker 中国源 - 简书&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.antec.com.cn/index.php?m=content&amp;amp;c=index&amp;amp;a=show&amp;amp;catid=41&amp;amp;id=57&#34;&gt;金牌 铜牌 什么区别呀？ - 电源 - Antec 网站&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.tspweb.com/key/%E9%93%9C%E7%89%8C%E7%94%B5%E6%BA%90%E5%92%8C%E9%87%91%E7%89%8C%E7%94%B5%E6%BA%90%E7%9A%84%E5%8C%BA%E5%88%AB.html&#34;&gt;机·科普贴：电脑电源金、银、铜牌到底是什么意思？_铜牌电源和金牌电源的区别 - 调色盘网络&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/50797978&#34;&gt;【非模组电源，半模组电源，全模组电源有什么区别？】 - 知乎&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://post.smzdm.com/p/awx49n72/&#34;&gt;电源全模组和非模组究竟有什么区别？_电脑电源_什么值得买&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/25592446&#34;&gt;浅谈组装机机箱的选择（篇一：大小） - 知乎&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://howthere.org/zh-hant/%E5%93%AA%E7%A8%AE-pc-%E6%A9%9F%E7%AE%B1%E5%B0%BA%E5%AF%B8%E6%9C%80%E9%81%A9%E5%90%88%E6%82%A8%E7%9A%84%E4%B8%8B%E4%B8%80%E5%80%8B%E7%89%88%E6%9C%AC%EF%BC%9F&#34;&gt;哪種 PC 機箱尺寸最適合您的下一個版本？ - HowThere&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.expreview.com/49306-all.html&#34;&gt;199 元风冷/水冷散热器简单对比：谁才是你的爱 - 超能网&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.bilibili.com/video/BV1FJ411s7xR?spm_id_from=333.999.0.0&amp;amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44&#34;&gt;【教程】蜗牛星际安装开源 NAS 系统 Openmediavault 及初始化配置（司波图）——OMV 系列教程 01_哔哩哔哩_bilibili&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/qbittorrent/search-plugins/wiki/How-to-configure-Jackett-plugin&#34;&gt;How to configure Jackett plugin · qbittorrent/search-plugins Wiki&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.bilibili.com/video/BV1aa411R7hn?spm_id_from=333.337.search-card.all.click&amp;amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44&#34;&gt;安装 NAS Tools，打造自动化观影、追剧系统，NAS 媒体库整理工具，威联通 Docker 版 NAS Tools 安装教程~feat.威联通 HS 264_哔哩哔哩_bilibili&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://hlink.likun.me/&#34;&gt;Home | hlink&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
       <content:encoded><![CDATA[<p>技术没学多少，教程下满了硬盘，一直想专门部署 NAS 来存文件，但是一来要花钱，二来搭建 NAS 没有经验怕部署不好，没有现在硬盘直连舒适，所以将就用吧。</p>
 <p>自从有天忘了忘了休眠电脑，一个自动备份任务开启，在 40 度的高温天，满速跑了一天，下班回来硬盘直接报废。这就加速我折腾部署 NAS 的进程。</p>
 <h2 id="准备阶段">准备阶段</h2>
@@ -1708,7 +3265,7 @@
       <link>https://lifeislife.cn/posts/jellyfin%E6%89%93%E9%80%A0%E6%9C%AC%E5%9C%B0%E5%BD%B1%E9%9F%B3%E5%BA%93/</link>
       <pubDate>Mon, 01 Aug 2022 23:05:52 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/jellyfin%E6%89%93%E9%80%A0%E6%9C%AC%E5%9C%B0%E5%BD%B1%E9%9F%B3%E5%BA%93/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h1 id=&#34;docker-启动&#34;&gt;Docker 启动&lt;/h1&gt;
+      <description>&lt;h1 id=&#34;docker-启动&#34;&gt;Docker 启动&lt;/h1&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yml&#34; data-lang=&#34;yml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;version&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;3.7&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;services&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; 
@@ -1735,7 +3292,422 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;network_mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;host&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;restart&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;unless-stopped&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;初始化配置&#34;&gt;初始化配置&lt;/h1&gt;
-&lt;p&gt;就不挨个贴图了，建议将页面都设置为中文，有一点需要注意的是&lt;strong&gt;选择国家&lt;/strong&gt;的时候，&lt;strong&gt;中国的英文全称是 People&amp;rsquo;s Republic of China&lt;/strong&gt;，不是 China，需要仔细找一下。&lt;/p&gt;</description>
+&lt;p&gt;就不挨个贴图了，建议将页面都设置为中文，有一点需要注意的是&lt;strong&gt;选择国家&lt;/strong&gt;的时候，&lt;strong&gt;中国的英文全称是 People&amp;rsquo;s Republic of China&lt;/strong&gt;，不是 China，需要仔细找一下。&lt;/p&gt;
+&lt;h1 id=&#34;转码配置&#34;&gt;转码配置&lt;/h1&gt;
+&lt;p&gt;主要配置硬解码，这样可以大大降低 CPU 的使用率，提高播放的流畅度。能够开启硬解需要 GPU 支持，如果 CPU 有核显，那么就可以开启硬解，如果没有，那么就算了吧，跳过。也可以通过下面的命令查看是否支持硬解。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;cat /proc/cpuinfo &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep &lt;span class=&#34;s2&#34;&gt;&amp;#34;flags&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;该命令将输出 CPU 的系统信息，并在输出结果中搜索&amp;quot;flags&amp;quot;（标志）行。如果该行中包含&amp;quot;vme&amp;quot;、&amp;ldquo;cmov&amp;rdquo;、&amp;ldquo;cx8&amp;rdquo;、&amp;ldquo;mmx&amp;rdquo;、&amp;ldquo;sse&amp;rdquo;、&amp;ldquo;sse2&amp;rdquo;、&amp;ldquo;sse3&amp;rdquo;、&amp;ldquo;ssse3&amp;rdquo;、&amp;ldquo;sse4_1&amp;rdquo;、&amp;ldquo;sse4_2&amp;rdquo;、&amp;ldquo;avx&amp;quot;等关键词，则说明该 CPU 支持视频硬解码。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/5bf1762d91906c0e2625b88b58c48c0b.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/5bf1762d91906c0e2625b88b58c48c0b.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/9ed326ab2f6bedd1141381e0593b45e7.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/19/9ed326ab2f6bedd1141381e0593b45e7.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h1 id=&#34;调用potplayer本地解码&#34;&gt;调用Potplayer本地解码&lt;/h1&gt;
+&lt;p&gt;使用下面这个插件可以实现调用本地播放器播放视频，这样就可以使用 Potplayer 等播放器进行播放，而不是使用 Jellyfin 的内置播放器。文档写的十分详细，在这里就不再赘述了。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/kjtsune/embyToLocalPlayer?tab=readme-ov-file&#34;&gt;kjtsune/embyToLocalPlayer: Emby/Jellyfin 调用外部本地播放器，并回传播放记录。适配 Plex。&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;插件配置&#34;&gt;插件配置&lt;/h1&gt;
+&lt;p&gt;所有插件都可以通过以下路径配置，后续不再赘述。所有地址都加上了代理地址&lt;code&gt;https://mirror.ghproxy.com&lt;/code&gt;，请不要删掉，否则目录中的插件将无法加载。&lt;/p&gt;
+&lt;p&gt;管理页面 -&amp;gt; 插件 -&amp;gt; 存储库 -&amp;gt; 添加存储库 -&amp;gt; 输入manifest.json地址 -&amp;gt; 确定&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fe329545e57ff14c1349aa55f5c7e78e4.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fe329545e57ff14c1349aa55f5c7e78e4.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;在目录中找到刚刚添加的插件，点击安装即可。&lt;/p&gt;
+&lt;h2 id=&#34;更换皮肤&#34;&gt;更换皮肤&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://raw.githubusercontent.com/danieladov/JellyfinPluginManifest/master/manifest.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F120302eea7c878815640200d4c29573f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F120302eea7c878815640200d4c29573f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F01c537533cfbfb4ff93f6f9395a6a4b8.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F01c537533cfbfb4ff93f6f9395a6a4b8.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fcc258498b33fae88417c9f799eee8fd0.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fcc258498b33fae88417c9f799eee8fd0.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F2bf546c7d3ede6e0815ad88451600227.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F2bf546c7d3ede6e0815ad88451600227.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;字幕刮削&#34;&gt;字幕刮削&lt;/h2&gt;
+&lt;h3 id=&#34;弹幕刮削-danmu&#34;&gt;弹幕刮削 Danmu&lt;/h3&gt;
+&lt;p&gt;支持下载哔站，爱奇艺，腾讯，优酷，等视频的弹幕。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://github.com/cxfksword/jellyfin-plugin-danmu/releases/download/manifest/manifest_cn.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;字幕刮削-opensubtitles&#34;&gt;字幕刮削 OpenSubtitles&lt;/h3&gt;
+&lt;p&gt;OpenSubtitles 没找到 manifest.json 地址，需要下载插件，然后上传到 Jellyfin 中安装。&lt;a href=&#34;https://github.com/jellyfin/jellyfin-plugin-opensubtitles&#34;&gt;jellyfin/jellyfin-plugin-opensubtitles&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.opensubtitles.com/zh-CN/home&#34;&gt;Home | opensubtitles.com&lt;/a&gt;注册账号，生成 API Key，然后在插件中配置即可。&lt;/p&gt;
+&lt;h2 id=&#34;元数据&#34;&gt;元数据&lt;/h2&gt;
+&lt;h3 id=&#34;剧集重命名&#34;&gt;剧集重命名&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/Nriver/Episode-ReName&#34;&gt;Nriver/Episode-ReName: 电视剧/番剧自动化重命名工具, 一键批量改名. 可配合QBittorrent下载后自动重命名, 方便Emby自动刮削. 支持Windows, Linux, MacOS, Docker 和 群晖套件环境运行&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;常规刮削-metashark&#34;&gt;常规刮削 Metashark&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://github.com/cxfksword/jellyfin-plugin-metashark/releases/download/manifest/manifest_cn.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;小日子刮削-metatube&#34;&gt;小日子刮削 Metatube&lt;/h3&gt;
+&lt;p&gt;部署后端服务，然后在插件中配置后端地址即可。这里比较关键的是需要配置代理，并且代理需要通过WebUI设置&lt;code&gt;允许来自局域网的连接&lt;/code&gt;，否则无法获取到数据。请参考这篇文章&lt;a href=&#34;https://lifeislife.cn/2022/09/10/Linux%E4%B8%8B%E4%BD%BF%E7%94%A8Clash%E4%BD%9C%E4%BB%A3%E7%90%86%E5%B9%B6%E9%85%8D%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/&#34;&gt;Linux 下使用 Clash 作代理并配置开机启动 | 夜云泊个人博客&lt;/a&gt;。代理协议最好选择socks5。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;metatube&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;image&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;metatube/metatube-server:latest&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;container_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;metatube&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;ports&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;m&#34;&gt;8180&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;restart&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;unless-stopped&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;environment&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;http_proxy=socks5://192.168.1.9:7891&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;https_proxy=socks5://192.168.1.9:7891&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;USER_UID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;USER_GID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;TZ=Asia/Shanghai&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;networks&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;br-net-metatube&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;depends_on&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;metatube-postgres&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;volumes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/root/sharedfolder/appdata/metatube/run:/var/run&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;command&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-&lt;span class=&#34;l&#34;&gt;dsn &amp;#34;postgres://metatube:metatube@/metatube?host=/var/run/postgresql&amp;#34; -port 8080 -db-auto-migrate -db-prepared-stmt&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;metatube-postgres&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;image&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;postgres:15-alpine&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;container_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;metatube-postgres&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;restart&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;unless-stopped&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;environment&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;USER_UID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;USER_GID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;POSTGRES_USER=metatube&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;POSTGRES_PASSWORD=metatube&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;POSTGRES_DB=metatube&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;TZ=Asia/Shanghai&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;volumes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/root/sharedfolder/appdata/metatube/db:/var/lib/postgresql/data&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;/root/sharedfolder/appdata/metatube/run:/var/run&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;command&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;-c TimeZone=Asia/Shanghai -c log_timezone=Asia/Shanghai -c listen_addresses=&amp;#39;&amp;#39; -c unix_socket_permissions=0777&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;networks&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;br-net-metatube&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;external&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fbe7b2d3ceb24219c40904be9178453d8.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2Fbe7b2d3ceb24219c40904be9178453d8.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://raw.githubusercontent.com/metatube-community/jellyfin-plugin-metatube/dist/manifest.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;欧美刮削-thepndb&#34;&gt;欧美刮削 TheP**nDB&lt;/h3&gt;
+&lt;p&gt;Google 搜索 TheP**nDB 注册账号，生成 API Key，然后在插件中配置即可。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://raw.githubusercontent.com/ThePornDatabase/Jellyfin.Plugin.ThePornDB/main/manifest.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F07cb31b59456cb830769f9c355ef2224.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/%2F2024%2F04%2F06%2F07cb31b59456cb830769f9c355ef2224.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;跳过片头-intro-skip&#34;&gt;跳过片头 Intro-Skip&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;https://mirror.ghproxy.com/https://raw.githubusercontent.com/ConfusedPolarBear/intro-skipper/master/manifest.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<h1 id="docker-启动">Docker 启动</h1>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3.7&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">

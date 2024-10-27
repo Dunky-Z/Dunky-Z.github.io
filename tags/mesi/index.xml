@@ -3,7 +3,7 @@
   <channel>
     <title>MESI on 夜云泊</title>
     <link>https://lifeislife.cn/tags/mesi/</link>
-    <description>Recent content in MESI on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in MESI on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 29 May 2022 15:04:59 +0000</lastBuildDate>
@@ -13,8 +13,240 @@
       <link>https://lifeislife.cn/posts/cpu%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7mesi%E5%8D%8F%E8%AE%AE/</link>
       <pubDate>Sun, 29 May 2022 15:04:59 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/cpu%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7mesi%E5%8D%8F%E8%AE%AE/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;为什么需要缓存一致&#34;&gt;为什么需要缓存一致&lt;/h2&gt;
-&lt;p&gt;目前主流电脑的 CPU 都是多核心的，多核心的有点就是在不能提升 CPU 主频后，通过增加核心来提升 CPU 吞吐量。每个核心都有自己的 L1 Cache 和 L2 Cache，只是共用 L3 Cache 和主内存。每个核心操作是独立的，每个核心的 Cache 就不是同步更新的，这样就会带来缓存一致性（Cache Coherence）的问题。&lt;/p&gt;</description>
+      <description>&lt;h2 id=&#34;为什么需要缓存一致&#34;&gt;为什么需要缓存一致&lt;/h2&gt;
+&lt;p&gt;目前主流电脑的 CPU 都是多核心的，多核心的有点就是在不能提升 CPU 主频后，通过增加核心来提升 CPU 吞吐量。每个核心都有自己的 L1 Cache 和 L2 Cache，只是共用 L3 Cache 和主内存。每个核心操作是独立的，每个核心的 Cache 就不是同步更新的，这样就会带来缓存一致性（Cache Coherence）的问题。&lt;/p&gt;
+&lt;p&gt;举个例子，如图：
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/202205291536919.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;有 2 个 CPU，主内存里有个变量&lt;code&gt;x=0&lt;/code&gt;。CPU A 中有个需要将变量&lt;code&gt;x&lt;/code&gt;加&lt;code&gt;1&lt;/code&gt;。CPU A 就将变量&lt;code&gt;x&lt;/code&gt;加载到自己的缓存中，然后将变量&lt;code&gt;x&lt;/code&gt;加&lt;code&gt;1&lt;/code&gt;。因为此时 CPU A 还未将缓存数据写回主内存，CPU B 再读取变量&lt;code&gt;x&lt;/code&gt;时，变量&lt;code&gt;x&lt;/code&gt;的值依然是&lt;code&gt;0&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这里的问题就是所谓的缓存一致性问题，因为 CPU A 的缓存与 CPU B 的缓存是不一致的。&lt;/p&gt;
+&lt;h2 id=&#34;如何解决缓存一致性问题&#34;&gt;如何解决缓存一致性问题&lt;/h2&gt;
+&lt;h3 id=&#34;通过在总线加-lock-锁的方式&#34;&gt;通过在总线加 LOCK 锁的方式&lt;/h3&gt;
+&lt;p&gt;在锁住总线上加一个 LOCK 标识，CPU A 进行读写操作时，锁住总线，其他 CPU 此时无法进行内存读写操作，只有等解锁了才能进行操作。&lt;/p&gt;
+&lt;p&gt;该方式因为锁住了整个总线，所以效率低。&lt;/p&gt;
+&lt;h3 id=&#34;缓存一致性协议-mesi&#34;&gt;缓存一致性协议 MESI&lt;/h3&gt;
+&lt;p&gt;该方式对单个缓存行的数据进行加锁，不会影响到内存其他数据的读写。&lt;/p&gt;
+&lt;p&gt;在学习 MESI 协议之前，简单了解一下总线嗅探机制（Bus Snooping）。要对自己的缓存加锁，需要通知其他 CPU，多个 CPU 核心之间的数据传播问题。最常见的一种解决方案就是总线嗅探。&lt;/p&gt;
+&lt;p&gt;这个策略，本质上就是把所有的读写请求都通过总线广播给所有的 CPU 核心，然后让各个核心去“嗅探”这些请求，再根据本地的情况进行响应。MESI 就是基于总线嗅探机制的缓存一致性协议。&lt;/p&gt;
+&lt;p&gt;MESI 协议的由来是对 Cache Line 的四个不同的标记，分别是：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:50px&#34;&gt;状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:100px&#34;&gt;状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:200px&#34;&gt;描述&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:200px&#34;&gt;监听任务&lt;/div&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Modified&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;已修改&lt;/td&gt;
+          &lt;td&gt;该 Cache Line 有效，数据被修改了，和内存中的数据不一致，数据只存在于本 Cache 中&lt;/td&gt;
+          &lt;td&gt;Cache Line 必须时刻监听所有试图读该 Cache Line 相对于主存的操作，这种操作必须在缓存将该 Cache Line 写回主存并将状态改为 S 状态之前，被延迟执行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Exclusive&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;独享，互斥&lt;/td&gt;
+          &lt;td&gt;该 Cache Line 有效，数据和内存中的数据一直，数据只存在于本 Cache&lt;/td&gt;
+          &lt;td&gt;Cache Line 必须监听其他缓存读主存中该 Cache Line 的操作，一旦有这种操作，该 Cache Line 需要改为 S 状态&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Shared&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;共享的&lt;/td&gt;
+          &lt;td&gt;该 Cache Line 有效，数据和内存中的数据一直，数据存在于很多个 Cache 中&lt;/td&gt;
+          &lt;td&gt;Cache Line 必须监听其他  Cache Line 使该 Cache Line 无效或者独享该 Cache Line 的请求，并将 Cache Line 改为 I 状态&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Invalid&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;无效的&lt;/td&gt;
+          &lt;td&gt;该 Cache Line 无效&lt;/td&gt;
+          &lt;td&gt;无&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;整个 MESI 的状态，可以用一个有限状态机来表示它的状态流转。需要注意的是，对于不同状态触发的事件操作，可能来自于当前 CPU 核心，也可能来自总线里其他 CPU 核心广播出来的信号。我把各个状态之间的流转用表格总结了一下：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;当前状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;事件&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:300px,center&#34;&gt;行为&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;下个状态&lt;/div&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Read&lt;/td&gt;
+          &lt;td&gt;从 Cache 中读，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Write&lt;/td&gt;
+          &lt;td&gt;修改 cache 数据，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Read&lt;/td&gt;
+          &lt;td&gt;这行数据被写到内存中，使其他核能使用到最新数据，状态变为 S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Write&lt;/td&gt;
+          &lt;td&gt;这行数据被写入内存中，其他核可以获取到最新数据，由于其他 CPU 修改该条数据，则本地 Cache 变为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;当前状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;事件&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:200px,center&#34;&gt;行为&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;下个状态&lt;/div&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Read&lt;/td&gt;
+          &lt;td&gt;从 Cache 中读，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Write&lt;/td&gt;
+          &lt;td&gt;修改数据，状态改为 M&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Read&lt;/td&gt;
+          &lt;td&gt;数据和其他 CPU 共享，变为 S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Write&lt;/td&gt;
+          &lt;td&gt;数据被修改，本地缓存失效，变为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;当前状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;事件&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:200px,text-align: center&#34;&gt;行为&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;下个状态&lt;/div&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Read&lt;/td&gt;
+          &lt;td&gt;从 Cache 中读，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Write&lt;/td&gt;
+          &lt;td&gt;修改数据，状态改为 M，其他 CPU 的 Cache Line 状态改为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Read&lt;/td&gt;
+          &lt;td&gt;数据和其他 CPU 共享，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Write&lt;/td&gt;
+          &lt;td&gt;数据被修改，本地缓存失效，变为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;当前状态&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;事件&lt;/div&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;div style=&#34;width:200px,center&#34;&gt;行为&lt;/div&gt;&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;&lt;div style=&#34;width:80px&#34;&gt;下个状态&lt;/div&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Read&lt;/td&gt;
+          &lt;td&gt;1. 如果其他 CPU 没有这份数据，直接从内存中加载数据，状态变为 E；&lt;br&gt; 2. 如果其他 CPU 有这个数据，且 Cache Line 状态为 M，则先把 Cache Line 中的内容写回到主存。本地 Cache 再从内存中读取数据，这时两个 Cache Line 的状态都变为 S；&lt;br&gt;3. 如果其他 Cache Line 有这份数据，并且状态为 S 或者 E，则本地 Cache Line 从主存读取数据，并将这些 Cache Line 状态改为 S&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;E 或者 S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Local Write&lt;/td&gt;
+          &lt;td&gt;1. 先从内存中读取数据，如果其他 Cache Line 中有这份数据，且状态为 M，则现将数据更新到主存再读取，将 Cache Line 状态改为 M；&lt;br&gt; 2. 如果其他 Cache Line 有这份数据，且状态为 E 或者 S，则其他 Cache Line 状态改为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;M&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Read&lt;/td&gt;
+          &lt;td&gt;数据和其他 CPU 共享，状态不变&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;S&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Remote Write&lt;/td&gt;
+          &lt;td&gt;数据被修改，本地缓存失效，变为 I&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;I&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="为什么需要缓存一致">为什么需要缓存一致</h2>
 <p>目前主流电脑的 CPU 都是多核心的，多核心的有点就是在不能提升 CPU 主频后，通过增加核心来提升 CPU 吞吐量。每个核心都有自己的 L1 Cache 和 L2 Cache，只是共用 L3 Cache 和主内存。每个核心操作是独立的，每个核心的 Cache 就不是同步更新的，这样就会带来缓存一致性（Cache Coherence）的问题。</p>
 <p>举个例子，如图：

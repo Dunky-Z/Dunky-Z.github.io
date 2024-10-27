@@ -3,7 +3,7 @@
   <channel>
     <title>Hexo on 夜云泊</title>
     <link>https://lifeislife.cn/tags/hexo/</link>
-    <description>Recent content in Hexo on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Hexo on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 03 Sep 2022 17:01:48 +0000</lastBuildDate>
@@ -13,7 +13,7 @@
       <link>https://lifeislife.cn/posts/hexo%E5%8D%9A%E5%AE%A2%E5%B5%8C%E5%85%A5pdf/</link>
       <pubDate>Sat, 03 Sep 2022 17:01:48 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/hexo%E5%8D%9A%E5%AE%A2%E5%B5%8C%E5%85%A5pdf/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h1 id=&#34;效果&#34;&gt;效果&lt;/h1&gt;
+      <description>&lt;h1 id=&#34;效果&#34;&gt;效果&lt;/h1&gt;
 &lt;iframe src=&#34;https://lifeislife.cn/myjs/pdfjs/web/viewer.html?file=/misc/Markdown书写PDF输出优雅的解决方案.pdf&#34; style=&#34;width:100%;height:600px&#34;&gt;&lt;/iframe&gt;
 &lt;h1 id=&#34;下载-pdfjs&#34;&gt;下载 pdf.js&lt;/h1&gt;
 &lt;p&gt;前往&lt;a href=&#34;https://mozilla.github.io/pdf.js&#34;&gt;官网&lt;/a&gt;下载&lt;code&gt;pdf.js&lt;/code&gt;。&lt;/p&gt;
@@ -93,7 +93,104 @@
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;h1 id=&#34;添加-pdfjs-到主题中&#34;&gt;添加 pdfjs 到主题中&lt;/h1&gt;
+&lt;p&gt;将下载文件夹命名为 &lt;code&gt;pdfjs&lt;/code&gt;，拷贝到 &lt;code&gt;themes/fluid/source/myjs&lt;/code&gt; 中。&lt;code&gt;myjs&lt;/code&gt;目录为自己新建目录。并将该目录&lt;code&gt;skip_render&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;打开 HEXO 的配置文件（不是主题的配置文件）&lt;code&gt;_config.yml&lt;/code&gt;，搜索&lt;code&gt;skip_render&lt;/code&gt;，配置如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yml&#34; data-lang=&#34;yml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;skip_render&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;l&#34;&gt;myjs/**]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果不配置该选项，嵌入的 PDF 将会带有博客主题边框。如图：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/03/18-19-02-472a12f30ba4cce15617de591e302e71-20220903181901-b9ca63.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/03/18-19-02-472a12f30ba4cce15617de591e302e71-20220903181901-b9ca63.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h1 id=&#34;修改-viewerjs&#34;&gt;修改 viewer.js&lt;/h1&gt;
+&lt;p&gt;直接使用下载的文件会报错：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Error: file origin does not match viewer&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;s
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;注释&lt;code&gt;web/viewer.js&lt;/code&gt;文件中的相应内容：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/03/18-06-10-4b25b5f59c41c12783fedd145161003d-20220903180609-33dea8.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/09/03/18-06-10-4b25b5f59c41c12783fedd145161003d-20220903180609-33dea8.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h1 id=&#34;使用方法&#34;&gt;使用方法&lt;/h1&gt;
+&lt;p&gt;在 Markdown 文档中使用 &lt;code&gt;&amp;lt;iframe&amp;gt;&lt;/code&gt; 控件配合&lt;code&gt;pdf.js&lt;/code&gt; 库完成 pdf 显示&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;iframe&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;src&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#39;/myjs/pdfjs/web/viewer.html?file=&amp;lt;src-to-pdf&amp;gt;&amp;#39;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;style&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#39;width:100%;height:100%&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;iframe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;src-to-pdf&amp;gt;&lt;/code&gt;：需要显示的 pdf 文件的链接&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/myjs/pdfjs/web/viewer.html&lt;/code&gt;：改为自己的 pdfjs 目录&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.zywvvd.com/notes/hexo/theme/fluid/fluid-pdf/fluid-pdf/&#34;&gt;Fluid -3- pdf.js PC，移动端查看 PDF - 又见苍岚&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
       <content:encoded><![CDATA[<h1 id="效果">效果</h1>
 <iframe src="/myjs/pdfjs/web/viewer.html?file=/misc/Markdown书写PDF输出优雅的解决方案.pdf" style="width:100%;height:600px"></iframe>
 <h1 id="下载-pdfjs">下载 pdf.js</h1>
@@ -278,8 +375,14 @@
       <link>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3openssl-ssl-connect-connection-was-reset-in-connection-to-github-com-443/</link>
       <pubDate>Mon, 09 Aug 2021 18:20:51 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3openssl-ssl-connect-connection-was-reset-in-connection-to-github-com-443/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;在向 GitHub 推送博客时，推送失败报了这个错。也不知道是改了什么设置突然报错。SSL 的错之前遇到一次，就是刚开始配置 Git 时用的&lt;code&gt;https&lt;/code&gt;协议，每次&lt;code&gt;push&lt;/code&gt;都需要重新输入一次密码。改成&lt;code&gt;ssl&lt;/code&gt;协议就 OK 了。当时把 Linux 环境的 Git 改了，但是现在的 Windows 下没改，猜测可能和这也有关，于是就把 URL 改了一下，结果还真好了。
-在本地仓库的&lt;code&gt;.git&lt;/code&gt;文件里找到&lt;code&gt;config&lt;/code&gt;文件，打开后将&lt;code&gt;url&lt;/code&gt;改为&lt;code&gt;ssl&lt;/code&gt;协议，&lt;code&gt;git@github.com:XXX&lt;/code&gt;格式的。&lt;/p&gt;</description>
+      <description>&lt;p&gt;在向 GitHub 推送博客时，推送失败报了这个错。也不知道是改了什么设置突然报错。SSL 的错之前遇到一次，就是刚开始配置 Git 时用的&lt;code&gt;https&lt;/code&gt;协议，每次&lt;code&gt;push&lt;/code&gt;都需要重新输入一次密码。改成&lt;code&gt;ssl&lt;/code&gt;协议就 OK 了。当时把 Linux 环境的 Git 改了，但是现在的 Windows 下没改，猜测可能和这也有关，于是就把 URL 改了一下，结果还真好了。
+在本地仓库的&lt;code&gt;.git&lt;/code&gt;文件里找到&lt;code&gt;config&lt;/code&gt;文件，打开后将&lt;code&gt;url&lt;/code&gt;改为&lt;code&gt;ssl&lt;/code&gt;协议，&lt;code&gt;git@github.com:XXX&lt;/code&gt;格式的。&lt;/p&gt;
+&lt;p&gt;将 Hexo 的配置也改了，找到仓库下的&lt;code&gt;_config.yml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;deploy:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  type: git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  repository: 改成ssl协议地址
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  branch: master
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<p>在向 GitHub 推送博客时，推送失败报了这个错。也不知道是改了什么设置突然报错。SSL 的错之前遇到一次，就是刚开始配置 Git 时用的<code>https</code>协议，每次<code>push</code>都需要重新输入一次密码。改成<code>ssl</code>协议就 OK 了。当时把 Linux 环境的 Git 改了，但是现在的 Windows 下没改，猜测可能和这也有关，于是就把 URL 改了一下，结果还真好了。
 在本地仓库的<code>.git</code>文件里找到<code>config</code>文件，打开后将<code>url</code>改为<code>ssl</code>协议，<code>git@github.com:XXX</code>格式的。</p>
 <p>将 Hexo 的配置也改了，找到仓库下的<code>_config.yml</code></p>
@@ -294,14 +397,15 @@
       <link>https://lifeislife.cn/posts/hexo%E6%90%AD%E5%BB%BAgithub%E5%8D%9A%E5%AE%A2%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0readme%E6%96%87%E4%BB%B6/</link>
       <pubDate>Wed, 21 Jul 2021 12:14:46 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/hexo%E6%90%AD%E5%BB%BAgithub%E5%8D%9A%E5%AE%A2%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0readme%E6%96%87%E4%BB%B6/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;刚开始搭建的时候并没有为仓库添加 Readme 文件，但是后期添加也不能直接在仓库里直接添加，因为每次部署都会被自动删除。
+      <description>&lt;p&gt;刚开始搭建的时候并没有为仓库添加 Readme 文件，但是后期添加也不能直接在仓库里直接添加，因为每次部署都会被自动删除。
 添加方法：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在博客根目录的&lt;code&gt;source&lt;/code&gt;文件夹下新建&lt;code&gt;README.md&lt;/code&gt;文件&lt;/li&gt;
 &lt;li&gt;在根目录的&lt;code&gt;_config.yml&lt;/code&gt;文件中搜索&lt;code&gt;skip_render&lt;/code&gt;，并做如下更改&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yml&#34; data-lang=&#34;yml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;skip_render&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;README.md&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为在每次&lt;code&gt;hexo g&lt;/code&gt;时候，README 文件都会被自动渲染为 HTML 文件，所以在配置文件中告诉渲染器跳过这个文件不要渲染它。&lt;/p&gt;</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;因为在每次&lt;code&gt;hexo g&lt;/code&gt;时候，README 文件都会被自动渲染为 HTML 文件，所以在配置文件中告诉渲染器跳过这个文件不要渲染它。&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>刚开始搭建的时候并没有为仓库添加 Readme 文件，但是后期添加也不能直接在仓库里直接添加，因为每次部署都会被自动删除。
 添加方法：</p>
 <ul>
@@ -317,9 +421,10 @@
       <link>https://lifeislife.cn/posts/hexo%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%E9%A2%84%E8%A7%88/</link>
       <pubDate>Tue, 20 Jul 2021 14:32:12 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/hexo%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%E9%A2%84%E8%A7%88/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;在项目目录下安装 &lt;code&gt;hexo-browsersync&lt;/code&gt; 插件&lt;/p&gt;
+      <description>&lt;p&gt;在项目目录下安装 &lt;code&gt;hexo-browsersync&lt;/code&gt; 插件&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;npm install hexo-browsersync --save
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;hexo s&lt;/code&gt;启动服务后，每次保存 Markdown 文件都会实时更新页面。&lt;/p&gt;</description>
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;hexo s&lt;/code&gt;启动服务后，每次保存 Markdown 文件都会实时更新页面。&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>在项目目录下安装 <code>hexo-browsersync</code> 插件</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">npm install hexo-browsersync --save
 </span></span></code></pre></div><p><code>hexo s</code>启动服务后，每次保存 Markdown 文件都会实时更新页面。</p>
@@ -330,7 +435,19 @@
       <link>https://lifeislife.cn/posts/hexo%E5%92%8Cgithub%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E4%BB%A5%E5%8F%8A%E6%9B%B4%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8C%E6%AD%A5%E5%8D%9A%E5%AE%A2/</link>
       <pubDate>Tue, 20 Jul 2021 12:04:37 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/hexo%E5%92%8Cgithub%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E4%BB%A5%E5%8F%8A%E6%9B%B4%E6%8D%A2%E7%94%B5%E8%84%91%E5%90%8C%E6%AD%A5%E5%8D%9A%E5%AE%A2/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;只要有&lt;code&gt;source&lt;/code&gt;文件夹下所有源文件就可以重新部署，按照正常的搭建 Hexo 环境开始搭建，搭建好以后将&lt;code&gt;source&lt;/code&gt;文件夹替换即可，需要应用主题就下载主题然后替换。&lt;/p&gt;</description>
+      <description>&lt;p&gt;只要有&lt;code&gt;source&lt;/code&gt;文件夹下所有源文件就可以重新部署，按照正常的搭建 Hexo 环境开始搭建，搭建好以后将&lt;code&gt;source&lt;/code&gt;文件夹替换即可，需要应用主题就下载主题然后替换。&lt;/p&gt;
+&lt;p&gt;注意：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主题更换需要更改&lt;code&gt;_config_yml&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;_config_yml&lt;/code&gt;文件中的部署配置，&lt;code&gt;branch:master&lt;/code&gt;就是每次&lt;code&gt;hexo d&lt;/code&gt;操作推送的分支。而在命令行每次&lt;code&gt;git push&lt;/code&gt;推送的分支是设置的默认分支&lt;code&gt;hexo&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;deploy:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  type: git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  repository: https://github.com/Dunky-Z/Dunky-Z.github.io.git
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  branch: master
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;a href=&#34;https://www.jianshu.com/p/0b1fccce74e0&#34;&gt;利用 Hexo 在多台电脑上提交和更新 GitHub pages 博客
+&lt;/a&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<p>只要有<code>source</code>文件夹下所有源文件就可以重新部署，按照正常的搭建 Hexo 环境开始搭建，搭建好以后将<code>source</code>文件夹替换即可，需要应用主题就下载主题然后替换。</p>
 <p>注意：</p>
 <ul>

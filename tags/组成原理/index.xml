@@ -3,7 +3,7 @@
   <channel>
     <title>组成原理 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/</link>
-    <description>Recent content in 组成原理 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 组成原理 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 10 Jul 2022 10:43:17 +0000</lastBuildDate>
@@ -13,7 +13,7 @@
       <link>https://lifeislife.cn/posts/cpu-cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</link>
       <pubDate>Sun, 10 Jul 2022 10:43:17 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/cpu-cache%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;存储器的层次结构&#34;&gt;存储器的层次结构&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;存储器的层次结构&#34;&gt;存储器的层次结构&lt;/h2&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -52,7 +52,777 @@
     &lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
-&lt;p&gt;从 Cache、内存，到 SSD 和 HDD 硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU 并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache 是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到 CPUCache 中，而是先加载到内存，再从内存加载到 Cache 中。&lt;/p&gt;</description>
+&lt;p&gt;从 Cache、内存，到 SSD 和 HDD 硬盘，一台现代计算机中，就用上了所有这些存储器设备。其中，容量越小的设备速度越快，而且，CPU 并不是直接和每一种存储器设备打交道，而是每一种存储器设备，只和它相邻的存储设备打交道。比如，CPUCache 是从内存里加载而来的，或者需要写回内存，并不会直接写回数据到硬盘，也不会直接从硬盘加载数据到 CPUCache 中，而是先加载到内存，再从内存加载到 Cache 中。&lt;/p&gt;
+&lt;p&gt;这样，各个存储器只和相邻的一层存储器打交道，并且随着一层层向下，存储器的容量逐层增大，访问速度逐层变慢，而单位存储成本也逐层下降，也就构成了我们日常所说的存储器层次结构。&lt;/p&gt;
+&lt;h2 id=&#34;高速缓存&#34;&gt;高速缓存&lt;/h2&gt;
+&lt;p&gt;缓存不是 CPU 的专属功能，可以把它当成一种策略，任何时候想要增加数据传输性能，都可以通过加一层缓存试试。&lt;/p&gt;
+&lt;p&gt;存储器层次结构的中心思想是，对于每个$k$，位于$k$层的更快更小的存储设备作为位于$k+1$层的更大更慢的存储设备的缓存。&lt;a href=&#34;#%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E4%B8%AD%E5%9F%BA%E6%9C%AC%E7%9A%84%E7%BC%93%E5%AD%98%E5%8E%9F%E7%90%86&#34;&gt;下图&lt;/a&gt;展示了存储器层次结构中缓存的一般性概念。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711145943.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711145943.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;div id=&#34;存储器层次结构中基本的缓存原理&#34;&gt;&lt;/div&gt;
+&lt;p&gt;数据总是以块&lt;code&gt;block&lt;/code&gt;为单位，在层与层之间来回复制。&lt;/p&gt;
+&lt;p&gt;说回高速缓存，按照摩尔定律，CPU 的访问速度每 18 个月便会翻一翻，相当于每年增长 60%。内存的访问速度虽然不断增长，却远没有那么快，每年只增长 7% 左右。这样就导致 CPU 性能和内存访问的差距不断拉大。为了弥补两者之间差异，现代 CPU 引入了&lt;strong&gt;高速缓存&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220708092012.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220708092012.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;CPU 的读（load）实质上就是从缓存中读取数据到寄存器（register）里，在多级缓存的架构中，如果缓存中找不到数据（Cache miss），就会层层读取二级缓存三级缓存，一旦所有的缓存里都找不到对应的数据，就要去内存里寻址了。寻址到的数据首先放到寄存器里，其副本会驻留到 CPU 的缓存中。&lt;/p&gt;
+&lt;p&gt;CPU 的写（store）也是针对缓存作写入。并不会直接和内存打交道，而是通过某种机制实现数据从缓存到内存的写回（write back）。&lt;/p&gt;
+&lt;p&gt;缓存到底如何与 CPU 和主存数据交换的？CPU 如何从缓存中读写数据的？缓存中没有读的数据，或者缓存写满了怎么办？我们先从 CPU 如何读取数据说起。&lt;/p&gt;
+&lt;h2 id=&#34;缓存读取&#34;&gt;缓存读取&lt;/h2&gt;
+&lt;p&gt;CPU 发起一个读取请求后，返回的结果会有如下几种情况：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缓存命中 (cache hit)
+要读取的数据刚好在缓存中，叫做&lt;strong&gt;缓存命中&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;缓存不命中 (cache miss)
+发送缓存不命中，缓存就得执行一直&lt;strong&gt;放置策略&lt;/strong&gt;(placement policy)，比如 LRU。来决定从主存中取出的数据放到哪里。
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;强制性不命中&lt;/strong&gt;(compulsory miss)/冷不命中(cold miss)：缓存中没有要读取的数据，需要从主存读取数据，并将数据放入缓存。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;冲突不命中&lt;/strong&gt;(conflict miss)：缓存中有要读的数据，在采取放置策略时，从主存中取数据放到缓存时发生了冲突，这叫做冲突不命中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;高速缓存存储器组织结构&#34;&gt;高速缓存存储器组织结构&lt;/h3&gt;
+&lt;p&gt;整个 Cache 被划分为 1 个或多个&lt;strong&gt;组&lt;/strong&gt; (Set)，$S$ 表示组的个数。每个组包含 1 个或多个&lt;strong&gt;缓存行&lt;/strong&gt;(Cache line)，$E$ 表示一个组中缓存行的行数。每个缓存行由三部分组成：&lt;strong&gt;有效位&lt;/strong&gt;(valid)，&lt;strong&gt;标记位&lt;/strong&gt;（tag），&lt;strong&gt;数据块&lt;/strong&gt;（cache block）。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;有效位：该位等于 1，表示这个行数据有效。&lt;/li&gt;
+&lt;li&gt;标记位：唯一的标识了存储在高速缓存中的块，标识目标数据是否存在当前的缓存行中。&lt;/li&gt;
+&lt;li&gt;数据块：一部分内存数据的副本。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711171136.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711171136.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;Cache 的结构可以由元组$(S,E,B,m)$表示。不包括有效位和标记位。Cache 的大小为 $C=S \times E \times B$.&lt;/p&gt;
+&lt;p&gt;接下来看看 Cache 是如何工作的，当 CPU 执行数据加载指令，从内存地址 A 读取数据时，根据存储器层次原理，如果 Cache 中保存着目标数据的副本，那么就立即将数据返回给 CPU。那么 Cache 如何知道自己保存了目标数据的副本呢？&lt;/p&gt;
+&lt;p&gt;假设目标地址的数据长度为$m$位，这个地址被参数 $S$ 和 $B$ 分成了三个字段：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711174416.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711174416.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;首先通过长度为$s$的&lt;strong&gt;组索引&lt;/strong&gt;，确定目标数据保存在哪一个组 (Set) 中，其次通过长度为$t$的&lt;strong&gt;标记&lt;/strong&gt;，确定在哪一行，需要注意的是此时有效位必须等于 1，最后根据长度为$b$的&lt;strong&gt;块偏移&lt;/strong&gt;，来确定目标数据在数据块中的确切位置。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Q：既然读取 Cache 第一步是组选择，为什么不用高位作为组索引，而使用中间的为作为组索引？
+A：如果使用了高位作索引，那么一些连续的内存块就会映射到相同的高速缓存块。如图前四个块映射到第一个缓存组，第二个四个块映射到第二个组，依次类推。如果一个程序有良好的空间局部性，顺序扫描一个数组的元素，那么在任何时候，缓存中都只保存在一个块大小的数组内容。这样对缓存的使用率很低。相比而言，如果使用中间的位作为组索引，那么相邻的块总是映射到不同的组，图中的情况能够存放整个大小的数组片。
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711185819.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711185819.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;直接映射高速缓存-direct-mapped-cache&#34;&gt;直接映射高速缓存 Direct Mapped Cache&lt;/h3&gt;
+&lt;p&gt;根据每个组的缓存行数 $E$ 的不同，Cache 被分为不同的类。每个组只有一行$E=1$的高速缓存被称为&lt;strong&gt;直接映射高速缓存&lt;/strong&gt;(direct-mapped cache)。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711190845.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711190845.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;当一条加载指令指示 CPU 从主存地址 A 中读取一个字 w 时，会将该主存地址 A 发送到高速缓存中，则高速缓存会根据&lt;strong&gt;组选择&lt;/strong&gt;，&lt;strong&gt;行匹配&lt;/strong&gt;和&lt;strong&gt;字抽取&lt;/strong&gt;三步来判断地址 A 是否命中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;组选择&lt;/strong&gt;(set selection)：根据组索引值来确定属于哪一个组，如图中索引长度为 5 位，可以检索 32 个组 ($2^5=32$)。当$s=0$时，此时组选择的结果为&lt;code&gt;set 0&lt;/code&gt;，当$s=1$时，此时组选择的结果为&lt;code&gt;set 1&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711191708.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711191708.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;行匹配 (line match)&lt;/strong&gt;：首先看缓存行的有效位，此时有效位为 1，表示当前数据有效。然后对比缓存行的标记&lt;code&gt;0110&lt;/code&gt;与地址中的标记&lt;code&gt;0110&lt;/code&gt;是否相等，如果相等，则表示目标数据在当前的缓存行中（缓存命中）。如果不一致或者有效位为 0，则表示目标数据不在当前的缓存行中（缓存不命中）。如果命中，就可以进行下一步字抽取。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711192435.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711192435.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;字抽取 (word extraction)&lt;/strong&gt;：根据偏移量$b$确定目标数据的确切位置，通俗来说就是从数据块的什么位置开始抽取位置。如当偏移块等于&lt;code&gt;100&lt;/code&gt;时，表示目标数据起始地址位于字节 4 处。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711192757.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711192757.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;下面通过一个例子来解释清除这个过程。假设我们有一个直接映射高速缓存，描述为$(S,E,B,m) = (4,1,2,4)$。换句话说，高速缓存有 4 个组，每个组 1 行，每个数据块 2 个字节，地址长度为 4 位。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711194256.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711194256.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;从图中可以看出，8 个内存块，但只有 4 个高速缓存组，所以会有多个块映射到同一个高速缓存组中。例如，块 0 和块 4 都会被映射到组 0。&lt;/p&gt;
+&lt;p&gt;下面我们来模拟当 CPU 执行一系列读的时候，高速缓存的执行情况，我们假设每次 CPU 读 1 个字节的字。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;读地址 0(0000) 的字：&lt;/strong&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711193901.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711193901.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;读地址 1(0001) 的字：&lt;/strong&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711194838.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711194838.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;读地址 13(1101) 的字：&lt;/strong&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711195108.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711195108.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;读地址 8(1000) 的字：&lt;/strong&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711200054.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711200054.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;读地址 0(0000) 的字：&lt;/strong&gt;
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711200409.gif&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220711200409.gif&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h3 id=&#34;组相联高速缓存-set-associative-cache&#34;&gt;组相联高速缓存 Set Associative Cache&lt;/h3&gt;
+&lt;p&gt;由于直接映射高速缓存的组中只有一行，所以容易发生冲突不命中。组相联高速缓存 (Set associative cache) 运行有多行缓存行。但是缓存行最大不能超过 $C/B$。&lt;/p&gt;
+&lt;p&gt;如图一个组中包含了两行缓存行，这种我们称为 2 路相联高速缓存。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220712160513.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220712160513.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;组选择&lt;/strong&gt;：与直接映射高速缓存的组选择过程一样。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;行匹配&lt;/strong&gt;：因为一个组有多行，所以需要遍历所有行，找到一个有效位为 1，并且标记为与地址中的标记位相匹配的一行。如果找到了，表示缓存命中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;字抽取&lt;/strong&gt;：根据偏移量$b$确定目标数据的确切位置，通俗来说就是从数据块的什么位置开始抽取位置。如当偏移块等于&lt;code&gt;100&lt;/code&gt;时，表示目标数据起始地址位于字节 4 处。&lt;/p&gt;
+&lt;p&gt;如果不命中，那么就需要从主存中取出需要的数据块，但是将数据块放在哪一行缓存行呢？如果存在空行 ($valid=0$)，那就放到空行里。如果没有空行，就得选择一个非空行来替换，同时希望 CPU 不会很快引用这个被替换的行。这里介绍几个替换策略。&lt;/p&gt;
+&lt;p&gt;最简单的方式就是随机选择一行来替换，其他复杂的方式就是利用局部性原理，使得接下来 CPU 引用替换的行概率最小。如&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最不常使用 (LFU, Least Frequently Used)，选择使用次数最少的行。&lt;/li&gt;
+&lt;li&gt;最近最少使用 (LRU, Least Recently Used)，选择最近使用最少的行。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;全相联高速缓存-fully-associative-cache&#34;&gt;全相联高速缓存 Fully Associative Cache&lt;/h3&gt;
+&lt;p&gt;整个 Cache 只有一个组，这个组包含了所有的缓存行。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165007.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165007.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;组选择&lt;/strong&gt;：因为只有一个组，所有默认总是选择 set 0。实际上这不就直接可以忽略了，访问的地址也就只需要划分为标记和偏移。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165209.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20220713165209.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;行匹配&lt;/strong&gt;：同组相联高速缓存。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;字抽取&lt;/strong&gt;：同组相联高速缓存。&lt;/p&gt;
+&lt;p&gt;由于硬件实现及成本等原因，全相联高速缓存只适合做小规模的缓存。例如虚拟内存中的 TLB（翻译备用缓存器，Translation Lookaside Buffer）。&lt;/p&gt;
+&lt;h3 id=&#34;缓存写入&#34;&gt;缓存写入&lt;/h3&gt;
+&lt;p&gt;写入 Cache 的性能比写入主内存要快，那么写入数据到底是写入 Cache 还是写入主内存呢？如果直接写入主内存里，Cache 里面的数据是否会失效呢？&lt;/p&gt;
+&lt;h4 id=&#34;写直达&#34;&gt;写直达&lt;/h4&gt;
+&lt;p&gt;写直达策略（Write-Through）：当数据要写入主内存里面，写入前，会先去判断数据是否已经在 Cache 里面了。如果数据已经在 Cache 里了，先把数据写入更新到 Cache 里面，再写入到主内存里面；如果数据不在 Cache 里，就只更新主内存。&lt;/p&gt;
+&lt;h4 id=&#34;写回&#34;&gt;写回&lt;/h4&gt;
+&lt;p&gt;写回策略（Write-Back）：如果发现要写入的数据，就在 CPU Cache 里面，那么就只是更新 CPU Cache 里面的数据。同时，会标记 CPU Cache 里的这个 Block 是脏（Dirty）的，表示 CPU Cache 里面的这个 Block 的数据，和主内存是不一致的。如果发现，要写入的数据所对应的 Cache Block 里，放的是别的内存地址的数据，那么就要看一看，那个 Cache Block 里面的数据有没有标记成脏的。如果是脏的话，要先把这个 Cache Block 里面的数据，写入到主内存里面。然后，再把当前要写入的数据，写入到 Cache 里，同时把 Cache Block 标记成脏的。如果 Block 里面的数据没有被标记成脏的话，那么直接把数据写入到 Cache 里面，然后再把 Cache Block 标记成脏的就好了。&lt;/p&gt;
+&lt;p&gt;在用了写回这个策略之后，在加载内存数据到 Cache 里面的时候，也要多出一步同步脏 Cache 的动作。如果加载内存里面的数据到 Cache 的时候，发现 Cache Block 里面有脏标记，也要先把 Cache Block 里的数据写回到主内存，才能加载数据覆盖掉 Cache。&lt;/p&gt;
+&lt;h3 id=&#34;缓存一致性&#34;&gt;缓存一致性&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://dunky-z.github.io/2022/05/29/CPU%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7MESI%E5%8D%8F%E8%AE%AE/&#34;&gt;CPU 缓存一致性 MESI 协议 - 如云泊&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.cnblogs.com/yc_sunniwell/archive/2010/07/14/1777432.html&#34;&gt;C/C++中 volatile 关键字详解 - chao_yu - 博客园&lt;/a&gt;
+&lt;a href=&#34;https://blog.csdn.net/gzzaigcnforever/article/details/41806033&#34;&gt;volatile 能解决 cache 的数据一致性吗？答案是不能_天才 2012 的博客-CSDN 博客_volatilewritecache&lt;/a&gt;
+&lt;a href=&#34;https://www.cnblogs.com/xmzJava/p/11417943.html&#34;&gt;cpu 缓存和 volatile - XuMinzhe - 博客园&lt;/a&gt;
+&lt;a href=&#34;https://www.bilibili.com/video/BV18L411t7zY/?spm_id_from=333.788&amp;amp;vd_source=7ff88341de4b5111bdf3db48b4e9ca44&#34;&gt;【CSAPP-深入理解计算机系统】6-5. 直接映射高速缓存_哔哩哔哩_bilibili&lt;/a&gt;
+&lt;a href=&#34;https://cloud.tencent.com/developer/article/1815375&#34;&gt;24 张图 7000 字详解计算机中的高速缓存 - 腾讯云开发者社区 - 腾讯云&lt;/a&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="存储器的层次结构">存储器的层次结构</h2>
 <p>
 

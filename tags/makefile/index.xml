@@ -3,7 +3,7 @@
   <channel>
     <title>Makefile on 夜云泊</title>
     <link>https://lifeislife.cn/tags/makefile/</link>
-    <description>Recent content in Makefile on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Makefile on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Mon, 26 Sep 2022 21:36:18 +0000</lastBuildDate>
@@ -13,7 +13,7 @@
       <link>https://lifeislife.cn/posts/makefile%E5%9F%BA%E7%A1%80/</link>
       <pubDate>Mon, 26 Sep 2022 21:36:18 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/makefile%E5%9F%BA%E7%A1%80/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;目标依赖命令&#34;&gt;目标、依赖、命令&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;目标依赖命令&#34;&gt;目标、依赖、命令&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;目标就是我们要去 make xxx 的那个 xxx，就是我们最终要生成的东西。&lt;/li&gt;
 &lt;li&gt;依赖是用来生成目录的原材料&lt;/li&gt;
@@ -43,7 +43,45 @@
 &lt;li&gt;&lt;code&gt;=&lt;/code&gt;最简单的赋值&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;:=&lt;/code&gt;一般也是赋值&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;以上这两个大部分情况下效果是一样的，但是有时候不一样。用&lt;code&gt;=&lt;/code&gt;赋值的变量，在被解析时他的值取决于最后一次赋值时的值，所以你看变量引用的值时不能只往前面看，还要往后面看。用&lt;code&gt;:=&lt;/code&gt;来赋值的，则是就地直接解析，只用往前看即可。&lt;/p&gt;</description>
+&lt;p&gt;以上这两个大部分情况下效果是一样的，但是有时候不一样。用&lt;code&gt;=&lt;/code&gt;赋值的变量，在被解析时他的值取决于最后一次赋值时的值，所以你看变量引用的值时不能只往前面看，还要往后面看。用&lt;code&gt;:=&lt;/code&gt;来赋值的，则是就地直接解析，只用往前看即可。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;?=&lt;/code&gt;如果变量前面并没有赋值过则执行这条赋值，如果前面已经赋值过了则本行被忽略。（实验可以看出：所谓的没有赋值过其实就是这个变量没有被定义过）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;+=&lt;/code&gt;用来给一个已经赋值的变量接续赋值，意思就是把这次的值加到原来的值的后面，有点类似于 &lt;code&gt;strcat&lt;/code&gt;。（注意一个细节，&lt;code&gt;+=&lt;/code&gt;续接的内容和原来的内容之间会自动加一个空格隔开）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注意：Makefile 中并不要求赋值运算符两边一定要有空格或者无空格，这一点比 shell 的格式要求要松一些。&lt;/p&gt;
+&lt;h2 id=&#34;makefile-的环境变量&#34;&gt;Makefile 的环境变量&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;makefile 中用 &lt;code&gt;export&lt;/code&gt; 导出的就是环境变量。一般情况下要求环境变量名用大写，普通变量名用小写。&lt;/li&gt;
+&lt;li&gt;环境变量和普通变量不同，可以这样理解：环境变量类似于整个工程中所有 Makefile 之间可以共享的全局变量，而普通变量只是当前本 Makefile 中使用的局部变量。所以要注意：定义了一个环境变量会影响到工程中别的 Makefile 文件，因此要小心。&lt;/li&gt;
+&lt;li&gt;Makefile 中可能有一些环境变量可能是 makefile 本身自己定义的内部的环境变量或者是当前的执行环境提供的环境变量（譬如我们在 &lt;code&gt;make&lt;/code&gt; 执行时给 makefile 传参。&lt;code&gt;make CC=arm-linux-gcc&lt;/code&gt;，其实就是给当前 Makefile 传了一个环境变量 &lt;code&gt;CC&lt;/code&gt;，值是 &lt;code&gt;arm-linux-gcc&lt;/code&gt;。我们在 &lt;code&gt;make&lt;/code&gt; 时给 &lt;code&gt;makefile&lt;/code&gt; 传的环境变量值优先级最高的，可以覆盖 makefile 中的赋值）。这就好像 C 语言中编译器预定义的宏&lt;code&gt;__LINE__&lt;/code&gt; &lt;code&gt;__FUNCTION__&lt;/code&gt;等一样。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;makefile-中使用通配符&#34;&gt;Makefile 中使用通配符&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;*&lt;/code&gt;：若干个任意字符&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;?&lt;/code&gt;：1 个任意字符&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;[]&lt;/code&gt;：将 &lt;code&gt;[]&lt;/code&gt; 中的字符依次去和外面的结合匹配&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;还有个&lt;code&gt;%&lt;/code&gt;，也是通配符，表示任意多个字符，和&lt;code&gt;*&lt;/code&gt;很相似，但是&lt;code&gt;%&lt;/code&gt;一般只用于规则描述中，又叫做规则通配符。&lt;/p&gt;
+&lt;h2 id=&#34;makefile-的自动变量&#34;&gt;Makefile 的自动变量&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;为什么使用自动变量。在有些情况下文件集合中文件非常多，描述的时候很麻烦，所以我们 Makefile 就用一些特殊的符号来替代符合某种条件的文件集，这就形成了自动变量。&lt;/li&gt;
+&lt;li&gt;自动变量的含义：预定义的特殊意义的符号。就类似于 C 语言编译器中预制的那些宏&lt;code&gt;__FILE__&lt;/code&gt;一样。&lt;/li&gt;
+&lt;li&gt;常见自动变量：
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;$@&lt;/code&gt;：规则的目标文件名&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$&amp;lt;&lt;/code&gt;：规则的依赖文件名&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;$^&lt;/code&gt;：依赖的文件集合&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;其他&#34;&gt;其他&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Makefile 中的注释用&lt;code&gt;#&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;在 makefile 的命令行中前面的&lt;code&gt;@&lt;/code&gt;表示静默执行&lt;/li&gt;
+&lt;li&gt;Makefile 中默认情况下在执行一行命令前会先把这行命令给打印出来，然后再执行这行命令&lt;/li&gt;
+&lt;li&gt;如果你不想看到命令本身，只想看到命令执行就静默执行即可&lt;/li&gt;
+&lt;/ul&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="目标依赖命令">目标、依赖、命令</h2>
 <ul>
 <li>目标就是我们要去 make xxx 的那个 xxx，就是我们最终要生成的东西。</li>
@@ -119,8 +157,32 @@
       <link>https://lifeislife.cn/posts/makefile%E7%A1%AE%E5%AE%9A%E5%AE%8F%E5%AE%9A%E4%B9%89/</link>
       <pubDate>Wed, 27 Jul 2022 08:28:03 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/makefile%E7%A1%AE%E5%AE%9A%E5%AE%8F%E5%AE%9A%E4%B9%89/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;p&gt;有时需要通过&lt;code&gt;make&lt;/code&gt;编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。&lt;/p&gt;
-&lt;p&gt;当前的需求是代码中有一部分代码通过宏定义来确定编译的是 DIE0 版本还是 DIE1 版本，如果定义了&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt; 就使用 DIE0 的基地址，如果未定义就使用 DIE1 的基地址。&lt;/p&gt;</description>
+      <description>&lt;p&gt;有时需要通过&lt;code&gt;make&lt;/code&gt;编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。&lt;/p&gt;
+&lt;p&gt;当前的需求是代码中有一部分代码通过宏定义来确定编译的是 DIE0 版本还是 DIE1 版本，如果定义了&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt; 就使用 DIE0 的基地址，如果未定义就使用 DIE1 的基地址。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define DIE_ORDINAL_0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#ifdef DIE_ORDINAL_0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define PERIPH_BASE (SYS_BASE_ADDR_DIE0)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#else
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define PERIPH_BASE (SYS_BASE_ADDR_DIE1)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#endif
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;gcc 命令支持&lt;code&gt;-D&lt;/code&gt;宏定义，相当于 C 中的全局&lt;code&gt;#define&lt;/code&gt;，在 Makefile 中我们可以通过宏定义来控制源程序的编译。只要在 Makefile 中的 CFLAGS 中通过选项-D 来指定你于定义的宏即可。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Makefile&#34; data-lang=&#34;Makefile&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;CFLAGS&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+=&lt;/span&gt; -D DIE_ORDINAL_0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# 在编译的时候加上此选项就可以了
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;CC&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;CFLAGS&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;$^&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;-o&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$@&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这样的话，相当于设置了&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt;这个宏定义。但是我们想通过命令行的参数来决定是否使用这个宏定义，可以通过一些简单的方法获取：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Makefile&#34; data-lang=&#34;Makefile&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;ifeq&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;DIE&lt;/span&gt;0&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;y)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nv&#34;&gt;CFLAGS&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+=&lt;/span&gt;-DDIE_ORDINAL_0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nv&#34;&gt;CFLAGS&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+=&lt;/span&gt;-DDIE_ORDINAL_1
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;endif&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;CC&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;CFLAGS&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;$^&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;-o&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$@&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;从命令行找到&lt;code&gt;DIE0&lt;/code&gt;这个参数，如果它等于&lt;code&gt;y&lt;/code&gt;表示使用&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt;。如果不等于&lt;code&gt;y&lt;/code&gt;则使用&lt;code&gt;DIE_ORDINAL_1&lt;/code&gt;，因为我们代码里没有&lt;code&gt;DIE_ORDINAL_1&lt;/code&gt;，所以就相当于没有定义&lt;code&gt;DIE_ORDINAL_0&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;命令行示例：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 编译DIE0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make &lt;span class=&#34;nv&#34;&gt;DIE0&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;y&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 编译DIE1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make &lt;span class=&#34;nv&#34;&gt;DIE0&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;n&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<p>有时需要通过<code>make</code>编译命令时确定代码中的宏定义，如编译不同的版本只需要使用不同的编译命令即可，而不需要修改内部代码。</p>
 <p>当前的需求是代码中有一部分代码通过宏定义来确定编译的是 DIE0 版本还是 DIE1 版本，如果定义了<code>DIE_ORDINAL_0</code> 就使用 DIE0 的基地址，如果未定义就使用 DIE1 的基地址。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="cp">#define DIE_ORDINAL_0

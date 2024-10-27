@@ -3,7 +3,7 @@
   <channel>
     <title>外设 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E5%A4%96%E8%AE%BE/</link>
-    <description>Recent content in 外设 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 外设 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Wed, 15 Dec 2021 12:22:18 +0000</lastBuildDate>
@@ -13,8 +13,109 @@
       <link>https://lifeislife.cn/posts/%E5%AE%9A%E6%97%B6%E5%99%A8timer%E5%9F%BA%E7%A1%80/</link>
       <pubDate>Wed, 15 Dec 2021 12:22:18 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E5%AE%9A%E6%97%B6%E5%99%A8timer%E5%9F%BA%E7%A1%80/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;概念&#34;&gt;概念&lt;/h2&gt;
-&lt;p&gt;定时器（Timer），又叫计时器，顾名思义，它的主要功能就是计时。因为 CPU 计时会占用大量资源，而定时器独立于 CPU，专门用来计时。单核 CPU 好比人的大脑，一心不可二用，它只能知道自己当前要干什么。人可以用闹钟来提醒自己某个时间需要做某件事，而 CPU 就需要定时器来完成这样的工作。&lt;/p&gt;</description>
+      <description>&lt;h2 id=&#34;概念&#34;&gt;概念&lt;/h2&gt;
+&lt;p&gt;定时器（Timer），又叫计时器，顾名思义，它的主要功能就是计时。因为 CPU 计时会占用大量资源，而定时器独立于 CPU，专门用来计时。单核 CPU 好比人的大脑，一心不可二用，它只能知道自己当前要干什么。人可以用闹钟来提醒自己某个时间需要做某件事，而 CPU 就需要定时器来完成这样的工作。&lt;/p&gt;
+&lt;p&gt;当定时器被开启后，里面的计数器就以计数器时钟的频率开始运行，内部的计数值不断增加。例如一个时钟为&lt;code&gt;1MHz&lt;/code&gt;的定时器，被开启后每隔&lt;code&gt;1us&lt;/code&gt;计数值就会加 1。但计数值不可能无限增加，最大值比如&lt;code&gt;65535&lt;/code&gt;。将这个十进制数转为二进制数后应该是一个 16 位的二进制数&lt;code&gt;1111 1111 1111 1111&lt;/code&gt;。所以我们需要有一个 16 位大小的存储空间来存储它。那这就是一个 16 位定时器。&lt;/p&gt;
+&lt;h2 id=&#34;功能&#34;&gt;功能&lt;/h2&gt;
+&lt;p&gt;定时器可以让 SoC 在执行主程序的同时，可以 (通过定时器) 具有计时功能，到了一定时间 (计时结束) 后，定时器会产生中断提醒 CPU，CPU 会去处理中断并执行定时器中断的 ISR，从而去执行预先设定好的事件。打个比方，定时器就像一个秘书，CPU 就是老板。老板每天都有很多事要做，具体时间安排不想操心，就安排给秘书。秘书每天就是盯着表，到点就提醒老板要做某事。&lt;/p&gt;
+&lt;h2 id=&#34;原理&#34;&gt;原理&lt;/h2&gt;
+&lt;p&gt;外设的工作频率是与它所挂载在的外设总线的时钟频率相同的。但工作频率不是时钟频率，工作频率到时钟频率需要进行一次分频。这个可调节的分频值使得定时器的计时更加灵活。这个分频值就是需要设置的第一个参数&lt;strong&gt;预分频系数&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;$$
+计数器时钟频率 = 工作频率/(预分频系数+1)
+$$&lt;/p&gt;
+&lt;p&gt;$$
+定时频率 = 计时器时钟频率/(自动重载值+1)
+$$&lt;/p&gt;
+&lt;p&gt;假设定时器时钟频率为&lt;code&gt;1MHz&lt;/code&gt;，那定时&lt;code&gt;1ms&lt;/code&gt;该如何做？计数 1000 次即可。最大的计数值就是&lt;strong&gt;自动重载值&lt;/strong&gt;，是我们需要设置的第二个参数。定时器被打开后，计数值就增加，一旦达到自动重载值就会出发定时器溢出中断，就实现了定时&lt;code&gt;1ms&lt;/code&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;计数模式&#34;&gt;计数模式&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214100956.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;中心计数：计数器从 0 开始计数到自动装入的值 -1，产生一个计数器溢出事件，0 然后向下计数到 1 并且产生一个计数器溢出事件，然后再从 0 开始重新计数。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;向上计数：计数器从 0 计数到自动加载值 (TIMx_ARR) ，然后重新从 0 开始计数并且产生一个计数器溢出事件。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;向下计数：计数器从自动装入的值 (TIMx_ARR) 开始向下计数到 0，然后从自动装入的值重新开始，并产生一个计数器向下溢出事件。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img/20211214140256.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="概念">概念</h2>
 <p>定时器（Timer），又叫计时器，顾名思义，它的主要功能就是计时。因为 CPU 计时会占用大量资源，而定时器独立于 CPU，专门用来计时。单核 CPU 好比人的大脑，一心不可二用，它只能知道自己当前要干什么。人可以用闹钟来提醒自己某个时间需要做某件事，而 CPU 就需要定时器来完成这样的工作。</p>
 <p>当定时器被开启后，里面的计数器就以计数器时钟的频率开始运行，内部的计数值不断增加。例如一个时钟为<code>1MHz</code>的定时器，被开启后每隔<code>1us</code>计数值就会加 1。但计数值不可能无限增加，最大值比如<code>65535</code>。将这个十进制数转为二进制数后应该是一个 16 位的二进制数<code>1111 1111 1111 1111</code>。所以我们需要有一个 16 位大小的存储空间来存储它。那这就是一个 16 位定时器。</p>

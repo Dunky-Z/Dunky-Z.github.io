@@ -3,7 +3,7 @@
   <channel>
     <title>字体 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E5%AD%97%E4%BD%93/</link>
-    <description>Recent content in 字体 on 夜云泊</description>
+    <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 字体 on 夜云泊</description>
     <generator>Hugo -- 0.136.5</generator>
     <language>zh</language>
     <lastBuildDate>Sun, 11 Sep 2022 22:20:02 +0000</lastBuildDate>
@@ -13,11 +13,30 @@
       <link>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3latex%E7%BC%96%E8%AF%91missing-character-there-is-no-u-00a0-u-00a0-in-font/</link>
       <pubDate>Sun, 11 Sep 2022 22:20:02 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%A7%A3%E5%86%B3latex%E7%BC%96%E8%AF%91missing-character-there-is-no-u-00a0-u-00a0-in-font/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;保留现场&#34;&gt;保留现场&lt;/h2&gt;
 &lt;p&gt;在 LaTeX 编译中报错：Missing character: There is no   (U+00A0) (U+00A0) in font JetBrains Mono。&lt;/p&gt;
 &lt;h2 id=&#34;探究原因&#34;&gt;探究原因&lt;/h2&gt;
 &lt;p&gt;如果要搞清楚具体原因，就得从字符与字符编码说起了。解决办法直接跳到下一节吧。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;字符&lt;/strong&gt;，就是“a”，“A”，“你”等书写符号。&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;字符&lt;/strong&gt;，就是“a”，“A”，“你”等书写符号。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;字符集&lt;/strong&gt;，通常就是某种语言字符集合，比如英语就是&lt;strong&gt;ASCII 字符集&lt;/strong&gt;，中文有&lt;strong&gt;GBK 字符集&lt;/strong&gt;等&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意，不是每种语言只对应一种字符集（比如 GB2312，GBK，GB18030 都包含了常用汉字，后者是前者的超集），而且字符集也不是只对应一种语言，例如 Unicode 字符集就包含所有语言字符，字符集只是设计者为了给字符编码（Code Point/Numbering）设计编码时，为了收录到命名的字符集合，但是通常设计者都为字符集设计了对应的编码规范。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;字符编码&lt;/strong&gt;,给字符集里的字符编号。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;编码页&lt;/strong&gt;，在 unicode 发明之前，各个地区都用 2 字节编码自己的字符集，相同的编码对应不同的字符，为了本地化，Windows 发明了编码页，来对应不同的字符集。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;字符编码&lt;/strong&gt;，对给定的字符编码编码成字节表示。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;早期，字符被编号后，存储时就按照编号的方式存储，没有 encoding 的过程，后来发明 Unicode 后，发现如果按照 Unicode 的编号直接存储的话，对于英文字符就有很大存储浪费，因为任意字符都需要 2 字节存储，后来人们发明 UTF-8 这种编码方式，这样 UTF-8 就可以一个字节表示英文字符，2 个以上字节表示汉字字符。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;字体&lt;/strong&gt;，定义了字符的图形表示，现在的软件展示字符时用 Unicode 表示，字体是 Unicode 编码和字符图形的映射，而以往比如 WindowsCMD 控制台，没有对应 Unicode，则用编码页来区分，所以字体就是字符编码金和代码页到字符图形的映射。&lt;/p&gt;
+&lt;p&gt;文本文件存储在磁盘上，都是一系列的字节流，如果不告诉文本编辑器该文件的编码方式，编辑器会尝试用默认的编码（依赖于操作系统设置）又或者自己探测（detect，比如文件开头有 FFEF 或者 EFFF 字节就表明 UTF-16 编码，有很多 10，110 开头的字节，很可能是 UTF-8 编码）并尝试解码，&lt;strong&gt;如果没有猜对，那就会显示乱码&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;回到出错的问题，提示我们在&lt;strong&gt;字体 JetBrains Mono&lt;/strong&gt;中没有&lt;strong&gt;U+00A0&lt;/strong&gt;，我们搜索一下就知道这是一个 Unicode 字符&lt;strong&gt;NO-BREAK SPACE&lt;/strong&gt;。我们通过上面的了解也知道了，字体就是字符编码到字符图像的映射，但是一个字体尤其是一些有专门用途的字体（比如 JetBrains Mono 设计初衷是为软件工程显示代码用的），它不会映射所有的字符，JetBrains Mono 这个字体里就没有映射 U+00A0。&lt;strong&gt;这就导致在 LaTeX 编译时无法在字体中找到对应的字符图像显示&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;所有解决办法就是要不替换掉这个字符，要不换个字体。&lt;/p&gt;
+&lt;h2 id=&#34;解决方法&#34;&gt;解决方法&lt;/h2&gt;
+&lt;p&gt;VSCode 正则搜索&lt;code&gt;\U00A0&lt;/code&gt;即可搜索到相关字符，将其替换成空格。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.jianshu.com/p/d7edb679cd3d&#34;&gt;字符，字符集，字符编码，编码页，字体 - 简书&lt;/a&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h2 id="保留现场">保留现场</h2>
 <p>在 LaTeX 编译中报错：Missing character: There is no   (U+00A0) (U+00A0) in font JetBrains Mono。</p>
 <h2 id="探究原因">探究原因</h2>
@@ -48,7 +67,7 @@
       <link>https://lifeislife.cn/posts/%E7%BC%96%E7%A0%81%E5%AD%97%E4%BD%93%E4%B8%8E%E9%98%85%E8%AF%BB%E5%AD%97%E4%BD%93%E6%8E%A8%E8%8D%90/</link>
       <pubDate>Sat, 27 Aug 2022 19:59:58 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E7%BC%96%E7%A0%81%E5%AD%97%E4%BD%93%E4%B8%8E%E9%98%85%E8%AF%BB%E5%AD%97%E4%BD%93%E6%8E%A8%E8%8D%90/</guid>
-      <description>feedId:57980998056508425+userId:73222296380546048 &lt;h1 id=&#34;编码字体&#34;&gt;编码字体&lt;/h1&gt;
+      <description>&lt;h1 id=&#34;编码字体&#34;&gt;编码字体&lt;/h1&gt;
 &lt;p&gt;编码字体首要原则：等宽，等宽，还是 TMD 等宽！&lt;/p&gt;
 &lt;h2 id=&#34;jetbrains-monohttpswwwjetbrainscomlpmono&#34;&gt;&lt;a href=&#34;https://www.jetbrains.com/lp/mono/&#34;&gt;JetBrains Mono&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;
@@ -127,7 +146,248 @@
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;</description>
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;source-code-prohttpsgithubcomadobe-fontssource-code-pro&#34;&gt;&lt;a href=&#34;https://github.com/adobe-fonts/source-code-pro&#34;&gt;Source Code Pro&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-56-21-f7612e14d8fb5807c91fe60f58f8fe9a-20220827205620-929922.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-56-21-f7612e14d8fb5807c91fe60f58f8fe9a-20220827205620-929922.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;fira-monohttpswwwfontsquirrelcomfontsfira-mono&#34;&gt;&lt;a href=&#34;https://www.fontsquirrel.com/fonts/fira-mono&#34;&gt;Fira Mono&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-59-31-38634f74a936c0f1f7dc300197f7d11e-20220827205931-947b4e.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/20-59-31-38634f74a936c0f1f7dc300197f7d11e-20220827205931-947b4e.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;consolas&#34;&gt;Consolas&lt;/h2&gt;
+&lt;p&gt;保底字体，基本上 Windows 电脑都有预装。&lt;/p&gt;
+&lt;h1 id=&#34;阅读字体&#34;&gt;阅读字体&lt;/h1&gt;
+&lt;p&gt;看多了黑体，其实有衬线的宋体才能体现中文文字之美。&lt;/p&gt;
+&lt;h2 id=&#34;思源宋体httpssourcetypekitcomsource-han-serifcn&#34;&gt;&lt;a href=&#34;https://source.typekit.com/source-han-serif/cn/&#34;&gt;思源宋体&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-26-41-695d3a7666fbd2ed815e7c967d96365d-20220827212640-9611e9.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-26-41-695d3a7666fbd2ed815e7c967d96365d-20220827212640-9611e9.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;华文中宋httpsfreefontstopfont60a7867598e5f44356ad7ee1&#34;&gt;&lt;a href=&#34;https://freefonts.top/font/60a7867598e5f44356ad7ee1&#34;&gt;华文中宋&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-31-18-d36a343840db1e78db06989d4f3db6b5-20220827213118-3bcd07.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-31-18-d36a343840db1e78db06989d4f3db6b5-20220827213118-3bcd07.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h1 id=&#34;中文等宽字体&#34;&gt;中文等宽字体&lt;/h1&gt;
+&lt;p&gt;对于既想要满足编程字体又想要中文书写的，有几款等宽中文字体也不错。&lt;/p&gt;
+&lt;h2 id=&#34;sarasa-gothic--更纱黑体httpsgithubcombe5invissarasa-gothic&#34;&gt;&lt;a href=&#34;https://github.com/be5invis/Sarasa-Gothic&#34;&gt;Sarasa Gothic / 更纱黑体&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-28-37-15a7fa4c37074eb4fa50ef88561894ae-20220827212836-43865f.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-28-37-15a7fa4c37074eb4fa50ef88561894ae-20220827212836-43865f.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;思源黑体source-han-sanshttpsgithubcomadobe-fontssource-han-sanstreerelease&#34;&gt;&lt;a href=&#34;https://github.com/adobe-fonts/source-han-sans/tree/release&#34;&gt;思源黑体/Source Han Sans&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-29-56-e35563edf446e892ac4ed5c1e2478108-20220827212956-fbc90d.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2022/08/27/21-29-56-e35563edf446e892ac4ed5c1e2478108-20220827212956-fbc90d.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+</description>
       <content:encoded><![CDATA[<h1 id="编码字体">编码字体</h1>
 <p>编码字体首要原则：等宽，等宽，还是 TMD 等宽！</p>
 <h2 id="jetbrains-monohttpswwwjetbrainscomlpmono"><a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a></h2>
