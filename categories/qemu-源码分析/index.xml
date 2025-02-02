@@ -4,7 +4,7 @@
     <title>QEMU 源码分析 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/qemu-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in QEMU 源码分析 on 夜云泊</description>
-    <generator>Hugo -- 0.142.0</generator>
+    <generator>Hugo -- 0.143.0</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 10 Aug 2024 21:08:03 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/qemu-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.xml" rel="self" type="application/rss+xml" />
@@ -163,8 +163,7 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plain&#34; data-lang=&#34;plain&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;%rd       7:5
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;%imm_u    12:s20                 !function=ex_shift_12
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;20 表示占 20 bits&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;20 表示占 20 bits&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;最后会生成如下的代码：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;decode_insn32_extract_u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DisasContext&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;arg_u&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint32_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;insn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -172,8 +171,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;extract32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;insn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;&lt;code&gt;static void decode_insn32_extract_u()&lt;/code&gt; 是由下文 Format 定义所生成的，而 &lt;code&gt;arg_u *a&lt;/code&gt; 则是由 Argument Set 定义所生成的，将会在后面的部分再做说明。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;static void decode_insn32_extract_u()&lt;/code&gt; 是由下文 Format 定义所生成的，而 &lt;code&gt;arg_u *a&lt;/code&gt; 则是由 Argument Set 定义所生成的，将会在后面的部分再做说明。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;可以看到：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;imm&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ex_shift_12&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;sextract32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;insn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;12&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;extract32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;insn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
@@ -600,8 +598,7 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plain&#34; data-lang=&#34;plain&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;lui      ....................       ..... ..10111 @u
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;Decodetree&lt;/code&gt; 在解析时，便会报错：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;./insn32.decode:17: error: (‘bits left unspecified (0x00000060)’,)&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;./insn32.decode:17: error: (‘bits left unspecified (0x00000060)’,)&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;&lt;code&gt;Decodetree&lt;/code&gt; 提醒我们，insn[6:5] (&lt;code&gt;0x00000060&lt;/code&gt;) 尚未给出明确定义，并会显示出其错误的行数。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;trans_lui()&lt;/code&gt; 和 &lt;code&gt;trans_auipc()&lt;/code&gt; 被定义在 &lt;code&gt;target/riscv/insn_trans/trans_rvi.inc.c&lt;/code&gt;：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;bool&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;trans_lui&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DisasContext&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;arg_lui&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;a&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
@@ -996,8 +993,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">%rd       7:5
 </span></span><span class="line"><span class="cl">%imm_u    12:s20                 !function=ex_shift_12
 </span></span></code></pre></div><blockquote>
-<p>20 表示占 20 bits</p>
-</blockquote>
+<p>20 表示占 20 bits</p></blockquote>
 <p>最后会生成如下的代码：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">void</span> <span class="nf">decode_insn32_extract_u</span><span class="p">(</span><span class="n">DisasContext</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="n">arg_u</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">insn</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
@@ -1005,8 +1001,7 @@
 </span></span><span class="line"><span class="cl">    <span class="n">a</span><span class="o">-&gt;</span><span class="n">rd</span> <span class="o">=</span> <span class="nf">extract32</span><span class="p">(</span><span class="n">insn</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><blockquote>
-<p><code>static void decode_insn32_extract_u()</code> 是由下文 Format 定义所生成的，而 <code>arg_u *a</code> 则是由 Argument Set 定义所生成的，将会在后面的部分再做说明。</p>
-</blockquote>
+<p><code>static void decode_insn32_extract_u()</code> 是由下文 Format 定义所生成的，而 <code>arg_u *a</code> 则是由 Argument Set 定义所生成的，将会在后面的部分再做说明。</p></blockquote>
 <p>可以看到：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">a</span><span class="o">-&gt;</span><span class="n">imm</span> <span class="o">=</span> <span class="nf">ex_shift_12</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nf">sextract32</span><span class="p">(</span><span class="n">insn</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">20</span><span class="p">));</span>
 </span></span><span class="line"><span class="cl"><span class="n">a</span><span class="o">-&gt;</span><span class="n">rd</span> <span class="o">=</span> <span class="nf">extract32</span><span class="p">(</span><span class="n">insn</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
@@ -1433,8 +1428,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">lui      ....................       ..... ..10111 @u
 </span></span></code></pre></div><p><code>Decodetree</code> 在解析时，便会报错：</p>
 <blockquote>
-<p>./insn32.decode:17: error: (‘bits left unspecified (0x00000060)’,)</p>
-</blockquote>
+<p>./insn32.decode:17: error: (‘bits left unspecified (0x00000060)’,)</p></blockquote>
 <p><code>Decodetree</code> 提醒我们，insn[6:5] (<code>0x00000060</code>) 尚未给出明确定义，并会显示出其错误的行数。</p>
 <p><code>trans_lui()</code> 和 <code>trans_auipc()</code> 被定义在 <code>target/riscv/insn_trans/trans_rvi.inc.c</code>：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">bool</span> <span class="nf">trans_lui</span><span class="p">(</span><span class="n">DisasContext</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="n">arg_lui</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
@@ -2038,8 +2032,7 @@
 &lt;h3 id=&#34;qemu-ifup&#34;&gt;qemu-ifup&lt;/h3&gt;
 &lt;p&gt;将下面的脚本保存为文件 &lt;code&gt;qemu-ifup&lt;/code&gt;，并赋予可执行权限：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mkdir -p /etc/qemu
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mv qemu-ifup /etc/qemu &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv qemu-ifdown /etc/qemu 
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo chmod +x qemu-ifup
@@ -2539,8 +2532,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第一个参数 &lt;code&gt;-net nic&lt;/code&gt; 用于指定上述所说的前端驱动，也就是 Guest 中的实现，这里使用的是 &lt;code&gt;virtio&lt;/code&gt; 驱动，这个驱动是 QEMU 中的一个虚拟网卡设备。第二个参数 &lt;code&gt;-net tap&lt;/code&gt; 用于指定后端实现，也就是 Host 中的实现，这里使用的是 &lt;code&gt;tap&lt;/code&gt; 驱动，它的网卡名称为 &lt;code&gt;tap3&lt;/code&gt;，并且执行脚本 &lt;code&gt;/ect/qemu/qemu-ifup&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;解释&lt;code&gt;/ect/qemu/qemu-ifup&lt;/code&gt;
-该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。&lt;/p&gt;
-&lt;/blockquote&gt;
+该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h3 id=&#34;-device---netdev-recommended&#34;&gt;-device &amp;amp; -netdev （Recommended）&lt;/h3&gt;
 &lt;p&gt;这是新版本的 QEMU 支持的命令格式，也是 QEMU 未来的发展趋势，我们以以下命令为例，来说明 &lt;code&gt;-device&lt;/code&gt; 和 &lt;code&gt;-netdev&lt;/code&gt; 的使用方法：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qemu-system-riscv64 &lt;span class=&#34;se&#34;&gt;\
@@ -2562,8 +2554,7 @@
 &lt;p&gt;第二个参数 &lt;code&gt;-netdev tap&lt;/code&gt; 用于指定后端实现，使用&lt;code&gt;tap&lt;/code&gt;方式，并且指定唯一 ID 为&lt;code&gt;tapnet&lt;/code&gt;由&lt;code&gt;-device&lt;/code&gt;参数中的子参数&lt;code&gt;netdev&lt;/code&gt;使用。网卡名称为&lt;code&gt;tap0&lt;/code&gt;并且执行脚本 &lt;code&gt;~/qemu-script/qemu-ifup&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;-netdev 参数中 id 的使用
--netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 &lt;code&gt;-device&lt;/code&gt; 参数中的子参数 &lt;code&gt;netdev&lt;/code&gt; 使用，这样 &lt;code&gt;-device&lt;/code&gt; 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如&lt;code&gt;-netdev tap,id=test&lt;/code&gt;对应&lt;code&gt;-device virtio-net-device,netdev=test&lt;/code&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+-netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 &lt;code&gt;-device&lt;/code&gt; 参数中的子参数 &lt;code&gt;netdev&lt;/code&gt; 使用，这样 &lt;code&gt;-device&lt;/code&gt; 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如&lt;code&gt;-netdev tap,id=test&lt;/code&gt;对应&lt;code&gt;-device virtio-net-device,netdev=test&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;更多示例：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -device virtio-net-pci,netdev&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;tapnet,mac&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;e0:be:03:88:54:e8 &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;  -netdev tap,id&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;tapnet,script&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;no,downscript&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;no &lt;span class=&#34;se&#34;&gt;\
@@ -2707,8 +2698,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+----&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;SHA256&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;-----+
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一直回车确定，生成公私钥，保存在&lt;code&gt;~/.ssh&lt;/code&gt;目录下。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;我在宿主机上生成的公私钥名称为，分别是&lt;code&gt;host2vm0_id_rsa&lt;/code&gt;,&lt;code&gt;host2vm0_id_rsa.pub&lt;/code&gt;方便我记忆。如果一直回车，那么生成的公私钥名称为&lt;code&gt;id_rsa&lt;/code&gt;，&lt;code&gt;id_rsa.pub&lt;/code&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;我在宿主机上生成的公私钥名称为，分别是&lt;code&gt;host2vm0_id_rsa&lt;/code&gt;,&lt;code&gt;host2vm0_id_rsa.pub&lt;/code&gt;方便我记忆。如果一直回车，那么生成的公私钥名称为&lt;code&gt;id_rsa&lt;/code&gt;，&lt;code&gt;id_rsa.pub&lt;/code&gt;。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;将公钥复制到虚拟机 &lt;code&gt;VM0&lt;/code&gt; 上，以当前虚拟机 &lt;code&gt;VM0&lt;/code&gt; 的 IP：&lt;code&gt;10.12.193.53&lt;/code&gt; 为例。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ ssh-copy-id 10.12.193.53
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 输入密码&lt;/span&gt;
@@ -2811,8 +2801,7 @@
 <h3 id="qemu-ifup">qemu-ifup</h3>
 <p>将下面的脚本保存为文件 <code>qemu-ifup</code>，并赋予可执行权限：</p>
 <blockquote>
-<p>为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。</p>
-</blockquote>
+<p>为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。</p></blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p /etc/qemu
 </span></span><span class="line"><span class="cl">mv qemu-ifup /etc/qemu <span class="o">&amp;&amp;</span> mv qemu-ifdown /etc/qemu 
 </span></span><span class="line"><span class="cl">sudo chmod +x qemu-ifup
@@ -3312,8 +3301,7 @@
 </span></span></span></code></pre></div><p>第一个参数 <code>-net nic</code> 用于指定上述所说的前端驱动，也就是 Guest 中的实现，这里使用的是 <code>virtio</code> 驱动，这个驱动是 QEMU 中的一个虚拟网卡设备。第二个参数 <code>-net tap</code> 用于指定后端实现，也就是 Host 中的实现，这里使用的是 <code>tap</code> 驱动，它的网卡名称为 <code>tap3</code>，并且执行脚本 <code>/ect/qemu/qemu-ifup</code>。</p>
 <blockquote>
 <p>解释<code>/ect/qemu/qemu-ifup</code>
-该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。</p>
-</blockquote>
+该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。</p></blockquote>
 <h3 id="-device---netdev-recommended">-device &amp; -netdev （Recommended）</h3>
 <p>这是新版本的 QEMU 支持的命令格式，也是 QEMU 未来的发展趋势，我们以以下命令为例，来说明 <code>-device</code> 和 <code>-netdev</code> 的使用方法：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">qemu-system-riscv64 <span class="se">\
@@ -3335,8 +3323,7 @@
 <p>第二个参数 <code>-netdev tap</code> 用于指定后端实现，使用<code>tap</code>方式，并且指定唯一 ID 为<code>tapnet</code>由<code>-device</code>参数中的子参数<code>netdev</code>使用。网卡名称为<code>tap0</code>并且执行脚本 <code>~/qemu-script/qemu-ifup</code>。</p>
 <blockquote>
 <p>-netdev 参数中 id 的使用
--netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 <code>-device</code> 参数中的子参数 <code>netdev</code> 使用，这样 <code>-device</code> 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如<code>-netdev tap,id=test</code>对应<code>-device virtio-net-device,netdev=test</code></p>
-</blockquote>
+-netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 <code>-device</code> 参数中的子参数 <code>netdev</code> 使用，这样 <code>-device</code> 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如<code>-netdev tap,id=test</code>对应<code>-device virtio-net-device,netdev=test</code></p></blockquote>
 <p>更多示例：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">  -device virtio-net-pci,netdev<span class="o">=</span>tapnet,mac<span class="o">=</span>e0:be:03:88:54:e8 <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>  -netdev tap,id<span class="o">=</span>tapnet,script<span class="o">=</span>no,downscript<span class="o">=</span>no <span class="se">\
@@ -3480,8 +3467,7 @@
 </span></span><span class="line"><span class="cl">+----<span class="o">[</span>SHA256<span class="o">]</span>-----+
 </span></span></code></pre></div><p>一直回车确定，生成公私钥，保存在<code>~/.ssh</code>目录下。</p>
 <blockquote>
-<p>我在宿主机上生成的公私钥名称为，分别是<code>host2vm0_id_rsa</code>,<code>host2vm0_id_rsa.pub</code>方便我记忆。如果一直回车，那么生成的公私钥名称为<code>id_rsa</code>，<code>id_rsa.pub</code>。</p>
-</blockquote>
+<p>我在宿主机上生成的公私钥名称为，分别是<code>host2vm0_id_rsa</code>,<code>host2vm0_id_rsa.pub</code>方便我记忆。如果一直回车，那么生成的公私钥名称为<code>id_rsa</code>，<code>id_rsa.pub</code>。</p></blockquote>
 <p>将公钥复制到虚拟机 <code>VM0</code> 上，以当前虚拟机 <code>VM0</code> 的 IP：<code>10.12.193.53</code> 为例。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">$ ssh-copy-id 10.12.193.53
 </span></span><span class="line"><span class="cl"><span class="c1"># 输入密码</span>
@@ -4442,8 +4428,7 @@
       <description>&lt;blockquote&gt;
 &lt;p&gt;1.大部分转载自&lt;a href=&#34;https://abelsu7.top/2019/07/07/kvm-memory-virtualization/&#34;&gt;QEMU 内存虚拟化源码分析 | Keep Coding | 苏易北&lt;/a&gt;
 2.原文源码为 QEMU1.2.0，版本较旧，部分源码内容根据 QEMU6.2 版本修改
-3.部分内容根据自己理解补充添加&lt;/p&gt;
-&lt;/blockquote&gt;
+3.部分内容根据自己理解补充添加&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
 &lt;p&gt;我们知道操作系统给每个进程分配虚拟内存，通过页表映射，变成物理内存进行访问。当有了虚拟机之后，情况会变得更加复杂。因为虚拟机对于物理机来讲是一个进程，但是虚拟机里面也有内核，也有虚拟机里面跑的进程。所以有了虚拟机，内存就变成了四类：&lt;/p&gt;
 &lt;ul&gt;
@@ -4463,8 +4448,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;本来的过程是，客户机要通过 cr3 找到客户机的页表，实现从 GVA 到 GPA 的转换，然后在宿主机上，要通过 cr3 找到宿主机的页表，实现从 HVA 到 HPA 的转换。
 为了实现客户机虚拟地址空间到宿主机物理地址空间的直接映射。客户机中每个进程都有自己的虚拟地址空间，所以 KVM 需要为客户机中的每个进程页表都要维护一套相应的影子页表。
-在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。&lt;/p&gt;
-&lt;/blockquote&gt;
+在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -5782,8 +5766,7 @@
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/html&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;http://xudaxian.fun/2020/09/03/QEMU%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E8%99%9A%E6%8B%9F%E5%8C%96%E5%8F%8A%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&#34;&gt;“QEMU 内存空间虚拟化及内存管理” - B10g | FΓom 许大仙&lt;/a&gt;
 &lt;a href=&#34;https://www.cnblogs.com/LoyenWang/p/13943005.html&#34;&gt;【原创】Linux 虚拟化 KVM-Qemu 分析（五）之内存虚拟化 - LoyenWang - 博客园&lt;/a&gt;
@@ -5793,8 +5776,7 @@
       <content:encoded><![CDATA[<blockquote>
 <p>1.大部分转载自<a href="https://abelsu7.top/2019/07/07/kvm-memory-virtualization/">QEMU 内存虚拟化源码分析 | Keep Coding | 苏易北</a>
 2.原文源码为 QEMU1.2.0，版本较旧，部分源码内容根据 QEMU6.2 版本修改
-3.部分内容根据自己理解补充添加</p>
-</blockquote>
+3.部分内容根据自己理解补充添加</p></blockquote>
 <h2 id="概述">概述</h2>
 <p>我们知道操作系统给每个进程分配虚拟内存，通过页表映射，变成物理内存进行访问。当有了虚拟机之后，情况会变得更加复杂。因为虚拟机对于物理机来讲是一个进程，但是虚拟机里面也有内核，也有虚拟机里面跑的进程。所以有了虚拟机，内存就变成了四类：</p>
 <ul>
@@ -5814,8 +5796,7 @@
 <blockquote>
 <p>本来的过程是，客户机要通过 cr3 找到客户机的页表，实现从 GVA 到 GPA 的转换，然后在宿主机上，要通过 cr3 找到宿主机的页表，实现从 HVA 到 HPA 的转换。
 为了实现客户机虚拟地址空间到宿主机物理地址空间的直接映射。客户机中每个进程都有自己的虚拟地址空间，所以 KVM 需要为客户机中的每个进程页表都要维护一套相应的影子页表。
-在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。</p>
-</blockquote>
+在客户机访问内存时，使用的不是客户机的原来的页表，而是这个页表对应的影子页表，从而实现了从客户机虚拟地址到宿主机物理地址的直接转换。而且，在 TLB 和 CPU 缓存上缓存的是来自影子页表中客户机虚拟地址和宿主机物理地址之间的映射，也因此提高了缓存的效率。</p></blockquote>
 <p>
 
 <!DOCTYPE html>
@@ -7133,8 +7114,7 @@
         });
     </script>
 </body>
-</html></p>
-</blockquote>
+</html></p></blockquote>
 <h2 id="reference">Reference</h2>
 <p><a href="http://xudaxian.fun/2020/09/03/QEMU%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E8%99%9A%E6%8B%9F%E5%8C%96%E5%8F%8A%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">“QEMU 内存空间虚拟化及内存管理” - B10g | FΓom 许大仙</a>
 <a href="https://www.cnblogs.com/LoyenWang/p/13943005.html">【原创】Linux 虚拟化 KVM-Qemu 分析（五）之内存虚拟化 - LoyenWang - 博客园</a>

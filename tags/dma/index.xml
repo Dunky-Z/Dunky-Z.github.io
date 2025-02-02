@@ -4,7 +4,7 @@
     <title>DMA on 夜云泊</title>
     <link>https://lifeislife.cn/tags/dma/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in DMA on 夜云泊</description>
-    <generator>Hugo -- 0.142.0</generator>
+    <generator>Hugo -- 0.143.0</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 31 Aug 2024 17:00:13 +0800</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/dma/index.xml" rel="self" type="application/rss+xml" />
@@ -14,14 +14,12 @@
       <pubDate>Sat, 31 Aug 2024 17:00:13 +0800</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。&lt;/p&gt;
 &lt;p&gt;配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。&lt;/p&gt;
 &lt;p&gt;正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;pcie-中的数据传输方法简介&#34;&gt;PCIe 中的数据传输方法简介&lt;/h2&gt;
 &lt;p&gt;配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
 &lt;p&gt;配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
@@ -233,8 +231,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id=&#34;什么是-dma引言和理论&#34;&gt;什么是 DMA？引言和理论&lt;/h2&gt;
@@ -552,8 +549,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;此图中概述的步骤如下：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。&lt;/li&gt;
@@ -563,8 +559,7 @@
 &lt;/ul&gt;
 &lt;p&gt;尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。&lt;/p&gt;
 &lt;p&gt;最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：&lt;/p&gt;
 &lt;p&gt;
@@ -635,14 +630,12 @@
 &lt;p&gt;请期待未来的帖子！&lt;/p&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p>
-</blockquote>
+<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p></blockquote>
 <p>在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。</p>
 <p>配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。</p>
 <p>正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。</p>
 <blockquote>
-<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p>
-</blockquote>
+<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p></blockquote>
 <h2 id="pcie-中的数据传输方法简介">PCIe 中的数据传输方法简介</h2>
 <p>配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。</p>
 <p>配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。</p>
@@ -854,8 +847,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p>
-</blockquote>
+<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p></blockquote>
 <p>BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。</p>
 <p><strong>设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！</strong></p>
 <h2 id="什么是-dma引言和理论">什么是 DMA？引言和理论</h2>
@@ -1173,8 +1165,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>勘误表：0x32 应该是 32</p>
-</blockquote>
+<p>勘误表：0x32 应该是 32</p></blockquote>
 <p>此图中概述的步骤如下：</p>
 <ul>
 <li>DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。</li>
@@ -1184,8 +1175,7 @@
 </ul>
 <p>尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。</p>
 <blockquote>
-<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p>
-</blockquote>
+<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p></blockquote>
 <p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
 <p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
 <p>
@@ -1262,8 +1252,7 @@
       <pubDate>Sat, 31 Aug 2024 10:00:13 +0800</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part1/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1/&#34;&gt;面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &amp;mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1/&#34;&gt;面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &amp;mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;Hello！我最近一直在与一些朋友和同事交谈，他们有兴趣了解更多关于 PCIe 的信息，但对复杂性或缺乏适合初学者的简单资源感到害怕。我最近经常使用 PCIe，觉得可能值得以博客文章的形式分享我的一些经验。&lt;/p&gt;
 &lt;p&gt;本文主要供具有计算机系统背景并且喜欢亲身实践的人员使用。它也适用于 PCIe 的初学者，或者是对通用概念有所理解但却无法将它们联系在一起的人。&lt;/p&gt;
 &lt;p&gt;第一件事是第一件事：不要被吓倒。有很多首字母缩略词和令人困惑的概念，当你&amp;quot;明白&amp;quot;时，它们就会变得简单。当时要迈出一步，不要害怕提出问题！（如果你想问我问题，可以考虑在 &lt;a href=&#34;https://discord.gg/rtfm&#34;&gt;Reverse Engineering Discord&lt;/a&gt; 的 #hardware 频道@Gbps ping 我）&lt;/p&gt;
@@ -1283,8 +1272,7 @@
 &lt;/ul&gt;
 &lt;p&gt;这并不是对技术或协议的全面研究。要获得真正详尽的了解，你应该参考永远难以捉摸的 PCI-SIG PCI Express 基本规范。这是实现所有 PCIe 代码所依据的规范。目前，在撰写本文时，我们使用的是该规范的 6.0 版，但 3.0 及更高版本的版本都与现代 PCIe 完全相关。如何获得这种昂贵的规格对读者来说是一项练习。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：我有时会在“PCI”和“PCIe”之间来回切换，将技术描述为一种习惯的力量。除非另有说明，否则本系列中的所有内容都是关于 PCIe 的。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：我有时会在“PCI”和“PCIe”之间来回切换，将技术描述为一种习惯的力量。除非另有说明，否则本系列中的所有内容都是关于 PCIe 的。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;什么是-pcie我为什么要关注&#34;&gt;什么是 PCIe，我为什么要关注？&lt;/h2&gt;
 &lt;p&gt;PCIe 代表 Peripheral Component Interconnect Express，外围设备组件互联传输。它于 2003 年首次推出，是从早期 PC 时代越来越流行的旧 PCI 和 PCI-X 规范演变而来的（为 Express 添加了“e”以区分它）。&lt;/p&gt;
 &lt;p&gt;大多数使用计算机的人都认为它是主板上插入显卡或适配器卡的 PCIe 插槽，但 PCIe 不仅仅是这几个扩展 Port。PCIe 是现代 CPU 与连接到系统的几乎所有设备通信的基础。&lt;/p&gt;
@@ -1412,8 +1400,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：你现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然你永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们RC在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：你现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然你永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们RC在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;所以现在我们知道 RC 是 PCIe 树的顶部，现在让我们看一下它下面的所有内容：&lt;/p&gt;
 &lt;p&gt;
 
@@ -1538,8 +1525,7 @@
 &lt;p&gt;敏锐的读者会注意到，我们已经打破了我之前提到的“规则”：与这个独特的总线 0 相连的设备有很多。这是 PCIe 中“点对点”规则的第一个例外，只有在因为总线 0 物理上位于 CPU 的硅片上的情况下才允许这样做。也就是说，这些设备之间没有电气路径，这是一个想象中的连接。所有这些设备都存在于 CPU 封装内，并使用极高速电气互连进行路由。这些处理器互连使用的是特定于 CPU 供应商的内部协议，尽管这些协议并未公开文档，但我们仍然以 PCIe 的“语言”与它进行通信。这些端点（标记为绿色），由于其特殊性质，将被赋予一个特殊的名称：根复合集成端点（RC Integrated Endpoints，简称 RCIE），因为它们直接集成在 RC 上。&lt;/p&gt;
 &lt;p&gt;这并不奇怪，你会期望集成 UHD 图形等设备将物理位于 CPU 上（因为它是 CPU 规格的一部分）。但是，我们可以通过观察其他 RCIE 来了解系统的一些更有趣的拓扑结构，例如这里也存在 RAM 控制器（与内存的 DRAM DIMM 通信的硅）和 USB 控制器（与外部 USB 设备通信的硅）。这就是为什么某些 CPU 仅支持某些类型的 RAM 和 USB 规范的原因——因为通信的设备在物理上位于 CPU 上，并且仅支持它们在物理上创建时要支持的规范。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;更新：这种说法是不正确的。一些 IO 控制器仍然可以在称为 PCH（Intel）或也称为芯片组（AMD）的分立芯片上找到，该芯片位于 CPU 附近，并且具有高速链路，使其看起来像是集成到 CPU 芯片中。上面这句话错误地说你可以在物理 CPU 上找到 USB 控制器，而它更有可能在“芯片组”上。但是，为了提高速度，与 RAM 通信的内存控制器位于 CPU 芯片上。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;更新：这种说法是不正确的。一些 IO 控制器仍然可以在称为 PCH（Intel）或也称为芯片组（AMD）的分立芯片上找到，该芯片位于 CPU 附近，并且具有高速链路，使其看起来像是集成到 CPU 芯片中。上面这句话错误地说你可以在物理 CPU 上找到 USB 控制器，而它更有可能在“芯片组”上。但是，为了提高速度，与 RAM 通信的内存控制器位于 CPU 芯片上。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;此图是层次结构第一级的最小化版本，但现在让我们通过在设备管理器中展开其余的 Root Ports 来构建层次结构的其余部分。&lt;/p&gt;
 &lt;p&gt;这是填充的图表的样子：&lt;/p&gt;
 &lt;p&gt;
@@ -1581,8 +1567,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;这些 Root Port 物理上位于 CPU 上，但连接到它的设备并不在其中。这台机器的外部 PCIe 插槽上连接了 3 个设备：一块 NVIDIA Quadro P400 图形卡和两个 NVMe 驱动器。通过进入设备管理器中每个设备的属性，我们可以获取并更新它们在视觉上的 BDF(总线、设备、功能) 信息。&lt;/p&gt;
 &lt;p&gt;
 
@@ -1627,8 +1612,7 @@
 &lt;h2 id=&#34;从-windbg-探索-pcie-层次结构和设备&#34;&gt;从 WinDbg 探索 PCIe 层次结构和设备&lt;/h2&gt;
 &lt;p&gt;到目前为止，我们已经通过使用 Device Manager 的“View by Connection”功能看到了标准的 PCI 总线层次结构。还有另一种更详细的方法来调查 PCIe 层次结构：使用 WinDbg 提供的可靠内核调试扩展。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：我们假设你了解如何在一台机器上设置内核调试器来继续下面的操作。你也可以用 LiveKD 来完成大部分练习。如果你并不了解如何设置，可以参考微软提供的指南：&lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-a-network-debugging-connection-automatically&#34;&gt;设置 KDNET&lt;/a&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：我们假设你了解如何在一台机器上设置内核调试器来继续下面的操作。你也可以用 LiveKD 来完成大部分练习。如果你并不了解如何设置，可以参考微软提供的指南：&lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-a-network-debugging-connection-automatically&#34;&gt;设置 KDNET&lt;/a&gt;。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;我已经连接到了一台与上述使用的机器不同的新测试机。我们将通过调试器的输出，来演练如何绘制这台机器的层次结构图。我们也将学习如何通过其配置内存来查找设备的信息。&lt;/p&gt;
 &lt;p&gt;放入调试器后，我们将使用！pcitree 命令开始。这将转储系统上列举的 PCI 设备的文本树形图。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;8: kd&amp;gt; !pcitree
@@ -1675,8 +1659,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;1f, &lt;span class=&#34;nv&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;2&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; 80868d02 devext 0xffffdc89ba03a4c0 devstack 0xffffdc89ba03a370 &lt;span class=&#34;m&#34;&gt;0106&lt;/span&gt; Mass Storage Controller/Unknown Sub Class
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;1f, &lt;span class=&#34;nv&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; 80868d22 devext 0xffffdc89ba03c4c0 devstack 0xffffdc89ba03c370 0c05 Serial Bus Controller/Unknown Sub Class
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;注意：如果你遇到“无法获取 PciFdoExtensionListHead 地址”的错误，确保你的符号设置正确，并执行.reload pci.sys 操作来重新加载 PCI 的符号。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：如果你遇到“无法获取 PciFdoExtensionListHead 地址”的错误，确保你的符号设置正确，并执行.reload pci.sys 操作来重新加载 PCI 的符号。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;当显示此输出时，由于空格的格式设置方式，可能很难直观地看到“tree”。解释此输出的方法是查看 Bus 0x 文本的缩进。任何比 Bus 0x 行进一步缩进一组空格的东西都是该总线上的设备。我们可以看到，在器件的正下方还有其他 Bus 0x 线路。这意味着 Bus 0x 线上方的器件正在向我们公开一条新总线，并且总线编号在那里给出。&lt;/p&gt;
 &lt;p&gt;让我们看一下此输出的特定部分：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Bus 0x0 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;FDO Ext ffffdc89b9f75920&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
@@ -1732,8 +1715,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：这只是一个巧合，即公交号恰好与桥梁/PCI 的设备编号匹配到 PCI 端口。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：这只是一个巧合，即公交号恰好与桥梁/PCI 的设备编号匹配到 PCI 端口。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;如你现在所知，标记为 Bridge/PCI to PCI 的设备实际上是 Root Port，而总线 2 上的设备实际上是一个多功能设备。与设备管理器不同，我们看不到！pcitree 中的设备真实名称。相反，我们只得到了一个通用的 PCI 名称，用于设备“类型”将自己宣传为什么。这是因为设备管理器 从驱动程序读取设备名称，而不是直接从 PCI 读取设备名称。&lt;/p&gt;
 &lt;p&gt;要了解更多关于这个显示控制器设备的信息，我们可以使用命令 &lt;code&gt;！devext [pointer]&lt;/code&gt;，其中 &lt;code&gt;[pointer]&lt;/code&gt; 是布局中单词 &lt;code&gt;devext&lt;/code&gt; 后面的值。在本例中，它是：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;0,  &lt;span class=&#34;nv&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;0&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; 10de13bb devext 0xffffdc89ba04f270 devstack 0xffffdc89ba04f120 &lt;span class=&#34;m&#34;&gt;0300&lt;/span&gt; Display Controller/VGA
@@ -1969,8 +1951,7 @@
 &lt;li&gt;Device Memory（设备内存） - 在读取或写入时与系统上的设备“对话”的地址。这里的关键词是“对话”。它不会在设备上存储内存，也不会检索设备上的内存（尽管设备可能同时能够同时检索两者）。你可能正在与之通信的地址甚至可能根本不是内存，而是一个更抽象的“device register” ，用于配置设备的内部工作。这种访问会发生什么取决于设备。你所做的只是与设备通信。你通常会看到这称为 MMIO，它全称是 Memory-Mapped I/O。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：每当设备不响应设备内存区域中访问的地址时，PCI 的设备内存将始终读取“全 1”或“所有 FF”。这是了解设备何时实际响应的便捷方法。如果你看到所有 FF，则表示你正在读取无效的设备地址。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：每当设备不响应设备内存区域中访问的地址时，PCI 的设备内存将始终读取“全 1”或“所有 FF”。这是了解设备何时实际响应的便捷方法。如果你看到所有 FF，则表示你正在读取无效的设备地址。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;初学者认为所有物理内存都是 RAM，这是错误的。当软件与 PCI 区域中的 PCI 设备通信时，它不会从 RAM 读取和写入数据。相反，该设备从 RC 接收一个数据包（TLP，传输层数据包），当 PCI 区域内的地址被读/写时，你的 CPU 会立即自动生成该数据包。你无需在软件中创建这些数据包，所有这些数据包都是在访问此内存后立即完全在后台生成的。在软件中，你甚至无法查看或捕获这些数据包，而需要一个特殊的硬件测试设备来拦截和查看正在发送的数据包。稍后会详细介绍。&lt;/p&gt;
 &lt;p&gt;如果有帮助，请将物理内存视为设备的映射。RAM 是为你映射到物理内存中的设备。PCI 还会自动为你映射区域。尽管它们截然不同且行为也非常不同，但它们在软件中看起来是相同的。&lt;/p&gt;
 &lt;p&gt;在下图中，我们可以看到典型系统如何将虚拟内存映射到物理内存。请注意，有两个 RAM 区域和两个 PCI 内存区域。这是因为某些较旧的 PCI 设备只能寻址 32 位内存。因此，如果你的 RAM 不适合 4GB 以下的地址窗口，则一些 RAM 会上移到 4GB 以上。由于你的处理器支持 64 位地址，因此这不是问题。此外，在 4GB 行上方为支持 64 位地址的 PCI 设备创建第二个窗口。由于 4GB 区域可能非常有限，因此设备最好在 4GB 以上移动尽可能多的内存，以免弄乱下面的空间。&lt;/p&gt;
@@ -2015,11 +1996,9 @@
 &lt;p&gt;首先，让我们来谈谈我们已经见过存储器：&lt;strong&gt;配置空间&lt;/strong&gt;（Configuration Space）。&lt;/p&gt;
 &lt;p&gt;配置空间位于一个名为 ECAM（Extended Configuration Access Management，扩展配置访问管理）的内存部分。因为它是一种设备内存，所以要从内核（使用虚拟内存）访问这段内存，内核必须请求内存管理器将这部分物理内存映射到一个虚拟地址上。然后，软件指令可以使用映射的虚拟地址来从物理地址读取和写入。在 Windows 上，定位和映射这段内存的工作部分由&lt;code&gt;pci.sys&lt;/code&gt;处理，部分由&lt;code&gt;acpi.sys&lt;/code&gt;处理，还有部分由内核（具体来说是 HAL）处理。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：通常，在 Windows 中映射设备内存的方式是通过 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmmapiospaceex&#34;&gt;MmMapIoSpaceEx&lt;/a&gt;，这是驱动程序可用于映射物理设备内存的 API。但是，为了进行配置空间访问，软件必须使用 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halgetbusdatabyoffset&#34;&gt;HalGetBusDataByOffset&lt;/a&gt; 和 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halsetbusdatabyoffset&#34;&gt;HalSetBusDataByOffset&lt;/a&gt; 来确保 &lt;code&gt;pci.sys&lt;/code&gt; 的内部状态与你正在执行的配置空间读/写保持同步。如果你尝试自己映射和更改配置空间，则可能会使 &lt;code&gt;pci.sys&lt;/code&gt; 状态不同步并导致蓝屏死机。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：通常，在 Windows 中映射设备内存的方式是通过 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmmapiospaceex&#34;&gt;MmMapIoSpaceEx&lt;/a&gt;，这是驱动程序可用于映射物理设备内存的 API。但是，为了进行配置空间访问，软件必须使用 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halgetbusdatabyoffset&#34;&gt;HalGetBusDataByOffset&lt;/a&gt; 和 &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halsetbusdatabyoffset&#34;&gt;HalSetBusDataByOffset&lt;/a&gt; 来确保 &lt;code&gt;pci.sys&lt;/code&gt; 的内部状态与你正在执行的配置空间读/写保持同步。如果你尝试自己映射和更改配置空间，则可能会使 &lt;code&gt;pci.sys&lt;/code&gt; 状态不同步并导致蓝屏死机。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;因此，为了进行配置空间访问，内核必须将配置空间（ECAM）映射到虚拟内存。这是这样的事情会是什么样子：&lt;/p&gt;
 &lt;p&gt;
 
@@ -2319,8 +2298,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于这个系统，ECAM 位于地址：&lt;code&gt;0xD0000000&lt;/code&gt;。（请别忘了以小端序来读取这个地址）&lt;/p&gt;
 &lt;p&gt;为了验证我们得到了正确的地址，让我们读取&lt;code&gt;00:00.0&lt;/code&gt;的供应商 ID，这也是 ECAM 的前两个字节。我们将使用&lt;code&gt;!dw&lt;/code&gt;命令来完成这个操作，该命令代表的&lt;code&gt;dump physical word&lt;/code&gt;（感叹号代表物理）。这个命令要求你指定一个缓存类型，在我们的情况下，总是使用&lt;code&gt;[uc]&lt;/code&gt;或者说未缓存。它还提供了一个长度，这是由 L1 指定要读取的 word 的数量。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：请务必始终将目标设备内存的大小与我们从软件中读取的大小相匹配。这意味着，如果我们要读取的值是 16 位值（如供应商 ID），则必须执行 16 位读取。执行 32 位读取可能会更改设备响应的结果。对于配置空间，我们可以读取供应商 ID 的更大大小，但并非在所有情况下都是如此。最好养成将读取大小与目标大小匹配的习惯，以避免任何意外结果。请记住：设备内存不是 RAM。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：请务必始终将目标设备内存的大小与我们从软件中读取的大小相匹配。这意味着，如果我们要读取的值是 16 位值（如供应商 ID），则必须执行 16 位读取。执行 32 位读取可能会更改设备响应的结果。对于配置空间，我们可以读取供应商 ID 的更大大小，但并非在所有情况下都是如此。最好养成将读取大小与目标大小匹配的习惯，以避免任何意外结果。请记住：设备内存不是 RAM。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;综上所述，我们读取 &lt;code&gt;00：00.0&lt;/code&gt; 的 VendorID，如下所示：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;8: kd&amp;gt; !dw &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;uc&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; D0000000 L1
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#d0000000 8086&lt;/span&gt;
@@ -2350,8 +2328,7 @@
 &lt;p&gt;&lt;a href=&#34;https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/&#34;&gt;单击此处查看第 2 部分！&lt;/a&gt;&lt;/p&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>本文翻译自：<a href="https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1/">面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul</a></p>
-</blockquote>
+<p>本文翻译自：<a href="https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1/">面向 Windows 初学者的 PCIe 实用教程（第 1 部分）– 灵魂的逆向工程 &mdash; A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1) – Reversing Engineering for the Soul</a></p></blockquote>
 <p>Hello！我最近一直在与一些朋友和同事交谈，他们有兴趣了解更多关于 PCIe 的信息，但对复杂性或缺乏适合初学者的简单资源感到害怕。我最近经常使用 PCIe，觉得可能值得以博客文章的形式分享我的一些经验。</p>
 <p>本文主要供具有计算机系统背景并且喜欢亲身实践的人员使用。它也适用于 PCIe 的初学者，或者是对通用概念有所理解但却无法将它们联系在一起的人。</p>
 <p>第一件事是第一件事：不要被吓倒。有很多首字母缩略词和令人困惑的概念，当你&quot;明白&quot;时，它们就会变得简单。当时要迈出一步，不要害怕提出问题！（如果你想问我问题，可以考虑在 <a href="https://discord.gg/rtfm">Reverse Engineering Discord</a> 的 #hardware 频道@Gbps ping 我）</p>
@@ -2371,8 +2348,7 @@
 </ul>
 <p>这并不是对技术或协议的全面研究。要获得真正详尽的了解，你应该参考永远难以捉摸的 PCI-SIG PCI Express 基本规范。这是实现所有 PCIe 代码所依据的规范。目前，在撰写本文时，我们使用的是该规范的 6.0 版，但 3.0 及更高版本的版本都与现代 PCIe 完全相关。如何获得这种昂贵的规格对读者来说是一项练习。</p>
 <blockquote>
-<p>注意：我有时会在“PCI”和“PCIe”之间来回切换，将技术描述为一种习惯的力量。除非另有说明，否则本系列中的所有内容都是关于 PCIe 的。</p>
-</blockquote>
+<p>注意：我有时会在“PCI”和“PCIe”之间来回切换，将技术描述为一种习惯的力量。除非另有说明，否则本系列中的所有内容都是关于 PCIe 的。</p></blockquote>
 <h2 id="什么是-pcie我为什么要关注">什么是 PCIe，我为什么要关注？</h2>
 <p>PCIe 代表 Peripheral Component Interconnect Express，外围设备组件互联传输。它于 2003 年首次推出，是从早期 PC 时代越来越流行的旧 PCI 和 PCI-X 规范演变而来的（为 Express 添加了“e”以区分它）。</p>
 <p>大多数使用计算机的人都认为它是主板上插入显卡或适配器卡的 PCIe 插槽，但 PCIe 不仅仅是这几个扩展 Port。PCIe 是现代 CPU 与连接到系统的几乎所有设备通信的基础。</p>
@@ -2500,8 +2476,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>注意：你现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然你永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们RC在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。</p>
-</blockquote>
+<p>注意：你现在可能会问：“如果 PCI 主导了一切，为什么 PCI 根复合物不在树的顶部？答案是由于 PCIe 总线不是启动期间固件提供的系统初始布局。相反，ACPI（高级配置和电源接口）是描述 PCIe 到操作系统存在的东西。虽然你永远不会在 PC 中看到它，但可以描述一个没有 PCI 总线的系统，所有内容都完全由 ACPI 提供。我们稍后会详细讨论 ACPI，但现在不要太担心这个，只要知道 ACPI 是固件告诉我们RC在哪里的方式，然后帮助操作系统枚举树中的 PCI 设备。</p></blockquote>
 <p>所以现在我们知道 RC 是 PCIe 树的顶部，现在让我们看一下它下面的所有内容：</p>
 <p>
 
@@ -2626,8 +2601,7 @@
 <p>敏锐的读者会注意到，我们已经打破了我之前提到的“规则”：与这个独特的总线 0 相连的设备有很多。这是 PCIe 中“点对点”规则的第一个例外，只有在因为总线 0 物理上位于 CPU 的硅片上的情况下才允许这样做。也就是说，这些设备之间没有电气路径，这是一个想象中的连接。所有这些设备都存在于 CPU 封装内，并使用极高速电气互连进行路由。这些处理器互连使用的是特定于 CPU 供应商的内部协议，尽管这些协议并未公开文档，但我们仍然以 PCIe 的“语言”与它进行通信。这些端点（标记为绿色），由于其特殊性质，将被赋予一个特殊的名称：根复合集成端点（RC Integrated Endpoints，简称 RCIE），因为它们直接集成在 RC 上。</p>
 <p>这并不奇怪，你会期望集成 UHD 图形等设备将物理位于 CPU 上（因为它是 CPU 规格的一部分）。但是，我们可以通过观察其他 RCIE 来了解系统的一些更有趣的拓扑结构，例如这里也存在 RAM 控制器（与内存的 DRAM DIMM 通信的硅）和 USB 控制器（与外部 USB 设备通信的硅）。这就是为什么某些 CPU 仅支持某些类型的 RAM 和 USB 规范的原因——因为通信的设备在物理上位于 CPU 上，并且仅支持它们在物理上创建时要支持的规范。</p>
 <blockquote>
-<p>更新：这种说法是不正确的。一些 IO 控制器仍然可以在称为 PCH（Intel）或也称为芯片组（AMD）的分立芯片上找到，该芯片位于 CPU 附近，并且具有高速链路，使其看起来像是集成到 CPU 芯片中。上面这句话错误地说你可以在物理 CPU 上找到 USB 控制器，而它更有可能在“芯片组”上。但是，为了提高速度，与 RAM 通信的内存控制器位于 CPU 芯片上。</p>
-</blockquote>
+<p>更新：这种说法是不正确的。一些 IO 控制器仍然可以在称为 PCH（Intel）或也称为芯片组（AMD）的分立芯片上找到，该芯片位于 CPU 附近，并且具有高速链路，使其看起来像是集成到 CPU 芯片中。上面这句话错误地说你可以在物理 CPU 上找到 USB 控制器，而它更有可能在“芯片组”上。但是，为了提高速度，与 RAM 通信的内存控制器位于 CPU 芯片上。</p></blockquote>
 <p>此图是层次结构第一级的最小化版本，但现在让我们通过在设备管理器中展开其余的 Root Ports 来构建层次结构的其余部分。</p>
 <p>这是填充的图表的样子：</p>
 <p>
@@ -2669,8 +2643,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。</p>
-</blockquote>
+<p>注意：我已经标记了 UHD Graphics 设备和总线 0 的 BDF。</p></blockquote>
 <p>这些 Root Port 物理上位于 CPU 上，但连接到它的设备并不在其中。这台机器的外部 PCIe 插槽上连接了 3 个设备：一块 NVIDIA Quadro P400 图形卡和两个 NVMe 驱动器。通过进入设备管理器中每个设备的属性，我们可以获取并更新它们在视觉上的 BDF(总线、设备、功能) 信息。</p>
 <p>
 
@@ -2715,8 +2688,7 @@
 <h2 id="从-windbg-探索-pcie-层次结构和设备">从 WinDbg 探索 PCIe 层次结构和设备</h2>
 <p>到目前为止，我们已经通过使用 Device Manager 的“View by Connection”功能看到了标准的 PCI 总线层次结构。还有另一种更详细的方法来调查 PCIe 层次结构：使用 WinDbg 提供的可靠内核调试扩展。</p>
 <blockquote>
-<p>注意：我们假设你了解如何在一台机器上设置内核调试器来继续下面的操作。你也可以用 LiveKD 来完成大部分练习。如果你并不了解如何设置，可以参考微软提供的指南：<a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-a-network-debugging-connection-automatically">设置 KDNET</a>。</p>
-</blockquote>
+<p>注意：我们假设你了解如何在一台机器上设置内核调试器来继续下面的操作。你也可以用 LiveKD 来完成大部分练习。如果你并不了解如何设置，可以参考微软提供的指南：<a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/setting-up-a-network-debugging-connection-automatically">设置 KDNET</a>。</p></blockquote>
 <p>我已经连接到了一台与上述使用的机器不同的新测试机。我们将通过调试器的输出，来演练如何绘制这台机器的层次结构图。我们也将学习如何通过其配置内存来查找设备的信息。</p>
 <p>放入调试器后，我们将使用！pcitree 命令开始。这将转储系统上列举的 PCI 设备的文本树形图。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !pcitree
@@ -2763,8 +2735,7 @@
 </span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1f, <span class="nv">f</span><span class="o">=</span>2<span class="o">)</span> 80868d02 devext 0xffffdc89ba03a4c0 devstack 0xffffdc89ba03a370 <span class="m">0106</span> Mass Storage Controller/Unknown Sub Class
 </span></span><span class="line"><span class="cl">  <span class="o">(</span><span class="nv">d</span><span class="o">=</span>1f, <span class="nv">f</span><span class="o">=</span>3<span class="o">)</span> 80868d22 devext 0xffffdc89ba03c4c0 devstack 0xffffdc89ba03c370 0c05 Serial Bus Controller/Unknown Sub Class
 </span></span></code></pre></div><blockquote>
-<p>注意：如果你遇到“无法获取 PciFdoExtensionListHead 地址”的错误，确保你的符号设置正确，并执行.reload pci.sys 操作来重新加载 PCI 的符号。</p>
-</blockquote>
+<p>注意：如果你遇到“无法获取 PciFdoExtensionListHead 地址”的错误，确保你的符号设置正确，并执行.reload pci.sys 操作来重新加载 PCI 的符号。</p></blockquote>
 <p>当显示此输出时，由于空格的格式设置方式，可能很难直观地看到“tree”。解释此输出的方法是查看 Bus 0x 文本的缩进。任何比 Bus 0x 行进一步缩进一组空格的东西都是该总线上的设备。我们可以看到，在器件的正下方还有其他 Bus 0x 线路。这意味着 Bus 0x 线上方的器件正在向我们公开一条新总线，并且总线编号在那里给出。</p>
 <p>让我们看一下此输出的特定部分：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Bus 0x0 <span class="o">(</span>FDO Ext ffffdc89b9f75920<span class="o">)</span>
@@ -2820,8 +2791,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>注意：这只是一个巧合，即公交号恰好与桥梁/PCI 的设备编号匹配到 PCI 端口。</p>
-</blockquote>
+<p>注意：这只是一个巧合，即公交号恰好与桥梁/PCI 的设备编号匹配到 PCI 端口。</p></blockquote>
 <p>如你现在所知，标记为 Bridge/PCI to PCI 的设备实际上是 Root Port，而总线 2 上的设备实际上是一个多功能设备。与设备管理器不同，我们看不到！pcitree 中的设备真实名称。相反，我们只得到了一个通用的 PCI 名称，用于设备“类型”将自己宣传为什么。这是因为设备管理器 从驱动程序读取设备名称，而不是直接从 PCI 读取设备名称。</p>
 <p>要了解更多关于这个显示控制器设备的信息，我们可以使用命令 <code>！devext [pointer]</code>，其中 <code>[pointer]</code> 是布局中单词 <code>devext</code> 后面的值。在本例中，它是：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span><span class="nv">d</span><span class="o">=</span>0,  <span class="nv">f</span><span class="o">=</span>0<span class="o">)</span> 10de13bb devext 0xffffdc89ba04f270 devstack 0xffffdc89ba04f120 <span class="m">0300</span> Display Controller/VGA
@@ -3057,8 +3027,7 @@
 <li>Device Memory（设备内存） - 在读取或写入时与系统上的设备“对话”的地址。这里的关键词是“对话”。它不会在设备上存储内存，也不会检索设备上的内存（尽管设备可能同时能够同时检索两者）。你可能正在与之通信的地址甚至可能根本不是内存，而是一个更抽象的“device register” ，用于配置设备的内部工作。这种访问会发生什么取决于设备。你所做的只是与设备通信。你通常会看到这称为 MMIO，它全称是 Memory-Mapped I/O。</li>
 </ul>
 <blockquote>
-<p>注意：每当设备不响应设备内存区域中访问的地址时，PCI 的设备内存将始终读取“全 1”或“所有 FF”。这是了解设备何时实际响应的便捷方法。如果你看到所有 FF，则表示你正在读取无效的设备地址。</p>
-</blockquote>
+<p>注意：每当设备不响应设备内存区域中访问的地址时，PCI 的设备内存将始终读取“全 1”或“所有 FF”。这是了解设备何时实际响应的便捷方法。如果你看到所有 FF，则表示你正在读取无效的设备地址。</p></blockquote>
 <p>初学者认为所有物理内存都是 RAM，这是错误的。当软件与 PCI 区域中的 PCI 设备通信时，它不会从 RAM 读取和写入数据。相反，该设备从 RC 接收一个数据包（TLP，传输层数据包），当 PCI 区域内的地址被读/写时，你的 CPU 会立即自动生成该数据包。你无需在软件中创建这些数据包，所有这些数据包都是在访问此内存后立即完全在后台生成的。在软件中，你甚至无法查看或捕获这些数据包，而需要一个特殊的硬件测试设备来拦截和查看正在发送的数据包。稍后会详细介绍。</p>
 <p>如果有帮助，请将物理内存视为设备的映射。RAM 是为你映射到物理内存中的设备。PCI 还会自动为你映射区域。尽管它们截然不同且行为也非常不同，但它们在软件中看起来是相同的。</p>
 <p>在下图中，我们可以看到典型系统如何将虚拟内存映射到物理内存。请注意，有两个 RAM 区域和两个 PCI 内存区域。这是因为某些较旧的 PCI 设备只能寻址 32 位内存。因此，如果你的 RAM 不适合 4GB 以下的地址窗口，则一些 RAM 会上移到 4GB 以上。由于你的处理器支持 64 位地址，因此这不是问题。此外，在 4GB 行上方为支持 64 位地址的 PCI 设备创建第二个窗口。由于 4GB 区域可能非常有限，因此设备最好在 4GB 以上移动尽可能多的内存，以免弄乱下面的空间。</p>
@@ -3103,11 +3072,9 @@
 <p>首先，让我们来谈谈我们已经见过存储器：<strong>配置空间</strong>（Configuration Space）。</p>
 <p>配置空间位于一个名为 ECAM（Extended Configuration Access Management，扩展配置访问管理）的内存部分。因为它是一种设备内存，所以要从内核（使用虚拟内存）访问这段内存，内核必须请求内存管理器将这部分物理内存映射到一个虚拟地址上。然后，软件指令可以使用映射的虚拟地址来从物理地址读取和写入。在 Windows 上，定位和映射这段内存的工作部分由<code>pci.sys</code>处理，部分由<code>acpi.sys</code>处理，还有部分由内核（具体来说是 HAL）处理。</p>
 <blockquote>
-<p>注意：通常，在 Windows 中映射设备内存的方式是通过 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmmapiospaceex">MmMapIoSpaceEx</a>，这是驱动程序可用于映射物理设备内存的 API。但是，为了进行配置空间访问，软件必须使用 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halgetbusdatabyoffset">HalGetBusDataByOffset</a> 和 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halsetbusdatabyoffset">HalSetBusDataByOffset</a> 来确保 <code>pci.sys</code> 的内部状态与你正在执行的配置空间读/写保持同步。如果你尝试自己映射和更改配置空间，则可能会使 <code>pci.sys</code> 状态不同步并导致蓝屏死机。</p>
-</blockquote>
+<p>注意：通常，在 Windows 中映射设备内存的方式是通过 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmmapiospaceex">MmMapIoSpaceEx</a>，这是驱动程序可用于映射物理设备内存的 API。但是，为了进行配置空间访问，软件必须使用 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halgetbusdatabyoffset">HalGetBusDataByOffset</a> 和 <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-halsetbusdatabyoffset">HalSetBusDataByOffset</a> 来确保 <code>pci.sys</code> 的内部状态与你正在执行的配置空间读/写保持同步。如果你尝试自己映射和更改配置空间，则可能会使 <code>pci.sys</code> 状态不同步并导致蓝屏死机。</p></blockquote>
 <blockquote>
-<p>注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。</p>
-</blockquote>
+<p>注意：ECAM/PCI 区域在物理内存中的位置取决于平台。引导时的固件将分配系统物理内存的所有特殊区域。然后，固件会在引导期间向操作系统公布这些区域的位置。在 x86-64 系统上，ECAM 区域将使用称为 MCFG 的表（结构）通过 ACPI 从固件进行通信。现在知道使用什么特定协议来检索此信息不是很重要吗，只需了解操作系统从固件中检索这些区域的地址，固件决定了将它们放在哪里。</p></blockquote>
 <p>因此，为了进行配置空间访问，内核必须将配置空间（ECAM）映射到虚拟内存。这是这样的事情会是什么样子：</p>
 <p>
 
@@ -3407,8 +3374,7 @@
 </span></span></code></pre></div><p>对于这个系统，ECAM 位于地址：<code>0xD0000000</code>。（请别忘了以小端序来读取这个地址）</p>
 <p>为了验证我们得到了正确的地址，让我们读取<code>00:00.0</code>的供应商 ID，这也是 ECAM 的前两个字节。我们将使用<code>!dw</code>命令来完成这个操作，该命令代表的<code>dump physical word</code>（感叹号代表物理）。这个命令要求你指定一个缓存类型，在我们的情况下，总是使用<code>[uc]</code>或者说未缓存。它还提供了一个长度，这是由 L1 指定要读取的 word 的数量。</p>
 <blockquote>
-<p>注意：请务必始终将目标设备内存的大小与我们从软件中读取的大小相匹配。这意味着，如果我们要读取的值是 16 位值（如供应商 ID），则必须执行 16 位读取。执行 32 位读取可能会更改设备响应的结果。对于配置空间，我们可以读取供应商 ID 的更大大小，但并非在所有情况下都是如此。最好养成将读取大小与目标大小匹配的习惯，以避免任何意外结果。请记住：设备内存不是 RAM。</p>
-</blockquote>
+<p>注意：请务必始终将目标设备内存的大小与我们从软件中读取的大小相匹配。这意味着，如果我们要读取的值是 16 位值（如供应商 ID），则必须执行 16 位读取。执行 32 位读取可能会更改设备响应的结果。对于配置空间，我们可以读取供应商 ID 的更大大小，但并非在所有情况下都是如此。最好养成将读取大小与目标大小匹配的习惯，以避免任何意外结果。请记住：设备内存不是 RAM。</p></blockquote>
 <p>综上所述，我们读取 <code>00：00.0</code> 的 VendorID，如下所示：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">8: kd&gt; !dw <span class="o">[</span>uc<span class="o">]</span> D0000000 L1
 </span></span><span class="line"><span class="cl"><span class="c1">#d0000000 8086</span>
@@ -3721,8 +3687,7 @@ A：如果使用了高位作索引，那么一些连续的内存块就会映射�
         });
     &lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/html&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h5 id=&#34;直接映射高速缓存-direct-mapped-cache&#34;&gt;直接映射高速缓存 Direct Mapped Cache&lt;/h5&gt;
 &lt;p&gt;根据每个组的缓存行数 $E$ 的不同，Cache 被分为不同的类。每个组只有一行$E=1$的高速缓存被称为&lt;strong&gt;直接映射高速缓存&lt;/strong&gt;(direct-mapped cache)。&lt;/p&gt;
 &lt;p&gt;
@@ -5008,8 +4973,7 @@ A：如果使用了高位作索引，那么一些连续的内存块就会映射�
         });
     </script>
 </body>
-</html></p>
-</blockquote>
+</html></p></blockquote>
 <h5 id="直接映射高速缓存-direct-mapped-cache">直接映射高速缓存 Direct Mapped Cache</h5>
 <p>根据每个组的缓存行数 $E$ 的不同，Cache 被分为不同的类。每个组只有一行$E=1$的高速缓存被称为<strong>直接映射高速缓存</strong>(direct-mapped cache)。</p>
 <p>

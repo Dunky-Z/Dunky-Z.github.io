@@ -4,7 +4,7 @@
     <title>嵌入式开发 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 嵌入式开发 on 夜云泊</description>
-    <generator>Hugo -- 0.142.0</generator>
+    <generator>Hugo -- 0.143.0</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 31 Aug 2024 17:00:13 +0800</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/index.xml" rel="self" type="application/rss+xml" />
@@ -14,14 +14,12 @@
       <pubDate>Sat, 31 Aug 2024 17:00:13 +0800</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。&lt;/p&gt;
 &lt;p&gt;配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。&lt;/p&gt;
 &lt;p&gt;正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;pcie-中的数据传输方法简介&#34;&gt;PCIe 中的数据传输方法简介&lt;/h2&gt;
 &lt;p&gt;配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
 &lt;p&gt;配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
@@ -233,8 +231,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id=&#34;什么是-dma引言和理论&#34;&gt;什么是 DMA？引言和理论&lt;/h2&gt;
@@ -552,8 +549,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;此图中概述的步骤如下：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。&lt;/li&gt;
@@ -563,8 +559,7 @@
 &lt;/ul&gt;
 &lt;p&gt;尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。&lt;/p&gt;
 &lt;p&gt;最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：&lt;/p&gt;
 &lt;p&gt;
@@ -635,14 +630,12 @@
 &lt;p&gt;请期待未来的帖子！&lt;/p&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p>
-</blockquote>
+<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p></blockquote>
 <p>在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。</p>
 <p>配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。</p>
 <p>正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。</p>
 <blockquote>
-<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p>
-</blockquote>
+<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p></blockquote>
 <h2 id="pcie-中的数据传输方法简介">PCIe 中的数据传输方法简介</h2>
 <p>配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。</p>
 <p>配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。</p>
@@ -854,8 +847,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p>
-</blockquote>
+<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p></blockquote>
 <p>BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。</p>
 <p><strong>设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！</strong></p>
 <h2 id="什么是-dma引言和理论">什么是 DMA？引言和理论</h2>
@@ -1173,8 +1165,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>勘误表：0x32 应该是 32</p>
-</blockquote>
+<p>勘误表：0x32 应该是 32</p></blockquote>
 <p>此图中概述的步骤如下：</p>
 <ul>
 <li>DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。</li>
@@ -1184,8 +1175,7 @@
 </ul>
 <p>尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。</p>
 <blockquote>
-<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p>
-</blockquote>
+<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p></blockquote>
 <p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
 <p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
 <p>
@@ -2023,8 +2013,7 @@
 &lt;p&gt;网卡的IP要和你Window主机自己的IP在一个网段，不能盲目设置为手册里的&lt;code&gt;192.168.5.10&lt;/code&gt;，这样会导致Windows主机无法访问开发板。可以通过在Windows命令行输入&lt;code&gt;ipconfig&lt;/code&gt;查看Windows主机的IP地址。一般来说，如果没有设置过路由器，默认都是在&lt;code&gt;192.168.1.x&lt;/code&gt;网段。那么网关通常就是这个网段的第一个地址，也就是&lt;code&gt;192.168.1.1&lt;/code&gt;，这也是路由器的地址。&lt;/p&gt;
 &lt;p&gt;如果你配置完网卡以及开发板的IP后能正常相互ping通，那么说明网络配置成功。如果你很不巧和我一样，USB网卡一直无法通过DHCP自动获取IP地址，并且配置完静态IP后只能单侧ping通，那么也可以和我一样将USB网卡和主机的WIFI网卡桥接，这样就可以实现双向通信。这里有个前提条件就是你的主机原先就有两张网卡，一张用于连接路由器，一张是WIFI网卡。不能直接将USB网卡和连接路由器的网卡桥接。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;万万没想到一张整年闲置的WIFI网卡竟然派上了用场。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;万万没想到一张整年闲置的WIFI网卡竟然派上了用场。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;选择WIFI网卡和USB网卡，右键桥接，这样就创建一个网桥，网桥会自动获取IP地址。&lt;/p&gt;
 &lt;p&gt;
 
@@ -2071,8 +2060,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;设置默认网关：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ip route add default via 192.168.1.1
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;注意：更换网口需要重启开发板&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：更换网口需要重启开发板&lt;/p&gt;&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;Match&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;Name&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;eth0
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;Network&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
@@ -2322,8 +2310,7 @@
 <p>网卡的IP要和你Window主机自己的IP在一个网段，不能盲目设置为手册里的<code>192.168.5.10</code>，这样会导致Windows主机无法访问开发板。可以通过在Windows命令行输入<code>ipconfig</code>查看Windows主机的IP地址。一般来说，如果没有设置过路由器，默认都是在<code>192.168.1.x</code>网段。那么网关通常就是这个网段的第一个地址，也就是<code>192.168.1.1</code>，这也是路由器的地址。</p>
 <p>如果你配置完网卡以及开发板的IP后能正常相互ping通，那么说明网络配置成功。如果你很不巧和我一样，USB网卡一直无法通过DHCP自动获取IP地址，并且配置完静态IP后只能单侧ping通，那么也可以和我一样将USB网卡和主机的WIFI网卡桥接，这样就可以实现双向通信。这里有个前提条件就是你的主机原先就有两张网卡，一张用于连接路由器，一张是WIFI网卡。不能直接将USB网卡和连接路由器的网卡桥接。</p>
 <blockquote>
-<p>万万没想到一张整年闲置的WIFI网卡竟然派上了用场。</p>
-</blockquote>
+<p>万万没想到一张整年闲置的WIFI网卡竟然派上了用场。</p></blockquote>
 <p>选择WIFI网卡和USB网卡，右键桥接，这样就创建一个网桥，网桥会自动获取IP地址。</p>
 <p>
 
@@ -2370,8 +2357,7 @@
 </span></span></code></pre></div><p>设置默认网关：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ip route add default via 192.168.1.1
 </span></span></code></pre></div><blockquote>
-<p>注意：更换网口需要重启开发板</p>
-</blockquote>
+<p>注意：更换网口需要重启开发板</p></blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>Match<span class="o">]</span>
 </span></span><span class="line"><span class="cl">    <span class="nv">Name</span><span class="o">=</span>eth0
 </span></span><span class="line"><span class="cl"><span class="o">[</span>Network<span class="o">]</span>
@@ -2894,13 +2880,11 @@
 &lt;p&gt;编译 Busybox&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make &lt;span class=&#34;nv&#34;&gt;CROSS_COMPILE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;riscv64-unknown-linux-gnu- -j &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;nproc&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;如果需要频繁编译，也可以在 Menuconfig 中设置交叉编译器路径，这样就不需要每次都指定了。设置路径为：Settings -&amp;gt; Build Options -&amp;gt; Cross Compiler prefix。将其设置为 riscv64-unknown-linux-gnu-。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;如果需要频繁编译，也可以在 Menuconfig 中设置交叉编译器路径，这样就不需要每次都指定了。设置路径为：Settings -&amp;gt; Build Options -&amp;gt; Cross Compiler prefix。将其设置为 riscv64-unknown-linux-gnu-。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;安装 Busybox：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make &lt;span class=&#34;nv&#34;&gt;CROSS_COMPILE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;riscv64-unknown-linux-gnu- install
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;Busybox 默认安装在当前目录的_install 目录下，也可以在 Menuconfig 中设置安装目录，路径为：Settings -&amp;gt; Build Options -&amp;gt; Destination path for &amp;lsquo;make install&amp;rsquo;。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;Busybox 默认安装在当前目录的_install 目录下，也可以在 Menuconfig 中设置安装目录，路径为：Settings -&amp;gt; Build Options -&amp;gt; Destination path for &amp;lsquo;make install&amp;rsquo;。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;查看安装目录&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ls _install 
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;bin  linuxrc  sbin  usr
@@ -3321,13 +3305,11 @@
 <p>编译 Busybox</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- -j <span class="k">$(</span>nproc<span class="k">)</span>
 </span></span></code></pre></div><blockquote>
-<p>如果需要频繁编译，也可以在 Menuconfig 中设置交叉编译器路径，这样就不需要每次都指定了。设置路径为：Settings -&gt; Build Options -&gt; Cross Compiler prefix。将其设置为 riscv64-unknown-linux-gnu-。</p>
-</blockquote>
+<p>如果需要频繁编译，也可以在 Menuconfig 中设置交叉编译器路径，这样就不需要每次都指定了。设置路径为：Settings -&gt; Build Options -&gt; Cross Compiler prefix。将其设置为 riscv64-unknown-linux-gnu-。</p></blockquote>
 <p>安装 Busybox：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">make <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-linux-gnu- install
 </span></span></code></pre></div><blockquote>
-<p>Busybox 默认安装在当前目录的_install 目录下，也可以在 Menuconfig 中设置安装目录，路径为：Settings -&gt; Build Options -&gt; Destination path for &lsquo;make install&rsquo;。</p>
-</blockquote>
+<p>Busybox 默认安装在当前目录的_install 目录下，也可以在 Menuconfig 中设置安装目录，路径为：Settings -&gt; Build Options -&gt; Destination path for &lsquo;make install&rsquo;。</p></blockquote>
 <p>查看安装目录</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ls _install 
 </span></span><span class="line"><span class="cl">bin  linuxrc  sbin  usr
@@ -4194,8 +4176,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;应答状态&#34;&gt;应答状态&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;SCL 为高电平，SDA 由高电平变为低电平（上图最后的 ACK 标记）&lt;/li&gt;
@@ -4343,8 +4324,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p>
-</blockquote>
+<p>在时序图中，MSB 代表的是 Most Significant Bit（最高位）。它表示二进制数中最左边的一位，也就是最高位。在一个 n 位的二进制数中，最高位的权值为 2^(n-1)。因此，MSB 在时序图中通常用来指示二进制数或数据字的最高位。同理，LSB 代表的是 Least Significant Bit（最低位）。它表示二进制数中最右边的一位，也就是最低位。</p></blockquote>
 <h2 id="应答状态">应答状态</h2>
 <ul>
 <li>SCL 为高电平，SDA 由高电平变为低电平（上图最后的 ACK 标记）</li>
@@ -4431,8 +4411,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;他们传输速率有差别吗？
 是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。
-SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。&lt;/p&gt;
-&lt;/blockquote&gt;
+SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h3 id=&#34;时钟极性和时钟相位&#34;&gt;时钟极性和时钟相位&lt;/h3&gt;
 &lt;p&gt;在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。&lt;/p&gt;
 &lt;table&gt;
@@ -4482,8 +4461,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;blockquote&gt;
-&lt;p&gt;CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。&lt;/p&gt;
 &lt;p&gt;
 
@@ -4826,8 +4804,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 <blockquote>
 <p>他们传输速率有差别吗？
 是的，SPI 总线的不同类型之间存在传输速率上的差别。一般情况下，四线式 SPI 总线的传输速度最快，而双线式 SPI 总线的传输速度最慢。但具体的传输速度会受到很多因素的影响，例如工作频率、数据线长度等等。如果要在实际应用中选择合适的 SPI 总线类型，需要考虑诸如这些因素的影响，并根据具体情况进行权衡取舍。
-SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p>
-</blockquote>
+SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总线一共只有两条信号线：一个主设备 (Master) 输出时钟信号 (SCLK)，一个主设备通过该信号线读取从设备 (Slave) 的应答信号。而四线式 SPI 总线除了上述两条信号线外，还有两条用于数据传输的信号线：主设备通过 MOSI 信号线向从设备发送数据，从设备则通过 MISO 信号线将数据返回给主设备。由于四线式 SPI 总线有专门的数据传输信号线，故可以通过同时在这两条信号线上传输数据来实现更高的传输速率，从而比双线式 SPI 总线快一些。</p></blockquote>
 <h3 id="时钟极性和时钟相位">时钟极性和时钟相位</h3>
 <p>在 SPI 中，主机可以选择时钟极性和时钟相位。在空闲状态期间，CPOL 位设置时钟信号的极性。空闲状态是指传输开始时 CS 为高电平且在向低电平转变的期间，以及传输结束时 CS 为低电平且在向高电平转变的期间。CPHA 位选择时钟相位。根据 CPHA 位的状态，使用时钟上升沿或下降沿来采样和/或移位数据。主机必须根据从机的要求选择时钟极性和时钟相位。根据 CPOL 和 CPHA 位的选择，有四种 SPI 模式可用。表 1 显示了这 4 种 SPI 模式。</p>
 <table>
@@ -4877,8 +4854,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
   </tbody>
 </table>
 <blockquote>
-<p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p>
-</blockquote>
+<p>CPOL 和 CPHA 可以通过 SPI 的状态寄存器设置。</p></blockquote>
 <p>显示了四种 SPI 模式下的通信示例。在这些示例中，数据显示在 MOSI 和 MISO 线上。传输的开始和结束用绿色虚线表示，采样边沿用橙色虚线表示，移位边沿用蓝色虚线表示。</p>
 <p>
 
@@ -5214,8 +5190,7 @@ SPI 总线的传输速度快慢与其信号线数量有关。双线式 SPI 总�
 &lt;p&gt;外部存储器，通常用来存储文件的，一般也叫 ROM（&lt;strong&gt;Read-only memory&lt;/strong&gt;）只读存储器。&lt;/p&gt;
 &lt;p&gt;CPU 连接内存和外存的连接方式不同。内存需要直接地址访问，所以是通过地址总线&amp;amp;数据总线的总线式访问方式连接的（好处是直接访问，随机访问；坏处是占用 CPU 的地址空间，大小受限）；外存是通过 CPU 的外存接口来连接的（好处是不占用 CPU 的地址空间，坏处是访问速度没有总线式快，访问时序较复杂）&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;我们平时用的硬盘，SD 卡都属于 ROM，但是他们却可以写入？ROM 严格意义来讲确实是只读的，但是随着储存器的发展，出现了可擦可编程只读存储器（EPROM）、电可擦可编程只读存储器（EEPROM）形式的半导体存储器，以及 flash。他们都是可写的。ROM 就不再单单只表示只读存储器了，一般来说与 RAM 相对，掉电不易失的存储器都被当做 ROM。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;我们平时用的硬盘，SD 卡都属于 ROM，但是他们却可以写入？ROM 严格意义来讲确实是只读的，但是随着储存器的发展，出现了可擦可编程只读存储器（EPROM）、电可擦可编程只读存储器（EEPROM）形式的半导体存储器，以及 flash。他们都是可写的。ROM 就不再单单只表示只读存储器了，一般来说与 RAM 相对，掉电不易失的存储器都被当做 ROM。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h3 id=&#34;rom&#34;&gt;ROM&lt;/h3&gt;
 &lt;p&gt;ROM（Read Only Memory）只读存储器，这种存储器（Memory）的内容任何情况下都不会改变，电脑与用户只能读取保存在这里的指令，和使用存储在 ROM 的资料，但不能变更或存入资料。ROM 被存储在一个非易失性芯片上，也就是说，即使在关机之后记忆的内容仍可以被保存，所以这种存储器多用来存储特定功能的程序，如&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E5%9B%BA%E4%BB%B6&#34;&gt;固件&lt;/a&gt;。ROM 存储用来启动电脑的程序（如&lt;a href=&#34;https://zh.wikipedia.org/wiki/BIOS&#34;&gt;BIOS&lt;/a&gt;），电脑引导的时候 BIOS 提供一连串的指令对中央处理器（&lt;a href=&#34;https://zh.wikipedia.org/wiki/CPU&#34;&gt;CPU&lt;/a&gt;）等组件进行初始化，在初始化过程中，BIOS 程序初始化并检查&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E9%9A%8F%E6%9C%BA%E5%AD%98%E5%8F%96%E5%AD%98%E5%82%A8%E5%99%A8&#34;&gt;RAM&lt;/a&gt;。&lt;/p&gt;
 &lt;h3 id=&#34;norflash&#34;&gt;NorFlash&lt;/h3&gt;
@@ -5400,8 +5375,7 @@ SanDisk 公司出产的 eMMC&lt;/p&gt;
 <p>外部存储器，通常用来存储文件的，一般也叫 ROM（<strong>Read-only memory</strong>）只读存储器。</p>
 <p>CPU 连接内存和外存的连接方式不同。内存需要直接地址访问，所以是通过地址总线&amp;数据总线的总线式访问方式连接的（好处是直接访问，随机访问；坏处是占用 CPU 的地址空间，大小受限）；外存是通过 CPU 的外存接口来连接的（好处是不占用 CPU 的地址空间，坏处是访问速度没有总线式快，访问时序较复杂）</p>
 <blockquote>
-<p>我们平时用的硬盘，SD 卡都属于 ROM，但是他们却可以写入？ROM 严格意义来讲确实是只读的，但是随着储存器的发展，出现了可擦可编程只读存储器（EPROM）、电可擦可编程只读存储器（EEPROM）形式的半导体存储器，以及 flash。他们都是可写的。ROM 就不再单单只表示只读存储器了，一般来说与 RAM 相对，掉电不易失的存储器都被当做 ROM。</p>
-</blockquote>
+<p>我们平时用的硬盘，SD 卡都属于 ROM，但是他们却可以写入？ROM 严格意义来讲确实是只读的，但是随着储存器的发展，出现了可擦可编程只读存储器（EPROM）、电可擦可编程只读存储器（EEPROM）形式的半导体存储器，以及 flash。他们都是可写的。ROM 就不再单单只表示只读存储器了，一般来说与 RAM 相对，掉电不易失的存储器都被当做 ROM。</p></blockquote>
 <h3 id="rom">ROM</h3>
 <p>ROM（Read Only Memory）只读存储器，这种存储器（Memory）的内容任何情况下都不会改变，电脑与用户只能读取保存在这里的指令，和使用存储在 ROM 的资料，但不能变更或存入资料。ROM 被存储在一个非易失性芯片上，也就是说，即使在关机之后记忆的内容仍可以被保存，所以这种存储器多用来存储特定功能的程序，如<a href="https://zh.wikipedia.org/wiki/%E5%9B%BA%E4%BB%B6">固件</a>。ROM 存储用来启动电脑的程序（如<a href="https://zh.wikipedia.org/wiki/BIOS">BIOS</a>），电脑引导的时候 BIOS 提供一连串的指令对中央处理器（<a href="https://zh.wikipedia.org/wiki/CPU">CPU</a>）等组件进行初始化，在初始化过程中，BIOS 程序初始化并检查<a href="https://zh.wikipedia.org/wiki/%E9%9A%8F%E6%9C%BA%E5%AD%98%E5%8F%96%E5%AD%98%E5%82%A8%E5%99%A8">RAM</a>。</p>
 <h3 id="norflash">NorFlash</h3>

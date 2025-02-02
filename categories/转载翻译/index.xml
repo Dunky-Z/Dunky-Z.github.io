@@ -4,7 +4,7 @@
     <title>转载翻译 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 转载翻译 on 夜云泊</description>
-    <generator>Hugo -- 0.142.0</generator>
+    <generator>Hugo -- 0.143.0</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 31 Aug 2024 17:00:13 +0800</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/%E8%BD%AC%E8%BD%BD%E7%BF%BB%E8%AF%91/index.xml" rel="self" type="application/rss+xml" />
@@ -14,14 +14,12 @@
       <pubDate>Sat, 31 Aug 2024 17:00:13 +0800</pubDate>
       <guid>https://lifeislife.cn/posts/%E8%AF%91%E6%96%87-pcie-part2/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;本文翻译自：&lt;a href=&#34;https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/&#34;&gt;PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &amp;mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。&lt;/p&gt;
 &lt;p&gt;配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。&lt;/p&gt;
 &lt;p&gt;正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;pcie-中的数据传输方法简介&#34;&gt;PCIe 中的数据传输方法简介&lt;/h2&gt;
 &lt;p&gt;配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
 &lt;p&gt;配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。&lt;/p&gt;
@@ -233,8 +231,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id=&#34;什么是-dma引言和理论&#34;&gt;什么是 DMA？引言和理论&lt;/h2&gt;
@@ -552,8 +549,7 @@
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;勘误表：0x32 应该是 32&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;此图中概述的步骤如下：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。&lt;/li&gt;
@@ -563,8 +559,7 @@
 &lt;/ul&gt;
 &lt;p&gt;尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。&lt;/p&gt;
 &lt;p&gt;最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：&lt;/p&gt;
 &lt;p&gt;
@@ -635,14 +630,12 @@
 &lt;p&gt;请期待未来的帖子！&lt;/p&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p>
-</blockquote>
+<p>本文翻译自：<a href="https://ctf.re/kernel/pcie/tutorial/dma/mmio/tlp/2024/03/26/pcie-part-2/">PCIe 第 2 部分 - 关于内存：MMIO、DMA、TLP 等！– 灵魂的逆向工程 &mdash; PCIe Part 2 - All About Memory: MMIO, DMA, TLPs, and more! – Reversing Engineering for the Soul</a></p></blockquote>
 <p>在这个系列文章的第一部分中，我们讨论了 ECAM 以及软件和硬件数据包网络中的配置空间访问。在讨论中，引入了 TLP（Transaction Layer Packets）的概念，这是所有 PCIe 数据在层次结构中移动的通用数据包结构。我们还讨论了这些数据包如何像以太网一样传输，即路由设备使用一个地址（在这种情况下是 BDF）来发送配置空间数据包穿过网络。</p>
 <p>配置空间读取和写入只是可以直接使用设备执行 I/O 的几种方式之一。通过“configuration”这个名称，我们可以知道很明显它的意图不是为了执行大量数据传输。主要缺点是它的速度，因为配置空间数据包最多只能包含双向读取或写入的 64 位数据（通常只有 32 位）。对于如此少量的可用数据，数据包和其他链路标头的开销非常大，因此浪费了带宽。</p>
 <p>正如第 1 部分所讨论的，理解内存和地址将继续是理解 PCIe 的关键。在这篇文章中，我们将更深入地研究更快的设备 I/O 事务形式，并开始了解软件设备驱动程序如何实际与 PCIe 设备连接以完成有用的工作。</p>
 <blockquote>
-<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p>
-</blockquote>
+<p>注意：您无需成为计算机体系结构或 TCP/IP 网络方面的专家即可从这篇文章中获得一些信息。但是，了解 TCP/IP 和虚拟内存的基础知识对于掌握本文的一些核心概念是必要的。这篇文章也以 第 1 部分 中的信息为基础。如果您需要查看这些内容，请立即查看！</p></blockquote>
 <h2 id="pcie-中的数据传输方法简介">PCIe 中的数据传输方法简介</h2>
 <p>配置空间是一种在枚举时间内通过其 BDF 与设备通信的一种简单而有效的方式。这是一种简单的传输模式是有原因的 - 它必须是配置和可用的所有其他数据传输方法的基础。枚举设备后，配置空间已设置设备与主机一起执行实际工作所需的所有信息。配置空间仍用于允许主机监控和响应设备及其链接状态的变化，但它不会用于执行设备的实际高速传输或功能。</p>
 <p>配置空间是在枚举时间通过设备的 BDF 进行通信的一种简单有效的方式。它是一种简单的传输模式，是所有数据传输方法的基础。一旦设备被枚举，配置空间就已经设置了设备执行实际工作所需的所有信息，与主机机器一起。配置空间仍用于允许主机计算机监视和响应设备及其链接的变化，但不会用于执行设备的实际高速传输或功能。</p>
@@ -854,8 +847,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p>
-</blockquote>
+<p>术语注释：尽管首字母缩略词 BAR 表示基址寄存器，但你会看到上面的文本也将 MMIO 的内存窗口称为 BAR。不幸的是，这意味着配置空间中的寄存器名称也与给 device 的 MMIO 区域相同（两者都称为 BAR）。你可能需要根据上下文，以确定它们是指内存窗口，还是配置空间本身的实际寄存器。</p></blockquote>
 <p>BARs 是配置空间中另一个示例，它不是常量寄存器。在第一部分中，我们看了一些常量寄存器，比如 VendorID 和 DeviceID。但是 BARs 不是常量寄存器，它们应该由软件写入和读取。实际上，由软件写入寄存器的值是特殊的，因为将某些类型的值写入寄存器将导致读取时功能不同。如果你没有牢记设备内存并非总是 RAM，读取回来的值可能与写入的不同，那么现在正是时候这么做了。</p>
 <p><strong>设备内存可以是 RAM，但它并不总是 RAM，也不需要像 RAM 那样工作！</strong></p>
 <h2 id="什么是-dma引言和理论">什么是 DMA？引言和理论</h2>
@@ -1173,8 +1165,7 @@
 </body>
 </html></p>
 <blockquote>
-<p>勘误表：0x32 应该是 32</p>
-</blockquote>
+<p>勘误表：0x32 应该是 32</p></blockquote>
 <p>此图中概述的步骤如下：</p>
 <ul>
 <li>DMA 引擎创建 TLP - DMA 引擎识别出它必须从 0x001FF000 读取 32 字节。它生成一个包含此请求的 TLP，并通过其本地 PCIe 链路将其发送出去。</li>
@@ -1184,8 +1175,7 @@
 </ul>
 <p>尽量不要被这些信息淹没，因为我确实知道仅针对单个内存请求 TLP 就有很多事情要做。所有这些在高层次上归结为仅从 RAM 中的地址 0x001FF000 读取 32 字节的内存。平台如何通过与 DRAM 控制器通信来实际读取系统 DRAM，仅供您参考。设备本身不知道 Root Complex 实际上是如何读取此内存的，它只是使用 TLP 启动传输。</p>
 <blockquote>
-<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p>
-</blockquote>
+<p>注意：此处未显示更复杂的 RAM 缓存过程。在 x86-64 上，来自设备的所有内存访问都是缓存一致的，这意味着平台会自动将 CPU 缓存与设备正在访问的值同步。在其他平台（如 ARM 平台）上，由于其缓存架构，这是一个更复杂的过程。现在，我们只假设缓存一致性正在自动为我们处理，我们对此没有任何特别的担忧。</p></blockquote>
 <p>当 RC 收到此 TLP 时，它会在内部标记 Requester 和 Tag 的读取内容。当它等待 DRAM 响应该值时，此请求的信息将在 RC 中等待。要概念化这一点，可以将其视为网络套接字中的“open connection”。RC 知道它需要响应什么，因此会等到响应数据可用后，再通过套接字将数据发送回去。</p>
 <p>最后，将 Completion 从 Root Complex 发送回设备。请注意，Destination 与 Requester 相同：</p>
 <p>
@@ -2275,8 +2265,7 @@
       <guid>https://lifeislife.cn/posts/zh-the-risc-v-instruction-set-manual-volume-2-%E7%89%B9%E6%9D%83%E7%BA%A7%E6%9E%B6%E6%9E%84/</guid>
       <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Document Version 20211203&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;Document Version 20211203&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h1 id=&#34;control-and-status-registers-csrs&#34;&gt;Control and Status Registers (CSRs)&lt;/h1&gt;
 &lt;h1 id=&#34;machine-level-isa-version-112&#34;&gt;Machine-Level ISA, Version 1.12&lt;/h1&gt;
 &lt;p&gt;本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。&lt;/p&gt;
@@ -2363,8 +2352,7 @@
 &lt;/html&gt;&lt;/p&gt;
 &lt;p&gt;misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&amp;hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。&lt;/p&gt;
 &lt;p&gt;Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。&lt;/p&gt;
 &lt;p&gt;复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。&lt;/p&gt;
@@ -2457,14 +2445,11 @@
 &lt;/html&gt;&lt;/p&gt;
 &lt;p&gt;JEDEC 制造商 ID 通常编码为单字节连续的 &lt;code&gt;0x7f&lt;/code&gt; 代码的序列，以不等于 &lt;code&gt;0x7f&lt;/code&gt; 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。&lt;code&gt;mvendorid&lt;/code&gt; 在 Bank 字段中编码单字节的连续代码，并在 &lt;code&gt;Offset&lt;/code&gt; 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID &lt;code&gt;0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a&lt;/code&gt;（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 &lt;code&gt;0x60a&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：&lt;a href=&#34;http://www.softnology.biz/pdf/JEP106AV.pdf&#34;&gt;Standard Manufacturer’s Identification Code&lt;/a&gt;，通过读取&lt;code&gt;mvendorid&lt;/code&gt;寄存器值，查阅该标准即可确定制造商。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：&lt;a href=&#34;http://www.softnology.biz/pdf/JEP106AV.pdf&#34;&gt;Standard Manufacturer’s Identification Code&lt;/a&gt;，通过读取&lt;code&gt;mvendorid&lt;/code&gt;寄存器值，查阅该标准即可确定制造商。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;machine-mode-privileged-instructions&#34;&gt;Machine-Mode Privileged Instructions&lt;/h2&gt;
 &lt;h3 id=&#34;environment-call-and-breakpoint&#34;&gt;Environment Call and Breakpoint&lt;/h3&gt;
 &lt;h3 id=&#34;trap-return-instructions&#34;&gt;Trap-Return Instructions&lt;/h3&gt;
@@ -2512,8 +2497,7 @@
 </description>
       <content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
 <blockquote>
-<p>Document Version 20211203</p>
-</blockquote>
+<p>Document Version 20211203</p></blockquote>
 <h1 id="control-and-status-registers-csrs">Control and Status Registers (CSRs)</h1>
 <h1 id="machine-level-isa-version-112">Machine-Level ISA, Version 1.12</h1>
 <p>本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。</p>
@@ -2600,8 +2584,7 @@
 </html></p>
 <p>misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。</p>
 <blockquote>
-<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p>
-</blockquote>
+<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p></blockquote>
 <p>Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。</p>
 <p>Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。</p>
 <p>复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。</p>
@@ -2694,14 +2677,11 @@
 </html></p>
 <p>JEDEC 制造商 ID 通常编码为单字节连续的 <code>0x7f</code> 代码的序列，以不等于 <code>0x7f</code> 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。<code>mvendorid</code> 在 Bank 字段中编码单字节的连续代码，并在 <code>Offset</code> 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID <code>0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a</code>（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 <code>0x60a</code>。</p>
 <blockquote>
-<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p>
-</blockquote>
+<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p></blockquote>
 <blockquote>
-<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p>
-</blockquote>
+<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p></blockquote>
 <blockquote>
-<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p>
-</blockquote>
+<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p></blockquote>
 <h2 id="machine-mode-privileged-instructions">Machine-Mode Privileged Instructions</h2>
 <h3 id="environment-call-and-breakpoint">Environment Call and Breakpoint</h3>
 <h3 id="trap-return-instructions">Trap-Return Instructions</h3>
@@ -2756,8 +2736,7 @@
       <description>&lt;h1 id=&#34;cs-可视化---常用的-git-命令&#34;&gt;CS 可视化 - 常用的 Git 命令&lt;/h1&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Author：Lydia Hallie
-译：&lt;a href=&#34;https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1&#34;&gt;🌳🚀 CS Visualized: Useful Git Commands - DEV Community&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+译：&lt;a href=&#34;https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1&#34;&gt;🌳🚀 CS Visualized: Useful Git Commands - DEV Community&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在&lt;code&gt;master&lt;/code&gt;分支执行&lt;code&gt;hard reset&lt;/code&gt;、&lt;code&gt;force push&lt;/code&gt;到 &lt;code&gt;origin&lt;/code&gt;、在&lt;code&gt;.git&lt;/code&gt;文件夹执行&lt;code&gt;rimraf&lt;/code&gt;的时候，为什么我的同事都哭了？&lt;/p&gt;
 &lt;p&gt;我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！&lt;/p&gt;
 &lt;h2 id=&#34;merging&#34;&gt;Merging&lt;/h2&gt;
@@ -3403,8 +3382,7 @@
       <content:encoded><![CDATA[<h1 id="cs-可视化---常用的-git-命令">CS 可视化 - 常用的 Git 命令</h1>
 <blockquote>
 <p>Author：Lydia Hallie
-译：<a href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p>
-</blockquote>
+译：<a href="https://dev.to/lydiahallie/cs-visualized-useful-git-commands-37p1">🌳🚀 CS Visualized: Useful Git Commands - DEV Community</a></p></blockquote>
 <p>尽管 Git 是一个非常强大的工具，但我想大多数人都会同意，当我说它也可能是……一场彻头彻尾的噩梦当我执行某个命令时分支交互，它将如何影响历史记录？当我在<code>master</code>分支执行<code>hard reset</code>、<code>force push</code>到 <code>origin</code>、在<code>.git</code>文件夹执行<code>rimraf</code>的时候，为什么我的同事都哭了？</p>
 <p>我认为这将是创建一些最常见和最有用命令的可视化示例的完美用例！我介绍的许多命令都有可选参数，您可以使用这些参数来更改它们的行为。在我的示例中，我将介绍命令的默认行为，而不添加（太多）配置选项！</p>
 <h2 id="merging">Merging</h2>
@@ -4056,8 +4034,7 @@
       <description>&lt;h1 id=&#34;什么是-die-to-die-接口&#34;&gt;什么是 Die-to-Die 接口&lt;/h1&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Author：Synopsys
-译：&lt;a href=&#34;https://www.synopsys.com/glossary/what-is-die-to-die-interface.html&#34;&gt;What is a Die-to-Die Interface? – How it Works | Synopsys&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+译：&lt;a href=&#34;https://www.synopsys.com/glossary/what-is-die-to-die-interface.html&#34;&gt;What is a Die-to-Die Interface? – How it Works | Synopsys&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
 &lt;p&gt;裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一封装中的两个硅管芯之间的数据接口。芯片到芯片接口利用非常短的通道连接封装内的两个芯片，以实现功率效率和非常高的带宽效率，这超出了传统芯片到芯片接口所能达到的效果。&lt;/p&gt;
 &lt;p&gt;Die2Die 接口通常由 PHY 和控制器块组成，控制器块在两个 die 上的内部互连结构之间提供无缝连接。Die2Die 的 PHY 使用高速 SerDes 架构或高密度并行架构实现，经过优化以支持多种先进的 2D、2.5D 和 3D 封装技术。&lt;/p&gt;
@@ -4118,8 +4095,7 @@
       <content:encoded><![CDATA[<h1 id="什么是-die-to-die-接口">什么是 Die-to-Die 接口</h1>
 <blockquote>
 <p>Author：Synopsys
-译：<a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p>
-</blockquote>
+译：<a href="https://www.synopsys.com/glossary/what-is-die-to-die-interface.html">What is a Die-to-Die Interface? – How it Works | Synopsys</a></p></blockquote>
 <h2 id="定义">定义</h2>
 <p>裸片到裸片（Die2Die）接口是一个功能块，它提供组装在同一封装中的两个硅管芯之间的数据接口。芯片到芯片接口利用非常短的通道连接封装内的两个芯片，以实现功率效率和非常高的带宽效率，这超出了传统芯片到芯片接口所能达到的效果。</p>
 <p>Die2Die 接口通常由 PHY 和控制器块组成，控制器块在两个 die 上的内部互连结构之间提供无缝连接。Die2Die 的 PHY 使用高速 SerDes 架构或高密度并行架构实现，经过优化以支持多种先进的 2D、2.5D 和 3D 封装技术。</p>
@@ -4186,8 +4162,7 @@
       <description>&lt;h1 id=&#34;unix-是什么为什么重要&#34;&gt;Unix 是什么，为什么重要？&lt;/h1&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Author：CHRIS HOFFMAN
-译：&lt;a href=&#34;https://www.howtogeek.com/182649/htg-explains-what-is-unix/&#34;&gt;What Is Unix, and Why Does It Matter?&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+译：&lt;a href=&#34;https://www.howtogeek.com/182649/htg-explains-what-is-unix/&#34;&gt;What Is Unix, and Why Does It Matter?&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几乎所有其他系统的祖宗都是 Unix。&lt;/p&gt;
 &lt;p&gt;Linux、Mac OS X、Android、iOS、Chrome OS、PlayStation 4 上使用的 Orbis 操作系统，无论路由器上运行的是什么固件——所有这些操作系统通常都被称为“类 Unix”操作系统。&lt;/p&gt;
 &lt;h2 id=&#34;unix-的设计延续至今&#34;&gt;Unix 的设计延续至今&lt;/h2&gt;
@@ -4208,8 +4183,7 @@
 &lt;p&gt;“在绝大多数地方，用的都是/（slash），包括 Mac/Linux，也包括 URL。你唯一需要记住的是，Microsoft 这个怪鸡在自己的操作系统里面偏要用\（backslash），使得自己与众不同。
 在 Windows 中，正斜杠/表示除法，用来进行整除运算；反斜杠\用来表示目录。
 在 Unix 系统中，/表示目录；\表示跳脱字符将特殊字符变成一般字符
-Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。&lt;/p&gt;
-&lt;/blockquote&gt;
+Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h2 id=&#34;为什么重要&#34;&gt;为什么重要？&lt;/h2&gt;
 &lt;p&gt;你是否曾经看过 Mac OS X 终端或文件系统，并注意到它与 Linux 的相似之处，以及它们与 Windows 的不同之处？嗯，这就是为什么——Mac OSX 和 Linux 都是类 Unix 操作系统。&lt;/p&gt;
 &lt;p&gt;了解这段历史有助于您了解什么是“类 Unix”操作系统，以及为什么这么多操作系统看起来彼此如此相似而 Windows 似乎如此不同。这解释了为什么 Linux 极客会觉得 Mac OS X 上的终端如此熟悉，而 Windows 上的命令提示符和 PowerShell 与其他命令行环境如此不同。&lt;/p&gt;
@@ -4218,8 +4192,7 @@ Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不
       <content:encoded><![CDATA[<h1 id="unix-是什么为什么重要">Unix 是什么，为什么重要？</h1>
 <blockquote>
 <p>Author：CHRIS HOFFMAN
-译：<a href="https://www.howtogeek.com/182649/htg-explains-what-is-unix/">What Is Unix, and Why Does It Matter?</a></p>
-</blockquote>
+译：<a href="https://www.howtogeek.com/182649/htg-explains-what-is-unix/">What Is Unix, and Why Does It Matter?</a></p></blockquote>
 <p>大多数操作系统都可以分为两大类。除了微软基于 Windows NT 的操作系统之外，几乎所有其他系统的祖宗都是 Unix。</p>
 <p>Linux、Mac OS X、Android、iOS、Chrome OS、PlayStation 4 上使用的 Orbis 操作系统，无论路由器上运行的是什么固件——所有这些操作系统通常都被称为“类 Unix”操作系统。</p>
 <h2 id="unix-的设计延续至今">Unix 的设计延续至今</h2>
@@ -4240,8 +4213,7 @@ Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不
 <p>“在绝大多数地方，用的都是/（slash），包括 Mac/Linux，也包括 URL。你唯一需要记住的是，Microsoft 这个怪鸡在自己的操作系统里面偏要用\（backslash），使得自己与众不同。
 在 Windows 中，正斜杠/表示除法，用来进行整除运算；反斜杠\用来表示目录。
 在 Unix 系统中，/表示目录；\表示跳脱字符将特殊字符变成一般字符
-Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。</p>
-</blockquote>
+Windows由于使用斜杠/作为DOS命令提示符的参数标志了，为了不混淆，所以采用反斜杠\作为路径分隔符。所以目前windows系统上的文件浏览器都是用反斜杠\作为路径分隔符。</p></blockquote>
 <h2 id="为什么重要">为什么重要？</h2>
 <p>你是否曾经看过 Mac OS X 终端或文件系统，并注意到它与 Linux 的相似之处，以及它们与 Windows 的不同之处？嗯，这就是为什么——Mac OSX 和 Linux 都是类 Unix 操作系统。</p>
 <p>了解这段历史有助于您了解什么是“类 Unix”操作系统，以及为什么这么多操作系统看起来彼此如此相似而 Windows 似乎如此不同。这解释了为什么 Linux 极客会觉得 Mac OS X 上的终端如此熟悉，而 Windows 上的命令提示符和 PowerShell 与其他命令行环境如此不同。</p>

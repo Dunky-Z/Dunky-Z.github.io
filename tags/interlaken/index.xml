@@ -4,7 +4,7 @@
     <title>Interlaken on 夜云泊</title>
     <link>https://lifeislife.cn/tags/interlaken/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Interlaken on 夜云泊</description>
-    <generator>Hugo -- 0.142.0</generator>
+    <generator>Hugo -- 0.143.0</generator>
     <language>zh</language>
     <lastBuildDate>Wed, 18 May 2022 22:40:47 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/interlaken/index.xml" rel="self" type="application/rss+xml" />
@@ -14,8 +14,7 @@
       <pubDate>Wed, 18 May 2022 22:40:47 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/interlaken%E5%8D%8F%E8%AE%AE/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;对 Interlaken 协议文档的翻译加了一些自己的理解；&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;对 Interlaken 协议文档的翻译加了一些自己的理解；&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;&lt;strong&gt;8b/10b编码&lt;/strong&gt;：在串行通道上传输时，将 8bits 数据编码为 10bits 数据，做一个转换，使各位数据之间有更多的 1 到 0 和 0 到 1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。&lt;strong&gt;64B/67B 编码&lt;/strong&gt;编码的原因也是类似的。这样，在串行通道上传输 10 位数据，实际上只传输了 8 位。&lt;/p&gt;
 &lt;h2 id=&#34;协议层protocol-layer&#34;&gt;协议层（Protocol Layer）&lt;/h2&gt;
 &lt;h3 id=&#34;传输格式&#34;&gt;传输格式&lt;/h3&gt;
@@ -110,8 +109,7 @@
 &lt;p&gt;该接口通常通过发送一个 BurstMax 长度的数据突发来运行，然后是一个控制字。发送设备中的调度逻辑可以自由选择信道服务的顺序，&lt;strong&gt;受流控状态的约束&lt;/strong&gt;。Burst 在每个通道上传输，直到数据包完全传输，此时该通道上的新数据包传输才开始。&lt;/p&gt;
 &lt;p&gt;因为接口是信道化的，数据包的结束可能会在几个信道上连续地出现，每个信道上的剩余数据量非常小。由于发射器和接收器的存储器可能被理想地设计成宽数据通路，它们需要以非常高的速率来处理这种情况。为了减少接收器和发射器的负担，BurstShort 参数保证了连续的 Burst 控制字之间的最小间隔。最小的 BurstShort 间隔是 32 字节，更大的值可以以 8 字节为增量。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;如果没有最小 Burst 的限制，那么数据包太小的话，发送器或者接收器就会频繁收到 end-of-packet，这就增加了处理负担。&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;如果没有最小 Burst 的限制，那么数据包太小的话，发送器或者接收器就会频繁收到 end-of-packet，这就增加了处理负担。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -196,8 +194,7 @@
 &lt;p&gt;该协议没有 Credits 的概念；一旦通道被指示为 XON，发送器可以在该通道上发送尽可能多的数据，直到流控制状态更改为 XOFF。接收器选择在 XON 和 XOFF 状态之间切换的阈值是留给用户的可编程选项，取决于支持的通道数量、接收缓冲区的深度和给定环境的流控制延迟。&lt;/p&gt;
 &lt;p&gt;流控制通道可以选择映射到 calendar，从而流控制可以映射到任何一组 calendar entry。例如，这些可以包括通道到 calendar entry 的一对一映射、一对多映射或插入空字段以匹配具有不同通道定义的设备。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Channel Calendar 将通道映射到流控状态槽&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;Channel Calendar 将通道映射到流控状态槽&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;这个 Calendar 结构也可以用来提供链路级的流控制，Calendar 中的一个 bit 代表了在整个接口上传输数据的权限。链路状态的极性将与通道状态的极性相同：“1”表示允许传输，“0”表示立即停止传输。要启用此功能，可以为每个 Calendar entry 配置通道信息或链接信息。为了促进低延迟链路状态，接口需要提供足够的 Calendar entry，以便在每个突发/空闲控制字的相同位位置编程链路状态。例如，使用超过 16 个通道，这可以通过以下设置执行：&lt;/p&gt;
 &lt;p&gt;
 
@@ -317,8 +314,7 @@ $$&lt;/p&gt;
 &lt;h2 id=&#34;参考资料&#34;&gt;参考资料&lt;/h2&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>对 Interlaken 协议文档的翻译加了一些自己的理解；</p>
-</blockquote>
+<p>对 Interlaken 协议文档的翻译加了一些自己的理解；</p></blockquote>
 <p><strong>8b/10b编码</strong>：在串行通道上传输时，将 8bits 数据编码为 10bits 数据，做一个转换，使各位数据之间有更多的 1 到 0 和 0 到 1 的跳变，以便接收设备检测这些跳变，能更容易地恢复时钟。<strong>64B/67B 编码</strong>编码的原因也是类似的。这样，在串行通道上传输 10 位数据，实际上只传输了 8 位。</p>
 <h2 id="协议层protocol-layer">协议层（Protocol Layer）</h2>
 <h3 id="传输格式">传输格式</h3>
@@ -413,8 +409,7 @@ $$&lt;/p&gt;
 <p>该接口通常通过发送一个 BurstMax 长度的数据突发来运行，然后是一个控制字。发送设备中的调度逻辑可以自由选择信道服务的顺序，<strong>受流控状态的约束</strong>。Burst 在每个通道上传输，直到数据包完全传输，此时该通道上的新数据包传输才开始。</p>
 <p>因为接口是信道化的，数据包的结束可能会在几个信道上连续地出现，每个信道上的剩余数据量非常小。由于发射器和接收器的存储器可能被理想地设计成宽数据通路，它们需要以非常高的速率来处理这种情况。为了减少接收器和发射器的负担，BurstShort 参数保证了连续的 Burst 控制字之间的最小间隔。最小的 BurstShort 间隔是 32 字节，更大的值可以以 8 字节为增量。</p>
 <blockquote>
-<p>如果没有最小 Burst 的限制，那么数据包太小的话，发送器或者接收器就会频繁收到 end-of-packet，这就增加了处理负担。</p>
-</blockquote>
+<p>如果没有最小 Burst 的限制，那么数据包太小的话，发送器或者接收器就会频繁收到 end-of-packet，这就增加了处理负担。</p></blockquote>
 <p>
 
 <!DOCTYPE html>
@@ -499,8 +494,7 @@ $$&lt;/p&gt;
 <p>该协议没有 Credits 的概念；一旦通道被指示为 XON，发送器可以在该通道上发送尽可能多的数据，直到流控制状态更改为 XOFF。接收器选择在 XON 和 XOFF 状态之间切换的阈值是留给用户的可编程选项，取决于支持的通道数量、接收缓冲区的深度和给定环境的流控制延迟。</p>
 <p>流控制通道可以选择映射到 calendar，从而流控制可以映射到任何一组 calendar entry。例如，这些可以包括通道到 calendar entry 的一对一映射、一对多映射或插入空字段以匹配具有不同通道定义的设备。</p>
 <blockquote>
-<p>Channel Calendar 将通道映射到流控状态槽</p>
-</blockquote>
+<p>Channel Calendar 将通道映射到流控状态槽</p></blockquote>
 <p>这个 Calendar 结构也可以用来提供链路级的流控制，Calendar 中的一个 bit 代表了在整个接口上传输数据的权限。链路状态的极性将与通道状态的极性相同：“1”表示允许传输，“0”表示立即停止传输。要启用此功能，可以为每个 Calendar entry 配置通道信息或链接信息。为了促进低延迟链路状态，接口需要提供足够的 Calendar entry，以便在每个突发/空闲控制字的相同位位置编程链路状态。例如，使用超过 16 个通道，这可以通过以下设置执行：</p>
 <p>
 
