@@ -6,8 +6,1050 @@
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 公路车 on 夜云泊</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>zh</language>
-    <lastBuildDate>Sat, 02 Nov 2024 10:10:20 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 08 Mar 2025 10:34:10 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/%E5%85%AC%E8%B7%AF%E8%BD%A6/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker Compose 部署 Strava Statistics</title>
+      <link>https://lifeislife.cn/posts/docker-compose%E9%83%A8%E7%BD%B2strava-statistics/</link>
+      <pubDate>Sat, 08 Mar 2025 10:34:10 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/docker-compose%E9%83%A8%E7%BD%B2strava-statistics/</guid>
+      <description>&lt;h1 id=&#34;strava-statistics-部署文档&#34;&gt;Strava Statistics 部署文档&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/robiningelbrecht/strava-statistics&#34;&gt;Strava Statistics&lt;/a&gt; 是一个自托管工具，利用 Strava 数据生成个人运动统计，支持 Docker 部署，提供丰富的可视化分析。下面介绍如何使用 Docker Compose 部署。&lt;/p&gt;
+&lt;h2 id=&#34;申请-strava-的-api-权限&#34;&gt;申请 Strava 的 API 权限&lt;/h2&gt;
+&lt;p&gt;在&lt;a href=&#34;https://lifeislife.cn/awesome-cycling/docs/training-fitness/zwiftoffline/&#34;&gt;ZwiftOffline&lt;/a&gt;中也需要用到 API 权限，因为不同应用程序也不冲突，懒得再重新申请，所以以下填的信息使用的 ZwiftOffline 的 API 权限。&lt;/p&gt;
+&lt;p&gt;登录&lt;a href=&#34;https://www.strava.com/settings/api&#34;&gt;Strava&lt;/a&gt;，申请 API，获取&lt;code&gt;Client ID&lt;/code&gt;和&lt;code&gt;Client Secret&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;填写内容可以参考下图：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/d8024be9518e5a262538aa5d48c7fbb0.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/d8024be9518e5a262538aa5d48c7fbb0.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;其中授权回调域填写：launcher.zwift.com&lt;/p&gt;
+&lt;p&gt;申请完成后会得到下面的信息：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/a5024f9e2e150810251222315be11ac9.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/a5024f9e2e150810251222315be11ac9.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;将下面链接中的&lt;code&gt;client_id&lt;/code&gt;值换成上图中的客户 ID，然后浏览器中访问这个链接：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-txt&#34; data-lang=&#34;txt&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;http://www.strava.com/oauth/authorize?client_id=xxxxxxx&amp;amp;response_type=code&amp;amp;redirect_uri=http://localhost/exchange_token&amp;amp;approval_prompt=force&amp;amp;scope=activity:read_all
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;点击授权：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/89a9c1d81d40e6b4687531ab92d689a2.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/89a9c1d81d40e6b4687531ab92d689a2.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;此时跳转到一个无法访问的网页，将地址栏中的&lt;code&gt;code&lt;/code&gt;值记录下来，后面需要用到：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/c3a74e83d363bb0f453ad37712dd28ac.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/c3a74e83d363bb0f453ad37712dd28ac.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;需要用这个&lt;code&gt;code&lt;/code&gt;发起一个 cURL 请求得到&lt;code&gt;refresh_token&lt;/code&gt;，具体做法是在命令行终端中执行下面的命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	curl -X POST https://www.strava.com/oauth/token &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;	-F &lt;span class=&#34;nv&#34;&gt;client_id&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;YOURCLIENTID &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;	-F &lt;span class=&#34;nv&#34;&gt;client_secret&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;YOURCLIENTSECRET &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;	-F &lt;span class=&#34;nv&#34;&gt;code&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;AUTHORIZATIONCODE &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;	-F &lt;span class=&#34;nv&#34;&gt;grant_type&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;authorization_code
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;client_id&lt;/code&gt;值替换为申请得到的&lt;code&gt;客户ID&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;client_secret&lt;/code&gt;值替换为申请得到的&lt;code&gt;客户端密钥&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;code&lt;/code&gt;替换为上一步浏览器中得到的&lt;code&gt;code&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;执行成功后可以得到下面的返回信息，需要将返回值中的&lt;code&gt;refresh_token&lt;/code&gt;和&lt;code&gt;access_token&lt;/code&gt;记录下来，后面需要用到：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;token_type&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;Bearer&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;expires_at&amp;#34;&lt;/span&gt;:1740213400,&lt;span class=&#34;s2&#34;&gt;&amp;#34;expires_in&amp;#34;&lt;/span&gt;:21600,&lt;span class=&#34;s2&#34;&gt;&amp;#34;refresh_token&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;123456789123456789&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;access_token&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;123456789123456789&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;athlete&amp;#34;&lt;/span&gt;:&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;:117756825,&lt;span class=&#34;s2&#34;&gt;&amp;#34;username&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;dunky_zhang&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;resource_state&amp;#34;&lt;/span&gt;:2,&lt;span class=&#34;s2&#34;&gt;&amp;#34;firstname&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;Dominic&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;lastname&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;Zhang&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;bio&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;骑行小白&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;city&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;state&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;country&amp;#34;&lt;/span&gt;:null,&lt;span class=&#34;s2&#34;&gt;&amp;#34;sex&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;M&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;premium&amp;#34;&lt;/span&gt;:true,&lt;span class=&#34;s2&#34;&gt;&amp;#34;summit&amp;#34;&lt;/span&gt;:true,&lt;span class=&#34;s2&#34;&gt;&amp;#34;created_at&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;2023-05-10T13:54:32Z&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;updated_at&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;2025-02-06T05:29:52Z&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;badge_type_id&amp;#34;&lt;/span&gt;:1,&lt;span class=&#34;s2&#34;&gt;&amp;#34;weight&amp;#34;&lt;/span&gt;:66.0,&lt;span class=&#34;s2&#34;&gt;&amp;#34;profile_medium&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://dgalywyr863hv.cloudfront.net/pictures/athletes/117756825/32138099/2/medium.jpg&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;profile&amp;#34;&lt;/span&gt;:&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://dgalywyr863hv.cloudfront.net/pictures/athletes/117756825/32138099/2/large.jpg&amp;#34;&lt;/span&gt;,&lt;span class=&#34;s2&#34;&gt;&amp;#34;friend&amp;#34;&lt;/span&gt;:null,&lt;span class=&#34;s2&#34;&gt;&amp;#34;follower&amp;#34;&lt;/span&gt;:null&lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;docker-compose-部署-strava-statistics&#34;&gt;Docker Compose 部署 Strava Statistics&lt;/h2&gt;
+&lt;p&gt;创建目录用于存放 Strava Statistics 的配置文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mkdir statistics-for-strava
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; statistics-for-strava
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建 &lt;code&gt;docker-compose.yml&lt;/code&gt; 文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;touch docker-compose.yml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;编辑 &lt;code&gt;docker-compose.yml&lt;/code&gt; 文件，填入以下内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;services&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;app&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;image&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;robiningelbrecht/strava-statistics:latest&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;volumes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;./build:/var/www/build&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;./storage/database:/var/www/storage/database&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;./storage/files:/var/www/storage/files&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;env_file&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;l&#34;&gt;./.env&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;ports&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;environment&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;PUID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;PGID=1000&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;TZ=Asia/Shanghai&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;&lt;span class=&#34;c&#34;&gt;# 因为 Strava 的 API 需要代理访问，所以下面设置了我的代理地址，请你根据自己的代理地址进行设置&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;http_proxy=http://192.168.1.9:7890&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;https_proxy=http://192.168.1.9:7890&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;- &lt;span class=&#34;l&#34;&gt;all_proxy=socks5://192.168.1.9:7891&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建 &lt;code&gt;.env&lt;/code&gt; 文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;touch .env
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;编辑 &lt;code&gt;.env&lt;/code&gt; 文件，填入以下内容：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 应用程序将托管的URL。此URL将用于清单文件中。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 这将允许您将Web应用程序作为原生应用程序安装到您的设备上。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;MANIFEST_APP_URL&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;http://localhost:8080/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 您的Strava应用程序的客户端ID。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;STRAVA_CLIENT_ID&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;xxxxxxx
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 您的Strava应用程序的客户端密钥。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;STRAVA_CLIENT_SECRET&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;xxxxxxxxxxxxxx
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 您的Strava应用程序的刷新令牌。在上一步获取到的&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;STRAVA_REFRESH_TOKEN&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;xxxxxxxxxxxxxx
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Strava API有限速限制（https://github.com/robiningelbrecht/strava-statistics/wiki），&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 为了确保我们不会达到限速，我们希望限制每次导入处理的新活动数量。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 考虑到每天有1000次请求限制，并且导入一个新活动最多可能需要3次API调用，250应该是一个安全的数字。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;NUMBER_OF_NEW_ACTIVITIES_TO_PROCESS_PER_IMPORT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;250&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 定期运行导入和HTML构建的计划。留空以禁用定期导入。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 默认计划为每天凌晨04:05运行一次。如果您不知道什么是cron表达式，请勿更改此项。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 请确保不要过于频繁地运行导入，以避免达到Strava API的限速。每天一次应该足够。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;IMPORT_AND_BUILD_SCHEDULE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;5 4 * * *&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 设置用于计划的时区&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 有效的时区可以在此处找到（TZ标识符列）：https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;TZ&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;Asia/Shanghai
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 允许的选项：en_US、fr_FR 或 nl_BE&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;LOCALE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;en_US
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 允许的选项：metric（公制）或 imperial（英制）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;UNIT_SYSTEM&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;metric
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 渲染应用程序时使用的时间格式&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 允许的格式：24 或 12（包括AM和PM）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;TIME_FORMAT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;24&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 渲染应用程序时使用的日期格式&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 允许的格式：DAY-MONTH-YEAR（日-月-年）或 MONTH-DAY-YEAR（月-日-年）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;DATE_FORMAT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;DAY-MONTH-YEAR
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 要导入的运动类型。留空以导入所有运动类型。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 通过此列表，您还可以决定运动类型的渲染顺序。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 完整的允许选项列表可在以下地址找到：https://github.com/robiningelbrecht/strava-statistics/wiki/Supported-sport-types/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;SPORT_TYPES_TO_IMPORT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;[]&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 您的生日。需要用于计算心率区间。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;ATHLETE_BIRTHDAY&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;1999-01-01
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 体重历史（单位为千克或磅，取决于UNIT_SYSTEM）。需要用于计算相对功率重量比（w/kg）。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看更多信息：https://github.com/robiningelbrecht/strava-statistics/wiki&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;ATHLETE_WEIGHTS&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;{
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s1&#34;&gt;    &amp;#34;1970-01-01&amp;#34;: 68
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s1&#34;&gt;}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# FTP（功能阈值功率）历史。需要用于计算活动压力水平。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看更多信息：https://github.com/robiningelbrecht/strava-statistics/wiki&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;FTP_VALUES&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;{
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s1&#34;&gt;    &amp;#34;2024-12-12&amp;#34;: 235
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s1&#34;&gt;}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 包含ntfy主题的完整URL。此主题将用于在新的HTML构建运行时通知您。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 留空以禁用通知。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;NTFY_URL&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 在导入期间要跳过的活动ID数组。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 这允许您在导入时跳过特定活动。&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;ACTIVITIES_TO_SKIP_DURING_IMPORT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;[]&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 创建/拥有由strava-statistics管理的文件的UID和GID&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 可能仅在Linux主机上需要，详见Wiki中的文件权限部分&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#PUID=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#PGID=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;开始导入数据：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;启动容器&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;docker-compose up -d
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;导入数据&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;docker compose &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; App bin/console app:strava:import-data
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;docker compose &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; App bin/console app:strava:build-files
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;导入过程非常非常慢，因为需要挨个数据获取，并且很容易出错，如果出错了，需要先关闭容器，然后重新导入。以下是导入成功的截图：
+
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/af3c468483a1c46544c02b5c2d8124ac.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/af3c468483a1c46544c02b5c2d8124ac.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;访问 &lt;code&gt;localhost:8080&lt;/code&gt; 查看数据&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/07a1a21d1c53ab4560de20f5cbcb60db.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/07a1a21d1c53ab4560de20f5cbcb60db.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;常见问题&#34;&gt;常见问题&lt;/h2&gt;
+&lt;h3 id=&#34;401-unauthorized&#34;&gt;401 Unauthorized&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/a541f82e213a98de7f9e69a614e0e7bc.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/a541f82e213a98de7f9e69a614e0e7bc.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;.env&lt;/code&gt;中的&lt;code&gt;STRAVA_REFRESH_TOKEN&lt;/code&gt;可能过期，需要重新获取。又或者压根就忘记了获取&lt;code&gt;refresh_token&lt;/code&gt;，需要重新获取。&lt;/p&gt;
+&lt;h3 id=&#34;failed-to-connect-to-nominatimopenstreetmaporg&#34;&gt;Failed to connect to nominatim.openstreetmap.org&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/86b6394d0eca978d164927d9129641ea.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/86b6394d0eca978d164927d9129641ea.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;因为需要生成一些地图热点信息，所以需要访问 nominatim.openstreetmap.org，所以需要配置代理。&lt;/p&gt;
+&lt;h3 id=&#34;tring-to-calculate-the-relative-power-for-activity&#34;&gt;Tring to calculate the relative power for activity&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e39d6ef29c3288646bfd500908e58e0c.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e39d6ef29c3288646bfd500908e58e0c.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;因为需要计算相对功率重量比（w/kg），所以需要配置体重历史。如果发现某个活动的时间点没有配置体重信息就会报这个错。看看&lt;code&gt;.env&lt;/code&gt;中的&lt;code&gt;ATHLETE_WEIGHTS&lt;/code&gt;是否配置正确。我建议直接修改成我提供的数据，也就是从 1970 年开始都是当前的体重。因为我尝试配置了自己的体重历史，但是一直报错，所以直接改成了这个。&lt;/p&gt;
+&lt;h3 id=&#34;looks-like-you-still-need-to-import-your-strava-data&#34;&gt;Looks like you still need to import your strava data&lt;/h3&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e31949d1bf03a1df838b21a74908bfbc.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e31949d1bf03a1df838b21a74908bfbc.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;如果你只执行了&lt;code&gt;docker-compose up -d&lt;/code&gt;，而没有执行导入数据的命令，那么就会出现这个错误。需要执行导入数据的命令。如果你已经导入成功了，如果还报这个错，就需要重启一下容器。&lt;/p&gt;
+</description>
+      <content:encoded><![CDATA[<h1 id="strava-statistics-部署文档">Strava Statistics 部署文档</h1>
+<p><a href="https://github.com/robiningelbrecht/strava-statistics">Strava Statistics</a> 是一个自托管工具，利用 Strava 数据生成个人运动统计，支持 Docker 部署，提供丰富的可视化分析。下面介绍如何使用 Docker Compose 部署。</p>
+<h2 id="申请-strava-的-api-权限">申请 Strava 的 API 权限</h2>
+<p>在<a href="https://lifeislife.cn/awesome-cycling/docs/training-fitness/zwiftoffline/">ZwiftOffline</a>中也需要用到 API 权限，因为不同应用程序也不冲突，懒得再重新申请，所以以下填的信息使用的 ZwiftOffline 的 API 权限。</p>
+<p>登录<a href="https://www.strava.com/settings/api">Strava</a>，申请 API，获取<code>Client ID</code>和<code>Client Secret</code>。</p>
+<p>填写内容可以参考下图：</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/d8024be9518e5a262538aa5d48c7fbb0.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/d8024be9518e5a262538aa5d48c7fbb0.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>其中授权回调域填写：launcher.zwift.com</p>
+<p>申请完成后会得到下面的信息：</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/a5024f9e2e150810251222315be11ac9.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/09/a5024f9e2e150810251222315be11ac9.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>将下面链接中的<code>client_id</code>值换成上图中的客户 ID，然后浏览器中访问这个链接：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">http://www.strava.com/oauth/authorize?client_id=xxxxxxx&amp;response_type=code&amp;redirect_uri=http://localhost/exchange_token&amp;approval_prompt=force&amp;scope=activity:read_all
+</span></span></code></pre></div><p>点击授权：</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/89a9c1d81d40e6b4687531ab92d689a2.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/89a9c1d81d40e6b4687531ab92d689a2.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>此时跳转到一个无法访问的网页，将地址栏中的<code>code</code>值记录下来，后面需要用到：</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/c3a74e83d363bb0f453ad37712dd28ac.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/c3a74e83d363bb0f453ad37712dd28ac.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>需要用这个<code>code</code>发起一个 cURL 请求得到<code>refresh_token</code>，具体做法是在命令行终端中执行下面的命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">	curl -X POST https://www.strava.com/oauth/token <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>	-F <span class="nv">client_id</span><span class="o">=</span>YOURCLIENTID <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>	-F <span class="nv">client_secret</span><span class="o">=</span>YOURCLIENTSECRET <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>	-F <span class="nv">code</span><span class="o">=</span>AUTHORIZATIONCODE <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>	-F <span class="nv">grant_type</span><span class="o">=</span>authorization_code
+</span></span></code></pre></div><ul>
+<li><code>client_id</code>值替换为申请得到的<code>客户ID</code></li>
+<li><code>client_secret</code>值替换为申请得到的<code>客户端密钥</code></li>
+<li><code>code</code>替换为上一步浏览器中得到的<code>code</code></li>
+</ul>
+<p>执行成功后可以得到下面的返回信息，需要将返回值中的<code>refresh_token</code>和<code>access_token</code>记录下来，后面需要用到：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">{</span><span class="s2">&#34;token_type&#34;</span>:<span class="s2">&#34;Bearer&#34;</span>,<span class="s2">&#34;expires_at&#34;</span>:1740213400,<span class="s2">&#34;expires_in&#34;</span>:21600,<span class="s2">&#34;refresh_token&#34;</span>:<span class="s2">&#34;123456789123456789&#34;</span>,<span class="s2">&#34;access_token&#34;</span>:<span class="s2">&#34;123456789123456789&#34;</span>,<span class="s2">&#34;athlete&#34;</span>:<span class="o">{</span><span class="s2">&#34;id&#34;</span>:117756825,<span class="s2">&#34;username&#34;</span>:<span class="s2">&#34;dunky_zhang&#34;</span>,<span class="s2">&#34;resource_state&#34;</span>:2,<span class="s2">&#34;firstname&#34;</span>:<span class="s2">&#34;Dominic&#34;</span>,<span class="s2">&#34;lastname&#34;</span>:<span class="s2">&#34;Zhang&#34;</span>,<span class="s2">&#34;bio&#34;</span>:<span class="s2">&#34;骑行小白&#34;</span>,<span class="s2">&#34;city&#34;</span>:<span class="s2">&#34;&#34;</span>,<span class="s2">&#34;state&#34;</span>:<span class="s2">&#34;&#34;</span>,<span class="s2">&#34;country&#34;</span>:null,<span class="s2">&#34;sex&#34;</span>:<span class="s2">&#34;M&#34;</span>,<span class="s2">&#34;premium&#34;</span>:true,<span class="s2">&#34;summit&#34;</span>:true,<span class="s2">&#34;created_at&#34;</span>:<span class="s2">&#34;2023-05-10T13:54:32Z&#34;</span>,<span class="s2">&#34;updated_at&#34;</span>:<span class="s2">&#34;2025-02-06T05:29:52Z&#34;</span>,<span class="s2">&#34;badge_type_id&#34;</span>:1,<span class="s2">&#34;weight&#34;</span>:66.0,<span class="s2">&#34;profile_medium&#34;</span>:<span class="s2">&#34;https://dgalywyr863hv.cloudfront.net/pictures/athletes/117756825/32138099/2/medium.jpg&#34;</span>,<span class="s2">&#34;profile&#34;</span>:<span class="s2">&#34;https://dgalywyr863hv.cloudfront.net/pictures/athletes/117756825/32138099/2/large.jpg&#34;</span>,<span class="s2">&#34;friend&#34;</span>:null,<span class="s2">&#34;follower&#34;</span>:null<span class="o">}}</span><span class="c1">#</span>
+</span></span></code></pre></div><h2 id="docker-compose-部署-strava-statistics">Docker Compose 部署 Strava Statistics</h2>
+<p>创建目录用于存放 Strava Statistics 的配置文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir statistics-for-strava
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> statistics-for-strava
+</span></span></code></pre></div><p>创建 <code>docker-compose.yml</code> 文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">touch docker-compose.yml
+</span></span></code></pre></div><p>编辑 <code>docker-compose.yml</code> 文件，填入以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">services</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">robiningelbrecht/strava-statistics:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./build:/var/www/build</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./storage/database:/var/www/storage/database</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">./storage/files:/var/www/storage/files</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l">./.env</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="m">8080</span><span class="p">:</span><span class="m">8080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">PUID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">PGID=1000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">TZ=Asia/Shanghai</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c"># 因为 Strava 的 API 需要代理访问，所以下面设置了我的代理地址，请你根据自己的代理地址进行设置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">http_proxy=http://192.168.1.9:7890</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">https_proxy=http://192.168.1.9:7890</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">all_proxy=socks5://192.168.1.9:7891</span><span class="w">
+</span></span></span></code></pre></div><p>创建 <code>.env</code> 文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">touch .env
+</span></span></code></pre></div><p>编辑 <code>.env</code> 文件，填入以下内容：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 应用程序将托管的URL。此URL将用于清单文件中。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 这将允许您将Web应用程序作为原生应用程序安装到您的设备上。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">MANIFEST_APP_URL</span><span class="o">=</span>http://localhost:8080/
+</span></span><span class="line"><span class="cl"><span class="c1"># 您的Strava应用程序的客户端ID。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">STRAVA_CLIENT_ID</span><span class="o">=</span>xxxxxxx
+</span></span><span class="line"><span class="cl"><span class="c1"># 您的Strava应用程序的客户端密钥。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">STRAVA_CLIENT_SECRET</span><span class="o">=</span>xxxxxxxxxxxxxx
+</span></span><span class="line"><span class="cl"><span class="c1"># 您的Strava应用程序的刷新令牌。在上一步获取到的</span>
+</span></span><span class="line"><span class="cl"><span class="nv">STRAVA_REFRESH_TOKEN</span><span class="o">=</span>xxxxxxxxxxxxxx
+</span></span><span class="line"><span class="cl"><span class="c1"># Strava API有限速限制（https://github.com/robiningelbrecht/strava-statistics/wiki），</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 为了确保我们不会达到限速，我们希望限制每次导入处理的新活动数量。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 考虑到每天有1000次请求限制，并且导入一个新活动最多可能需要3次API调用，250应该是一个安全的数字。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">NUMBER_OF_NEW_ACTIVITIES_TO_PROCESS_PER_IMPORT</span><span class="o">=</span><span class="m">250</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 定期运行导入和HTML构建的计划。留空以禁用定期导入。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 默认计划为每天凌晨04:05运行一次。如果您不知道什么是cron表达式，请勿更改此项。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 请确保不要过于频繁地运行导入，以避免达到Strava API的限速。每天一次应该足够。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">IMPORT_AND_BUILD_SCHEDULE</span><span class="o">=</span><span class="s2">&#34;5 4 * * *&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置用于计划的时区</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 有效的时区可以在此处找到（TZ标识符列）：https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List</span>
+</span></span><span class="line"><span class="cl"><span class="nv">TZ</span><span class="o">=</span>Asia/Shanghai
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 允许的选项：en_US、fr_FR 或 nl_BE</span>
+</span></span><span class="line"><span class="cl"><span class="nv">LOCALE</span><span class="o">=</span>en_US
+</span></span><span class="line"><span class="cl"><span class="c1"># 允许的选项：metric（公制）或 imperial（英制）</span>
+</span></span><span class="line"><span class="cl"><span class="nv">UNIT_SYSTEM</span><span class="o">=</span>metric
+</span></span><span class="line"><span class="cl"><span class="c1"># 渲染应用程序时使用的时间格式</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 允许的格式：24 或 12（包括AM和PM）</span>
+</span></span><span class="line"><span class="cl"><span class="nv">TIME_FORMAT</span><span class="o">=</span><span class="m">24</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 渲染应用程序时使用的日期格式</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 允许的格式：DAY-MONTH-YEAR（日-月-年）或 MONTH-DAY-YEAR（月-日-年）</span>
+</span></span><span class="line"><span class="cl"><span class="nv">DATE_FORMAT</span><span class="o">=</span>DAY-MONTH-YEAR
+</span></span><span class="line"><span class="cl"><span class="c1"># 要导入的运动类型。留空以导入所有运动类型。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 通过此列表，您还可以决定运动类型的渲染顺序。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 完整的允许选项列表可在以下地址找到：https://github.com/robiningelbrecht/strava-statistics/wiki/Supported-sport-types/</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SPORT_TYPES_TO_IMPORT</span><span class="o">=</span><span class="s1">&#39;[]&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 您的生日。需要用于计算心率区间。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ATHLETE_BIRTHDAY</span><span class="o">=</span>1999-01-01
+</span></span><span class="line"><span class="cl"><span class="c1"># 体重历史（单位为千克或磅，取决于UNIT_SYSTEM）。需要用于计算相对功率重量比（w/kg）。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看更多信息：https://github.com/robiningelbrecht/strava-statistics/wiki</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ATHLETE_WEIGHTS</span><span class="o">=</span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;1970-01-01&#34;: 68
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># FTP（功能阈值功率）历史。需要用于计算活动压力水平。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看更多信息：https://github.com/robiningelbrecht/strava-statistics/wiki</span>
+</span></span><span class="line"><span class="cl"><span class="nv">FTP_VALUES</span><span class="o">=</span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;2024-12-12&#34;: 235
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 包含ntfy主题的完整URL。此主题将用于在新的HTML构建运行时通知您。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 留空以禁用通知。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">NTFY_URL</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 在导入期间要跳过的活动ID数组。</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 这允许您在导入时跳过特定活动。</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ACTIVITIES_TO_SKIP_DURING_IMPORT</span><span class="o">=</span><span class="s1">&#39;[]&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 创建/拥有由strava-statistics管理的文件的UID和GID</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 可能仅在Linux主机上需要，详见Wiki中的文件权限部分</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#PUID=</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#PGID=</span>
+</span></span></code></pre></div><p>开始导入数据：</p>
+<ul>
+<li>
+<p>启动容器</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose up -d
+</span></span></code></pre></div></li>
+<li>
+<p>导入数据</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker compose <span class="nb">exec</span> App bin/console app:strava:import-data
+</span></span><span class="line"><span class="cl">docker compose <span class="nb">exec</span> App bin/console app:strava:build-files
+</span></span></code></pre></div><p>导入过程非常非常慢，因为需要挨个数据获取，并且很容易出错，如果出错了，需要先关闭容器，然后重新导入。以下是导入成功的截图：
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/af3c468483a1c46544c02b5c2d8124ac.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/af3c468483a1c46544c02b5c2d8124ac.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+</li>
+<li>
+<p>访问 <code>localhost:8080</code> 查看数据</p>
+</li>
+</ul>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/07a1a21d1c53ab4560de20f5cbcb60db.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/03/08/07a1a21d1c53ab4560de20f5cbcb60db.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<h2 id="常见问题">常见问题</h2>
+<h3 id="401-unauthorized">401 Unauthorized</h3>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/a541f82e213a98de7f9e69a614e0e7bc.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/a541f82e213a98de7f9e69a614e0e7bc.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p><code>.env</code>中的<code>STRAVA_REFRESH_TOKEN</code>可能过期，需要重新获取。又或者压根就忘记了获取<code>refresh_token</code>，需要重新获取。</p>
+<h3 id="failed-to-connect-to-nominatimopenstreetmaporg">Failed to connect to nominatim.openstreetmap.org</h3>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/86b6394d0eca978d164927d9129641ea.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/22/86b6394d0eca978d164927d9129641ea.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>因为需要生成一些地图热点信息，所以需要访问 nominatim.openstreetmap.org，所以需要配置代理。</p>
+<h3 id="tring-to-calculate-the-relative-power-for-activity">Tring to calculate the relative power for activity</h3>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e39d6ef29c3288646bfd500908e58e0c.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e39d6ef29c3288646bfd500908e58e0c.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>因为需要计算相对功率重量比（w/kg），所以需要配置体重历史。如果发现某个活动的时间点没有配置体重信息就会报这个错。看看<code>.env</code>中的<code>ATHLETE_WEIGHTS</code>是否配置正确。我建议直接修改成我提供的数据，也就是从 1970 年开始都是当前的体重。因为我尝试配置了自己的体重历史，但是一直报错，所以直接改成了这个。</p>
+<h3 id="looks-like-you-still-need-to-import-your-strava-data">Looks like you still need to import your strava data</h3>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e31949d1bf03a1df838b21a74908bfbc.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2025/02/23/e31949d1bf03a1df838b21a74908bfbc.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>如果你只执行了<code>docker-compose up -d</code>，而没有执行导入数据的命令，那么就会出现这个错误。需要执行导入数据的命令。如果你已经导入成功了，如果还报这个错，就需要重启一下容器。</p>
+]]></content:encoded>
+    </item>
     <item>
       <title>速联SRAM RIVAL升级功率计</title>
       <link>https://lifeislife.cn/posts/%E9%80%9F%E8%81%94sram-rival%E5%8D%87%E7%BA%A7%E5%8A%9F%E7%8E%87%E8%AE%A1/</link>
