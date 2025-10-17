@@ -4,7 +4,7 @@
     <title>RISC-v 入门 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/risc-v-%E5%85%A5%E9%97%A8/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in RISC-v 入门 on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Thu, 22 Sep 2022 09:37:54 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/risc-v-%E5%85%A5%E9%97%A8/index.xml" rel="self" type="application/rss+xml" />
@@ -15,7 +15,8 @@
       <guid>https://lifeislife.cn/posts/zh-the-risc-v-instruction-set-manual-volume-2-%E7%89%B9%E6%9D%83%E7%BA%A7%E6%9E%B6%E6%9E%84/</guid>
       <description>&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Document Version 20211203&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Document Version 20211203&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h1 id=&#34;control-and-status-registers-csrs&#34;&gt;Control and Status Registers (CSRs)&lt;/h1&gt;
 &lt;h1 id=&#34;machine-level-isa-version-112&#34;&gt;Machine-Level ISA, Version 1.12&lt;/h1&gt;
 &lt;p&gt;本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。&lt;/p&gt;
@@ -102,7 +103,8 @@
 &lt;/html&gt;&lt;/p&gt;
 &lt;p&gt;misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&amp;hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。&lt;/p&gt;
 &lt;p&gt;Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。&lt;/p&gt;
 &lt;p&gt;复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。&lt;/p&gt;
@@ -195,11 +197,14 @@
 &lt;/html&gt;&lt;/p&gt;
 &lt;p&gt;JEDEC 制造商 ID 通常编码为单字节连续的 &lt;code&gt;0x7f&lt;/code&gt; 代码的序列，以不等于 &lt;code&gt;0x7f&lt;/code&gt; 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。&lt;code&gt;mvendorid&lt;/code&gt; 在 Bank 字段中编码单字节的连续代码，并在 &lt;code&gt;Offset&lt;/code&gt; 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID &lt;code&gt;0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a&lt;/code&gt;（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 &lt;code&gt;0x60a&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：&lt;a href=&#34;http://www.softnology.biz/pdf/JEP106AV.pdf&#34;&gt;Standard Manufacturer’s Identification Code&lt;/a&gt;，通过读取&lt;code&gt;mvendorid&lt;/code&gt;寄存器值，查阅该标准即可确定制造商。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：&lt;a href=&#34;http://www.softnology.biz/pdf/JEP106AV.pdf&#34;&gt;Standard Manufacturer’s Identification Code&lt;/a&gt;，通过读取&lt;code&gt;mvendorid&lt;/code&gt;寄存器值，查阅该标准即可确定制造商。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;machine-mode-privileged-instructions&#34;&gt;Machine-Mode Privileged Instructions&lt;/h2&gt;
 &lt;h3 id=&#34;environment-call-and-breakpoint&#34;&gt;Environment Call and Breakpoint&lt;/h3&gt;
 &lt;h3 id=&#34;trap-return-instructions&#34;&gt;Trap-Return Instructions&lt;/h3&gt;
@@ -247,7 +252,8 @@
 </description>
       <content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
 <blockquote>
-<p>Document Version 20211203</p></blockquote>
+<p>Document Version 20211203</p>
+</blockquote>
 <h1 id="control-and-status-registers-csrs">Control and Status Registers (CSRs)</h1>
 <h1 id="machine-level-isa-version-112">Machine-Level ISA, Version 1.12</h1>
 <p>本章介绍了机器模式（M-mode）中可用的机器级操作，这是 RISC-V 系统中最高权限的模式。M 模式用于对硬件平台的低级访问，是复位时进入的第一个模式。M 模式也可以用来实现那些在硬件中直接实现过于困难或成本高昂的功能。RISC-V 的机器级 ISA 包含一个共同的核心，根据支持的其他权限级别和硬件实现的其他细节来扩展。</p>
@@ -334,7 +340,8 @@
 </html></p>
 <p>misa CSR 为 MXLEN 位宽。如果从 misa 读取的值不为零，该值的 MXL 字段总是表示当前的 MXLEN。如果对 misa 的写操作导致 MXLEN 发生更改，则 MXL 的位置将以新的宽度移动到 misa 的最高有效两位。</p>
 <blockquote>
-<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p></blockquote>
+<p>可以使用返回的 misa 值的符号上的分支，以及可能在符号上左移一个分支和第二个分支，来快速确定基本宽度。这些检查可以用汇编代码编写，而无需知道机器的寄存器宽度（XLEN）。基本宽度由 XLEN = 2^(MXL + 4) 给出。如果 misa 为零，则可以通过将立即数 4 放置在一个寄存器中，然后一次将寄存器左移 31 位来找到基本宽度。如果在一次移位后为零，则该机器为 RV32。如果两次移位后为零，则机器为 RV64，否则为 RV128。</p>
+</blockquote>
 <p>Extensions 字段编码了目前存有的标准扩展，其每个 bit 都对应了字母表中的一个字母（bit 0 编码扩展“A”是否存在，bit 1 编码扩展“B”是否存在&hellip; 直至 bit 25 编码“Z”）。如果基础 ISA 是 RV32I、RV64I 或 RV128I，则置位“I”bit，否则如果基础 ISA 是 RV32E，则置位“E”bit。</p>
 <p>Extensions 字段是一个能包含可写位的 WARL 字段（如果实现允许修改所支持的 ISA）。</p>
 <p>复位（reset）时，Extensions 应包含所支持扩展的最大集，如果 E 和 I 都可用，则优先选择 I。</p>
@@ -427,11 +434,14 @@
 </html></p>
 <p>JEDEC 制造商 ID 通常编码为单字节连续的 <code>0x7f</code> 代码的序列，以不等于 <code>0x7f</code> 的单字节 ID 终止，并且在每个字节的最高有效位中带有奇校验位。<code>mvendorid</code> 在 Bank 字段中编码单字节的连续代码，并在 <code>Offset</code> 字段中编码最后一个字节，丢弃奇偶校验位。例如，JEDEC 制造商 ID <code>0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x7f 0x8a</code>（十二个连续代码，后跟 0x8a）将在 mvendorid 字段中编码为 <code>0x60a</code>。</p>
 <blockquote>
-<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p></blockquote>
+<p>译者注：JEDEC 固态技术协会（JEDEC Solid State Technology Association）是固态及半导体工业界的一个标准化组织，它由约 300 家公司成员组成，约 3300 名技术人员通过 50 个不同的委员会运作，制定固态电子方面的工业标准。JEDEC 曾经是电子工业联盟（EIA）的一部分：联合电子设备工程委员会（Joint Electron Device Engineering Council，JEDEC）。该协会制定了一个制造商标识码的标准：<a href="http://www.softnology.biz/pdf/JEP106AV.pdf">Standard Manufacturer’s Identification Code</a>，通过读取<code>mvendorid</code>寄存器值，查阅该标准即可确定制造商。</p>
+</blockquote>
 <blockquote>
-<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p></blockquote>
+<p>注：用 JEDEC 的话来说，Bank 编号比 Continuation 的数量大 1；因此，mvendorid Bank 字段编码的值比 JEDEC Bank 编号小一。</p>
+</blockquote>
 <blockquote>
-<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p></blockquote>
+<p>注：以前，供应商 ID 是 RISC-V 基金会分配的编号，但这与 JEDEC 在维护制造商 ID 标准方面的工作重复。在撰写本文时，向 JEDEC 注册制造商 ID 的一次性费用为 500 美元。</p>
+</blockquote>
 <h2 id="machine-mode-privileged-instructions">Machine-Mode Privileged Instructions</h2>
 <h3 id="environment-call-and-breakpoint">Environment Call and Breakpoint</h3>
 <h3 id="trap-return-instructions">Trap-Return Instructions</h3>
@@ -628,7 +638,8 @@
 &lt;p&gt;从 User 模式调用&lt;code&gt;ECALL&lt;/code&gt;异常码等于 8，从 Supervisor 模式调用异常码等于 9，从 Machine 模式调用异常码等于 11。&lt;/p&gt;
 &lt;p&gt;异常产生时&lt;code&gt;epc&lt;/code&gt;寄存器的值存放的是&lt;code&gt;ECALL&lt;/code&gt;指令本身的地址。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;如果想触发完异常接着往下执行，需要在异常处理逻辑里把 epc 寄存器值改为下一条指令地址，否则会进入死循环。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;如果想触发完异常接着往下执行，需要在异常处理逻辑里把 epc 寄存器值改为下一条指令地址，否则会进入死循环。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;系统调用的执行流程&#34;&gt;系统调用的执行流程&lt;/h2&gt;
 &lt;p&gt;
 
@@ -936,7 +947,8 @@
 <p>从 User 模式调用<code>ECALL</code>异常码等于 8，从 Supervisor 模式调用异常码等于 9，从 Machine 模式调用异常码等于 11。</p>
 <p>异常产生时<code>epc</code>寄存器的值存放的是<code>ECALL</code>指令本身的地址。</p>
 <blockquote>
-<p>如果想触发完异常接着往下执行，需要在异常处理逻辑里把 epc 寄存器值改为下一条指令地址，否则会进入死循环。</p></blockquote>
+<p>如果想触发完异常接着往下执行，需要在异常处理逻辑里把 epc 寄存器值改为下一条指令地址，否则会进入死循环。</p>
+</blockquote>
 <h2 id="系统调用的执行流程">系统调用的执行流程</h2>
 <p>
 
@@ -2653,7 +2665,8 @@ symbol 参数是一个符号的名称&lt;/p&gt;
 &lt;p&gt;功能：指定输出文件所适用的计算机体系架构&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;为什么用 riscv64-unknown-elf-gcc，但是编译出来的文件是 32 位程序？
-riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定&lt;/p&gt;&lt;/blockquote&gt;
+riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;MEMORY&lt;/p&gt;
 &lt;p&gt;功能：用于描述目标机器上内存区域的位置，大小和相关&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;MEMORY
@@ -2664,7 +2677,8 @@ riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定&lt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ram(!rx):org = 0x40000000, l = 4M
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;TODO：括号里的 rx 含义是？&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;TODO：括号里的 rx 含义是？&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;SECTION&lt;/p&gt;
 &lt;p&gt;功能：告诉链接器如何将 input sections 映射到 output sections，以及如何将 output sections 放置到内存中。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;SECTION
@@ -2878,7 +2892,8 @@ symbol 参数是一个符号的名称</p>
 <p>功能：指定输出文件所适用的计算机体系架构</p>
 <blockquote>
 <p>为什么用 riscv64-unknown-elf-gcc，但是编译出来的文件是 32 位程序？
-riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定</p></blockquote>
+riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定</p>
+</blockquote>
 <p>MEMORY</p>
 <p>功能：用于描述目标机器上内存区域的位置，大小和相关</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MEMORY
@@ -2889,7 +2904,8 @@ riscv64 是 host 是 64 位系统，编译 target 是由 gcc 的参数决定</p>
 </span></span><span class="line"><span class="cl">    ram(!rx):org = 0x40000000, l = 4M
 </span></span><span class="line"><span class="cl">}
 </span></span></code></pre></div><blockquote>
-<p>TODO：括号里的 rx 含义是？</p></blockquote>
+<p>TODO：括号里的 rx 含义是？</p>
+</blockquote>
 <p>SECTION</p>
 <p>功能：告诉链接器如何将 input sections 映射到 output sections，以及如何将 output sections 放置到内存中。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SECTION
@@ -3199,7 +3215,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;WARL: Write Any Values, Read Legal Values&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;WARL: Write Any Values, Read Legal Values&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;BASE：trap 入口函数的基地址，必须保证四字节对齐；&lt;/p&gt;
@@ -3572,7 +3589,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;/ul&gt;
 &lt;h2 id=&#34;trap-处理流程&#34;&gt;Trap 处理流程&lt;/h2&gt;
 &lt;blockquote&gt;
-&lt;p&gt;主要为 Exception，下一章详解 Interrupt。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;主要为 Exception，下一章详解 Interrupt。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;初始化&#34;&gt;初始化&lt;/h3&gt;
 &lt;p&gt;将&lt;code&gt;trap&lt;/code&gt;的基地址写入寄存器，&lt;/p&gt;
 &lt;p&gt;
@@ -4097,7 +4115,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </body>
 </html></p>
 <blockquote>
-<p>WARL: Write Any Values, Read Legal Values</p></blockquote>
+<p>WARL: Write Any Values, Read Legal Values</p>
+</blockquote>
 <ul>
 <li>
 <p>BASE：trap 入口函数的基地址，必须保证四字节对齐；</p>
@@ -4470,7 +4489,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </ul>
 <h2 id="trap-处理流程">Trap 处理流程</h2>
 <blockquote>
-<p>主要为 Exception，下一章详解 Interrupt。</p></blockquote>
+<p>主要为 Exception，下一章详解 Interrupt。</p>
+</blockquote>
 <h3 id="初始化">初始化</h3>
 <p>将<code>trap</code>的基地址写入寄存器，</p>
 <p>
@@ -7724,7 +7744,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;为何对 word 的 加载 不区分无符号和有符号方式 (RV32)？RV32 下寄存器是 4 字节，加载 word 也是 4 字节，自然不需要扩展。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;为何对 word 的 加载 不区分无符号和有符号方式 (RV32)？RV32 下寄存器是 4 字节，加载 word 也是 4 字节，自然不需要扩展。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -7764,9 +7785,11 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;为何 store 不区分有符号还是无符号？因为从目的地址只有 1 字节，不管是写 1 字节，2 字节，还是 4 字节，都只用到最低的 1 字节。不需要考虑符号&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;为何 store 不区分有符号还是无符号？因为从目的地址只有 1 字节，不管是写 1 字节，2 字节，还是 4 字节，都只用到最低的 1 字节。不需要考虑符号&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;立即数分两个地方存，为了解码效率&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;立即数分两个地方存，为了解码效率&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;条件分支指令&#34;&gt;条件分支指令&lt;/h3&gt;
 &lt;p&gt;
 
@@ -7975,7 +7998,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;...&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;如何解决长距离跳转？使用 AUIPC 来构建一个大数，配合 JALR 使用。如  auipc x6,imm-20  jalr x1,x6,imm-12&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;如何解决长距离跳转？使用 AUIPC 来构建一个大数，配合 JALR 使用。如  auipc x6,imm-20  jalr x1,x6,imm-12&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -8176,7 +8200,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 &lt;p&gt;因为寄存器需要经常在编程中使用，所以 ABI 名就是寄存器的别名。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;这些寄存器其实都可以设置成被调用者保存，也就是在被调用函数中保存一遍为啥还要分这么多
-答：因为保存一遍效率低&lt;/p&gt;&lt;/blockquote&gt;
+答：因为保存一遍效率低&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;
 
 &lt;!DOCTYPE html&gt;
@@ -9520,7 +9545,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </body>
 </html></p>
 <blockquote>
-<p>为何对 word 的 加载 不区分无符号和有符号方式 (RV32)？RV32 下寄存器是 4 字节，加载 word 也是 4 字节，自然不需要扩展。</p></blockquote>
+<p>为何对 word 的 加载 不区分无符号和有符号方式 (RV32)？RV32 下寄存器是 4 字节，加载 word 也是 4 字节，自然不需要扩展。</p>
+</blockquote>
 <p>
 
 <!DOCTYPE html>
@@ -9560,9 +9586,11 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </body>
 </html></p>
 <blockquote>
-<p>为何 store 不区分有符号还是无符号？因为从目的地址只有 1 字节，不管是写 1 字节，2 字节，还是 4 字节，都只用到最低的 1 字节。不需要考虑符号</p></blockquote>
+<p>为何 store 不区分有符号还是无符号？因为从目的地址只有 1 字节，不管是写 1 字节，2 字节，还是 4 字节，都只用到最低的 1 字节。不需要考虑符号</p>
+</blockquote>
 <blockquote>
-<p>立即数分两个地方存，为了解码效率</p></blockquote>
+<p>立即数分两个地方存，为了解码效率</p>
+</blockquote>
 <h3 id="条件分支指令">条件分支指令</h3>
 <p>
 
@@ -9771,7 +9799,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">...</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div><blockquote>
-<p>如何解决长距离跳转？使用 AUIPC 来构建一个大数，配合 JALR 使用。如  auipc x6,imm-20  jalr x1,x6,imm-12</p></blockquote>
+<p>如何解决长距离跳转？使用 AUIPC 来构建一个大数，配合 JALR 使用。如  auipc x6,imm-20  jalr x1,x6,imm-12</p>
+</blockquote>
 <p>
 
 <!DOCTYPE html>
@@ -9972,7 +10001,8 @@ $$a_0,a_1,\dotsb,a_{n-1}$$
 <p>因为寄存器需要经常在编程中使用，所以 ABI 名就是寄存器的别名。</p>
 <blockquote>
 <p>这些寄存器其实都可以设置成被调用者保存，也就是在被调用函数中保存一遍为啥还要分这么多
-答：因为保存一遍效率低</p></blockquote>
+答：因为保存一遍效率低</p>
+</blockquote>
 <p>
 
 <!DOCTYPE html>

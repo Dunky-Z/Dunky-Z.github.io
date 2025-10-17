@@ -4,7 +4,7 @@
     <title>UCore 实验 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/ucore-%E5%AE%9E%E9%AA%8C/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in UCore 实验 on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Fri, 08 Sep 2023 10:46:20 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/ucore-%E5%AE%9E%E9%AA%8C/index.xml" rel="self" type="application/rss+xml" />
@@ -14,11 +14,13 @@
       <pubDate>Fri, 08 Sep 2023 10:46:20 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/ucore-%E5%AE%9E%E9%AA%8C%E7%AC%AC0%E7%AB%A0-%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;本次实验是清华大学操作系统课程的课程实验，实验内容是基于 RISC-V 架构的 uCore 操作系统。本次实验的目的是搭建实验环境，为后续实验做准备。指导书参考&lt;a href=&#34;https://learningos.github.io/uCore-Tutorial-Guide-2023S/index.html&#34;&gt;uCore-Tutorial-Guide-2023S 文档&lt;/a&gt;。本系列文章内容主要是指导书的补充以及我在实验过程的一些理解。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;本次实验是清华大学操作系统课程的课程实验，实验内容是基于 RISC-V 架构的 uCore 操作系统。本次实验的目的是搭建实验环境，为后续实验做准备。指导书参考&lt;a href=&#34;https://learningos.github.io/uCore-Tutorial-Guide-2023S/index.html&#34;&gt;uCore-Tutorial-Guide-2023S 文档&lt;/a&gt;。本系列文章内容主要是指导书的补充以及我在实验过程的一些理解。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;本章没有什么需要特别说明的，指导手册十分详细，按照指导手册的步骤一步步来就可以了。因为平时也在用 WSL2 开发，所以配置十分顺利，没有遇到什么问题。这篇文章就当占坑了，如果后续有什么需要补充的再来更新。&lt;/p&gt;
 </description>
       <content:encoded><![CDATA[<blockquote>
-<p>本次实验是清华大学操作系统课程的课程实验，实验内容是基于 RISC-V 架构的 uCore 操作系统。本次实验的目的是搭建实验环境，为后续实验做准备。指导书参考<a href="https://learningos.github.io/uCore-Tutorial-Guide-2023S/index.html">uCore-Tutorial-Guide-2023S 文档</a>。本系列文章内容主要是指导书的补充以及我在实验过程的一些理解。</p></blockquote>
+<p>本次实验是清华大学操作系统课程的课程实验，实验内容是基于 RISC-V 架构的 uCore 操作系统。本次实验的目的是搭建实验环境，为后续实验做准备。指导书参考<a href="https://learningos.github.io/uCore-Tutorial-Guide-2023S/index.html">uCore-Tutorial-Guide-2023S 文档</a>。本系列文章内容主要是指导书的补充以及我在实验过程的一些理解。</p>
+</blockquote>
 <p>本章没有什么需要特别说明的，指导手册十分详细，按照指导手册的步骤一步步来就可以了。因为平时也在用 WSL2 开发，所以配置十分顺利，没有遇到什么问题。这篇文章就当占坑了，如果后续有什么需要补充的再来更新。</p>
 ]]></content:encoded>
     </item>
@@ -90,7 +92,8 @@
 第一阶段：加电后 CPU 的 PC 寄存器被设置为计算机内部只读存储器（ROM，Read-only Memory）的物理地址，随后 CPU 开始运行 ROM 内的软件。我们一般将该软件称为固件（Firmware），它的功能是对 CPU 进行一些初始化操作，将后续阶段的 bootloader 的代码、数据从硬盘载入到物理内存，最后跳转到适当的地址将计算机控制权转移给 bootloader。它大致对应于 Qemu 启动的第一阶段，即在物理地址 0x1000 处放置的若干条指令。可以看到 Qemu 上的固件非常简单，因为它并不需要负责将 bootloader 从硬盘加载到物理内存中，这个任务此前已经由 Qemu 自身完成了。
 第二阶段：bootloader 同样完成一些 CPU 的初始化工作，将操作系统镜像从硬盘加载到物理内存中，最后跳转到适当地址将控制权转移给操作系统。可以看到一般情况下 bootloader 需要完成一些数据加载工作，这也就是它名字中 loader 的来源。它对应于 Qemu 启动的第二阶段。在 Qemu 中，我们使用的 RustSBI 功能较弱，它并没有能力完成加载的工作，内核镜像实际上是和 bootloader 一起在 Qemu 启动之前加载到物理内存中的。
 第三阶段：控制权被转移给操作系统。由于篇幅所限后面我们就不再赘述了。
-值得一提的是，为了让计算机的启动更加灵活，bootloader 目前可能非常复杂：它可能也分为多个阶段，并且能管理一些硬件资源，从复杂性上它已接近一个传统意义上的操作系统。&lt;/p&gt;&lt;/blockquote&gt;
+值得一提的是，为了让计算机的启动更加灵活，bootloader 目前可能非常复杂：它可能也分为多个阶段，并且能管理一些硬件资源，从复杂性上它已接近一个传统意义上的操作系统。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h1 id=&#34;终端是如何控制颜色的&#34;&gt;终端是如何控制颜色的？&lt;/h1&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;enum&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;LOG_COLOR&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;n&#34;&gt;RED&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;31&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
@@ -116,7 +119,8 @@
 &lt;p&gt;更多详细解释可以参考文章：&lt;a href=&#34;https://www.jianshu.com/p/790fc612aaa5&#34;&gt;终端颜色控制 - 简书&lt;/a&gt;。&lt;/p&gt;
 &lt;h1 id=&#34;应用程序输出字符会调用-sbi-服务sbi-中发生了什么&#34;&gt;应用程序输出字符会调用 SBI 服务，SBI 中发生了什么？&lt;/h1&gt;
 &lt;blockquote&gt;
-&lt;p&gt;因为对 Rust 语言不熟悉，所以这里的分析是基于 C 语言的 OpenSBI 来分析的，他们的逻辑是一样的。如果有熟悉 Rust 的可以查看 &lt;a href=&#34;https://github.com/rustsbi/rustsbi/blob/main/src/instance.rs&#34;&gt;RustSBI 源码&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;因为对 Rust 语言不熟悉，所以这里的分析是基于 C 语言的 OpenSBI 来分析的，他们的逻辑是一样的。如果有熟悉 Rust 的可以查看 &lt;a href=&#34;https://github.com/rustsbi/rustsbi/blob/main/src/instance.rs&#34;&gt;RustSBI 源码&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;根据指导书中的解释以及阅读代码，我们知道调用了 &lt;code&gt;printf&lt;/code&gt; 最终实际上是调用了 &lt;code&gt;sbi_call&lt;/code&gt;。那么 &lt;code&gt;sbi_call&lt;/code&gt; 是如何实现的呢？因为我是做驱动开发以及固件开发的，也经常需要使用 OpenSBI，所想多问一句，OpenSBI 是如何实现的呢？OpenSBI 是如何提供服务的呢？它是如何打印出字符的呢？&lt;/p&gt;
 &lt;h2 id=&#34;内核中的-sbi-调用&#34;&gt;内核中的 SBI 调用&lt;/h2&gt;
 &lt;p&gt;我们先看一下内核中的 &lt;code&gt;sbi_call&lt;/code&gt; 都做了写啥。&lt;/p&gt;
@@ -581,7 +585,8 @@
 第一阶段：加电后 CPU 的 PC 寄存器被设置为计算机内部只读存储器（ROM，Read-only Memory）的物理地址，随后 CPU 开始运行 ROM 内的软件。我们一般将该软件称为固件（Firmware），它的功能是对 CPU 进行一些初始化操作，将后续阶段的 bootloader 的代码、数据从硬盘载入到物理内存，最后跳转到适当的地址将计算机控制权转移给 bootloader。它大致对应于 Qemu 启动的第一阶段，即在物理地址 0x1000 处放置的若干条指令。可以看到 Qemu 上的固件非常简单，因为它并不需要负责将 bootloader 从硬盘加载到物理内存中，这个任务此前已经由 Qemu 自身完成了。
 第二阶段：bootloader 同样完成一些 CPU 的初始化工作，将操作系统镜像从硬盘加载到物理内存中，最后跳转到适当地址将控制权转移给操作系统。可以看到一般情况下 bootloader 需要完成一些数据加载工作，这也就是它名字中 loader 的来源。它对应于 Qemu 启动的第二阶段。在 Qemu 中，我们使用的 RustSBI 功能较弱，它并没有能力完成加载的工作，内核镜像实际上是和 bootloader 一起在 Qemu 启动之前加载到物理内存中的。
 第三阶段：控制权被转移给操作系统。由于篇幅所限后面我们就不再赘述了。
-值得一提的是，为了让计算机的启动更加灵活，bootloader 目前可能非常复杂：它可能也分为多个阶段，并且能管理一些硬件资源，从复杂性上它已接近一个传统意义上的操作系统。</p></blockquote>
+值得一提的是，为了让计算机的启动更加灵活，bootloader 目前可能非常复杂：它可能也分为多个阶段，并且能管理一些硬件资源，从复杂性上它已接近一个传统意义上的操作系统。</p>
+</blockquote>
 <h1 id="终端是如何控制颜色的">终端是如何控制颜色的？</h1>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">enum</span> <span class="n">LOG_COLOR</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="n">RED</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span>
@@ -607,7 +612,8 @@
 <p>更多详细解释可以参考文章：<a href="https://www.jianshu.com/p/790fc612aaa5">终端颜色控制 - 简书</a>。</p>
 <h1 id="应用程序输出字符会调用-sbi-服务sbi-中发生了什么">应用程序输出字符会调用 SBI 服务，SBI 中发生了什么？</h1>
 <blockquote>
-<p>因为对 Rust 语言不熟悉，所以这里的分析是基于 C 语言的 OpenSBI 来分析的，他们的逻辑是一样的。如果有熟悉 Rust 的可以查看 <a href="https://github.com/rustsbi/rustsbi/blob/main/src/instance.rs">RustSBI 源码</a></p></blockquote>
+<p>因为对 Rust 语言不熟悉，所以这里的分析是基于 C 语言的 OpenSBI 来分析的，他们的逻辑是一样的。如果有熟悉 Rust 的可以查看 <a href="https://github.com/rustsbi/rustsbi/blob/main/src/instance.rs">RustSBI 源码</a></p>
+</blockquote>
 <p>根据指导书中的解释以及阅读代码，我们知道调用了 <code>printf</code> 最终实际上是调用了 <code>sbi_call</code>。那么 <code>sbi_call</code> 是如何实现的呢？因为我是做驱动开发以及固件开发的，也经常需要使用 OpenSBI，所想多问一句，OpenSBI 是如何实现的呢？OpenSBI 是如何提供服务的呢？它是如何打印出字符的呢？</p>
 <h2 id="内核中的-sbi-调用">内核中的 SBI 调用</h2>
 <p>我们先看一下内核中的 <code>sbi_call</code> 都做了写啥。</p>
@@ -1182,7 +1188,8 @@
 TRAMPOLINE 和 TRAPFRAME 被定义在最高的虚拟内存地址上，是因为它们在操作系统的内存布局中起着重要作用。
 TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发生异常或中断时，处理器将从用户模式切换到内核模式，并将控制权转移到内核中预定义的位置，也就是陷阱处理程序。TRAMPOLINE 页面被映射到最高虚拟地址，以便处理器能够在这个转换过程中方便地引用它。通过将其放置在最高地址，确保了无论系统的具体内存布局如何，它始终是可访问的。
 另一方面，TRAPFRAME 用于在发生异常或中断时存储机器状态。它包含寄存器、标志和其他操作系统处理异常所需的信息。TRAPFRAME 也被放置在最高的虚拟地址上，以确保它易于访问，并且陷阱处理程序可以高效地访问它。
-通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。&lt;/p&gt;&lt;/blockquote&gt;
+通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h1 id=&#34;如何确定分页方案---satp&#34;&gt;如何确定分页方案 - satp&lt;/h1&gt;
 &lt;p&gt;在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。&lt;/p&gt;
 &lt;p&gt;转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的&lt;strong&gt;虚拟地址的长度&lt;/strong&gt;。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。&lt;/p&gt;
@@ -1477,7 +1484,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/ol&gt;
 &lt;h3 id=&#34;请问处理-10g-连续的内存页面需要操作的页表实际大致占用多少内存-给出数量级即可&#34;&gt;请问处理 10G 连续的内存页面，需要操作的页表实际大致占用多少内存 (给出数量级即可)？&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;处理 10GB 连续的内存页面所需的页表实际上占用的内存量取决于操作系统的页表结构和管理策略。在 RISC-V 的页表结构中，一个页表项（Page Table Entry，PTE）通常占据 8 字节（64 位系统），其中包括物理页框号和一些标志位。让我们假设一个 PTE 占用 8 字节。&lt;/p&gt;
 &lt;p&gt;为了估算 10GB 连续内存页面所需的页表实际占用内存量，我们可以按照以下步骤进行计算：&lt;/p&gt;
 &lt;ol&gt;
@@ -1524,7 +1532,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/ol&gt;
 &lt;h3 id=&#34;此时页面失效如何表现在页表项-pte-上&#34;&gt;此时页面失效如何表现在页表项 (PTE) 上？&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;Dirty bit (D 位)：当页面被修改并且尚未写回到主存时，该位会被设置为 1。如果页面已经被换出到磁盘上，D 位将保持为 1，以指示页面数据已过期。&lt;/p&gt;
 &lt;p&gt;Valid bit (V 位)：当页面在主存中有效时，V 位被设置为 1。如果页面被换出到磁盘上，V 位将被清除为 0，表示该页无效。&lt;/p&gt;
 &lt;p&gt;通过检查页表项的 D 位和 V 位，操作系统可以确定页面是否需要从磁盘重新加载到内存中。如果 D 位为 1，说明页面需要写回到主存，在将其置为有效之前，必须将页数据从磁盘读取到内存中。如果 V 位为 0，说明页面当前无效，需要将其从磁盘加载到内存中，并将 V 位设置为 1，表示页面有效。&lt;/p&gt;
@@ -1550,7 +1559,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 TRAMPOLINE 和 TRAPFRAME 被定义在最高的虚拟内存地址上，是因为它们在操作系统的内存布局中起着重要作用。
 TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发生异常或中断时，处理器将从用户模式切换到内核模式，并将控制权转移到内核中预定义的位置，也就是陷阱处理程序。TRAMPOLINE 页面被映射到最高虚拟地址，以便处理器能够在这个转换过程中方便地引用它。通过将其放置在最高地址，确保了无论系统的具体内存布局如何，它始终是可访问的。
 另一方面，TRAPFRAME 用于在发生异常或中断时存储机器状态。它包含寄存器、标志和其他操作系统处理异常所需的信息。TRAPFRAME 也被放置在最高的虚拟地址上，以确保它易于访问，并且陷阱处理程序可以高效地访问它。
-通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。</p></blockquote>
+通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。</p>
+</blockquote>
 <h1 id="如何确定分页方案---satp">如何确定分页方案 - satp</h1>
 <p>在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。</p>
 <p>转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的<strong>虚拟地址的长度</strong>。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。</p>
@@ -1845,7 +1855,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ol>
 <h3 id="请问处理-10g-连续的内存页面需要操作的页表实际大致占用多少内存-给出数量级即可">请问处理 10G 连续的内存页面，需要操作的页表实际大致占用多少内存 (给出数量级即可)？</h3>
 <blockquote>
-<p>此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。</p></blockquote>
+<p>此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。</p>
+</blockquote>
 <p>处理 10GB 连续的内存页面所需的页表实际上占用的内存量取决于操作系统的页表结构和管理策略。在 RISC-V 的页表结构中，一个页表项（Page Table Entry，PTE）通常占据 8 字节（64 位系统），其中包括物理页框号和一些标志位。让我们假设一个 PTE 占用 8 字节。</p>
 <p>为了估算 10GB 连续内存页面所需的页表实际占用内存量，我们可以按照以下步骤进行计算：</p>
 <ol>
@@ -1892,7 +1903,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ol>
 <h3 id="此时页面失效如何表现在页表项-pte-上">此时页面失效如何表现在页表项 (PTE) 上？</h3>
 <blockquote>
-<p>缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。</p></blockquote>
+<p>缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。</p>
+</blockquote>
 <p>Dirty bit (D 位)：当页面被修改并且尚未写回到主存时，该位会被设置为 1。如果页面已经被换出到磁盘上，D 位将保持为 1，以指示页面数据已过期。</p>
 <p>Valid bit (V 位)：当页面在主存中有效时，V 位被设置为 1。如果页面被换出到磁盘上，V 位将被清除为 0，表示该页无效。</p>
 <p>通过检查页表项的 D 位和 V 位，操作系统可以确定页面是否需要从磁盘重新加载到内存中。如果 D 位为 1，说明页面需要写回到主存，在将其置为有效之前，必须将页数据从磁盘读取到内存中。如果 V 位为 0，说明页面当前无效，需要将其从磁盘加载到内存中，并将 V 位设置为 1，表示页面有效。</p>
@@ -1943,7 +1955,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 当 p 指向 pool 数组的第一个元素时，p - pool 的结果将是 0，因为指针相对于数组首地址的偏移量为 0。
 当 p 指向 pool 数组的第二个元素时，p - pool 的结果将是 1，因为指针相对于数组首地址的偏移量为 1。
 以此类推，当 p 指向 pool 数组的第 N 个元素时，p - pool 的结果将是 N-1，因为指针相对于数组首地址的偏移量为 N-1。
-总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。&lt;/p&gt;&lt;/blockquote&gt;
+总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;原调度函数每次都会从 pool 数组的第一个元素开始遍历，这样会导致每次都是从第一个进程开始运行，而不是从上次运行的进程开始运行。需要修改为如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 调度程序永不返回。它循环执行以下操作：
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//  - 选择要运行的进程。
@@ -2364,7 +2377,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 当 p 指向 pool 数组的第一个元素时，p - pool 的结果将是 0，因为指针相对于数组首地址的偏移量为 0。
 当 p 指向 pool 数组的第二个元素时，p - pool 的结果将是 1，因为指针相对于数组首地址的偏移量为 1。
 以此类推，当 p 指向 pool 数组的第 N 个元素时，p - pool 的结果将是 N-1，因为指针相对于数组首地址的偏移量为 N-1。
-总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。</p></blockquote>
+总结来说，如果 p 是指向 pool 数组中第 N 个元素的指针，那么 p - pool 的结果将是 N-1。</p>
+</blockquote>
 <p>原调度函数每次都会从 pool 数组的第一个元素开始遍历，这样会导致每次都是从第一个进程开始运行，而不是从上次运行的进程开始运行。需要修改为如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 调度程序永不返回。它循环执行以下操作：
 </span></span></span><span class="line"><span class="cl"><span class="c1">//  - 选择要运行的进程。

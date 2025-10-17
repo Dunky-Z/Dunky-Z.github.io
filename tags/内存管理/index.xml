@@ -4,7 +4,7 @@
     <title>内存管理 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 内存管理 on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 04 Jan 2025 10:34:10 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.xml" rel="self" type="application/rss+xml" />
@@ -170,7 +170,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里为什么要引入 section 机制？&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;对于 kernel 中的普通变量，经过了编译和链接后，会被放置到.data 或者.bss 段，系统在初始化的时候会准备好一切（例如 clear bss），由于 per CPU 变量的特殊性，内核将这些变量放置到了其他的 section，位于 kernel address space 中&lt;code&gt;__per_cpu_start&lt;/code&gt;和&lt;code&gt;__per_cpu_end&lt;/code&gt;之间，我们称之 Per-CPU 变量的原始变量。
-摘自：&lt;a href=&#34;http://www.wowotech.net/kernel_synchronization/per-cpu.html&#34;&gt;Linux 内核同步机制之（二）：Per-CPU 变量&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+摘自：&lt;a href=&#34;http://www.wowotech.net/kernel_synchronization/per-cpu.html&#34;&gt;Linux 内核同步机制之（二）：Per-CPU 变量&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;ul&gt;
 &lt;li&gt;Section 机制允许编译器将特定的数据放在目标文件的特定区域&lt;/li&gt;
 &lt;li&gt;对于 Per-CPU 变量，Linux 使用 .data..percpu section 将所有 Per-CPU 变量集中存放&lt;/li&gt;
@@ -432,7 +433,8 @@
 </span></span></code></pre></div><p>这里为什么要引入 section 机制？</p>
 <blockquote>
 <p>对于 kernel 中的普通变量，经过了编译和链接后，会被放置到.data 或者.bss 段，系统在初始化的时候会准备好一切（例如 clear bss），由于 per CPU 变量的特殊性，内核将这些变量放置到了其他的 section，位于 kernel address space 中<code>__per_cpu_start</code>和<code>__per_cpu_end</code>之间，我们称之 Per-CPU 变量的原始变量。
-摘自：<a href="http://www.wowotech.net/kernel_synchronization/per-cpu.html">Linux 内核同步机制之（二）：Per-CPU 变量</a></p></blockquote>
+摘自：<a href="http://www.wowotech.net/kernel_synchronization/per-cpu.html">Linux 内核同步机制之（二）：Per-CPU 变量</a></p>
+</blockquote>
 <ul>
 <li>Section 机制允许编译器将特定的数据放在目标文件的特定区域</li>
 <li>对于 Per-CPU 变量，Linux 使用 .data..percpu section 将所有 Per-CPU 变量集中存放</li>
@@ -548,7 +550,8 @@
 TRAMPOLINE 和 TRAPFRAME 被定义在最高的虚拟内存地址上，是因为它们在操作系统的内存布局中起着重要作用。
 TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发生异常或中断时，处理器将从用户模式切换到内核模式，并将控制权转移到内核中预定义的位置，也就是陷阱处理程序。TRAMPOLINE 页面被映射到最高虚拟地址，以便处理器能够在这个转换过程中方便地引用它。通过将其放置在最高地址，确保了无论系统的具体内存布局如何，它始终是可访问的。
 另一方面，TRAPFRAME 用于在发生异常或中断时存储机器状态。它包含寄存器、标志和其他操作系统处理异常所需的信息。TRAPFRAME 也被放置在最高的虚拟地址上，以确保它易于访问，并且陷阱处理程序可以高效地访问它。
-通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。&lt;/p&gt;&lt;/blockquote&gt;
+通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h1 id=&#34;如何确定分页方案---satp&#34;&gt;如何确定分页方案 - satp&lt;/h1&gt;
 &lt;p&gt;在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。&lt;/p&gt;
 &lt;p&gt;转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的&lt;strong&gt;虚拟地址的长度&lt;/strong&gt;。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。&lt;/p&gt;
@@ -843,7 +846,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/ol&gt;
 &lt;h3 id=&#34;请问处理-10g-连续的内存页面需要操作的页表实际大致占用多少内存-给出数量级即可&#34;&gt;请问处理 10G 连续的内存页面，需要操作的页表实际大致占用多少内存 (给出数量级即可)？&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;处理 10GB 连续的内存页面所需的页表实际上占用的内存量取决于操作系统的页表结构和管理策略。在 RISC-V 的页表结构中，一个页表项（Page Table Entry，PTE）通常占据 8 字节（64 位系统），其中包括物理页框号和一些标志位。让我们假设一个 PTE 占用 8 字节。&lt;/p&gt;
 &lt;p&gt;为了估算 10GB 连续内存页面所需的页表实际占用内存量，我们可以按照以下步骤进行计算：&lt;/p&gt;
 &lt;ol&gt;
@@ -890,7 +894,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 &lt;/ol&gt;
 &lt;h3 id=&#34;此时页面失效如何表现在页表项-pte-上&#34;&gt;此时页面失效如何表现在页表项 (PTE) 上？&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;Dirty bit (D 位)：当页面被修改并且尚未写回到主存时，该位会被设置为 1。如果页面已经被换出到磁盘上，D 位将保持为 1，以指示页面数据已过期。&lt;/p&gt;
 &lt;p&gt;Valid bit (V 位)：当页面在主存中有效时，V 位被设置为 1。如果页面被换出到磁盘上，V 位将被清除为 0，表示该页无效。&lt;/p&gt;
 &lt;p&gt;通过检查页表项的 D 位和 V 位，操作系统可以确定页面是否需要从磁盘重新加载到内存中。如果 D 位为 1，说明页面需要写回到主存，在将其置为有效之前，必须将页数据从磁盘读取到内存中。如果 V 位为 0，说明页面当前无效，需要将其从磁盘加载到内存中，并将 V 位设置为 1，表示页面有效。&lt;/p&gt;
@@ -916,7 +921,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 TRAMPOLINE 和 TRAPFRAME 被定义在最高的虚拟内存地址上，是因为它们在操作系统的内存布局中起着重要作用。
 TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发生异常或中断时，处理器将从用户模式切换到内核模式，并将控制权转移到内核中预定义的位置，也就是陷阱处理程序。TRAMPOLINE 页面被映射到最高虚拟地址，以便处理器能够在这个转换过程中方便地引用它。通过将其放置在最高地址，确保了无论系统的具体内存布局如何，它始终是可访问的。
 另一方面，TRAPFRAME 用于在发生异常或中断时存储机器状态。它包含寄存器、标志和其他操作系统处理异常所需的信息。TRAPFRAME 也被放置在最高的虚拟地址上，以确保它易于访问，并且陷阱处理程序可以高效地访问它。
-通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。</p></blockquote>
+通过将 TRAMPOLINE 和 TRAPFRAME 定义在最高的虚拟内存地址上，内核可以方便而可靠地处理异常和中断，而无需关心它们在内存中的特定位置。</p>
+</blockquote>
 <h1 id="如何确定分页方案---satp">如何确定分页方案 - satp</h1>
 <p>在 MMU 没有使能的情况下，虚拟地址和物理地址是相同的。在 MMU 使能的情况下，虚拟地址会被转换成物理地址。这个转换过程是由操作系统来管理的，操作系统需要维护一个数据结构来记录虚拟地址和物理地址的映射关系。这个数据结构就是页表。</p>
 <p>转换的过程需要分页机制，分页机制有多种。RISC-V 的分页方案以 SvX 的模式命名，其中 X 是以位为单位的<strong>虚拟地址的长度</strong>。在 RV64 架构下，RISC-V 支持多种分页方案，包括 Sv39，Sv48，Sv57 以及 Sv64。Sv39 最大支持 39 位的虚拟地址，这意味着它可以支持 512 GB 的虚拟地址空间。Sv48 最大支持 48 位的虚拟地址，这意味着它可以支持 256 TB 的虚拟地址空间。我们将在本章中实现 Sv39 分页方案。</p>
@@ -1211,7 +1217,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ol>
 <h3 id="请问处理-10g-连续的内存页面需要操作的页表实际大致占用多少内存-给出数量级即可">请问处理 10G 连续的内存页面，需要操作的页表实际大致占用多少内存 (给出数量级即可)？</h3>
 <blockquote>
-<p>此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。</p></blockquote>
+<p>此外 COW(Copy On Write) 也是常见的容易导致缺页的 Lazy 策略，这个之后再说。其实，我们的 mmap 也可以采取 Lazy 策略，比如：一个用户进程先后申请了 10G 的内存空间，然后用了其中 1M 就直接退出了。按照现在的做法，我们显然亏大了，进行了很多没有意义的页表操作。</p>
+</blockquote>
 <p>处理 10GB 连续的内存页面所需的页表实际上占用的内存量取决于操作系统的页表结构和管理策略。在 RISC-V 的页表结构中，一个页表项（Page Table Entry，PTE）通常占据 8 字节（64 位系统），其中包括物理页框号和一些标志位。让我们假设一个 PTE 占用 8 字节。</p>
 <p>为了估算 10GB 连续内存页面所需的页表实际占用内存量，我们可以按照以下步骤进行计算：</p>
 <ol>
@@ -1258,7 +1265,8 @@ TRAMPOLINE 被用作从用户模式切换到内核模式的跳转目标。当发
 </ol>
 <h3 id="此时页面失效如何表现在页表项-pte-上">此时页面失效如何表现在页表项 (PTE) 上？</h3>
 <blockquote>
-<p>缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。</p></blockquote>
+<p>缺页的另一个常见原因是 swap 策略，也就是内存页面可能被换到磁盘上了，导致对应页面失效。</p>
+</blockquote>
 <p>Dirty bit (D 位)：当页面被修改并且尚未写回到主存时，该位会被设置为 1。如果页面已经被换出到磁盘上，D 位将保持为 1，以指示页面数据已过期。</p>
 <p>Valid bit (V 位)：当页面在主存中有效时，V 位被设置为 1。如果页面被换出到磁盘上，V 位将被清除为 0，表示该页无效。</p>
 <p>通过检查页表项的 D 位和 V 位，操作系统可以确定页面是否需要从磁盘重新加载到内存中。如果 D 位为 1，说明页面需要写回到主存，在将其置为有效之前，必须将页数据从磁盘读取到内存中。如果 V 位为 0，说明页面当前无效，需要将其从磁盘加载到内存中，并将 V 位设置为 1，表示页面有效。</p>

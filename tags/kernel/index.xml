@@ -4,7 +4,7 @@
     <title>Kernel on 夜云泊</title>
     <link>https://lifeislife.cn/tags/kernel/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in Kernel on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 13 Jan 2024 22:00:16 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/kernel/index.xml" rel="self" type="application/rss+xml" />
@@ -98,7 +98,8 @@
 &lt;li&gt;语义保持不变
 这要求符号的类型不能有变化，如果类型本身是结构体(struct)，则它成员的类型不能有变化，成员在结构体内的位置不能有变化，以及成员本身不能增删。
 如果想要深入了解如何计算CRC可以参考这篇博客：&lt;a href=&#34;https://blog.csdn.net/linyt/article/details/42559639&#34;&gt;Linux内核模块符号CRC检查机制-CSDN博客&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;&lt;/blockquote&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;分析代码我们可以知道，内核会通过遍历正在加载的模块的版本信息的数组&lt;code&gt;versions&lt;/code&gt;，从中查找与给定符号名称匹配的版本信息。如果找到匹配的版本信息，则计算 CRC 值，与参数中的 CRC 值进行比较。（通过后续分析我们知道参数的 CRC 就是正在运行的内核的 module_layout 符号的 CRC）如果匹配，表示版本一致，返回 1。如果不匹配，打印调试信息，并跳转到 &lt;code&gt;bad_version&lt;/code&gt;，输出警告信息。&lt;/p&gt;
 &lt;p&gt;这里有两个疑问，&lt;/p&gt;
 &lt;ol&gt;
@@ -409,7 +410,8 @@
 <li>语义保持不变
 这要求符号的类型不能有变化，如果类型本身是结构体(struct)，则它成员的类型不能有变化，成员在结构体内的位置不能有变化，以及成员本身不能增删。
 如果想要深入了解如何计算CRC可以参考这篇博客：<a href="https://blog.csdn.net/linyt/article/details/42559639">Linux内核模块符号CRC检查机制-CSDN博客</a></li>
-</ol></blockquote>
+</ol>
+</blockquote>
 <p>分析代码我们可以知道，内核会通过遍历正在加载的模块的版本信息的数组<code>versions</code>，从中查找与给定符号名称匹配的版本信息。如果找到匹配的版本信息，则计算 CRC 值，与参数中的 CRC 值进行比较。（通过后续分析我们知道参数的 CRC 就是正在运行的内核的 module_layout 符号的 CRC）如果匹配，表示版本一致，返回 1。如果不匹配，打印调试信息，并跳转到 <code>bad_version</code>，输出警告信息。</p>
 <p>这里有两个疑问，</p>
 <ol>
@@ -642,13 +644,15 @@
       <pubDate>Tue, 12 Jul 2022 15:06:51 +0000</pubDate>
       <guid>https://lifeislife.cn/posts/%E6%9E%84%E5%BB%BA%E5%92%8C%E6%B5%8B%E8%AF%95risc-v%E6%9E%B6%E6%9E%84%E4%B8%8B%E5%90%AF%E7%94%A8acpi%E7%9A%84%E5%86%85%E6%A0%B8/</guid>
       <description>&lt;blockquote&gt;
-&lt;p&gt;参考自&lt;a href=&#34;https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel&#34;&gt;PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;参考自&lt;a href=&#34;https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel&#34;&gt;PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;准备环境及工具链&#34;&gt;准备环境及工具链&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt remove gcc-riscv64-linux-gnu
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install gcc-8-riscv64-linux-gnu
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
@@ -687,12 +691,14 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make -j &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;nproc&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;opensbi&#34;&gt;OPENSBI&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;此处我们使用以&lt;code&gt;riscv64-unknown-elf-&lt;/code&gt;为前缀的版本，则表示该版本GCC工具链会使用newlib作为C运行库。原文使用&lt;code&gt;riscv64-linux-gnu-&lt;/code&gt;，表示GCC工具链会使用Linux的Glibc作为C运行库。但是本人未编译成功。故后面编译工具均使用&lt;code&gt;riscv64-unknown-elf-&lt;/code&gt;，与原文不同。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;此处我们使用以&lt;code&gt;riscv64-unknown-elf-&lt;/code&gt;为前缀的版本，则表示该版本GCC工具链会使用newlib作为C运行库。原文使用&lt;code&gt;riscv64-linux-gnu-&lt;/code&gt;，表示GCC工具链会使用Linux的Glibc作为C运行库。但是本人未编译成功。故后面编译工具均使用&lt;code&gt;riscv64-unknown-elf-&lt;/code&gt;，与原文不同。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/opensbi
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make &lt;span class=&#34;nv&#34;&gt;ARCH&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;riscv &lt;span class=&#34;nv&#34;&gt;CROSS_COMPILE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;riscv64-unknown-elf- make &lt;span class=&#34;nv&#34;&gt;PLATFORM&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;generic
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;edk2-固件&#34;&gt;EDK2 固件&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;此处原文里设置了一些环境变量在开头我们设置了，请不要重新设置，尤其不能&lt;code&gt;export WORKSPACE=pwd&lt;/code&gt;，因为与源码脚本的WORKSPACE冲突。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;此处原文里设置了一些环境变量在开头我们设置了，请不要重新设置，尤其不能&lt;code&gt;export WORKSPACE=pwd&lt;/code&gt;，因为与源码脚本的WORKSPACE冲突。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/tianocore
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; edk2/edksetup.sh
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;make -C edk2/BaseTools clean
@@ -724,7 +730,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;rootfs&#34;&gt;Rootfs&lt;/h3&gt;
 &lt;p&gt;您可以使用您选择的任何 rootfs。此示例使用 buildroot。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;此步耗时较久，与网络环境有关，如果网络不好可能按小时算。容易中断，需要重新下载。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;此步耗时较久，与网络环境有关，如果网络不好可能按小时算。容易中断，需要重新下载。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git clone https://hub.fastgit.xyz/buildroot/buildroot.git
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/buildroot
@@ -745,7 +752,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;运行&#34;&gt;运行&lt;/h2&gt;
 &lt;h3 id=&#34;使用-virtio-blk-磁盘&#34;&gt;使用 virtio-blk 磁盘&lt;/h3&gt;
 &lt;blockquote&gt;
-&lt;p&gt;原文参数&lt;code&gt;-drive file=$WORK_DIR/buildroot/output/images/rootfs.ext2,format=raw,id=hd0&lt;/code&gt;需要更改如下。因为在编译 Rootfs 时的命令是&lt;code&gt;make rootfs-cpio&lt;/code&gt;所以生成的是&lt;code&gt;rootfs.cpio&lt;/code&gt;。无法找到&lt;code&gt;rootfs.ext2&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;原文参数&lt;code&gt;-drive file=$WORK_DIR/buildroot/output/images/rootfs.ext2,format=raw,id=hd0&lt;/code&gt;需要更改如下。因为在编译 Rootfs 时的命令是&lt;code&gt;make rootfs-cpio&lt;/code&gt;所以生成的是&lt;code&gt;rootfs.cpio&lt;/code&gt;。无法找到&lt;code&gt;rootfs.ext2&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/qemu/build/qemu-system-riscv64 -nographic &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;-machine virt,aclint&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;on,aia&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;aplic-imsic,acpi&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;on -cpu rv64,sscofpmf&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;true&lt;/span&gt; -smp &lt;span class=&#34;m&#34;&gt;8&lt;/span&gt;  -m 2G  &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;-bios &lt;span class=&#34;nv&#34;&gt;$WORK_DIR&lt;/span&gt;/opensbi/build/platform/generic/firmware/fw_jump.elf &lt;span class=&#34;se&#34;&gt;\
@@ -870,13 +878,15 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Shell&amp;gt; fs0:&lt;span class=&#34;se&#34;&gt;\I&lt;/span&gt;mage &lt;span class=&#34;nv&#34;&gt;root&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/dev/sda &lt;span class=&#34;nv&#34;&gt;console&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;ttyS0 rootwait earlycon
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       <content:encoded><![CDATA[<blockquote>
-<p>参考自<a href="https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel">PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki</a></p></blockquote>
+<p>参考自<a href="https://github.com/riscv-non-isa/riscv-acpi/wiki/PoC-:-How-to-build-and-test-ACPI-enabled-kernel">PoC : How to build and test ACPI enabled kernel · riscv-non-isa/riscv-acpi Wiki</a></p>
+</blockquote>
 <h2 id="准备环境及工具链">准备环境及工具链</h2>
 <ol>
 <li>
 <p>安装 RISC-V 工具链，需下载原发行版。好在 apt 可以安装。</p>
 <blockquote>
-<p>如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！</p></blockquote>
+<p>如果报错：riscv64-linux-gnu-gcc: error: unrecognized command line option ‘-mno-relax’; did you mean ‘-Wno-vla’?，多半是工具链原因，请按照以下方法安装！！！</p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">sudo apt remove gcc-riscv64-linux-gnu
 </span></span><span class="line"><span class="cl">sudo apt install gcc-8-riscv64-linux-gnu
 </span></span></code></pre></div></li>
@@ -915,12 +925,14 @@
 </span></span><span class="line"><span class="cl">make -j <span class="k">$(</span>nproc<span class="k">)</span>
 </span></span></code></pre></div><h3 id="opensbi">OPENSBI</h3>
 <blockquote>
-<p>此处我们使用以<code>riscv64-unknown-elf-</code>为前缀的版本，则表示该版本GCC工具链会使用newlib作为C运行库。原文使用<code>riscv64-linux-gnu-</code>，表示GCC工具链会使用Linux的Glibc作为C运行库。但是本人未编译成功。故后面编译工具均使用<code>riscv64-unknown-elf-</code>，与原文不同。</p></blockquote>
+<p>此处我们使用以<code>riscv64-unknown-elf-</code>为前缀的版本，则表示该版本GCC工具链会使用newlib作为C运行库。原文使用<code>riscv64-linux-gnu-</code>，表示GCC工具链会使用Linux的Glibc作为C运行库。但是本人未编译成功。故后面编译工具均使用<code>riscv64-unknown-elf-</code>，与原文不同。</p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/opensbi
 </span></span><span class="line"><span class="cl">make <span class="nv">ARCH</span><span class="o">=</span>riscv <span class="nv">CROSS_COMPILE</span><span class="o">=</span>riscv64-unknown-elf- make <span class="nv">PLATFORM</span><span class="o">=</span>generic
 </span></span></code></pre></div><h3 id="edk2-固件">EDK2 固件</h3>
 <blockquote>
-<p>此处原文里设置了一些环境变量在开头我们设置了，请不要重新设置，尤其不能<code>export WORKSPACE=pwd</code>，因为与源码脚本的WORKSPACE冲突。</p></blockquote>
+<p>此处原文里设置了一些环境变量在开头我们设置了，请不要重新设置，尤其不能<code>export WORKSPACE=pwd</code>，因为与源码脚本的WORKSPACE冲突。</p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/tianocore
 </span></span><span class="line"><span class="cl"><span class="nb">source</span> edk2/edksetup.sh
 </span></span><span class="line"><span class="cl">make -C edk2/BaseTools clean
@@ -952,7 +964,8 @@
 </span></span></code></pre></div><h3 id="rootfs">Rootfs</h3>
 <p>您可以使用您选择的任何 rootfs。此示例使用 buildroot。</p>
 <blockquote>
-<p>此步耗时较久，与网络环境有关，如果网络不好可能按小时算。容易中断，需要重新下载。</p></blockquote>
+<p>此步耗时较久，与网络环境有关，如果网络不好可能按小时算。容易中断，需要重新下载。</p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/
 </span></span><span class="line"><span class="cl">git clone https://hub.fastgit.xyz/buildroot/buildroot.git
 </span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$WORK_DIR</span>/buildroot
@@ -973,7 +986,8 @@
 </span></span></code></pre></div><h2 id="运行">运行</h2>
 <h3 id="使用-virtio-blk-磁盘">使用 virtio-blk 磁盘</h3>
 <blockquote>
-<p>原文参数<code>-drive file=$WORK_DIR/buildroot/output/images/rootfs.ext2,format=raw,id=hd0</code>需要更改如下。因为在编译 Rootfs 时的命令是<code>make rootfs-cpio</code>所以生成的是<code>rootfs.cpio</code>。无法找到<code>rootfs.ext2</code></p></blockquote>
+<p>原文参数<code>-drive file=$WORK_DIR/buildroot/output/images/rootfs.ext2,format=raw,id=hd0</code>需要更改如下。因为在编译 Rootfs 时的命令是<code>make rootfs-cpio</code>所以生成的是<code>rootfs.cpio</code>。无法找到<code>rootfs.ext2</code></p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl"><span class="nv">$WORK_DIR</span>/qemu/build/qemu-system-riscv64 -nographic <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>-machine virt,aclint<span class="o">=</span>on,aia<span class="o">=</span>aplic-imsic,acpi<span class="o">=</span>on -cpu rv64,sscofpmf<span class="o">=</span><span class="nb">true</span> -smp <span class="m">8</span>  -m 2G  <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>-bios <span class="nv">$WORK_DIR</span>/opensbi/build/platform/generic/firmware/fw_jump.elf <span class="se">\

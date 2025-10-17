@@ -4,7 +4,7 @@
     <title>AMBA on 夜云泊</title>
     <link>https://lifeislife.cn/tags/amba/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in AMBA on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Tue, 17 May 2022 21:16:45 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/amba/index.xml" rel="self" type="application/rss+xml" />
@@ -80,7 +80,8 @@
 &lt;p&gt;发送方拥有传输的主动权，但接收方在不具备接收能力时，也能够置低信号停止传输，反压发送方。&lt;/p&gt;
 &lt;h4 id=&#34;握手过程分析&#34;&gt;握手过程分析&lt;/h4&gt;
 &lt;blockquote&gt;
-&lt;p&gt;图中 INFORMATION 信号无底色区域表示此时数据已经准备好，已经有新的数据到达。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;图中 INFORMATION 信号无底色区域表示此时数据已经准备好，已经有新的数据到达。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;&lt;strong&gt;VALID 信号先到&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;发送方 VALID 信号早早就到了，但是接收方的 READY 信号在 T2 之前都没有发送。可能接收方在接收其他数据，或者被堵在数据通路上。&lt;/p&gt;
 &lt;p&gt;过了 T2 后，READY 信号到来，此时开始传输，直到 T3 结束，传输完成。&lt;/p&gt;
@@ -617,7 +618,8 @@ $$&lt;/p&gt;
 &lt;h4 id=&#34;unaligned-transfer&#34;&gt;Unaligned Transfer&lt;/h4&gt;
 &lt;p&gt;AXI 协议规定单次 burst 传输中的数据，其地址不能跨越 4KB 边界。也就是在传输过程中会进行 4K 对齐。但是在某些时候，会期望在非对齐的地址开始一个突发，即非对齐传输。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;协议中之所以规定一个 burst 不能跨越 4K 边界是为了避免一次 burst 访问两个 slave（每个 slave 的地址空间是 4K/1K 对齐的）。4K 对齐最大原因是系统中定义一个 page 大小是 4K，而所谓的 4K 边界是指低 12bit 为 0 的地址。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;协议中之所以规定一个 burst 不能跨越 4K 边界是为了避免一次 burst 访问两个 slave（每个 slave 的地址空间是 4K/1K 对齐的）。4K 对齐最大原因是系统中定义一个 page 大小是 4K，而所谓的 4K 边界是指低 12bit 为 0 的地址。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;非对齐传输是指&lt;strong&gt;有些传输指令不是按照 word 对齐，而是按照 Byte 对齐进行传输&lt;/strong&gt;。起始地址可能是任意的地址。如下图中，起始地址为 0x1，则在系统上需要按照非对齐的方式进行传输。&lt;strong&gt;第一次传输采用 strb 信号指定对应的 Byte 有效，后面的传输可以按照正常的传输进行&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;下图是一些传输示例，有阴影的格子表示当前字节不会被传输。&lt;/p&gt;
 &lt;p&gt;图一为正常的对齐传输，传输起始地址为 0x00。&lt;/p&gt;
@@ -768,7 +770,8 @@ $$&lt;/p&gt;
 <p>发送方拥有传输的主动权，但接收方在不具备接收能力时，也能够置低信号停止传输，反压发送方。</p>
 <h4 id="握手过程分析">握手过程分析</h4>
 <blockquote>
-<p>图中 INFORMATION 信号无底色区域表示此时数据已经准备好，已经有新的数据到达。</p></blockquote>
+<p>图中 INFORMATION 信号无底色区域表示此时数据已经准备好，已经有新的数据到达。</p>
+</blockquote>
 <p><strong>VALID 信号先到</strong></p>
 <p>发送方 VALID 信号早早就到了，但是接收方的 READY 信号在 T2 之前都没有发送。可能接收方在接收其他数据，或者被堵在数据通路上。</p>
 <p>过了 T2 后，READY 信号到来，此时开始传输，直到 T3 结束，传输完成。</p>
@@ -1305,7 +1308,8 @@ $$</p>
 <h4 id="unaligned-transfer">Unaligned Transfer</h4>
 <p>AXI 协议规定单次 burst 传输中的数据，其地址不能跨越 4KB 边界。也就是在传输过程中会进行 4K 对齐。但是在某些时候，会期望在非对齐的地址开始一个突发，即非对齐传输。</p>
 <blockquote>
-<p>协议中之所以规定一个 burst 不能跨越 4K 边界是为了避免一次 burst 访问两个 slave（每个 slave 的地址空间是 4K/1K 对齐的）。4K 对齐最大原因是系统中定义一个 page 大小是 4K，而所谓的 4K 边界是指低 12bit 为 0 的地址。</p></blockquote>
+<p>协议中之所以规定一个 burst 不能跨越 4K 边界是为了避免一次 burst 访问两个 slave（每个 slave 的地址空间是 4K/1K 对齐的）。4K 对齐最大原因是系统中定义一个 page 大小是 4K，而所谓的 4K 边界是指低 12bit 为 0 的地址。</p>
+</blockquote>
 <p>非对齐传输是指<strong>有些传输指令不是按照 word 对齐，而是按照 Byte 对齐进行传输</strong>。起始地址可能是任意的地址。如下图中，起始地址为 0x1，则在系统上需要按照非对齐的方式进行传输。<strong>第一次传输采用 strb 信号指定对应的 Byte 有效，后面的传输可以按照正常的传输进行</strong>。</p>
 <p>下图是一些传输示例，有阴影的格子表示当前字节不会被传输。</p>
 <p>图一为正常的对齐传输，传输起始地址为 0x00。</p>

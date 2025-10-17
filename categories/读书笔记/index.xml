@@ -4,7 +4,7 @@
     <title>读书笔记 on 夜云泊</title>
     <link>https://lifeislife.cn/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 读书笔记 on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Wed, 30 Mar 2022 11:12:31 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" />
@@ -85,7 +85,8 @@
 &lt;blockquote&gt;
 &lt;p&gt;Q: 如何将一个二进制文件，如图片，MP3 文件作为目标文件的一个段？
 A: 可以使用 objcopy 工具，比如有一个图片 image..jpg，大小为 0x2100 字节：
-$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o&lt;/p&gt;&lt;/blockquote&gt;
+$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;正常情况下编译出来的目标文件，代码会放到&lt;code&gt;.text&lt;/code&gt;段，但是有时候你希望变量或者某些代码能放到你指定的段中去，以实现某些特定的功能。比如为了满足某些硬件的内存和 IO 地址布局。GCC 提供了扩展机制，使得程序员可以指定变量所处的段：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;__attribute__((section(&amp;#34;FOO&amp;#34;))) int global = 42;
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;__attribute__((section(&amp;#34;BAR&amp;#34;))) void foo;
@@ -275,12 +276,14 @@ S = 符号的实际地址，即由 &lt;code&gt;r_info&lt;/code&gt;的高 24 位�
 &lt;h3 id=&#34;common-块&#34;&gt;COMMON 块&lt;/h3&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q:在目标文件中，编译器为什么不直接把未初始化的全局变量也当做未初始化的局部静态变量一样处理，为它在 BSS 段分配空间，而是将其标记为一个 COMMON 类型的变量？
-A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。&lt;/p&gt;&lt;/blockquote&gt;
+A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;GCC 的&lt;code&gt;-fno-common&lt;/code&gt;吧所有未初始化的全局变量不以 COMMON 块形式处理。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;__attribute__&lt;/code&gt;扩展也可以实现，&lt;code&gt;int global __attribute__((nocommon))&lt;/code&gt;。这样未初始化的全局变量就是强符号。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q: 为什么静态运行库里面一个目标文件只包含一个函数？比如 libc.o 里面 printf.o 只包含 printf() 函数，strlen.o 只有 strlen 函数？
-A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。&lt;/p&gt;&lt;/blockquote&gt;
+A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;链接的过程控制&#34;&gt;链接的过程控制&lt;/h3&gt;
 &lt;h2 id=&#34;第-6-章-可执行文件的装载与进程&#34;&gt;第 6 章 可执行文件的装载与进程&lt;/h2&gt;
 &lt;p&gt;程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。&lt;/p&gt;
@@ -455,10 +458,12 @@ A:因为链接器在链接静态库时是以目标文件为单位的，比如我
 &lt;hr&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q : -fpic 和-fPIC 的区别？
-A: 都是 GCC 产生地址无关代码的参数。&lt;code&gt;-fpic&lt;/code&gt;产生的代码较小，&lt;code&gt;-fPIC&lt;/code&gt;产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上&lt;code&gt;-fpic&lt;/code&gt;会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。&lt;/p&gt;&lt;/blockquote&gt;
+A: 都是 GCC 产生地址无关代码的参数。&lt;code&gt;-fpic&lt;/code&gt;产生的代码较小，&lt;code&gt;-fPIC&lt;/code&gt;产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上&lt;code&gt;-fpic&lt;/code&gt;会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q: 如果一个共享对象 lib.so 中定义了一个全局变量 G，进程 A 和进程 B 都是用了 lib.so。那么当进程 A 改变这个全局变量时，进程 B 的 G 是否受到影响？
-A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。&lt;/p&gt;&lt;/blockquote&gt;
+A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;如果代码不是地址无关的，它就不能被多个进程共享，就失去了节省内存的优点。但是装载是重定位的共享对象的运行速度要比使用地址无关代码的共享对象快，因为它省去了地址无关代码中每次访问全局数据和函数是需要做一次计算当前地址以及间接地址寻址的过程。&lt;/p&gt;
 &lt;h3 id=&#34;延迟绑定-plt&#34;&gt;延迟绑定 PLT&lt;/h3&gt;
 &lt;p&gt;动态链接要比静态链接慢，一是因为动态链接下，对全局和静态数据的访问都要进行复杂的 GOT 定位，然后间接寻址。另外，程序开始执行时，动态链接器都要进行一次链接工作。&lt;/p&gt;
@@ -582,13 +587,16 @@ A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都
 &lt;p&gt;动态链接分为三步：启动动态链接本身，装载所有的共享对象，重定位和初始化。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q：动态链接器本身是动态链接还是静态链接？
-A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。&lt;/p&gt;&lt;/blockquote&gt;
+A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q：动态链接器本身必须是 PIC 的吗？
-A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。&lt;/p&gt;&lt;/blockquote&gt;
+A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Q：动态链接器可以被当做可执行文件运行，那么它的装载地址是多少？
-A：ld.so 的装载地址跟一般的共享对象一样，即&lt;code&gt;0x00000000&lt;/code&gt;。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。&lt;/p&gt;&lt;/blockquote&gt;
+A：ld.so 的装载地址跟一般的共享对象一样，即&lt;code&gt;0x00000000&lt;/code&gt;。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;显示运行时链接&#34;&gt;显示运行时链接&lt;/h3&gt;
 &lt;h2 id=&#34;第-10-章-内存&#34;&gt;第 10 章 内存&lt;/h2&gt;
 &lt;h3 id=&#34;程序的内存布局&#34;&gt;程序的内存布局&lt;/h3&gt;
@@ -795,7 +803,8 @@ A：ld.so 的装载地址跟一般的共享对象一样，即&lt;code&gt;0x00000
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-C&#34; data-lang=&#34;C&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_cdecl&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是&lt;code&gt;__attribute__((cdecl))&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是&lt;code&gt;__attribute__((cdecl))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;附录&#34;&gt;附录&lt;/h2&gt;
 &lt;h3 id=&#34;文件名&#34;&gt;文件名&lt;/h3&gt;
 &lt;table&gt;
@@ -931,7 +940,8 @@ A：ld.so 的装载地址跟一般的共享对象一样，即&lt;code&gt;0x00000
 <blockquote>
 <p>Q: 如何将一个二进制文件，如图片，MP3 文件作为目标文件的一个段？
 A: 可以使用 objcopy 工具，比如有一个图片 image..jpg，大小为 0x2100 字节：
-$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o</p></blockquote>
+$ objcopy -I binary -O elf32-i388 -B  i38 image.jpg image.o</p>
+</blockquote>
 <p>正常情况下编译出来的目标文件，代码会放到<code>.text</code>段，但是有时候你希望变量或者某些代码能放到你指定的段中去，以实现某些特定的功能。比如为了满足某些硬件的内存和 IO 地址布局。GCC 提供了扩展机制，使得程序员可以指定变量所处的段：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">__attribute__((section(&#34;FOO&#34;))) int global = 42;
 </span></span><span class="line"><span class="cl">__attribute__((section(&#34;BAR&#34;))) void foo;
@@ -1121,12 +1131,14 @@ S = 符号的实际地址，即由 <code>r_info</code>的高 24 位指定的符�
 <h3 id="common-块">COMMON 块</h3>
 <blockquote>
 <p>Q:在目标文件中，编译器为什么不直接把未初始化的全局变量也当做未初始化的局部静态变量一样处理，为它在 BSS 段分配空间，而是将其标记为一个 COMMON 类型的变量？
-A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。</p></blockquote>
+A:当编译器将一个编译单元编译成目标文件时，如果该编译单元包含了弱符号（未初始化的全局变量就是典型），那么该弱符号最终所占大小未知，因为有可能其他编译单元中该符号所占空间比当前的大所以编译器此时无法为该符号在 BSS 段分配空间。但链接器在链接过程中可以确定弱符号大小，因为当链接器读取所有输入目标文件后，任何一个弱符号大小都可以确定，所以它可以在最终输出文件的 BSS 段为其分配空间。总体来看，未初始化全局变量最终还是被放在 BSS 段。</p>
+</blockquote>
 <p>GCC 的<code>-fno-common</code>吧所有未初始化的全局变量不以 COMMON 块形式处理。</p>
 <p><code>__attribute__</code>扩展也可以实现，<code>int global __attribute__((nocommon))</code>。这样未初始化的全局变量就是强符号。</p>
 <blockquote>
 <p>Q: 为什么静态运行库里面一个目标文件只包含一个函数？比如 libc.o 里面 printf.o 只包含 printf() 函数，strlen.o 只有 strlen 函数？
-A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。</p></blockquote>
+A:因为链接器在链接静态库时是以目标文件为单位的，比如我们引用了静态库中的 printf 函数，那么链接器就会把库中包含 printf 函数的那个目标文件链接进来，如果很多函数写在一个目标文件中，就将没用到的函数一起链接进了输出结果中。</p>
+</blockquote>
 <h3 id="链接的过程控制">链接的过程控制</h3>
 <h2 id="第-6-章-可执行文件的装载与进程">第 6 章 可执行文件的装载与进程</h2>
 <p>程序运行时是有局部性原理的，所以我们可以将程序最常用的部分驻留在内存中，将不常用的数据存放在磁盘里，这就是动态载入的基本原理。</p>
@@ -1301,10 +1313,12 @@ A:因为链接器在链接静态库时是以目标文件为单位的，比如我
 <hr>
 <blockquote>
 <p>Q : -fpic 和-fPIC 的区别？
-A: 都是 GCC 产生地址无关代码的参数。<code>-fpic</code>产生的代码较小，<code>-fPIC</code>产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上<code>-fpic</code>会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。</p></blockquote>
+A: 都是 GCC 产生地址无关代码的参数。<code>-fpic</code>产生的代码较小，<code>-fPIC</code>产生的代码较大。因为地址无关代码和硬件平台相关，在一些平台上<code>-fpic</code>会受到限制，比如全局符号的数量或者代码长度等，而后者没有这样的限制。</p>
+</blockquote>
 <blockquote>
 <p>Q: 如果一个共享对象 lib.so 中定义了一个全局变量 G，进程 A 和进程 B 都是用了 lib.so。那么当进程 A 改变这个全局变量时，进程 B 的 G 是否受到影响？
-A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。</p></blockquote>
+A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都有独立的副本。如果是同一个进程里的线程 A 和线程 B，那么他们是共享数据 G 的。</p>
+</blockquote>
 <p>如果代码不是地址无关的，它就不能被多个进程共享，就失去了节省内存的优点。但是装载是重定位的共享对象的运行速度要比使用地址无关代码的共享对象快，因为它省去了地址无关代码中每次访问全局数据和函数是需要做一次计算当前地址以及间接地址寻址的过程。</p>
 <h3 id="延迟绑定-plt">延迟绑定 PLT</h3>
 <p>动态链接要比静态链接慢，一是因为动态链接下，对全局和静态数据的访问都要进行复杂的 GOT 定位，然后间接寻址。另外，程序开始执行时，动态链接器都要进行一次链接工作。</p>
@@ -1428,13 +1442,16 @@ A: 不会，应当 lib.so 被加载时，它的数据段部分在每个进程都
 <p>动态链接分为三步：启动动态链接本身，装载所有的共享对象，重定位和初始化。</p>
 <blockquote>
 <p>Q：动态链接器本身是动态链接还是静态链接？
-A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。</p></blockquote>
+A：动态链接器本身应该是静态链接的，它不能依赖于其他共享对象，动态链接器本身使用来帮助其他 ELF 文件解决共享对象依赖问题的，如果它也依赖其他共享对象，那就陷入矛盾了。</p>
+</blockquote>
 <blockquote>
 <p>Q：动态链接器本身必须是 PIC 的吗？
-A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。</p></blockquote>
+A：动态链接器可以是 PIC 的也可以不是，但是往往用 PIC 会简单一些。</p>
+</blockquote>
 <blockquote>
 <p>Q：动态链接器可以被当做可执行文件运行，那么它的装载地址是多少？
-A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</code>。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。</p></blockquote>
+A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</code>。这个装载地址是一个无效的装载地址，作为一个共享库，内核在装载它时会为其选择一个合适的装载地址。</p>
+</blockquote>
 <h3 id="显示运行时链接">显示运行时链接</h3>
 <h2 id="第-10-章-内存">第 10 章 内存</h2>
 <h3 id="程序的内存布局">程序的内存布局</h3>
@@ -1641,7 +1658,8 @@ A：ld.so 的装载地址跟一般的共享对象一样，即<code>0x00000000</c
 </ul>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">_cdecl</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">float</span> <span class="n">m</span><span class="p">)</span>
 </span></span></code></pre></div><blockquote>
-<p>_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是<code>__attribute__((cdecl))</code></p></blockquote>
+<p>_cdel 是非标准关键字，在不同编译器中写法不同，在 gcc 中使用的是<code>__attribute__((cdecl))</code></p>
+</blockquote>
 <h2 id="附录">附录</h2>
 <h3 id="文件名">文件名</h3>
 <table>

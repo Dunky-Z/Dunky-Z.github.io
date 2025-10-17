@@ -4,7 +4,7 @@
     <title>虚拟机 on 夜云泊</title>
     <link>https://lifeislife.cn/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 虚拟机 on 夜云泊</description>
-    <generator>Hugo -- 0.151.0</generator>
+    <generator>Hugo -- 0.151.2</generator>
     <language>zh</language>
     <lastBuildDate>Sat, 05 Aug 2023 14:47:54 +0000</lastBuildDate>
     <atom:link href="https://lifeislife.cn/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/index.xml" rel="self" type="application/rss+xml" />
@@ -24,7 +24,8 @@
 &lt;h3 id=&#34;qemu-ifup&#34;&gt;qemu-ifup&lt;/h3&gt;
 &lt;p&gt;将下面的脚本保存为文件 &lt;code&gt;qemu-ifup&lt;/code&gt;，并赋予可执行权限：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mkdir -p /etc/qemu
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mv qemu-ifup /etc/qemu &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv qemu-ifdown /etc/qemu 
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo chmod +x qemu-ifup
@@ -524,7 +525,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第一个参数 &lt;code&gt;-net nic&lt;/code&gt; 用于指定上述所说的前端驱动，也就是 Guest 中的实现，这里使用的是 &lt;code&gt;virtio&lt;/code&gt; 驱动，这个驱动是 QEMU 中的一个虚拟网卡设备。第二个参数 &lt;code&gt;-net tap&lt;/code&gt; 用于指定后端实现，也就是 Host 中的实现，这里使用的是 &lt;code&gt;tap&lt;/code&gt; 驱动，它的网卡名称为 &lt;code&gt;tap3&lt;/code&gt;，并且执行脚本 &lt;code&gt;/ect/qemu/qemu-ifup&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;解释&lt;code&gt;/ect/qemu/qemu-ifup&lt;/code&gt;
-该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。&lt;/p&gt;&lt;/blockquote&gt;
+该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;-device---netdev-recommended&#34;&gt;-device &amp;amp; -netdev （Recommended）&lt;/h3&gt;
 &lt;p&gt;这是新版本的 QEMU 支持的命令格式，也是 QEMU 未来的发展趋势，我们以以下命令为例，来说明 &lt;code&gt;-device&lt;/code&gt; 和 &lt;code&gt;-netdev&lt;/code&gt; 的使用方法：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;qemu-system-riscv64 &lt;span class=&#34;se&#34;&gt;\
@@ -546,7 +548,8 @@
 &lt;p&gt;第二个参数 &lt;code&gt;-netdev tap&lt;/code&gt; 用于指定后端实现，使用&lt;code&gt;tap&lt;/code&gt;方式，并且指定唯一 ID 为&lt;code&gt;tapnet&lt;/code&gt;由&lt;code&gt;-device&lt;/code&gt;参数中的子参数&lt;code&gt;netdev&lt;/code&gt;使用。网卡名称为&lt;code&gt;tap0&lt;/code&gt;并且执行脚本 &lt;code&gt;~/qemu-script/qemu-ifup&lt;/code&gt;。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;-netdev 参数中 id 的使用
--netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 &lt;code&gt;-device&lt;/code&gt; 参数中的子参数 &lt;code&gt;netdev&lt;/code&gt; 使用，这样 &lt;code&gt;-device&lt;/code&gt; 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如&lt;code&gt;-netdev tap,id=test&lt;/code&gt;对应&lt;code&gt;-device virtio-net-device,netdev=test&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;
+-netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 &lt;code&gt;-device&lt;/code&gt; 参数中的子参数 &lt;code&gt;netdev&lt;/code&gt; 使用，这样 &lt;code&gt;-device&lt;/code&gt; 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如&lt;code&gt;-netdev tap,id=test&lt;/code&gt;对应&lt;code&gt;-device virtio-net-device,netdev=test&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;更多示例：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -device virtio-net-pci,netdev&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;tapnet,mac&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;e0:be:03:88:54:e8 &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;  -netdev tap,id&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;tapnet,script&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;no,downscript&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;no &lt;span class=&#34;se&#34;&gt;\
@@ -690,7 +693,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;+----&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;SHA256&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;-----+
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一直回车确定，生成公私钥，保存在&lt;code&gt;~/.ssh&lt;/code&gt;目录下。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;我在宿主机上生成的公私钥名称为，分别是&lt;code&gt;host2vm0_id_rsa&lt;/code&gt;,&lt;code&gt;host2vm0_id_rsa.pub&lt;/code&gt;方便我记忆。如果一直回车，那么生成的公私钥名称为&lt;code&gt;id_rsa&lt;/code&gt;，&lt;code&gt;id_rsa.pub&lt;/code&gt;。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;我在宿主机上生成的公私钥名称为，分别是&lt;code&gt;host2vm0_id_rsa&lt;/code&gt;,&lt;code&gt;host2vm0_id_rsa.pub&lt;/code&gt;方便我记忆。如果一直回车，那么生成的公私钥名称为&lt;code&gt;id_rsa&lt;/code&gt;，&lt;code&gt;id_rsa.pub&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;将公钥复制到虚拟机 &lt;code&gt;VM0&lt;/code&gt; 上，以当前虚拟机 &lt;code&gt;VM0&lt;/code&gt; 的 IP：&lt;code&gt;10.12.193.53&lt;/code&gt; 为例。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ ssh-copy-id 10.12.193.53
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 输入密码&lt;/span&gt;
@@ -793,7 +797,8 @@
 <h3 id="qemu-ifup">qemu-ifup</h3>
 <p>将下面的脚本保存为文件 <code>qemu-ifup</code>，并赋予可执行权限：</p>
 <blockquote>
-<p>为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。</p></blockquote>
+<p>为了方便复制脚本，在 confluence 页面提供了脚本内容，可以直接复制。</p>
+</blockquote>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p /etc/qemu
 </span></span><span class="line"><span class="cl">mv qemu-ifup /etc/qemu <span class="o">&amp;&amp;</span> mv qemu-ifdown /etc/qemu 
 </span></span><span class="line"><span class="cl">sudo chmod +x qemu-ifup
@@ -1293,7 +1298,8 @@
 </span></span></span></code></pre></div><p>第一个参数 <code>-net nic</code> 用于指定上述所说的前端驱动，也就是 Guest 中的实现，这里使用的是 <code>virtio</code> 驱动，这个驱动是 QEMU 中的一个虚拟网卡设备。第二个参数 <code>-net tap</code> 用于指定后端实现，也就是 Host 中的实现，这里使用的是 <code>tap</code> 驱动，它的网卡名称为 <code>tap3</code>，并且执行脚本 <code>/ect/qemu/qemu-ifup</code>。</p>
 <blockquote>
 <p>解释<code>/ect/qemu/qemu-ifup</code>
-该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。</p></blockquote>
+该脚本用于创建网桥，将网桥与宿主机的网卡绑定，然后将虚拟网卡绑定到网桥上，这样虚拟机就可以通过网桥与宿主机通信，宿主机也可以通过网桥与虚拟机通信。</p>
+</blockquote>
 <h3 id="-device---netdev-recommended">-device &amp; -netdev （Recommended）</h3>
 <p>这是新版本的 QEMU 支持的命令格式，也是 QEMU 未来的发展趋势，我们以以下命令为例，来说明 <code>-device</code> 和 <code>-netdev</code> 的使用方法：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">qemu-system-riscv64 <span class="se">\
@@ -1315,7 +1321,8 @@
 <p>第二个参数 <code>-netdev tap</code> 用于指定后端实现，使用<code>tap</code>方式，并且指定唯一 ID 为<code>tapnet</code>由<code>-device</code>参数中的子参数<code>netdev</code>使用。网卡名称为<code>tap0</code>并且执行脚本 <code>~/qemu-script/qemu-ifup</code>。</p>
 <blockquote>
 <p>-netdev 参数中 id 的使用
--netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 <code>-device</code> 参数中的子参数 <code>netdev</code> 使用，这样 <code>-device</code> 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如<code>-netdev tap,id=test</code>对应<code>-device virtio-net-device,netdev=test</code></p></blockquote>
+-netdev 参数中的 id 用于指定唯一的 ID，这个 ID 会被 <code>-device</code> 参数中的子参数 <code>netdev</code> 使用，这样 <code>-device</code> 参数就知道要将前端驱动连接到哪个后端实现上了。id 可以自定义任意唯一字符串如<code>-netdev tap,id=test</code>对应<code>-device virtio-net-device,netdev=test</code></p>
+</blockquote>
 <p>更多示例：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">  -device virtio-net-pci,netdev<span class="o">=</span>tapnet,mac<span class="o">=</span>e0:be:03:88:54:e8 <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>  -netdev tap,id<span class="o">=</span>tapnet,script<span class="o">=</span>no,downscript<span class="o">=</span>no <span class="se">\
@@ -1459,7 +1466,8 @@
 </span></span><span class="line"><span class="cl">+----<span class="o">[</span>SHA256<span class="o">]</span>-----+
 </span></span></code></pre></div><p>一直回车确定，生成公私钥，保存在<code>~/.ssh</code>目录下。</p>
 <blockquote>
-<p>我在宿主机上生成的公私钥名称为，分别是<code>host2vm0_id_rsa</code>,<code>host2vm0_id_rsa.pub</code>方便我记忆。如果一直回车，那么生成的公私钥名称为<code>id_rsa</code>，<code>id_rsa.pub</code>。</p></blockquote>
+<p>我在宿主机上生成的公私钥名称为，分别是<code>host2vm0_id_rsa</code>,<code>host2vm0_id_rsa.pub</code>方便我记忆。如果一直回车，那么生成的公私钥名称为<code>id_rsa</code>，<code>id_rsa.pub</code>。</p>
+</blockquote>
 <p>将公钥复制到虚拟机 <code>VM0</code> 上，以当前虚拟机 <code>VM0</code> 的 IP：<code>10.12.193.53</code> 为例。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Bash" data-lang="Bash"><span class="line"><span class="cl">$ ssh-copy-id 10.12.193.53
 </span></span><span class="line"><span class="cl"><span class="c1"># 输入密码</span>
