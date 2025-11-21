@@ -6,8 +6,200 @@
     <description>feedId:57980998056508425+userId:73222296380546048 Recent content in 每天学命令 on 夜云泊</description>
     <generator>Hugo -- 0.152.2</generator>
     <language>zh</language>
-    <lastBuildDate>Sat, 21 Sep 2024 10:10:20 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 21 Nov 2025 10:00:00 +0800</lastBuildDate>
     <atom:link href="https://lifeislife.cn/categories/%E6%AF%8F%E5%A4%A9%E5%AD%A6%E5%91%BD%E4%BB%A4/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>阿里云轻量服务器配置Swap解决内存不足</title>
+      <link>https://lifeislife.cn/posts/%E9%98%BF%E9%87%8C%E4%BA%91%E8%BD%BB%E9%87%8F%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEswap%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3/</link>
+      <pubDate>Fri, 21 Nov 2025 10:00:00 +0800</pubDate>
+      <guid>https://lifeislife.cn/posts/%E9%98%BF%E9%87%8C%E4%BA%91%E8%BD%BB%E9%87%8F%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEswap%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3/</guid>
+      <description>&lt;h2 id=&#34;问题背景&#34;&gt;问题背景&lt;/h2&gt;
+&lt;p&gt;在使用阿里云轻量服务器时，经常会遇到一个令人头疼的问题：&lt;strong&gt;默认配置没有 Swap 交换空间&lt;/strong&gt;。当运行内存占用较高的应用（如编译项目、运行 CI/CD 流程、部署应用等）时，服务器经常会因为内存不足而卡死或无响应。&lt;/p&gt;
+&lt;p&gt;我在每次执行 Deploy 部署操作时都会遇到这个问题，机器直接卡死，无法继续工作。通过配置 Swap 交换空间，成功缓解了这一问题，现在运行稳定多了。&lt;/p&gt;
+&lt;h2 id=&#34;什么是-swap&#34;&gt;什么是 Swap？&lt;/h2&gt;
+&lt;p&gt;Swap（交换空间）是 Linux 系统中的一种虚拟内存技术。当物理内存（RAM）不足时，系统会将暂时不用的数据从内存转移到硬盘上的 Swap 空间，从而释放内存供其他程序使用。虽然 Swap 的读写速度比物理内存慢，但它可以有效防止系统因内存不足而崩溃。&lt;/p&gt;
+&lt;h2 id=&#34;配置步骤&#34;&gt;配置步骤&lt;/h2&gt;
+&lt;h3 id=&#34;1-检查当前-swap-状态&#34;&gt;1. 检查当前 Swap 状态&lt;/h3&gt;
+&lt;p&gt;首先，我们需要确认系统当前是否已经配置了 Swap：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;free -h
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;swapon --show
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果 &lt;code&gt;Swap&lt;/code&gt; 行显示为 0，说明系统没有配置交换空间。&lt;/p&gt;
+&lt;h3 id=&#34;2-创建-swap-文件&#34;&gt;2. 创建 Swap 文件&lt;/h3&gt;
+&lt;p&gt;根据服务器内存大小，建议创建与内存容量相等或稍大的 Swap 空间。以 2GB 内存的服务器为例，创建 2GB 的 Swap 文件：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 方法一：使用 fallocate 快速创建（推荐）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo fallocate -l 2G /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 方法二：如果 fallocate 命令不可用，使用 dd 命令&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo dd &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/dev/zero &lt;span class=&#34;nv&#34;&gt;of&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/swapfile &lt;span class=&#34;nv&#34;&gt;bs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;1G &lt;span class=&#34;nv&#34;&gt;count&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;说明&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/swapfile&lt;/code&gt; 是 Swap 文件的路径，可以根据需要修改&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;2G&lt;/code&gt; 表示创建 2GB 大小的文件&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;fallocate&lt;/code&gt; 命令速度更快，优先使用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;3-设置文件权限&#34;&gt;3. 设置文件权限&lt;/h3&gt;
+&lt;p&gt;为了安全，Swap 文件应该只允许 root 用户读写：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo chmod &lt;span class=&#34;m&#34;&gt;600&lt;/span&gt; /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;4-格式化为-swap-格式&#34;&gt;4. 格式化为 Swap 格式&lt;/h3&gt;
+&lt;p&gt;将创建的文件格式化为 Swap 交换空间：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo mkswap /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;5-启用-swap&#34;&gt;5. 启用 Swap&lt;/h3&gt;
+&lt;p&gt;激活刚刚创建的 Swap 文件：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo swapon /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;6-验证-swap-是否生效&#34;&gt;6. 验证 Swap 是否生效&lt;/h3&gt;
+&lt;p&gt;再次查看内存和 Swap 状态：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;free -h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出示例：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;              total        used        free      shared  buff/cache   available
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Mem:           2.0G        1.2G        100M         10M        700M        600M
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Swap:          2.0G          0B        2.0G
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;可以看到 Swap 一行已经显示 2.0G，说明配置成功。&lt;/p&gt;
+&lt;h3 id=&#34;7-配置开机自动挂载&#34;&gt;7. 配置开机自动挂载&lt;/h3&gt;
+&lt;p&gt;为了让 Swap 在系统重启后自动生效，需要将其写入 &lt;code&gt;/etc/fstab&lt;/code&gt; 文件：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;/swapfile none swap sw 0 0&amp;#39;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sudo tee -a /etc/fstab
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;验证 &lt;code&gt;/etc/fstab&lt;/code&gt; 配置是否正确：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;cat /etc/fstab
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;优化建议&#34;&gt;优化建议&lt;/h2&gt;
+&lt;h3 id=&#34;调整-swappiness-参数可选&#34;&gt;调整 Swappiness 参数（可选）&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;swappiness&lt;/code&gt; 参数控制系统使用 Swap 的积极程度，取值范围 0-100：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;0&lt;/strong&gt;：尽可能不使用 Swap，只在内存完全不足时使用&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;60&lt;/strong&gt;（默认值）：平衡使用物理内存和 Swap&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;100&lt;/strong&gt;：积极使用 Swap&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于内存较小的服务器，建议将 &lt;code&gt;swappiness&lt;/code&gt; 设置为 10-30，避免过度使用 Swap 导致性能下降：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看当前 swappiness 值&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;cat /proc/sys/vm/swappiness
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 临时修改（重启后失效）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo sysctl vm.swappiness&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;10&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 永久修改&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;vm.swappiness=10&amp;#39;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sudo tee -a /etc/sysctl.conf
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo sysctl -p
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;注意事项&#34;&gt;注意事项&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;硬盘空间占用&lt;/strong&gt;：Swap 文件会占用硬盘空间，创建前请确保有足够的磁盘空间&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;性能影响&lt;/strong&gt;：虽然 Swap 可以缓解内存不足问题，但过度使用会导致系统变慢，因为硬盘读写速度远低于内存&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;监控使用情况&lt;/strong&gt;：建议定期监控 Swap 的使用情况，如果经常大量使用 Swap，说明需要升级服务器配置或优化应用&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;监控-swap-使用情况&#34;&gt;监控 Swap 使用情况&lt;/h2&gt;
+&lt;h3 id=&#34;实时查看内存和-swap-状态&#34;&gt;实时查看内存和 Swap 状态&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 查看内存使用情况&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;free -h
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 持续监控（每 2 秒刷新一次）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;watch -n &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; free -h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;查看哪些进程在使用-swap&#34;&gt;查看哪些进程在使用 Swap&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; file in /proc/*/status &lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;do&lt;/span&gt; awk &lt;span class=&#34;s1&#34;&gt;&amp;#39;/VmSwap|Name/{printf $2 &amp;#34; &amp;#34; $3}END{ print &amp;#34;&amp;#34;}&amp;#39;&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$file&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sort -k &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt; -n -r &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; head -10
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;删除-swap如需移除&#34;&gt;删除 Swap（如需移除）&lt;/h2&gt;
+&lt;p&gt;如果以后需要删除 Swap 配置，可以执行以下步骤：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. 关闭 Swap&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo swapoff /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 2. 从 /etc/fstab 中删除对应行&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo sed -i &lt;span class=&#34;s1&#34;&gt;&amp;#39;/\/swapfile/d&amp;#39;&lt;/span&gt; /etc/fstab
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 3. 删除 Swap 文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo rm /swapfile
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;配置 Swap 是解决小内存服务器运行大型应用的有效方案。虽然不能完全替代物理内存，但可以在一定程度上缓解内存不足导致的系统卡死问题。对于阿里云轻量服务器这类默认没有 Swap 的环境，强烈建议配置 Swap 以提高系统稳定性。&lt;/p&gt;
+&lt;p&gt;当然，如果应用长期大量使用 Swap，最根本的解决方案还是&lt;strong&gt;升级服务器配置或优化应用程序的内存使用&lt;/strong&gt;。&lt;/p&gt;
+</description>
+      <content:encoded><![CDATA[<h2 id="问题背景">问题背景</h2>
+<p>在使用阿里云轻量服务器时，经常会遇到一个令人头疼的问题：<strong>默认配置没有 Swap 交换空间</strong>。当运行内存占用较高的应用（如编译项目、运行 CI/CD 流程、部署应用等）时，服务器经常会因为内存不足而卡死或无响应。</p>
+<p>我在每次执行 Deploy 部署操作时都会遇到这个问题，机器直接卡死，无法继续工作。通过配置 Swap 交换空间，成功缓解了这一问题，现在运行稳定多了。</p>
+<h2 id="什么是-swap">什么是 Swap？</h2>
+<p>Swap（交换空间）是 Linux 系统中的一种虚拟内存技术。当物理内存（RAM）不足时，系统会将暂时不用的数据从内存转移到硬盘上的 Swap 空间，从而释放内存供其他程序使用。虽然 Swap 的读写速度比物理内存慢，但它可以有效防止系统因内存不足而崩溃。</p>
+<h2 id="配置步骤">配置步骤</h2>
+<h3 id="1-检查当前-swap-状态">1. 检查当前 Swap 状态</h3>
+<p>首先，我们需要确认系统当前是否已经配置了 Swap：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">free -h
+</span></span><span class="line"><span class="cl">swapon --show
+</span></span></code></pre></div><p>如果 <code>Swap</code> 行显示为 0，说明系统没有配置交换空间。</p>
+<h3 id="2-创建-swap-文件">2. 创建 Swap 文件</h3>
+<p>根据服务器内存大小，建议创建与内存容量相等或稍大的 Swap 空间。以 2GB 内存的服务器为例，创建 2GB 的 Swap 文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 方法一：使用 fallocate 快速创建（推荐）</span>
+</span></span><span class="line"><span class="cl">sudo fallocate -l 2G /swapfile
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 方法二：如果 fallocate 命令不可用，使用 dd 命令</span>
+</span></span><span class="line"><span class="cl">sudo dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/swapfile <span class="nv">bs</span><span class="o">=</span>1G <span class="nv">count</span><span class="o">=</span><span class="m">2</span>
+</span></span></code></pre></div><p><strong>说明</strong>：</p>
+<ul>
+<li><code>/swapfile</code> 是 Swap 文件的路径，可以根据需要修改</li>
+<li><code>2G</code> 表示创建 2GB 大小的文件</li>
+<li><code>fallocate</code> 命令速度更快，优先使用</li>
+</ul>
+<h3 id="3-设置文件权限">3. 设置文件权限</h3>
+<p>为了安全，Swap 文件应该只允许 root 用户读写：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo chmod <span class="m">600</span> /swapfile
+</span></span></code></pre></div><h3 id="4-格式化为-swap-格式">4. 格式化为 Swap 格式</h3>
+<p>将创建的文件格式化为 Swap 交换空间：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo mkswap /swapfile
+</span></span></code></pre></div><h3 id="5-启用-swap">5. 启用 Swap</h3>
+<p>激活刚刚创建的 Swap 文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo swapon /swapfile
+</span></span></code></pre></div><h3 id="6-验证-swap-是否生效">6. 验证 Swap 是否生效</h3>
+<p>再次查看内存和 Swap 状态：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">free -h
+</span></span></code></pre></div><p>输出示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">              total        used        free      shared  buff/cache   available
+</span></span><span class="line"><span class="cl">Mem:           2.0G        1.2G        100M         10M        700M        600M
+</span></span><span class="line"><span class="cl">Swap:          2.0G          0B        2.0G
+</span></span></code></pre></div><p>可以看到 Swap 一行已经显示 2.0G，说明配置成功。</p>
+<h3 id="7-配置开机自动挂载">7. 配置开机自动挂载</h3>
+<p>为了让 Swap 在系统重启后自动生效，需要将其写入 <code>/etc/fstab</code> 文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;/swapfile none swap sw 0 0&#39;</span> <span class="p">|</span> sudo tee -a /etc/fstab
+</span></span></code></pre></div><p>验证 <code>/etc/fstab</code> 配置是否正确：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat /etc/fstab
+</span></span></code></pre></div><h2 id="优化建议">优化建议</h2>
+<h3 id="调整-swappiness-参数可选">调整 Swappiness 参数（可选）</h3>
+<p><code>swappiness</code> 参数控制系统使用 Swap 的积极程度，取值范围 0-100：</p>
+<ul>
+<li><strong>0</strong>：尽可能不使用 Swap，只在内存完全不足时使用</li>
+<li><strong>60</strong>（默认值）：平衡使用物理内存和 Swap</li>
+<li><strong>100</strong>：积极使用 Swap</li>
+</ul>
+<p>对于内存较小的服务器，建议将 <code>swappiness</code> 设置为 10-30，避免过度使用 Swap 导致性能下降：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看当前 swappiness 值</span>
+</span></span><span class="line"><span class="cl">cat /proc/sys/vm/swappiness
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 临时修改（重启后失效）</span>
+</span></span><span class="line"><span class="cl">sudo sysctl vm.swappiness<span class="o">=</span><span class="m">10</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 永久修改</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;vm.swappiness=10&#39;</span> <span class="p">|</span> sudo tee -a /etc/sysctl.conf
+</span></span><span class="line"><span class="cl">sudo sysctl -p
+</span></span></code></pre></div><h2 id="注意事项">注意事项</h2>
+<ol>
+<li><strong>硬盘空间占用</strong>：Swap 文件会占用硬盘空间，创建前请确保有足够的磁盘空间</li>
+<li><strong>性能影响</strong>：虽然 Swap 可以缓解内存不足问题，但过度使用会导致系统变慢，因为硬盘读写速度远低于内存</li>
+<li><strong>监控使用情况</strong>：建议定期监控 Swap 的使用情况，如果经常大量使用 Swap，说明需要升级服务器配置或优化应用</li>
+</ol>
+<h2 id="监控-swap-使用情况">监控 Swap 使用情况</h2>
+<h3 id="实时查看内存和-swap-状态">实时查看内存和 Swap 状态</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看内存使用情况</span>
+</span></span><span class="line"><span class="cl">free -h
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 持续监控（每 2 秒刷新一次）</span>
+</span></span><span class="line"><span class="cl">watch -n <span class="m">2</span> free -h
+</span></span></code></pre></div><h3 id="查看哪些进程在使用-swap">查看哪些进程在使用 Swap</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="k">for</span> file in /proc/*/status <span class="p">;</span> <span class="k">do</span> awk <span class="s1">&#39;/VmSwap|Name/{printf $2 &#34; &#34; $3}END{ print &#34;&#34;}&#39;</span> <span class="nv">$file</span><span class="p">;</span> <span class="k">done</span> <span class="p">|</span> sort -k <span class="m">2</span> -n -r <span class="p">|</span> head -10
+</span></span></code></pre></div><h2 id="删除-swap如需移除">删除 Swap（如需移除）</h2>
+<p>如果以后需要删除 Swap 配置，可以执行以下步骤：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1. 关闭 Swap</span>
+</span></span><span class="line"><span class="cl">sudo swapoff /swapfile
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2. 从 /etc/fstab 中删除对应行</span>
+</span></span><span class="line"><span class="cl">sudo sed -i <span class="s1">&#39;/\/swapfile/d&#39;</span> /etc/fstab
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3. 删除 Swap 文件</span>
+</span></span><span class="line"><span class="cl">sudo rm /swapfile
+</span></span></code></pre></div><h2 id="总结">总结</h2>
+<p>配置 Swap 是解决小内存服务器运行大型应用的有效方案。虽然不能完全替代物理内存，但可以在一定程度上缓解内存不足导致的系统卡死问题。对于阿里云轻量服务器这类默认没有 Swap 的环境，强烈建议配置 Swap 以提高系统稳定性。</p>
+<p>当然，如果应用长期大量使用 Swap，最根本的解决方案还是<strong>升级服务器配置或优化应用程序的内存使用</strong>。</p>
+]]></content:encoded>
+    </item>
     <item>
       <title>Linux 清理磁盘释放空间</title>
       <link>https://lifeislife.cn/posts/linux-%E6%B8%85%E7%90%86%E7%A3%81%E7%9B%98%E9%87%8A%E6%94%BE%E7%A9%BA%E9%97%B4/</link>
