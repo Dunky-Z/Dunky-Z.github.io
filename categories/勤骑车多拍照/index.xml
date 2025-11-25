@@ -2698,6 +2698,46 @@
     &lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;&lt;/p&gt;
+&lt;h2 id=&#34;满级存档&#34;&gt;满级存档&lt;/h2&gt;
+&lt;h2 id=&#34;解锁所有装备&#34;&gt;解锁所有装备&lt;/h2&gt;
+&lt;h2 id=&#34;zwift-companion-离线版&#34;&gt;Zwift Companion 离线版&lt;/h2&gt;
+&lt;p&gt;Zwift配套的移动端社交软件Companion（伙伴）可以用来与骑友互动以及在骑行过程中与游戏进行一些交互，比如配对骑行设备，点赞，使用游戏道具等等，但是使用离线版Zwift就无法使用官方原版的Companion，必须要重新打包制作。&lt;/p&gt;
+&lt;p&gt;官方原版 Companion 会对网络连接和证书做严格验证（证书/域名 pinning、以及对服务端行为有预期），并且 Android 的 APK 签名与完整性机制会阻止随意篡改。要让手机上的程序信任并连接到你自己搭的 zoffline（用自签或替换的证书并把域名指向本地），必须对 APK 做“打补丁并重签名”或在系统/设备层改变信任链或 DNS。&lt;/p&gt;
+&lt;p&gt;为了实现这些，Zwift offline文档中给出了解决方案，大致需要两步。&lt;/p&gt;
+&lt;h3 id=&#34;替换apk的证书和重新签名&#34;&gt;替换APK的证书和重新签名&lt;/h3&gt;
+&lt;p&gt;安装 apk-mitm (&lt;a href=&#34;https://github.com/shroudedcode/apk-mitm&#34;&gt;https://github.com/shroudedcode/apk-mitm&lt;/a&gt;)，我在Windows上安装了node之后可以直接使用下面的命令安装：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;npm install -g apk-mitm
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其他系统可以参考README自行安装。&lt;/p&gt;
+&lt;p&gt;打开 &lt;code&gt;apk-mitm/dist/tools/apktool.js&lt;/code&gt; 文件（可以先用 &lt;code&gt;npm root -g&lt;/code&gt; 查找其实际路径），然后按照下面的方式进行修改：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nx&#34;&gt;decode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;inputPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;outputPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;this&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;run&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;s1&#34;&gt;&amp;#39;decode&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;s1&#34;&gt;&amp;#39;-resm&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// add this
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;s1&#34;&gt;&amp;#39;dummy&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// add this
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;nx&#34;&gt;inputPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;s1&#34;&gt;&amp;#39;--output&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nx&#34;&gt;outputPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;s1&#34;&gt;&amp;#39;--frame-path&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;this&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;options&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;frameworkPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;decoding&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;将&lt;a href=&#34;https://github.com/zoffline/zwift-offline&#34;&gt;Zwift Offline仓库&lt;/a&gt;中的&lt;code&gt;ssl/cert-zwift-com.pem&lt;/code&gt;和&lt;code&gt;zwift-offline-companion.apk&lt;/code&gt;文件复制到同一个目录下，比如&lt;code&gt;C:\Users\Administrator\Desktop\zwift-offline-companion&lt;/code&gt;，然后在这个目录下运行运行下面的命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;apk-mitm --certificate cert-zwift-com.pem zwift-offline-companion.apk
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;会在这个目录下生成一个&lt;code&gt;zwift-offline-companion-patched.apk&lt;/code&gt;文件，这就是修改后的APK文件。把他拷贝到手机安装即可。&lt;/p&gt;
+&lt;h3 id=&#34;域名重定向&#34;&gt;域名重定向&lt;/h3&gt;
+&lt;p&gt;下载&lt;a href=&#34;https://github.com/x-falcon/Virtual-Hosts/releases/latest&#34;&gt;virtual hosts&lt;/a&gt;软件，并安装到手机中。&lt;/p&gt;
+&lt;p&gt;创建&lt;code&gt;hosts.txt&lt;/code&gt;文件，内容如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&amp;lt;zoffline ip&amp;gt; us-or-rly101.zwift.com
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&amp;lt;zoffline ip&amp;gt; secure.zwift.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;&amp;lt;zoffline ip&amp;gt;&lt;/code&gt; 替换为你运行zoffline的IP地址。&lt;/p&gt;
+&lt;p&gt;注意，有的朋友可能在PC上手动配置过Zwift offline，会修改hosts文件，会多一个映射：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-txt&#34; data-lang=&#34;txt&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;127.0.0.1 cdn.zwift.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个映射请不要添加到手机端的hosts文件中！&lt;/p&gt;
+&lt;p&gt;将&lt;code&gt;hosts.txt&lt;/code&gt;文件复制到手机中，放到一个你能找到的地方，便于后面选择这个文件。&lt;/p&gt;
+&lt;p&gt;打开virtual hosts软件，选择&lt;code&gt;hosts.txt&lt;/code&gt;文件，就能开启域名重定向。&lt;/p&gt;
+&lt;h3 id=&#34;运行companion&#34;&gt;运行Companion&lt;/h3&gt;
+&lt;p&gt;使用离线版的账号登录Companion，可以正常使用。&lt;/p&gt;
+&lt;p&gt;在打开和登录Companion软件时可以观察PC端运行的Zwift offline黑窗命令行是否有日志输出，如果每次操作都没有任何输出，说明Companion的请求都没有成功转发到Zwift offline的这台电脑，需要检查IP地址是否配置正确。&lt;/p&gt;
 &lt;h2 id=&#34;常见问题&#34;&gt;常见问题&lt;/h2&gt;
 &lt;h3 id=&#34;卡在蓝色登录界面&#34;&gt;卡在蓝色登录界面&lt;/h3&gt;
 &lt;p&gt;
@@ -2780,6 +2820,7 @@
 &lt;h3 id=&#34;配置zwiftoffline后无法更新zwift&#34;&gt;配置Zwiftoffline后无法更新Zwift&lt;/h3&gt;
 &lt;p&gt;因为&lt;code&gt;configure_client.bat&lt;/code&gt;会修改Hosts文件，导致无法连接到Zwift服务器，所以在更新Zwift时需要先关闭&lt;code&gt;zoffline&lt;/code&gt;，然后再更新。可以进入&lt;code&gt;zwiftoffline/zoffline-helper&lt;/code&gt;目录，右键点击&lt;code&gt;disable_zoffline.bat&lt;/code&gt;，选择以管理员身份运行，可以清除网络配置，然后再打开Zwift开启更新。&lt;/p&gt;
 &lt;h3 id=&#34;无法自动上传活动到strava&#34;&gt;无法自动上传活动到Strava&lt;/h3&gt;
+&lt;h3 id=&#34;安卓客户端无法登录&#34;&gt;安卓客户端无法登录&lt;/h3&gt;
 </description>
       <content:encoded><![CDATA[<p><a href="https://github.com/zoffline/zwift-offline?tab=readme-ov-file">ZwiftOffline</a>是一个开源社区自制的 Zwift 的 server 端，可以在没有网络的情况下进行 Zwift 课程或路线训练，多平台支持。</p>
 <h2 id="安装-zwiftoffline">安装 ZwiftOffline</h2>
@@ -3520,6 +3561,46 @@
     </script>
 </body>
 </html></p>
+<h2 id="满级存档">满级存档</h2>
+<h2 id="解锁所有装备">解锁所有装备</h2>
+<h2 id="zwift-companion-离线版">Zwift Companion 离线版</h2>
+<p>Zwift配套的移动端社交软件Companion（伙伴）可以用来与骑友互动以及在骑行过程中与游戏进行一些交互，比如配对骑行设备，点赞，使用游戏道具等等，但是使用离线版Zwift就无法使用官方原版的Companion，必须要重新打包制作。</p>
+<p>官方原版 Companion 会对网络连接和证书做严格验证（证书/域名 pinning、以及对服务端行为有预期），并且 Android 的 APK 签名与完整性机制会阻止随意篡改。要让手机上的程序信任并连接到你自己搭的 zoffline（用自签或替换的证书并把域名指向本地），必须对 APK 做“打补丁并重签名”或在系统/设备层改变信任链或 DNS。</p>
+<p>为了实现这些，Zwift offline文档中给出了解决方案，大致需要两步。</p>
+<h3 id="替换apk的证书和重新签名">替换APK的证书和重新签名</h3>
+<p>安装 apk-mitm (<a href="https://github.com/shroudedcode/apk-mitm">https://github.com/shroudedcode/apk-mitm</a>)，我在Windows上安装了node之后可以直接使用下面的命令安装：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">npm install -g apk-mitm
+</span></span></code></pre></div><p>其他系统可以参考README自行安装。</p>
+<p>打开 <code>apk-mitm/dist/tools/apktool.js</code> 文件（可以先用 <code>npm root -g</code> 查找其实际路径），然后按照下面的方式进行修改：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl">    <span class="nx">decode</span><span class="p">(</span><span class="nx">inputPath</span><span class="p">,</span> <span class="nx">outputPath</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">run</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;decode&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;-resm&#39;</span><span class="p">,</span> <span class="c1">// add this
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="s1">&#39;dummy&#39;</span><span class="p">,</span> <span class="c1">// add this
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="nx">inputPath</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;--output&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">outputPath</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;--frame-path&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">frameworkPath</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">],</span> <span class="s1">&#39;decoding&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></div><p>将<a href="https://github.com/zoffline/zwift-offline">Zwift Offline仓库</a>中的<code>ssl/cert-zwift-com.pem</code>和<code>zwift-offline-companion.apk</code>文件复制到同一个目录下，比如<code>C:\Users\Administrator\Desktop\zwift-offline-companion</code>，然后在这个目录下运行运行下面的命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">apk-mitm --certificate cert-zwift-com.pem zwift-offline-companion.apk
+</span></span></code></pre></div><p>会在这个目录下生成一个<code>zwift-offline-companion-patched.apk</code>文件，这就是修改后的APK文件。把他拷贝到手机安装即可。</p>
+<h3 id="域名重定向">域名重定向</h3>
+<p>下载<a href="https://github.com/x-falcon/Virtual-Hosts/releases/latest">virtual hosts</a>软件，并安装到手机中。</p>
+<p>创建<code>hosts.txt</code>文件，内容如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&lt;zoffline ip&gt; us-or-rly101.zwift.com
+</span></span><span class="line"><span class="cl">&lt;zoffline ip&gt; secure.zwift.com
+</span></span></code></pre></div><p><code>&lt;zoffline ip&gt;</code> 替换为你运行zoffline的IP地址。</p>
+<p>注意，有的朋友可能在PC上手动配置过Zwift offline，会修改hosts文件，会多一个映射：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">127.0.0.1 cdn.zwift.com
+</span></span></code></pre></div><p>这个映射请不要添加到手机端的hosts文件中！</p>
+<p>将<code>hosts.txt</code>文件复制到手机中，放到一个你能找到的地方，便于后面选择这个文件。</p>
+<p>打开virtual hosts软件，选择<code>hosts.txt</code>文件，就能开启域名重定向。</p>
+<h3 id="运行companion">运行Companion</h3>
+<p>使用离线版的账号登录Companion，可以正常使用。</p>
+<p>在打开和登录Companion软件时可以观察PC端运行的Zwift offline黑窗命令行是否有日志输出，如果每次操作都没有任何输出，说明Companion的请求都没有成功转发到Zwift offline的这台电脑，需要检查IP地址是否配置正确。</p>
 <h2 id="常见问题">常见问题</h2>
 <h3 id="卡在蓝色登录界面">卡在蓝色登录界面</h3>
 <p>
@@ -3602,6 +3683,7 @@
 <h3 id="配置zwiftoffline后无法更新zwift">配置Zwiftoffline后无法更新Zwift</h3>
 <p>因为<code>configure_client.bat</code>会修改Hosts文件，导致无法连接到Zwift服务器，所以在更新Zwift时需要先关闭<code>zoffline</code>，然后再更新。可以进入<code>zwiftoffline/zoffline-helper</code>目录，右键点击<code>disable_zoffline.bat</code>，选择以管理员身份运行，可以清除网络配置，然后再打开Zwift开启更新。</p>
 <h3 id="无法自动上传活动到strava">无法自动上传活动到Strava</h3>
+<h3 id="安卓客户端无法登录">安卓客户端无法登录</h3>
 ]]></content:encoded>
     </item>
     <item>
