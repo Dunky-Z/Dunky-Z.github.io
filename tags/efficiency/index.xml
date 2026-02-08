@@ -343,6 +343,408 @@
 ]]></content:encoded>
     </item>
     <item>
+      <title>Windows 端口映射</title>
+      <link>https://lifeislife.cn/posts/windows%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84/</link>
+      <pubDate>Mon, 28 Aug 2023 23:24:53 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/windows%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84/</guid>
+      <description>&lt;h1 id=&#34;命令行&#34;&gt;命令行&lt;/h1&gt;
+&lt;p&gt;在 Windows 中，可以使用 netsh 命令来添加、查看和删除端口转发规则。&lt;/p&gt;
+&lt;p&gt;要&lt;strong&gt;添加一个端口转发规则&lt;/strong&gt;，可以使用以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh interface portproxy add v4tov4 &lt;span class=&#34;nv&#34;&gt;listenaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;local_address&amp;gt; &lt;span class=&#34;nv&#34;&gt;listenport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;local_port&amp;gt; &lt;span class=&#34;nv&#34;&gt;connectaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;remote_address&amp;gt; &lt;span class=&#34;nv&#34;&gt;connectport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;remote_port&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;local_address&amp;gt;&lt;/code&gt;是本地监听的地址（可以是 IP 地址或 0.0.0.0 表示所有地址）。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;local_port&amp;gt;&lt;/code&gt;是本地监听的端口。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;remote_address&amp;gt;&lt;/code&gt;是转发连接到的远程地址。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;remote_port&amp;gt;&lt;/code&gt;是转发连接到的远程端口。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;例如，要将本地的 8080 端口转发到远程服务器上的 80 端口，可以使用以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh interface portproxy add v4tov4 &lt;span class=&#34;nv&#34;&gt;listenaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;127.0.0.1 &lt;span class=&#34;nv&#34;&gt;listenport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;8080&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;connectaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;192.168.0.100 &lt;span class=&#34;nv&#34;&gt;connectport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;80&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;要&lt;strong&gt;查看当前的端口转发规则&lt;/strong&gt;，可以使用以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh interface portproxy show v4tov4
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;要&lt;strong&gt;删除特定的端口转发规则&lt;/strong&gt;，可以使用以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh interface portproxy delete v4tov4 &lt;span class=&#34;nv&#34;&gt;listenaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;local_address&amp;gt; &lt;span class=&#34;nv&#34;&gt;listenport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&amp;lt;local_port&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中的&lt;code&gt;&amp;lt;local_address&amp;gt;&lt;/code&gt;和&lt;code&gt;&amp;lt;local_port&amp;gt;&lt;/code&gt;应该与你想删除的规则匹配。&lt;/p&gt;
+&lt;p&gt;请注意，执行这些操作通常需要管理员权限。&lt;/p&gt;
+&lt;h1 id=&#34;gui&#34;&gt;GUI&lt;/h1&gt;
+&lt;p&gt;使用开源工具&lt;a href=&#34;https://github.com/zmjack/PortProxyGUI/releases&#34;&gt;PortProxyGUI&lt;/a&gt;可以在 UI 界面快速增删改查端口映射。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+</description>
+      <content:encoded><![CDATA[<h1 id="命令行">命令行</h1>
+<p>在 Windows 中，可以使用 netsh 命令来添加、查看和删除端口转发规则。</p>
+<p>要<strong>添加一个端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>&lt;local_address&gt; <span class="nv">listenport</span><span class="o">=</span>&lt;local_port&gt; <span class="nv">connectaddress</span><span class="o">=</span>&lt;remote_address&gt; <span class="nv">connectport</span><span class="o">=</span>&lt;remote_port&gt;
+</span></span></code></pre></div><p>其中：</p>
+<ul>
+<li><code>&lt;local_address&gt;</code>是本地监听的地址（可以是 IP 地址或 0.0.0.0 表示所有地址）。</li>
+<li><code>&lt;local_port&gt;</code>是本地监听的端口。</li>
+<li><code>&lt;remote_address&gt;</code>是转发连接到的远程地址。</li>
+<li><code>&lt;remote_port&gt;</code>是转发连接到的远程端口。</li>
+</ul>
+<p>例如，要将本地的 8080 端口转发到远程服务器上的 80 端口，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>127.0.0.1 <span class="nv">listenport</span><span class="o">=</span><span class="m">8080</span> <span class="nv">connectaddress</span><span class="o">=</span>192.168.0.100 <span class="nv">connectport</span><span class="o">=</span><span class="m">80</span>
+</span></span></code></pre></div><p>要<strong>查看当前的端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy show v4tov4
+</span></span></code></pre></div><p>要<strong>删除特定的端口转发规则</strong>，可以使用以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy delete v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>&lt;local_address&gt; <span class="nv">listenport</span><span class="o">=</span>&lt;local_port&gt;
+</span></span></code></pre></div><p>其中的<code>&lt;local_address&gt;</code>和<code>&lt;local_port&gt;</code>应该与你想删除的规则匹配。</p>
+<p>请注意，执行这些操作通常需要管理员权限。</p>
+<h1 id="gui">GUI</h1>
+<p>使用开源工具<a href="https://github.com/zmjack/PortProxyGUI/releases">PortProxyGUI</a>可以在 UI 界面快速增删改查端口映射。</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/e5bf0ce1f4a25150f69586825c2e7309.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>内网穿透远程访问家里的 WSL2</title>
+      <link>https://lifeislife.cn/posts/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E5%AE%B6%E9%87%8C%E7%9A%84wsl2/</link>
+      <pubDate>Mon, 28 Aug 2023 22:45:01 +0000</pubDate>
+      <guid>https://lifeislife.cn/posts/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E5%AE%B6%E9%87%8C%E7%9A%84wsl2/</guid>
+      <description>&lt;h1 id=&#34;背景简介&#34;&gt;背景简介&lt;/h1&gt;
+&lt;p&gt;WSL2 是 Windows 的子系统，可以在 Windows 上运行 Linux，但是 WSL2 是运行在虚拟机中的，所以无法直接访问 WSL2 中的服务，比如 SSH 服务。本文介绍如何使用内网穿透工具&lt;strong&gt;花生壳&lt;/strong&gt;来实现远程访问 WSL2 中的服务。&lt;/p&gt;
+&lt;p&gt;实现这一需求需要完成两个功能。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;WSL2 中的服务是运行在虚拟机中的，如何将公网的访问转发到 WSL2 中。&lt;/li&gt;
+&lt;li&gt;Windows 没有公网 IP，如何通过公网来访问。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;wsl2-端口转发&#34;&gt;WSL2 端口转发&lt;/h1&gt;
+&lt;p&gt;获取 WSL2 的 IP 地址：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hostname -I &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; awk &lt;span class=&#34;s1&#34;&gt;&amp;#39;{print $1}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;172.26.13.98
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Windows 自带的&lt;code&gt;netsh interface portproxy&lt;/code&gt;可以实现端口转发。管理员身份打开 cmd，执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh interface portproxy add v4tov4 &lt;span class=&#34;nv&#34;&gt;listenaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;0.0.0.0 &lt;span class=&#34;nv&#34;&gt;listenport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;2222&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;connectaddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;172.26.13.98 &lt;span class=&#34;nv&#34;&gt;connectport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;22&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;listenport：公网访问的端口（改一个不冲突的就行）&lt;/li&gt;
+&lt;li&gt;connectaddress：WSL2 的 IP 地址&lt;/li&gt;
+&lt;li&gt;connectport：WSL2 中 SSH 服务的端口 (默认为 22，不需要更改)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;开启 Windows 防火墙入站规则，管理员身份打开 cmd，执行以下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;netsh advfirewall firewall add rule &lt;span class=&#34;nv&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;WSL2 &lt;span class=&#34;nv&#34;&gt;dir&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;in &lt;span class=&#34;nv&#34;&gt;action&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;allow &lt;span class=&#34;nv&#34;&gt;protocol&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;TCP &lt;span class=&#34;nv&#34;&gt;localport&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;2222&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个命令是用于在 Windows 高级防火墙中添加一条规则。下面是对每个参数的解释：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;name=WSL2&lt;/code&gt;：将规则命名为 &amp;ldquo;WSL2&amp;rdquo;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dir=in&lt;/code&gt;：指定规则适用于传入的网络流量。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;action=allow&lt;/code&gt;：允许通过该规则的流量通过防火墙。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;protocol=TCP&lt;/code&gt;：指定规则适用于 TCP 协议的流量。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;localport=2222&lt;/code&gt;：指定本地端口号为 2222。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;验证端口转发是否成功：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ssh -p &lt;span class=&#34;m&#34;&gt;2222&lt;/span&gt; user@localhost
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;user 修改成 WSL2 的用户名&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果配置成功，则会成功登录 WSL2。&lt;/p&gt;
+&lt;h1 id=&#34;安装配置花生壳&#34;&gt;安装配置花生壳&lt;/h1&gt;
+&lt;p&gt;进入官网&lt;a href=&#34;https://hsk.oray.com/download&#34;&gt;下载花生壳客户端&lt;/a&gt;，安装后打开，注册账号，登录。&lt;strong&gt;需要实名认证&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;免费账户可以绑定&lt;strong&gt;2 个映射&lt;/strong&gt;，对我来说暂时够用了，免费流量 1G/月。实测阅读代码不编译的话大概&lt;strong&gt;每天 50M&lt;/strong&gt;左右。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;打开客户端，添加映射，配置如下：&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;保存即可。&lt;/p&gt;
+&lt;p&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&#34;en&#34;&gt;
+&lt;head&gt;
+    &lt;meta charset=&#34;UTF-8&#34;&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;
+    &lt;title&gt;Responsive Image&lt;/title&gt;
+    &lt;style&gt;
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    
+    &lt;div class=&#34;post-img-view&#34;&gt;
+        &lt;a data-fancybox=&#34;gallery&#34; href=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png&#34;&gt;
+            &lt;img class=&#34;responsive-image&#34; src=&#34;https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png&#34; alt=&#34;&#34;  style=&#34;margin: 0 auto;&#34;/&gt;
+        &lt;/a&gt;
+    &lt;/div&gt;
+    
+
+    &lt;script&gt;
+        document.addEventListener(&#34;DOMContentLoaded&#34;, function() {
+            var images = document.querySelectorAll(&#34;.responsive-image&#34;);
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + &#34;px&#34;;
+            });
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;&lt;/p&gt;
+&lt;p&gt;验证是否配置成功，找一台不在同一个局域网的电脑，使用 SSH 连接 WSL2：&lt;/p&gt;
+&lt;p&gt;如果复制出来的访问地址为&lt;code&gt;abcdjsj.goho.co:33445&lt;/code&gt;，那么 SSH 命令修改为如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ssh -p &lt;span class=&#34;m&#34;&gt;33445&lt;/span&gt;  user@abcdjsj.goho.co
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;user 修改成 WSL2 的用户名&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果配置成功，则会成功登录 WSL2。&lt;/p&gt;
+&lt;h1 id=&#34;题外话&#34;&gt;题外话&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;WSL2 的 &lt;strong&gt;IP 会经常变化&lt;/strong&gt;，如果连不上了，可以重新获取一下 IP，然后修改一下各个配置。或者想办法将 WSL2 的 IP 固定下来。&lt;/li&gt;
+&lt;li&gt;带宽有限，登录时比较慢，耐心等待。后续准备使用 frp 自建一个穿透服务。&lt;/li&gt;
+&lt;li&gt;PC 耗电伤不起啊，一百多瓦赶上三四台 NAS 了。这玩意只能应急，长时间挂机电费都够买个云服务器了。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;常见问题&#34;&gt;常见问题&lt;/h1&gt;
+&lt;h2 id=&#34;system-is-booting-up-unprivileged-users-are-not-permitted-to-log-in-yet&#34;&gt;&amp;ldquo;System is booting up. Unprivileged users are not permitted to log in yet&amp;rdquo;&lt;/h2&gt;
+&lt;p&gt;登录服务端，也就是 WSL2，执行以下命令&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo rm /run/nologin
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+      <content:encoded><![CDATA[<h1 id="背景简介">背景简介</h1>
+<p>WSL2 是 Windows 的子系统，可以在 Windows 上运行 Linux，但是 WSL2 是运行在虚拟机中的，所以无法直接访问 WSL2 中的服务，比如 SSH 服务。本文介绍如何使用内网穿透工具<strong>花生壳</strong>来实现远程访问 WSL2 中的服务。</p>
+<p>实现这一需求需要完成两个功能。</p>
+<ol>
+<li>WSL2 中的服务是运行在虚拟机中的，如何将公网的访问转发到 WSL2 中。</li>
+<li>Windows 没有公网 IP，如何通过公网来访问。</li>
+</ol>
+<h1 id="wsl2-端口转发">WSL2 端口转发</h1>
+<p>获取 WSL2 的 IP 地址：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hostname -I <span class="p">|</span> awk <span class="s1">&#39;{print $1}&#39;</span>
+</span></span><span class="line"><span class="cl">172.26.13.98
+</span></span></code></pre></div><p>Windows 自带的<code>netsh interface portproxy</code>可以实现端口转发。管理员身份打开 cmd，执行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh interface portproxy add v4tov4 <span class="nv">listenaddress</span><span class="o">=</span>0.0.0.0 <span class="nv">listenport</span><span class="o">=</span><span class="m">2222</span> <span class="nv">connectaddress</span><span class="o">=</span>172.26.13.98 <span class="nv">connectport</span><span class="o">=</span><span class="m">22</span>
+</span></span></code></pre></div><ul>
+<li>listenport：公网访问的端口（改一个不冲突的就行）</li>
+<li>connectaddress：WSL2 的 IP 地址</li>
+<li>connectport：WSL2 中 SSH 服务的端口 (默认为 22，不需要更改)</li>
+</ul>
+<p>开启 Windows 防火墙入站规则，管理员身份打开 cmd，执行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">netsh advfirewall firewall add rule <span class="nv">name</span><span class="o">=</span>WSL2 <span class="nv">dir</span><span class="o">=</span>in <span class="nv">action</span><span class="o">=</span>allow <span class="nv">protocol</span><span class="o">=</span>TCP <span class="nv">localport</span><span class="o">=</span><span class="m">2222</span>
+</span></span></code></pre></div><p>这个命令是用于在 Windows 高级防火墙中添加一条规则。下面是对每个参数的解释：</p>
+<ul>
+<li><code>name=WSL2</code>：将规则命名为 &ldquo;WSL2&rdquo;。</li>
+<li><code>dir=in</code>：指定规则适用于传入的网络流量。</li>
+<li><code>action=allow</code>：允许通过该规则的流量通过防火墙。</li>
+<li><code>protocol=TCP</code>：指定规则适用于 TCP 协议的流量。</li>
+<li><code>localport=2222</code>：指定本地端口号为 2222。</li>
+</ul>
+<p>验证端口转发是否成功：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ssh -p <span class="m">2222</span> user@localhost
+</span></span></code></pre></div><ul>
+<li>user 修改成 WSL2 的用户名</li>
+</ul>
+<p>如果配置成功，则会成功登录 WSL2。</p>
+<h1 id="安装配置花生壳">安装配置花生壳</h1>
+<p>进入官网<a href="https://hsk.oray.com/download">下载花生壳客户端</a>，安装后打开，注册账号，登录。<strong>需要实名认证</strong></p>
+<blockquote>
+<p>免费账户可以绑定<strong>2 个映射</strong>，对我来说暂时够用了，免费流量 1G/月。实测阅读代码不编译的话大概<strong>每天 50M</strong>左右。</p>
+</blockquote>
+<p>打开客户端，添加映射，配置如下：</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/3423c43e8d319abd89c11afd7be03a11.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>保存即可。</p>
+<p>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image</title>
+    <style>
+        .post-img-view {
+            text-align: center;
+        }
+        .responsive-image {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="post-img-view">
+        <a data-fancybox="gallery" href="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png">
+            <img class="responsive-image" src="https://picbed-1311007548.cos.ap-shanghai.myqcloud.com/markdown_picbed/img//2023/08/28/fddec1e9e0cc03c7208b4244dd35ad01.png" alt=""  style="margin: 0 auto;"/>
+        </a>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var images = document.querySelectorAll(".responsive-image");
+            var maxHeight = window.innerHeight / 3;
+            images.forEach(function(image) {
+                image.style.maxHeight = maxHeight + "px";
+            });
+        });
+    </script>
+</body>
+</html></p>
+<p>验证是否配置成功，找一台不在同一个局域网的电脑，使用 SSH 连接 WSL2：</p>
+<p>如果复制出来的访问地址为<code>abcdjsj.goho.co:33445</code>，那么 SSH 命令修改为如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ssh -p <span class="m">33445</span>  user@abcdjsj.goho.co
+</span></span></code></pre></div><ul>
+<li>user 修改成 WSL2 的用户名</li>
+</ul>
+<p>如果配置成功，则会成功登录 WSL2。</p>
+<h1 id="题外话">题外话</h1>
+<ol>
+<li>WSL2 的 <strong>IP 会经常变化</strong>，如果连不上了，可以重新获取一下 IP，然后修改一下各个配置。或者想办法将 WSL2 的 IP 固定下来。</li>
+<li>带宽有限，登录时比较慢，耐心等待。后续准备使用 frp 自建一个穿透服务。</li>
+<li>PC 耗电伤不起啊，一百多瓦赶上三四台 NAS 了。这玩意只能应急，长时间挂机电费都够买个云服务器了。</li>
+</ol>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="system-is-booting-up-unprivileged-users-are-not-permitted-to-log-in-yet">&ldquo;System is booting up. Unprivileged users are not permitted to log in yet&rdquo;</h2>
+<p>登录服务端，也就是 WSL2，执行以下命令</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo rm /run/nologin
+</span></span></code></pre></div>]]></content:encoded>
+    </item>
+    <item>
       <title>如何使用 GitHub Actions</title>
       <link>https://lifeislife.cn/posts/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8github-actions/</link>
       <pubDate>Fri, 14 Oct 2022 22:08:54 +0000</pubDate>
